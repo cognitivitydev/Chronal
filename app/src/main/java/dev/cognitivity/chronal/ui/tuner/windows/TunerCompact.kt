@@ -22,8 +22,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,7 +29,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.asComposePath
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -51,21 +48,21 @@ import androidx.graphics.shapes.toPath
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.Instrument
+import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.Tuner
+import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.pxToDp
 import dev.cognitivity.chronal.toSp
 import dev.cognitivity.chronal.ui.MorphedShape
-import dev.cognitivity.chronal.R
 import kotlin.math.abs
 import kotlin.math.min
 
 @Composable
 fun TunerPageCompact(
     tuner: Tuner?,
-    padding: PaddingValues
+    padding: PaddingValues,
+    mainActivity: MainActivity,
 ) {
-    val context = LocalContext.current
-
     val hz = tuner?.hz ?: -1f
     val tune: Pair<String, Float> = if(tuner != null && hz != 0f) {
         frequencyToNote(tuner.hz)
@@ -101,21 +98,12 @@ fun TunerPageCompact(
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.outline_volume_up_24),
-                    contentDescription = context.getString(R.string.tuner_play_frequency),
+                    contentDescription = mainActivity.getString(R.string.tuner_play_frequency),
                 )
             }
         }
-
-        val permissionGranted by remember {
-            mutableStateOf(
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.RECORD_AUDIO
-                ) == PackageManager.PERMISSION_GRANTED
-            )
-        }
-        if(!permissionGranted) {
-            ShowPermissionWarning(innerPadding)
+        if(ContextCompat.checkSelfPermission(mainActivity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            PermissionWarning(innerPadding, mainActivity)
         }
     }
 }

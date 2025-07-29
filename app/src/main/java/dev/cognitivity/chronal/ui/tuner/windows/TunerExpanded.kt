@@ -60,6 +60,7 @@ import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.Instrument
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.Tuner
+import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.pxToDp
 import dev.cognitivity.chronal.toSp
 import dev.cognitivity.chronal.ui.MorphedShape
@@ -76,6 +77,7 @@ val player = SineWavePlayer(440.0)
 @Composable
 fun TunerPageExpanded(
     tuner: Tuner?,
+    mainActivity: MainActivity
 ) {
     var weight by remember { mutableFloatStateOf(ChronalApp.getInstance().settings.tunerLayout.value) }
     var screenSize by remember { mutableStateOf(IntSize.Zero) }
@@ -84,7 +86,7 @@ fun TunerPageExpanded(
     val tune: Pair<String, Float> = if(tuner != null && hz != 0f) {
         frequencyToNote(tuner.hz)
     } else {
-        context.getString(R.string.generic_not_applicable) to Float.NaN
+        mainActivity.getString(R.string.generic_not_applicable) to Float.NaN
     }
     val instrument = ChronalApp.getInstance().settings.primaryInstrument.value
 
@@ -140,20 +142,12 @@ fun TunerPageExpanded(
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.outline_volume_up_24),
-                        contentDescription = context.getString(R.string.tuner_play_frequency),
+                        contentDescription = mainActivity.getString(R.string.tuner_play_frequency),
                     )
                 }
 
-                val permissionGranted by remember {
-                    mutableStateOf(
-                        ContextCompat.checkSelfPermission(
-                            context,
-                            Manifest.permission.RECORD_AUDIO
-                        ) == PackageManager.PERMISSION_GRANTED
-                    )
-                }
-                if(!permissionGranted) {
-                    ShowPermissionWarning(innerPadding)
+                if(ContextCompat.checkSelfPermission(mainActivity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                    PermissionWarning(innerPadding, mainActivity)
                 }
             }
         }

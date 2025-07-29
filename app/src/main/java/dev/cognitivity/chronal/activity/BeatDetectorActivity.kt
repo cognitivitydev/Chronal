@@ -6,9 +6,9 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -28,11 +28,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.DialogProperties
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
@@ -52,6 +50,21 @@ import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlin.math.round
 
 class BeatDetectorActivity : ComponentActivity() {
+    var isRecording by mutableStateOf(false)
+    var showMicrophoneDialog by mutableStateOf(false)
+    var peakThreshold by mutableDoubleStateOf(0.2)
+    var silenceThreshold by mutableDoubleStateOf(-90.0)
+    private val microphonePermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { permission ->
+        if (permission) {
+            isRecording = true
+            showMicrophoneDialog = false
+            viewModel.startAudio(peakThreshold, silenceThreshold)
+        } else {
+            isRecording = false
+            showMicrophoneDialog = true
+        }
+    }
+
     val viewModel: BeatDetectorViewModel = BeatDetectorViewModel()
 
     @SuppressLint("SourceLockedOrientationActivity")
@@ -73,36 +86,14 @@ class BeatDetectorActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun MainContent() {
-        var showDialog by remember { mutableStateOf(false) }
 
-        val context = LocalContext.current
-        val permissionGranted = remember {
-            mutableStateOf(
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.RECORD_AUDIO
-                ) == PackageManager.PERMISSION_GRANTED
-            )
-        }
-
-        val launcher = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.RequestPermission(),
-            onResult = { granted ->
-                permissionGranted.value = granted
-            }
-        )
-
-        var isRecording by remember { mutableStateOf(false) }
-        var peakThreshold by remember { mutableDoubleStateOf(0.2) }
-        var silenceThreshold by remember { mutableDoubleStateOf(-90.0) }
-
-        if(permissionGranted.value) {
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
             LaunchedEffect(peakThreshold, silenceThreshold) {
                 viewModel.startAudio(peakThreshold, silenceThreshold)
                 isRecording = true
             }
         } else {
-            showDialog = true
+            microphonePermission.launch(Manifest.permission.RECORD_AUDIO)
         }
 
         Scaffold(
@@ -158,11 +149,12 @@ class BeatDetectorActivity : ComponentActivity() {
                                 Toast.makeText(this@BeatDetectorActivity, getString(R.string.beat_detector_reset_notification),
                                     Toast.LENGTH_SHORT).show()
                             } else {
-                                if(ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                                if(ContextCompat.checkSelfPermission(this@BeatDetectorActivity, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
                                     viewModel.startAudio(peakThreshold, silenceThreshold)
                                     isRecording = true
                                 } else {
-                                    showDialog = true
+                                    Log.d("a", "Requesting microphone permission")
+                                    microphonePermission.launch(Manifest.permission.RECORD_AUDIO)
                                 }
                             }
                         }
@@ -208,23 +200,22 @@ class BeatDetectorActivity : ComponentActivity() {
                     }
                 }
             }
-            if(showDialog) {
-                launcher.launch(Manifest.permission.RECORD_AUDIO)
+            if(showMicrophoneDialog) {
                 AlertDialog(
-                    onDismissRequest = { },
+                    onDismissRequest = { showMicrophoneDialog = false },
                     confirmButton = @Composable {
                         TextButton(onClick = {
-                            showDialog = false
+                            showMicrophoneDialog = false
                             val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                            intent.data = ("package:" + context.packageName).toUri()
-                            context.startActivity(intent)
+                            intent.data = ("package:$packageName").toUri()
+                            startActivity(intent)
                         }) {
                             Text(getString(R.string.generic_settings))
                         }
                     },
                     dismissButton = @Composable {
                         TextButton(onClick = {
-                            showDialog = false
+                            showMicrophoneDialog = false
                         }) {
                             Text(getString(R.string.generic_cancel))
                         }
@@ -240,11 +231,7 @@ class BeatDetectorActivity : ComponentActivity() {
                     },
                     text = @Composable {
                         Text(getString(R.string.beat_detector_permission_text))
-                    },
-                    properties = DialogProperties(
-                        dismissOnBackPress = false,
-                        dismissOnClickOutside = false
-                    )
+                    }
                 )
             }
         }
