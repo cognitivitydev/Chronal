@@ -1,14 +1,9 @@
 package dev.cognitivity.chronal.ui.tuner.windows
 
 import android.Manifest
-import android.content.Intent
-import android.content.pm.PackageManager
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
-import android.provider.Settings
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -16,7 +11,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -24,36 +18,30 @@ import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
-import androidx.core.content.ContextCompat
-import androidx.core.net.toUri
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.Tuner
+import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.toSp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.PI
@@ -67,107 +55,29 @@ val flatOffset = (-3).dp
 val sharpOffset = (-4).dp
 
 @Composable
-fun TunerPageMain(expanded: Boolean, padding: PaddingValues) {
-    val context = LocalContext.current
-    var permissionGranted by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.RECORD_AUDIO
-            ) == PackageManager.PERMISSION_GRANTED
-        )
-    }
-
-    LaunchedEffect(Unit) {
-        while (true) {
-            delay(1000)
-            permissionGranted = ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.RECORD_AUDIO
-            ) == PackageManager.PERMISSION_GRANTED
-        }
-    }
-
-    if (permissionGranted) {
+fun TunerPageMain(expanded: Boolean, padding: PaddingValues, mainActivity: MainActivity) {
+    if (mainActivity.microphoneEnabled) {
         var tuner = ChronalApp.getInstance().tuner
         if (tuner == null) {
             tuner = Tuner()
         }
 
         if(expanded) {
-            TunerPageExpanded(tuner)
+            TunerPageExpanded(tuner, mainActivity)
         } else {
-            TunerPageCompact(tuner, padding)
+            TunerPageCompact(tuner, padding, mainActivity)
         }
     } else {
         if(expanded) {
-            TunerPageExpanded(null)
+            TunerPageExpanded(null, mainActivity)
         } else {
-            TunerPageCompact(null, padding)
+            TunerPageCompact(null, padding, mainActivity)
         }
     }
 }
 
 @Composable
-fun ShowPermissionWarning(innerPadding: PaddingValues) {
-    val context = LocalContext.current
-    val permissionGranted = remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.RECORD_AUDIO
-            ) == PackageManager.PERMISSION_GRANTED
-        )
-    }
-
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission(),
-        onResult = { granted ->
-            permissionGranted.value = granted
-        }
-    )
-
-    var showDialog by remember { mutableStateOf(false) }
-    if (showDialog) {
-        launcher.launch(Manifest.permission.RECORD_AUDIO)
-        AlertDialog(
-            onDismissRequest = { },
-            confirmButton = @Composable {
-                TextButton(onClick = {
-                    showDialog = false
-                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                    intent.data = ("package:" + context.packageName).toUri()
-                    context.startActivity(intent)
-                }) {
-                    Text(context.getString(R.string.generic_settings))
-                }
-            },
-            dismissButton = @Composable {
-                TextButton(onClick = {
-                    showDialog = false
-                }) {
-                    Text(context.getString(R.string.generic_cancel))
-                }
-            },
-            icon = @Composable {
-                Icon(
-                    painter = painterResource(R.drawable.outline_warning_24),
-                    contentDescription = context.getString(R.string.generic_warning),
-                )
-            },
-            title = @Composable {
-                Text(context.getString(R.string.tuner_missing_permission_title))
-            },
-            text = @Composable {
-                Text(context.getString(R.string.tuner_missing_permission_text))
-            },
-            properties = DialogProperties(
-                dismissOnBackPress = false,
-                dismissOnClickOutside = false
-            )
-        )
-    }
-
+fun PermissionWarning(innerPadding: PaddingValues, mainActivity: MainActivity) {
     Box(
         Modifier.fillMaxWidth()
             .fillMaxHeight()
@@ -196,7 +106,7 @@ fun ShowPermissionWarning(innerPadding: PaddingValues) {
                 TextButton(
                     modifier = Modifier.padding(end = 8.dp),
                     onClick = {
-                        showDialog = true
+                        mainActivity.microphonePermission.launch(Manifest.permission.RECORD_AUDIO)
                     }
                 ) {
                     Text(context.getString(R.string.generic_fix))

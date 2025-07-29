@@ -3,15 +3,18 @@ package dev.cognitivity.chronal.activity
 import android.Manifest
 import android.app.NotificationManager
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Path
 import android.media.AudioManager
 import android.os.Bundle
 import android.os.VibratorManager
+import android.provider.Settings
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.slideInHorizontally
@@ -38,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.core.app.ActivityCompat
+import androidx.core.net.toUri
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavHostController
@@ -66,12 +70,21 @@ class MainActivity : ComponentActivity() {
         startActivity(k)
     }
 
+    var microphoneEnabled by mutableStateOf(false)
+    var showMicrophoneDialog by mutableStateOf(false)
+    val microphonePermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { permission ->
+        microphoneEnabled = permission
+        showMicrophoneDialog = !permission
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         installSplashScreen()
 
         audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
         vibratorManager = getSystemService(VIBRATOR_MANAGER_SERVICE) as VibratorManager
+        microphoneEnabled = ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
 
         splashScreen.setOnExitAnimationListener { splashScreenView ->
             splashScreenView.animate()
@@ -96,6 +109,11 @@ class MainActivity : ComponentActivity() {
             val notificationManager = context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.cancel(1)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        microphoneEnabled = ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
     }
 
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class, ExperimentalMaterial3Api::class)
@@ -128,6 +146,41 @@ class MainActivity : ComponentActivity() {
                     NavigationHost(navController, true, innerPadding)
                 }
             } else NavigationHost(navController, false, innerPadding)
+
+            if(showMicrophoneDialog) {
+                AlertDialog(
+                    onDismissRequest = { showMicrophoneDialog = false },
+                    confirmButton = @Composable {
+                        TextButton(onClick = {
+                            showMicrophoneDialog = false
+                            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                            intent.data = ("package:$packageName").toUri()
+                            startActivity(intent)
+                        }) {
+                            Text(getString(R.string.generic_settings))
+                        }
+                    },
+                    dismissButton = @Composable {
+                        TextButton(onClick = {
+                            showMicrophoneDialog = false
+                        }) {
+                            Text(getString(R.string.generic_cancel))
+                        }
+                    },
+                    icon = @Composable {
+                        Icon(
+                            painter = painterResource(R.drawable.outline_warning_24),
+                            contentDescription = getString(R.string.generic_warning),
+                        )
+                    },
+                    title = @Composable {
+                        Text(getString(R.string.tuner_missing_permission_title))
+                    },
+                    text = @Composable {
+                        Text(getString(R.string.tuner_missing_permission_text))
+                    }
+                )
+            }
         }
     }
 
@@ -186,7 +239,7 @@ class MainActivity : ComponentActivity() {
                     notificationManager.cancel(1)
                 }
                 window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                TunerPageMain(expanded, padding)
+                TunerPageMain(expanded, padding, this@MainActivity)
             }
             composable("settings",
                 enterTransition = {
