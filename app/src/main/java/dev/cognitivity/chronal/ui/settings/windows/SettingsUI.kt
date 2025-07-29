@@ -92,7 +92,7 @@ fun SettingsPageMain(expanded: Boolean, padding: PaddingValues) {
             Row(
                 modifier = Modifier.fillMaxWidth()
                     .clickable {
-                        val intent = Intent(Intent.ACTION_VIEW, "https://github.com/cognitivitydev".toUri())
+                        val intent = Intent(Intent.ACTION_VIEW, "https://github.com/cognitivitydev/Chronal/issues".toUri())
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         ChronalApp.getInstance().startActivity(intent)
                     }
@@ -219,8 +219,7 @@ fun BoxScope.MoreSettingsDropdown() {
         onDismissRequest = { expanded = false },
     ) {
         DropdownMenuItem(onClick = {
-            //TODO
-            val intent = Intent(Intent.ACTION_VIEW, "https://github.com/cognitivitydev".toUri())
+            val intent = Intent(Intent.ACTION_VIEW, "https://github.com/cognitivitydev/Chronal".toUri())
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             ChronalApp.getInstance().startActivity(intent)
         },
