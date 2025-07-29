@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
+    <application
+            android:name="dev.cognitivity.chronal.ChronalApp"
+            android:allowBackup="true"
+            android:dataExtractionRules="@xml/data_extraction_rules"
+            android:fullBackupContent="@xml/backup_rules"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:supportsRtl="true"
+            android:theme="@style/Theme.Chronal"
+            android:enableOnBackInvokedCallback="true">
+        <activity
+            android:name=".activity.MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Chronal.Splash">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".activity.BeatDetectorActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Chronal">
+        </activity>
+        <activity
+            android:name=".activity.FullscreenActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Chronal">
+        </activity>
+        <activity
+            android:name=".activity.InstrumentActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Chronal">
+        </activity>
+        <activity
+            android:name=".activity.editor.RhythmEditorActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Chronal">
+        </activity>
+        <activity
+            android:name=".activity.EditSounds"
+            android:exported="false"
+            android:theme="@style/Theme.Chronal">
+        </activity>
+        <activity
+            android:name=".activity.LatencyActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Chronal">
+        </activity>
+        <activity
+            android:name=".activity.CreditsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Chronal">
+        </activity>
+        <activity
+            android:name=".activity.HelpActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Chronal">
+        </activity>
+    </application>
+</manifest>
