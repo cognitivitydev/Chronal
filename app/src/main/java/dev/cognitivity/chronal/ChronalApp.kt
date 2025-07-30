@@ -44,6 +44,10 @@ class ChronalApp : Application() {
         }
     }
 
+    fun isInitialized(): Boolean {
+        return ::metronome.isInitialized && ::settings.isInitialized
+    }
+
     companion object {
         lateinit var application: Application
 

@@ -28,8 +28,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -71,17 +73,17 @@ import kotlin.math.abs
 import kotlin.math.min
 
 
-var playing by mutableStateOf(false)
-val player = SineWavePlayer(440.0)
-
 @Composable
 fun TunerPageExpanded(
     tuner: Tuner?,
     mainActivity: MainActivity
 ) {
+    val scope = rememberCoroutineScope()
     var weight by remember { mutableFloatStateOf(ChronalApp.getInstance().settings.tunerLayout.value) }
     var screenSize by remember { mutableStateOf(IntSize.Zero) }
 
+    var showTuningDialog by remember { mutableStateOf(false) }
+    var tuningNote by remember { mutableIntStateOf(-1) }
     val hz = tuner?.hz ?: -1f
     val tune: Pair<String, Float> = if(tuner != null && hz != 0f) {
         frequencyToNote(tuner.hz)
@@ -134,8 +136,7 @@ fun TunerPageExpanded(
                 FilledIconToggleButton(
                     checked = playing,
                     onCheckedChange = {
-                        if(!playing) player.start() else player.stop()
-                        playing = !playing
+                        showTuningDialog = true
                     },
                     modifier = Modifier.padding(8.dp)
                         .align(Alignment.TopEnd)
@@ -143,6 +144,28 @@ fun TunerPageExpanded(
                     Icon(
                         painter = painterResource(id = R.drawable.outline_volume_up_24),
                         contentDescription = mainActivity.getString(R.string.tuner_play_frequency),
+                    )
+                }
+
+                if(showTuningDialog) {
+                    TuningDialog(true, tuningNote,
+                        onChange = {
+                            tuningNote = it
+                            scope.launch {
+                                player.setFrequency(transposeFrequency(getA4().toFloat(), it - 69).toDouble())
+                            }
+                        },
+                        onConfirm = {
+                            player.start()
+                            playing = true
+                        },
+                        onStop = {
+                            player.stop()
+                            playing = false
+                        },
+                        onDismiss = {
+                            showTuningDialog = false
+                        }
                     )
                 }
 

@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -153,7 +152,6 @@ class BeatDetectorActivity : ComponentActivity() {
                                     viewModel.startAudio(peakThreshold, silenceThreshold)
                                     isRecording = true
                                 } else {
-                                    Log.d("a", "Requesting microphone permission")
                                     microphonePermission.launch(Manifest.permission.RECORD_AUDIO)
                                 }
                             }
