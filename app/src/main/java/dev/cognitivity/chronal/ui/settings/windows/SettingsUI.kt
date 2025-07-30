@@ -452,7 +452,8 @@ fun DrawSetting(
                         }
                         "Frequency" -> {
                             ExpandableSlider(
-                                setting, 415f..466f, "415 Hz", "440 Hz",
+                                setting, 415f..466f, context.getString(R.string.tuner_hz, 415),
+                                context.getString(R.string.tuner_hz, 440),
                                 onValueChange = { value ->
                                     scope.launch {
                                         (setting as Setting<Int>).value = value.toInt()
@@ -460,7 +461,7 @@ fun DrawSetting(
                                     }
                                 },
                                 valueText = { value ->
-                                    "${value.toInt()} Hz"
+                                    context.getString(R.string.tuner_hz, value.toInt())
                                 }
                             )
                         }

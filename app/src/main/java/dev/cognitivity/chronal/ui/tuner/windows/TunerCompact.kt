@@ -161,7 +161,8 @@ fun TopBar(tuner: Tuner?, hz: Float, instrument: Instrument) {
                         .align(Alignment.TopCenter)
                         .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(8.dp))
                 ) {
-                    Text(context.getString(R.string.tuner_tuning_at, ChronalApp.getInstance().settings.tunerFrequency.value),
+                    val hertz = context.getString(R.string.tuner_hz, ChronalApp.getInstance().settings.tunerFrequency.value)
+                    Text(context.getString(R.string.tuner_tuning_at, hertz),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.align(Alignment.Center)
