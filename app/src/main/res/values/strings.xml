@@ -191,10 +191,10 @@
     <string name="setting_name_no_animation">No fullscreen animation</string>
     <string name="setting_name_tuner_frequency">A4 Frequency</string>
     <string name="setting_name_show_octave">Show octave</string>
+    <string name="setting_name_transpose_notes">Transpose notes</string>
+    <string name="setting_name_audio_threshold">Audio threshold</string>
     <string name="setting_name_accidentals">Accidentals</string>
     <string name="setting_name_note_names">Change note names</string>
-    <string name="setting_name_audio_threshold">Audio threshold</string>
-    <string name="setting_name_transpose_notes">Transpose notes</string>
     <string name="setting_name_show_developer_options">Show developer options</string>
     <string name="setting_name_metronome_rhythm">Metronome rhythm</string>
     <string name="setting_name_metronome_simple_rhythm">Metronome simple rhythm</string>
@@ -214,11 +214,11 @@
     <string name="setting_description_high_contrast">Enables high contrast mode for the fullscreen metronome.</string>
     <string name="setting_description_no_animation">Disables the fullscreen animation when using fullscreen mode. May be hard to watch at higher tempos, but better at a distance.</string>
     <string name="setting_description_tuner_frequency">Changes the frequency of A4 for the tuner.</string>
-    <string name="setting_description_show_octave">\"Shows the octave of the current played note (such as \"A4\").</string>
+    <string name="setting_description_show_octave">Shows the octave of the current played note (such as \"A4\").</string>
+    <string name="setting_description_transpose_notes">Shows the transposed note for your primary instrument in addition to concert pitch.</string>
+    <string name="setting_description_audio_threshold">Edits the audio threshold for detecting notes. Decrease if notes are not being detected.</string>
     <string name="setting_description_accidentals">Changes which accidentals are displayed.</string>
     <string name="setting_description_note_names">Changes note names to their solfège name.</string>
-    <string name="setting_description_audio_threshold">Edits the audio threshold for detecting notes. Decrease if notes are not being detected.</string>
-    <string name="setting_description_transpose_notes">Shows the transposed note for your primary instrument in addition to concert pitch.</string>
     <string name="setting_description_show_developer_options">Changes the visibility of developer options in settings. Only available in development builds.</string>
     <string name="setting_description_metronome_rhythm">Encoded rhythm for the metronome.</string>
     <string name="setting_description_metronome_simple_rhythm">Simple rhythm for the metronome.</string>

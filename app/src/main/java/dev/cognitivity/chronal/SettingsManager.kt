@@ -22,10 +22,10 @@ enum class SettingKey(val category: Int, val settingName: Int) {
 
     TUNER_FREQUENCY(R.string.setting_category_tuner, R.string.setting_name_tuner_frequency),
     SHOW_OCTAVE(R.string.setting_category_tuner, R.string.setting_name_show_octave),
+    TRANSPOSE_NOTES(R.string.setting_category_tuner, R.string.setting_name_transpose_notes),
+    AUDIO_THRESHOLD(R.string.setting_category_tuner, R.string.setting_name_audio_threshold),
     ACCIDENTALS(R.string.setting_category_tuner, R.string.setting_name_accidentals),
     NOTE_NAMES(R.string.setting_category_tuner, R.string.setting_name_note_names),
-    AUDIO_THRESHOLD(R.string.setting_category_tuner, R.string.setting_name_audio_threshold),
-    TRANSPOSE_NOTES(R.string.setting_category_tuner, R.string.setting_name_transpose_notes),
 
     SHOW_DEVELOPER_OPTIONS(R.string.setting_category_internal, R.string.setting_name_show_developer_options),
     METRONOME_RHYTHM(R.string.setting_category_internal, R.string.setting_name_metronome_rhythm),
@@ -107,17 +107,10 @@ class SettingsManager(val context: Context) {
         hint = R.string.setting_description_show_octave,
         default = false
     )
-    val accidentals = Setting(
-        SettingKey.ACCIDENTALS,
-        hint = R.string.setting_description_accidentals,
-        menu = SettingMenu.Expandable("Accidentals"),
-        default = 0
-    )
-    val noteNames = Setting(
-        SettingKey.NOTE_NAMES,
-        hint = R.string.setting_description_note_names,
-        menu = SettingMenu.Expandable("Note"),
-        default = 0
+    val transposeNotes = Setting(
+        SettingKey.TRANSPOSE_NOTES,
+        hint = R.string.setting_description_transpose_notes,
+        default = false
     )
     val audioThreshold = Setting(
         SettingKey.AUDIO_THRESHOLD,
@@ -125,10 +118,17 @@ class SettingsManager(val context: Context) {
         menu = SettingMenu.Expandable("Percentage"),
         default = 0.5f
     )
-    val transposeNotes = Setting(
-        SettingKey.TRANSPOSE_NOTES,
-        hint = R.string.setting_description_transpose_notes,
-        default = false
+    val accidentals = Setting(
+        SettingKey.ACCIDENTALS,
+        hint = R.string.setting_description_accidentals,
+        menu = SettingMenu.Expandable("Accidentals"),
+        default = 2
+    )
+    val noteNames = Setting(
+        SettingKey.NOTE_NAMES,
+        hint = R.string.setting_description_note_names,
+        menu = SettingMenu.Expandable("Note"),
+        default = 0
     )
 
     /******* INTERNAL *******/
@@ -205,10 +205,10 @@ class SettingsManager(val context: Context) {
         /******* TUNER *******/
         SettingKey.TUNER_FREQUENCY to tunerFrequency,
         SettingKey.SHOW_OCTAVE to showOctave,
+        SettingKey.TRANSPOSE_NOTES to transposeNotes,
+        SettingKey.AUDIO_THRESHOLD to audioThreshold,
         SettingKey.ACCIDENTALS to accidentals,
         SettingKey.NOTE_NAMES to noteNames,
-        SettingKey.AUDIO_THRESHOLD to audioThreshold,
-        SettingKey.TRANSPOSE_NOTES to transposeNotes,
 
         /******* INTERNAL *******/
         SettingKey.SHOW_DEVELOPER_OPTIONS to showDeveloperOptions,
@@ -244,17 +244,17 @@ class SettingsManager(val context: Context) {
             val showOctaveKey = booleanPreferencesKey(showOctave.key.toString())
             settings[showOctaveKey] = showOctave.value
 
+            val transposeNotesKey = booleanPreferencesKey(transposeNotes.key.toString())
+            settings[transposeNotesKey] = transposeNotes.value
+
+            val audioThresholdKey = floatPreferencesKey(audioThreshold.key.toString())
+            settings[audioThresholdKey] = audioThreshold.value
+
             val accidentalsKey = intPreferencesKey(accidentals.key.toString())
             settings[accidentalsKey] = accidentals.value
 
             val noteNamesKey = intPreferencesKey(noteNames.key.toString())
             settings[noteNamesKey] = noteNames.value
-
-            val audioThresholdKey = floatPreferencesKey(audioThreshold.key.toString())
-            settings[audioThresholdKey] = audioThreshold.value
-
-            val transposeNotesKey = booleanPreferencesKey(transposeNotes.key.toString())
-            settings[transposeNotesKey] = transposeNotes.value
 
             /******* INTERNAL *******/
             val metronomeRhythmKey = stringPreferencesKey(metronomeRhythm.key.toString())
@@ -307,17 +307,18 @@ class SettingsManager(val context: Context) {
         showOctave.value = prefs[booleanPreferencesKey(showOctave.key.toString())]
             ?: showOctave.default
 
+        transposeNotes.value = prefs[booleanPreferencesKey(transposeNotes.key.toString())]
+            ?: transposeNotes.default
+
+        audioThreshold.value = prefs[floatPreferencesKey(audioThreshold.key.toString())]
+            ?: audioThreshold.default
+
         accidentals.value = prefs[intPreferencesKey(accidentals.key.toString())]
             ?: accidentals.default
 
         noteNames.value = prefs[intPreferencesKey(noteNames.key.toString())]
             ?: noteNames.default
 
-        audioThreshold.value = prefs[floatPreferencesKey(audioThreshold.key.toString())]
-            ?: audioThreshold.default
-
-        transposeNotes.value = prefs[booleanPreferencesKey(transposeNotes.key.toString())]
-            ?: transposeNotes.default
 
         /******* INTERNAL *******/
         metronomeRhythm.value = prefs[stringPreferencesKey(metronomeRhythm.key.toString())]
