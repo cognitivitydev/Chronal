@@ -534,7 +534,7 @@ class InstrumentActivity : ComponentActivity() {
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(24.dp))
                 .clickable {
-                    Toast.makeText(context, getString(R.string.instrument_selected), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, getString(R.string.instrument_selected, name), Toast.LENGTH_SHORT).show()
                     onSelect(Instrument(name, shortened, keyToSemitones(key, octave)))
                 }
                 .padding(16.dp)
