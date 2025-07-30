@@ -52,7 +52,6 @@ import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.Tuner
 import dev.cognitivity.chronal.activity.MainActivity
-import dev.cognitivity.chronal.round
 import dev.cognitivity.chronal.toSp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -454,13 +453,15 @@ fun TuningDialog(expanded: Boolean, midi: Int, onChange: (Int) -> Unit, onConfir
             val noteName = getNoteNames()[noteIndex]
             val octave = if(midi == -1) 4 else midi / 12 - 1
             Text("$noteName$octave",
-                modifier = Modifier.align(Alignment.TopCenter),
+                modifier = Modifier.align(Alignment.TopCenter)
+                    .padding(top = 8.dp),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
-                text = "${frequency.round(1)} Hz",
-                modifier = Modifier.align(Alignment.BottomCenter),
+                text = context.getString(R.string.tuner_hz_decimal, frequency),
+                modifier = Modifier.align(Alignment.BottomCenter)
+                    .padding(bottom = 8.dp),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -503,7 +504,7 @@ fun TuningDialog(expanded: Boolean, midi: Int, onChange: (Int) -> Unit, onConfir
 
     AlertDialog(
         onDismissRequest = { onDismiss() },
-        title = { Text("Set frequency") },
+        title = { Text(context.getString(R.string.tuner_set_frequency)) },
         text = {
             if(expanded) {
                 Row(

@@ -14,17 +14,22 @@ import be.tarsos.dsp.pitch.PitchProcessor
 
 class Tuner {
     var hz by mutableFloatStateOf(0f)
+    var history = mutableListOf<Pair<Long, Float>>()
     var probability by mutableFloatStateOf(0f)
     var lastUpdate = 0L
     var threshold = ChronalApp.getInstance().settings.audioThreshold
 
     private val dispatcher: AudioDispatcher
     private val pitchDetectionHandler = PitchDetectionHandler { res, event ->
-
         if (res.pitch <= -1) return@PitchDetectionHandler
+        if(res.pitch < 25 || res.pitch > 10000) return@PitchDetectionHandler
+
+        history.add(Pair(System.currentTimeMillis(), res.pitch))
+        if(history.size > 100) history = history.subList(history.size - 100, history.size)
+
         val newProbability = normalizeThreshold(res.probability.coerceIn(0.8f, 1f))
-        if(newProbability > threshold.value && res.pitch >= 25 && res.pitch <= 10000) {
-            if(System.currentTimeMillis()-lastUpdate < 100 && res.pitch - hz < 20) {
+        if(newProbability > threshold.value) {
+            if(System.currentTimeMillis() - lastUpdate < 100 && res.pitch - hz < 20) {
                 hz = (res.pitch + hz) / 2
                 probability = newProbability
                 lastUpdate = System.currentTimeMillis()
@@ -33,7 +38,7 @@ class Tuner {
                 probability = newProbability
                 lastUpdate = System.currentTimeMillis()
             }
-        } else if(System.currentTimeMillis()-lastUpdate > 5000) {
+        } else if(System.currentTimeMillis() - lastUpdate > 5000) {
             hz = -1f
             probability = 0f
             lastUpdate = System.currentTimeMillis()

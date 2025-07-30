@@ -7,12 +7,16 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.EaseInExpo
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -36,7 +40,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -64,6 +70,7 @@ import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.Tuner
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.pxToDp
+import dev.cognitivity.chronal.round
 import dev.cognitivity.chronal.toSp
 import dev.cognitivity.chronal.ui.MorphedShape
 import kotlinx.coroutines.CoroutineScope
@@ -177,22 +184,26 @@ fun TunerPageExpanded(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun NoteDisplay(tuner: Tuner?, hz: Float, instrument: Instrument) {
+    var fullscreen by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier.fillMaxSize()
             .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(18.dp))
-            .padding(8.dp)
+            .padding(horizontal = 8.dp)
     ) {
         Row(
-            modifier = Modifier.align(Alignment.CenterHorizontally).padding(4.dp),
+            modifier = Modifier.align(Alignment.CenterHorizontally).padding(start = 4.dp, top = 8.dp, end = 4.dp),
         ) {
             Box(
                 modifier = Modifier.padding(2.dp)
                     .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(8.dp))
                     .padding(8.dp, 4.dp)
             ) {
-                Text(context.getString(R.string.tuner_tuning_at, ChronalApp.getInstance().settings.tunerFrequency.value),
+                val hertz = context.getString(R.string.tuner_hz, ChronalApp.getInstance().settings.tunerFrequency.value)
+                Text(context.getString(R.string.tuner_tuning_at, hertz),
                     modifier = Modifier.align(Alignment.Center),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -218,34 +229,192 @@ fun NoteDisplay(tuner: Tuner?, hz: Float, instrument: Instrument) {
                 .fillMaxHeight(),
             verticalArrangement = Arrangement.Center,
         ) {
-            Column(
+            val graphWeight by animateFloatAsState(
+                targetValue = if (fullscreen) 1f else 0.75f,
+                animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
+                label = "graphWeight"
+            )
+            val noteWeight by animateFloatAsState(
+                targetValue = if (fullscreen) 0.01f else 1f,
+                animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
+                label = "noteWeight"
+            )
+
+            Box(
                 modifier = Modifier.padding(8.dp)
                     .fillMaxWidth()
-                    .then(if (showTransposition) Modifier.weight(1f) else Modifier.fillMaxHeight(0.5f))
-                    .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(16.dp))
-                    .padding(8.dp),
+                    .weight(graphWeight)
+                    .clip(RoundedCornerShape(16.dp))
+                    .clipToBounds()
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
+                    .clickable {
+                        fullscreen = !fullscreen
+                    }
             ) {
-                DrawName(context.getString(R.string.tuner_concert_pitch), context.getString(R.string.tuner_concert_pitch_short))
-                Spacer(modifier = Modifier.height(8.dp))
-                DrawNote(transposeFrequency(hz, -instrument.transposition))
+                val unfilteredHistory: List<Pair<Long, Float>> =
+                    tuner?.history?.toMutableList()?.filter { System.currentTimeMillis() - it.first < 10000 }
+                        ?: emptyList()
+
+                val history = removeOutliers(unfilteredHistory)
+
+                val minFreq = if (history.isEmpty()) 0f else history.minOf { it.second }
+                val maxFreq = if (history.isEmpty()) 0f else history.maxOf { it.second }
+
+                val outlineVariant = MaterialTheme.colorScheme.outlineVariant
+                val outline = MaterialTheme.colorScheme.outline
+                val secondary = MaterialTheme.colorScheme.secondary
+                val tertiary = MaterialTheme.colorScheme.tertiary
+                val primary = MaterialTheme.colorScheme.primary
+                val onSurface = MaterialTheme.colorScheme.onSurface
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    if (history.isEmpty()) return@Canvas
+
+                    val yRange = maxFreq - minFreq
+
+                    val noteFreqs = generateSequence(0) { it + 1 }
+                        .map { transposeFrequency(getA4().toFloat(), it - 69) }
+                        .takeWhile { it <= maxFreq }
+                        .filter { it >= minFreq }
+                        .toList()
+
+                    if((noteFreqs.size < 12 && !fullscreen) || (noteFreqs.size < 24 && fullscreen)) { // max one octave minimized, two octaves maximized
+                        for (freq in noteFreqs) {
+                            val y = size.height - ((freq - minFreq) / yRange * size.height)
+                            drawLine(
+                                color = outlineVariant,
+                                start = Offset(0f, y),
+                                end = Offset(size.width, y),
+                                strokeWidth = 1.dp.toPx()
+                            )
+                        }
+                    }
+
+                    var lastPoint: Offset? = null
+                    var lastTime: Long? = null
+
+                    for (pair in history) {
+                        val x =
+                            ((pair.first - history.first().first) / (history.last().first - history.first().first).toFloat() * size.width)
+                        val y = size.height - ((pair.second - minFreq) / yRange * size.height)
+                        val currentPoint = Offset(x, y)
+
+                        if (lastPoint != null && lastTime != null) {
+                            val timeDiff = pair.first - lastTime
+                            if (timeDiff <= 250) { // within roughly 5 updates
+                                val centsOff = frequencyToNote(pair.second).second
+                                val color = when {
+                                    abs(centsOff) >= 40 -> outline
+                                    abs(centsOff) >= 30 -> secondary
+                                    abs(centsOff) >= 20 -> tertiary
+                                    abs(centsOff) >= 5 -> primary
+                                    else -> onSurface
+                                }
+                                drawLine(
+                                    color = color,
+                                    start = lastPoint,
+                                    end = currentPoint,
+                                    strokeWidth = 2.dp.toPx()
+                                )
+                            }
+                        }
+                        lastPoint = currentPoint
+                        lastTime = pair.first
+                    }
+                }
+
+                val max = frequencyToNote(maxFreq)
+                val min = frequencyToNote(minFreq)
+                val showCents = maxFreq - minFreq < 100f && !max.second.isNaN() && !min.second.isNaN()
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .background(MaterialTheme.colorScheme.surfaceContainer, CircleShape)
+                        .padding(horizontal = 4.dp)
+                ) {
+                    val string = if(showCents) "${max.first}, ${if(max.second >= 0) "+" else ""}${max.second.round(1)}"
+                        else max.first
+                    Text(
+                        text = string,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .background(MaterialTheme.colorScheme.surfaceContainer, CircleShape)
+                        .padding(horizontal = 4.dp)
+                ) {
+                    val string = if(showCents) "${min.first}, ${if(min.second >= 0) "+" else ""}${min.second.round(1)}"
+                        else min.first
+                    Text(
+                        text = string,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Icon(
+                    painter = painterResource(if(fullscreen) R.drawable.outline_fullscreen_exit_24 else R.drawable.baseline_fullscreen_24),
+                    contentDescription = context.getString(R.string.generic_fullscreen),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.align(Alignment.BottomEnd)
+                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                        .size(16.dp),
+                )
             }
 
-            if(showTransposition) {
+            if(noteWeight != 0.01f) {
                 Column(
                     modifier = Modifier.padding(8.dp)
                         .fillMaxWidth()
-                        .weight(1f)
+                        .weight(noteWeight)
                         .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(16.dp))
-                        .padding(8.dp),
-                    verticalArrangement = Arrangement.Center,
+                        .padding(4.dp),
                 ) {
-                    DrawName(instrument.name, instrument.shortened)
+                    DrawName(context.getString(R.string.tuner_concert_pitch), context.getString(R.string.tuner_concert_pitch_short))
                     Spacer(modifier = Modifier.height(8.dp))
-                    DrawNote(hz)
+                    DrawNote(transposeFrequency(hz, -instrument.transposition))
+                }
+
+                if(showTransposition) {
+                    Column(
+                        modifier = Modifier.padding(8.dp)
+                            .fillMaxWidth()
+                            .weight(noteWeight)
+                            .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(16.dp))
+                            .padding(4.dp),
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        DrawName(instrument.name, instrument.shortened)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        DrawNote(hz)
+                    }
                 }
             }
         }
     }
+}
+
+fun removeOutliers(data: List<Pair<Long, Float>>): List<Pair<Long, Float>> {
+    if (data.size < 3) return data
+
+    val filtered = mutableListOf<Pair<Long, Float>>()
+    for (i in 1 until data.size - 1) {
+        val prev = data[i - 1].second
+        val curr = data[i].second
+        val next = data[i + 1].second
+
+        val minNeighbor = minOf(prev, next)
+        val maxNeighbor = maxOf(prev, next)
+
+        val lowerBound = minNeighbor / 4f
+        val upperBound = maxNeighbor * 4f
+
+        if (curr in lowerBound..upperBound) {
+            filtered.add(data[i])
+        }
+    }
+    return filtered
 }
 
 @Composable

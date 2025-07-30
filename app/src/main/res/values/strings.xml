@@ -12,6 +12,7 @@
     <string name="generic_exit">Exit</string>
     <string name="generic_exit_discard">Exit without saving</string>
     <string name="generic_fix">Fix</string>
+    <string name="generic_fullscreen">Fullscreen</string>
     <string name="generic_github" translatable="false">GitHub</string>
     <string name="generic_ignore">Ignore</string>
     <string name="generic_info">Info</string>
@@ -125,8 +126,11 @@
     <string name="tuner_microphone_disabled">Microphone access is disabled</string>
     <string name="tuner_missing_permission_title">Missing Permission</string>
     <string name="tuner_missing_permission_text">Microphone access is required to use the tuner.</string>
+    <string name="tuner_set_frequency">Set frequency</string>
     <string name="tuner_play_frequency">Play frequency</string>
-    <string name="tuner_tuning_at">Tuning at %d hz</string>
+    <string name="tuner_hz">%d Hz</string>
+    <string name="tuner_hz_decimal">%.2f Hz</string>
+    <string name="tuner_tuning_at">Tuning at %s</string>
 
     <string name="instrument_title">Choose an instrument</string>
     <string name="instrument_add">Add instrument</string>
