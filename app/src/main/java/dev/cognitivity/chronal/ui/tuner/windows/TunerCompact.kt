@@ -22,7 +22,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,6 +59,7 @@ import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.pxToDp
 import dev.cognitivity.chronal.toSp
 import dev.cognitivity.chronal.ui.MorphedShape
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.min
 
@@ -63,6 +69,9 @@ fun TunerPageCompact(
     padding: PaddingValues,
     mainActivity: MainActivity,
 ) {
+    val scope = rememberCoroutineScope()
+    var showTuningDialog by remember { mutableStateOf(false) }
+    var tuningNote by remember { mutableIntStateOf(-1) }
     val hz = tuner?.hz ?: -1f
     val tune: Pair<String, Float> = if(tuner != null && hz != 0f) {
         frequencyToNote(tuner.hz)
@@ -90,8 +99,7 @@ fun TunerPageCompact(
             FilledIconToggleButton(
                 checked = playing,
                 onCheckedChange = {
-                    if(!playing) player.start() else player.stop()
-                    playing = !playing
+                    showTuningDialog = true
                 },
                 modifier = Modifier.padding(8.dp)
                     .align(Alignment.TopStart)
@@ -102,6 +110,29 @@ fun TunerPageCompact(
                 )
             }
         }
+
+        if(showTuningDialog) {
+            TuningDialog(false, tuningNote,
+                onChange = {
+                    tuningNote = it
+                    scope.launch {
+                        player.setFrequency(transposeFrequency(getA4().toFloat(), it - 69).toDouble())
+                    }
+                },
+                onConfirm = {
+                    player.start()
+                    playing = true
+                },
+                onStop = {
+                    player.stop()
+                    playing = false
+                },
+                onDismiss = {
+                    showTuningDialog = false
+                }
+            )
+        }
+
         if(ContextCompat.checkSelfPermission(mainActivity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             PermissionWarning(innerPadding, mainActivity)
         }

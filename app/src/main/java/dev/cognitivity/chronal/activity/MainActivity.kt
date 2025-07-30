@@ -44,6 +44,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -57,11 +58,11 @@ import dev.cognitivity.chronal.ui.metronome.windows.metronome
 import dev.cognitivity.chronal.ui.settings.windows.SettingsPageMain
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import dev.cognitivity.chronal.ui.tuner.windows.TunerPageMain
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 lateinit var audioManager: AudioManager
 lateinit var vibratorManager: VibratorManager
-var showDeveloperDialog by mutableStateOf(false)
-var developDialogShown by mutableStateOf(false)
 
 class MainActivity : ComponentActivity() {
 
@@ -86,26 +87,32 @@ class MainActivity : ComponentActivity() {
         vibratorManager = getSystemService(VIBRATOR_MANAGER_SERVICE) as VibratorManager
         microphoneEnabled = ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
 
-        splashScreen.setOnExitAnimationListener { splashScreenView ->
-            splashScreenView.animate()
-                ?.alpha(0f)
-                ?.setDuration(250)
-                ?.withEndAction { splashScreenView.remove() }
-        }
-
         WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
 
-        setContent {
-            MetronomeTheme {
-                MainContent()
+        val splashScreen = installSplashScreen()
+        var keepSplashScreen = true
+        splashScreen.setKeepOnScreenCondition { keepSplashScreen }
+        lifecycleScope.launch {
+            val app = ChronalApp.getInstance()
+            while(!app.isInitialized()) {
+                delay(50)
             }
+
+            setContent {
+                MetronomeTheme {
+                    MainContent()
+                }
+            }
+
+            keepSplashScreen = false
         }
+
     }
 
     override fun onPause() {
         super.onPause()
-        if(!metronome.playing) {
+        if(!ChronalApp.getInstance().metronome.playing) {
             val notificationManager = context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.cancel(1)
         }
