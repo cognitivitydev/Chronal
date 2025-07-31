@@ -12,14 +12,15 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -62,9 +63,18 @@ import dev.cognitivity.chronal.ui.metronome.windows.metronomeSecondary
 import dev.cognitivity.chronal.ui.metronome.windows.paused
 import dev.cognitivity.chronal.ui.metronome.windows.showTempoTapper
 
+//var timer by mutableLongStateOf(0L)
+
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ColumnScope.PlayButton(weight: Float) {
+//    LaunchedEffect(paused) {
+//        while(!paused) {
+//            delay(1000)
+//            timer++
+//        }
+//    }
+
     val shapeA = remember {
         RoundedPolygon.star(9, rounding = CornerRounding(0.2f), radius = 1.8f)
     }
@@ -98,13 +108,12 @@ fun ColumnScope.PlayButton(weight: Float) {
         label = "animatedColor"
     )
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .align(Alignment.CenterHorizontally)
-            .weight(weight)
-            .zIndex(12f),
-        contentAlignment = Alignment.Center
+            .weight(weight),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         MaterialTheme(
             colorScheme = MaterialTheme.colorScheme.copy(
@@ -115,7 +124,7 @@ fun ColumnScope.PlayButton(weight: Float) {
             )
         ) {
             Box(
-                modifier = Modifier.align(Alignment.Center).offset(
+                modifier = Modifier.align(Alignment.CenterHorizontally).offset(
                     x = 32.dp,
                     y = (-32).dp
                 )
@@ -143,104 +152,118 @@ fun ColumnScope.PlayButton(weight: Float) {
             }
         }
 
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .align(Alignment.Center)
-        ) {
-            Spacer(
-                modifier = Modifier
-                    .weight(0.3f)
-                    .fillMaxHeight()
-            )
-
-            Spacer(
-                modifier = Modifier
-                    .weight(0.1f)
-                    .fillMaxHeight()
-            )
-        }
-        Box(
-            modifier = Modifier
-                .size(120.dp, 56.dp)
-                .offset(x = (-60).dp)
-                .clip(RoundedCornerShape(28.dp))
-                .background(MaterialTheme.colorScheme.surfaceContainer)
-                .align(Alignment.Center)
-                .clickable {
-                    showTempoTapper = true
-                }
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.outline_timer_24),
-                contentDescription = context.getString(R.string.metronome_option_tap_tempo),
-                modifier = Modifier
-                    .size(32.dp)
-                    .offset(x = (12).dp)
-                    .align(Alignment.CenterStart),
-                tint = MaterialTheme.colorScheme.onSurface
-            )
-        }
-        Box(
-            modifier = Modifier
-                .size(120.dp, 56.dp)
-                .offset(x = 60.dp)
-                .clip(RoundedCornerShape(28.dp))
-                .background(
-                    animateColorAsState(
-                        targetValue = if (dropdownExpanded) MaterialTheme.colorScheme.surfaceContainerHigh
-                            else MaterialTheme.colorScheme.surfaceContainer,
-                        animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
-                        label = "dropdownBackground"
-                    ).value
+        Box(modifier = Modifier.weight(1f)) {
+            Row(
+                modifier = Modifier.align(Alignment.Center)
+            ) {
+                Spacer(
+                    modifier = Modifier
+                        .weight(0.3f)
+                        .fillMaxHeight()
                 )
-                .align(Alignment.Center)
-                .clickable {
-                    dropdownExpanded = !dropdownExpanded
-                }
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.baseline_more_horiz_24),
-                contentDescription = context.getString(R.string.generic_more_options),
-                modifier = Modifier
-                    .size(32.dp)
-                    .offset(x = (-12).dp)
-                    .align(Alignment.CenterEnd),
-                tint = MaterialTheme.colorScheme.onSurface
-            )
-        }
-        Box(
-            modifier = Modifier
-                .clip(
-                    MorphedShape(
-                        morph,
-                        morphProgress,
-                        animatedRotation.value
-                    )
-                )
-                .size(96.dp)
-                .align(Alignment.Center)
-                .background(animatedColor)
-                .clickable {
-                    paused = !paused
 
-                    if (paused) {
-                        metronome.stop()
-                        metronomeSecondary.stop()
-                    }
-                    else {
-                        metronome.start()
-                        metronomeSecondary.start()
-                    }
-                }
-                .zIndex(2f)
-        ) {
-            PlayPauseIcon(
-                paused = paused,
-                modifier = Modifier.size(48.dp)
+                Spacer(
+                    modifier = Modifier
+                        .weight(0.1f)
+                        .fillMaxHeight()
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .size(120.dp, 56.dp)
+                    .offset(x = (-60).dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
                     .align(Alignment.Center)
-            )
+                    .clickable {
+                        showTempoTapper = true
+                    }
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.outline_timer_24),
+                    contentDescription = context.getString(R.string.metronome_option_tap_tempo),
+                    modifier = Modifier
+                        .size(32.dp)
+                        .offset(x = (12).dp)
+                        .align(Alignment.CenterStart),
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .size(120.dp, 56.dp)
+                    .offset(x = 60.dp)
+                    .clip(CircleShape)
+                    .background(
+                        animateColorAsState(
+                            targetValue = if (dropdownExpanded) MaterialTheme.colorScheme.surfaceContainerHigh
+                            else MaterialTheme.colorScheme.surfaceContainer,
+                            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
+                            label = "dropdownBackground"
+                        ).value
+                    )
+                    .align(Alignment.Center)
+                    .clickable {
+                        dropdownExpanded = !dropdownExpanded
+                    }
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.baseline_more_horiz_24),
+                    contentDescription = context.getString(R.string.generic_more_options),
+                    modifier = Modifier
+                        .size(32.dp)
+                        .offset(x = (-12).dp)
+                        .align(Alignment.CenterEnd),
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .clip(
+                        MorphedShape(
+                            morph,
+                            morphProgress,
+                            animatedRotation.value
+                        )
+                    )
+                    .size(96.dp)
+                    .align(Alignment.Center)
+                    .background(animatedColor)
+                    .clickable {
+                        paused = !paused
+
+                        if (paused) {
+                            metronome.stop()
+                            metronomeSecondary.stop()
+                        } else {
+                            metronome.start()
+                            metronomeSecondary.start()
+                        }
+                    }
+                    .zIndex(2f)
+            ) {
+                PlayPauseIcon(
+                    paused = paused,
+                    modifier = Modifier.size(48.dp)
+                        .align(Alignment.Center)
+                )
+            }
         }
+        // TODO make better
+//        Box(
+//            modifier = Modifier.align(Alignment.CenterHorizontally)
+//        ) {
+//            val clock = if (timer < 3600) {
+//                "${timer / 60}:${String.format(Locale.US, "%02d", timer % 60)}"
+//            } else {
+//                "${timer / 3600}:${String.format(Locale.US, "%02d", (timer % 3600) / 60)}:${String.format(Locale.US, "%02d", timer % 60)}"
+//            }
+//            Text(clock,
+//                style = MaterialTheme.typography.titleLargeEmphasized,
+//                color = MaterialTheme.colorScheme.onSurface,
+//                modifier = Modifier.padding(bottom = 24.dp)
+//            )
+//        }
     }
 }
 
@@ -328,7 +351,6 @@ fun DropdownItem(name: Int, icon: Painter, onClick: () -> Unit) {
         text = { Text(context.getString(name)) },
         onClick = {
             onClick()
-//            dropdownExpanded = false
         },
         leadingIcon = {
             Icon(
