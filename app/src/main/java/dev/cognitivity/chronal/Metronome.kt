@@ -12,6 +12,7 @@ import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioTrack
+import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.Log
@@ -126,8 +127,11 @@ class Metronome(private var rhythm: Rhythm, private val sendNotifications: Boole
                     .build()
             )
             .setBufferSizeInBytes(AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_FLOAT))
-            .setTransferMode(AudioTrack.MODE_STREAM)
-            .setPerformanceMode(AudioTrack.PERFORMANCE_MODE_LOW_LATENCY)
+            .setTransferMode(AudioTrack.MODE_STREAM).apply {
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    setPerformanceMode(AudioTrack.PERFORMANCE_MODE_LOW_LATENCY)
+                }
+            }
             .build()
     }
 
@@ -235,7 +239,7 @@ class Metronome(private var rhythm: Rhythm, private val sendNotifications: Boole
         }
 
         try {
-            ChronalApp.context.resources.openRawResource(sound).use { stream ->
+            context.resources.openRawResource(sound).use { stream ->
                 return readWavStream(stream)
             }
         } catch (e: IOException) {
@@ -312,7 +316,9 @@ class Metronome(private var rhythm: Rhythm, private val sendNotifications: Boole
     }
 
     private fun sendRunningNotification() {
-        createNotificationChannel()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            createNotificationChannel()
+        }
 
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -327,7 +333,9 @@ class Metronome(private var rhythm: Rhythm, private val sendNotifications: Boole
         val stopIntent = Intent("dev.cognitivity.chronal.Stop")
         val stopPendingIntent = PendingIntent.getBroadcast(context, 0, stopIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
-        val builder = NotificationCompat.Builder(context, "PlayingBackground")
+        val channelId = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) "PlayingBackground" else ""
+
+        val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.baseline_music_note_24)
             .setContentTitle(context.getString(R.string.metronome_notification_title, bpm))
             .setContentText(context.getString(if(this.playing) R.string.metronome_notification_playing else R.string.metronome_notification_paused))
@@ -344,14 +352,16 @@ class Metronome(private var rhythm: Rhythm, private val sendNotifications: Boole
     }
 
     private fun createNotificationChannel() {
-        val name = "Metronome controls"
-        val descriptionText = "Metronome controls for background playback"
-        val importance = NotificationManager.IMPORTANCE_LOW
-        val channel = NotificationChannel("PlayingBackground", name, importance).apply {
-            description = descriptionText
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "Metronome controls"
+            val descriptionText = "Metronome controls for background playback"
+            val importance = NotificationManager.IMPORTANCE_LOW
+            val channel = NotificationChannel("PlayingBackground", name, importance).apply {
+                description = descriptionText
+            }
+            val notificationManager: NotificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
         }
-        val notificationManager: NotificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.createNotificationChannel(channel)
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {

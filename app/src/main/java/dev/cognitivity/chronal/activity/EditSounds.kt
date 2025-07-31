@@ -33,8 +33,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.launch
 
 // not implemented
@@ -73,7 +73,6 @@ class EditSounds: ComponentActivity() {
                     .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                     .build()
             )
-            .setContext(this)
             .build()
 
         var showAttribution by remember { mutableStateOf(false) }
