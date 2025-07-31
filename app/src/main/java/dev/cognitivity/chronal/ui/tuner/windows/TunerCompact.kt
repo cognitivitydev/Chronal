@@ -59,6 +59,7 @@ import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.pxToDp
 import dev.cognitivity.chronal.toSp
 import dev.cognitivity.chronal.ui.MorphedShape
+import dev.cognitivity.chronal.ui.tuner.AudioDialog
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.min
@@ -112,7 +113,7 @@ fun TunerPageCompact(
         }
 
         if(showTuningDialog) {
-            TuningDialog(false, tuningNote,
+            AudioDialog(false, tuningNote,
                 onChange = {
                     tuningNote = it
                     scope.launch {
@@ -419,10 +420,8 @@ fun PitchPointer(cents: Float, tuner: Tuner?) {
                             drawPath(path, animatedColor.value.copy(alpha = 0.5f))
                         }
                 )
-//                TrianglePointer(animatedColor.value)
             }
         }
         Spacer(modifier = Modifier.weight(1f))
     }
-//    CloverShape()
 }

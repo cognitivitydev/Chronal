@@ -2,10 +2,6 @@ package dev.cognitivity.chronal.ui.settings.windows
 
 import android.content.Context
 import android.content.Intent
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.EaseInOutCubic
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Indication
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
@@ -14,15 +10,11 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,10 +23,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import dev.cognitivity.chronal.ChronalApp
@@ -45,6 +35,9 @@ import dev.cognitivity.chronal.activity.CreditsActivity
 import dev.cognitivity.chronal.activity.HelpActivity
 import dev.cognitivity.chronal.activity.InstrumentActivity
 import dev.cognitivity.chronal.activity.LatencyActivity
+import dev.cognitivity.chronal.ui.settings.ExpandableButtonRow
+import dev.cognitivity.chronal.ui.settings.ExpandableOption
+import dev.cognitivity.chronal.ui.settings.ExpandableSlider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.floor
@@ -334,7 +327,7 @@ fun DrawSetting(
                 ExpandableOption(
                     setting = setting,
                 ) {
-                    when(setting.menu.id) {
+                    when (setting.menu.id) {
                         "Accidentals" -> {
                             Box(
                                 modifier = Modifier.fillMaxWidth(),
@@ -342,8 +335,11 @@ fun DrawSetting(
                             ) {
                                 ExpandableButtonRow(
                                     setting = setting,
-                                    labels = listOf(R.string.setting_accidental_sharps, R.string.setting_accidental_flats, R.string.setting_accidentals_sharps_flats)
-                                        .map { context.getString(it) },
+                                    labels = listOf(
+                                        R.string.setting_accidental_sharps,
+                                        R.string.setting_accidental_flats,
+                                        R.string.setting_accidentals_sharps_flats
+                                    ).map { context.getString(it) },
                                 ) { index ->
                                     scope.launch {
                                         (setting as Setting<Int>).value = index
@@ -353,6 +349,7 @@ fun DrawSetting(
                                 }
                             }
                         }
+
                         "Note" -> {
                             var selection by remember { mutableIntStateOf(setting.value as Int) }
 
@@ -383,7 +380,7 @@ fun DrawSetting(
                                             },
                                             interactionSource = interactionSource
                                         )
-                                        val text = when(index) {
+                                        val text = when (index) {
                                             0 -> R.string.setting_note_name_english to R.string.setting_note_example_english
                                             1 -> R.string.setting_note_name_solfege_english to R.string.setting_note_example_solfege_english
                                             2 -> R.string.setting_note_name_solfege_chromatic to R.string.setting_note_example_solfege_chromatic
@@ -410,6 +407,7 @@ fun DrawSetting(
                                 }
                             }
                         }
+
                         "Percentage" -> {
                             ExpandableSlider(
                                 setting, 0f..1f, "0%", "50%",
@@ -424,6 +422,7 @@ fun DrawSetting(
                                 }
                             )
                         }
+
                         "Latency" -> {
                             ExpandableSlider(
                                 setting, 0f..500f, "0 ms", "50-150 ms",
@@ -450,6 +449,7 @@ fun DrawSetting(
                                 }
                             }
                         }
+
                         "Frequency" -> {
                             ExpandableSlider(
                                 setting, 415f..466f, context.getString(R.string.tuner_hz, 415),
@@ -465,6 +465,7 @@ fun DrawSetting(
                                 }
                             )
                         }
+
                         else -> {
                             throw Error("Invalid menu type")
                         }
@@ -608,181 +609,6 @@ fun MenuOption(
             contentDescription = context.getString(R.string.setting_action_navigate_menu),
             tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
-    }
-}
-
-@Composable
-fun ExpandableOption(
-    setting: Setting<*>,
-    menu: @Composable () -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    val background by animateColorAsState(
-        targetValue = if (expanded) MaterialTheme.colorScheme.surfaceContainerLow
-        else MaterialTheme.colorScheme.surface,
-        animationSpec = tween(durationMillis = 250, easing = EaseInOutCubic),
-        label = "background"
-    )
-
-    val rotation = remember { Animatable(0f) }
-
-    LaunchedEffect(expanded) {
-        rotation.snapTo(if (expanded) 180f else 0f)
-        rotation.animateTo(if (expanded) 0f else 180f)
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(0.dp, 0.dp, 0.dp, if (!expanded) 0.dp else 8.dp)
-            .clip(RoundedCornerShape(24.dp))
-            .background(background)
-    ) {
-        val interactionSource = remember { MutableInteractionSource() }
-        SettingOption(
-            name = context.getString(setting.key.settingName),
-            hint = context.getString(setting.hint),
-            onClick = {
-                expanded = !expanded
-            },
-            interactionSource = interactionSource,
-            indication = null
-        ) {
-            IconButton(
-                onClick = {
-                    expanded = !expanded
-                },
-                interactionSource = interactionSource,
-            ) {
-                Icon(
-                    imageVector = Icons.Default.KeyboardArrowUp,
-                    contentDescription = context.getString(if (expanded) R.string.generic_menu_collapse else R.string.generic_menu_expand),
-                    modifier = Modifier.rotate(rotation.value),
-                )
-            }
-        }
-
-        if (expanded) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp)
-            ) {
-                menu()
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@Composable
-fun ExpandableButtonRow(setting: Setting<*>, labels: List<String>, isSelected: (Int, Int) -> Boolean = { index, selection -> index == selection }, onClick: (Int) -> Int) {
-    var selection by remember { mutableIntStateOf(setting.value as Int) }
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)
-    ) {
-        for(i in labels.indices) {
-            ToggleButton(
-                checked = isSelected(i, selection),
-                onCheckedChange = {
-                    selection = onClick(i)
-                },
-                shapes = when(i) {
-                    0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-                    labels.size - 1 -> ButtonGroupDefaults.connectedTrailingButtonShapes()
-                    else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
-                },
-                colors = ToggleButtonDefaults.toggleButtonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-                ),
-                contentPadding = ButtonDefaults.ContentPadding
-            ) {
-                if(isSelected(i, selection)) {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = context.getString(R.string.generic_selected),
-                    )
-                    Spacer(modifier = Modifier.width(ToggleButtonDefaults.IconSpacing))
-                }
-                Text(labels[i])
-            }
-        }
-    }
-}
-
-@Composable
-fun ExpandableSlider(setting: Setting<*>, range: ClosedFloatingPointRange<Float>,
-                     minText: String, recommended: String, info: @Composable BoxScope.() -> Unit = {},
-                     onValueChange: (Float) -> Unit, valueText: (Float) -> String, content: @Composable ColumnScope.() -> Unit = {}) {
-    Column {
-        Row(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .padding(16.dp, 0.dp)
-            ) {
-                Text(
-                    text = minText,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.End,
-                    maxLines = 1
-                )
-            }
-
-            var value by remember { mutableFloatStateOf(
-                if(setting.value is Int) (setting.value as Int).toFloat()
-                else setting.value as Float
-            ) }
-            Slider(
-                modifier = Modifier.weight(1f),
-                value = value,
-                onValueChange = {
-                    value = it
-                    onValueChange(it)
-                },
-                valueRange = range,
-            )
-
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .padding(16.dp, 0.dp)
-            ) {
-                Text(
-                    text = valueText(value),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1
-                )
-            }
-        }
-        Box(
-            modifier = Modifier
-                .padding(0.dp, 0.dp, 0.dp, 2.dp)
-                .fillMaxWidth()
-                .align(Alignment.CenterHorizontally)
-        ) {
-            info()
-            Row(
-                modifier = Modifier.align(Alignment.Center)
-            ) {
-                Text(
-                    text = context.getString(R.string.setting_info_recommended_value),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = recommended,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-        }
-        content()
     }
 }
 

@@ -9,14 +9,12 @@ import androidx.compose.animation.core.EaseInExpo
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -42,7 +40,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -70,9 +67,10 @@ import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.Tuner
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.pxToDp
-import dev.cognitivity.chronal.round
 import dev.cognitivity.chronal.toSp
 import dev.cognitivity.chronal.ui.MorphedShape
+import dev.cognitivity.chronal.ui.tuner.AudioDialog
+import dev.cognitivity.chronal.ui.tuner.TunerGraph
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -155,7 +153,7 @@ fun TunerPageExpanded(
                 }
 
                 if(showTuningDialog) {
-                    TuningDialog(true, tuningNote,
+                    AudioDialog(true, tuningNote,
                         onChange = {
                             tuningNote = it
                             scope.launch {
@@ -251,116 +249,7 @@ fun NoteDisplay(tuner: Tuner?, hz: Float, instrument: Instrument) {
                         fullscreen = !fullscreen
                     }
             ) {
-                val unfilteredHistory: List<Pair<Long, Float>> =
-                    tuner?.history?.toMutableList()?.filter { System.currentTimeMillis() - it.first < 10000 }
-                        ?: emptyList()
-
-                val history = removeOutliers(unfilteredHistory)
-
-                val minFreq = if (history.isEmpty()) 0f else history.minOf { it.second }
-                val maxFreq = if (history.isEmpty()) 0f else history.maxOf { it.second }
-
-                val outlineVariant = MaterialTheme.colorScheme.outlineVariant
-                val outline = MaterialTheme.colorScheme.outline
-                val secondary = MaterialTheme.colorScheme.secondary
-                val tertiary = MaterialTheme.colorScheme.tertiary
-                val primary = MaterialTheme.colorScheme.primary
-                val onSurface = MaterialTheme.colorScheme.onSurface
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    if (history.isEmpty()) return@Canvas
-
-                    val yRange = maxFreq - minFreq
-
-                    val noteFreqs = generateSequence(0) { it + 1 }
-                        .map { transposeFrequency(getA4().toFloat(), it - 69) }
-                        .takeWhile { it <= maxFreq }
-                        .filter { it >= minFreq }
-                        .toList()
-
-                    if((noteFreqs.size < 12 && !fullscreen) || (noteFreqs.size < 24 && fullscreen)) { // max one octave minimized, two octaves maximized
-                        for (freq in noteFreqs) {
-                            val y = size.height - ((freq - minFreq) / yRange * size.height)
-                            drawLine(
-                                color = outlineVariant,
-                                start = Offset(0f, y),
-                                end = Offset(size.width, y),
-                                strokeWidth = 1.dp.toPx()
-                            )
-                        }
-                    }
-
-                    var lastPoint: Offset? = null
-                    var lastTime: Long? = null
-
-                    for (pair in history) {
-                        val x =
-                            ((pair.first - history.first().first) / (history.last().first - history.first().first).toFloat() * size.width)
-                        val y = size.height - ((pair.second - minFreq) / yRange * size.height)
-                        val currentPoint = Offset(x, y)
-
-                        if (lastPoint != null && lastTime != null) {
-                            val timeDiff = pair.first - lastTime
-                            if (timeDiff <= 250) { // within roughly 5 updates
-                                val centsOff = frequencyToNote(pair.second).second
-                                val color = when {
-                                    abs(centsOff) >= 40 -> outline
-                                    abs(centsOff) >= 30 -> secondary
-                                    abs(centsOff) >= 20 -> tertiary
-                                    abs(centsOff) >= 5 -> primary
-                                    else -> onSurface
-                                }
-                                drawLine(
-                                    color = color,
-                                    start = lastPoint,
-                                    end = currentPoint,
-                                    strokeWidth = 2.dp.toPx()
-                                )
-                            }
-                        }
-                        lastPoint = currentPoint
-                        lastTime = pair.first
-                    }
-                }
-
-                val max = frequencyToNote(maxFreq)
-                val min = frequencyToNote(minFreq)
-                val showCents = maxFreq - minFreq < 100f && !max.second.isNaN() && !min.second.isNaN()
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .background(MaterialTheme.colorScheme.surfaceContainer, CircleShape)
-                        .padding(horizontal = 4.dp)
-                ) {
-                    val string = if(showCents) "${max.first}, ${if(max.second >= 0) "+" else ""}${max.second.round(1)}"
-                        else max.first
-                    Text(
-                        text = string,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .background(MaterialTheme.colorScheme.surfaceContainer, CircleShape)
-                        .padding(horizontal = 4.dp)
-                ) {
-                    val string = if(showCents) "${min.first}, ${if(min.second >= 0) "+" else ""}${min.second.round(1)}"
-                        else min.first
-                    Text(
-                        text = string,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Icon(
-                    painter = painterResource(if(fullscreen) R.drawable.outline_fullscreen_exit_24 else R.drawable.baseline_fullscreen_24),
-                    contentDescription = context.getString(R.string.generic_fullscreen),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.align(Alignment.BottomEnd)
-                        .padding(horizontal = 8.dp, vertical = 2.dp)
-                        .size(16.dp),
-                )
+                TunerGraph(tuner, fullscreen)
             }
 
             if(noteWeight != 0.01f) {
@@ -393,28 +282,6 @@ fun NoteDisplay(tuner: Tuner?, hz: Float, instrument: Instrument) {
             }
         }
     }
-}
-
-fun removeOutliers(data: List<Pair<Long, Float>>): List<Pair<Long, Float>> {
-    if (data.size < 3) return data
-
-    val filtered = mutableListOf<Pair<Long, Float>>()
-    for (i in 1 until data.size - 1) {
-        val prev = data[i - 1].second
-        val curr = data[i].second
-        val next = data[i + 1].second
-
-        val minNeighbor = minOf(prev, next)
-        val maxNeighbor = maxOf(prev, next)
-
-        val lowerBound = minNeighbor / 4f
-        val upperBound = maxNeighbor * 4f
-
-        if (curr in lowerBound..upperBound) {
-            filtered.add(data[i])
-        }
-    }
-    return filtered
 }
 
 @Composable
@@ -605,10 +472,8 @@ fun PitchPointerHorizontal(cents: Float, tuner: Tuner?) {
                             drawPath(path, animatedColor.value.copy(alpha = 0.5f))
                         }
                 )
-//                TrianglePointer(animatedColor.value)
             }
         }
         Spacer(modifier = Modifier.weight(1f))
     }
-//    CloverShape()
 }

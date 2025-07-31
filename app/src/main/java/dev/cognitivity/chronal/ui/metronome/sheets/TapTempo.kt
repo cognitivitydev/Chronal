@@ -63,21 +63,6 @@ fun TapTempo() {
                     .padding(start = 16.dp)
                     .weight(1f)
             )
-//            IconButton(
-//                onClick = {
-//                    Toast
-//                        .makeText(MetronomeApp.context, "Tap tempo", Toast.LENGTH_SHORT)
-//                        .show()
-//                },
-//                modifier = Modifier
-//                    .padding(end = 16.dp)
-//            ) {
-//                Icon(
-//                    painter = painterResource(id = R.drawable.baseline_help_outline_24),
-//                    contentDescription = "Help",
-//                    tint = MaterialTheme.colorScheme.onSurface
-//                )
-//            }
         }
         Column(
             modifier = Modifier
