@@ -1,5 +1,6 @@
 package dev.cognitivity.chronal.ui.theme
 
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialExpressiveTheme
@@ -14,6 +15,11 @@ fun MetronomeTheme(
     isDark: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
+    if(Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+        AquaTheme(isDark, content)
+        return
+    }
+
     val context = LocalContext.current
     MaterialExpressiveTheme(
         colorScheme = if(isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context),

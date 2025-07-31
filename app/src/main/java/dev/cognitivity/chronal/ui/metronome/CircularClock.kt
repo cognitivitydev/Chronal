@@ -1,8 +1,10 @@
 package dev.cognitivity.chronal.ui.metronome
 
+import android.content.Context
+import android.os.Build
 import android.os.CombinedVibration
 import android.os.VibrationEffect
-import android.util.Log
+import android.os.Vibrator
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
@@ -29,6 +31,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import dev.cognitivity.chronal.ChronalApp
+import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.activity.editor.Beat
 import dev.cognitivity.chronal.activity.vibratorManager
 import dev.cognitivity.chronal.ui.metronome.windows.drawBeats
@@ -63,8 +66,6 @@ fun BoxScope.CircularClock(primary: Boolean, trackSize: Float, trackOff: Color, 
     var currentMeasure by remember { mutableIntStateOf(0) }
 
     val updateListener = { beat: Beat ->
-
-        Log.d("CircularClock", "Received ${beat.index} / ${beat.measure}")
         val timestamp = metronome.timestamp
 
         coroutineScope.launch {
@@ -73,8 +74,13 @@ fun BoxScope.CircularClock(primary: Boolean, trackSize: Float, trackOff: Color, 
             if((!ChronalApp.getInstance().settings.metronomeVibrations.value && primary)
                 || (!ChronalApp.getInstance().settings.metronomeVibrationsSecondary.value && !primary)) return@launch
 
-            val vibration = if(beat.isHigh) VibrationEffect.createOneShot(10, 255) else VibrationEffect.createOneShot(3, 255)
-            vibratorManager.vibrate(CombinedVibration.createParallel(vibration))
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null) {
+                val vibration = if(beat.isHigh) VibrationEffect.createOneShot(10, 255) else VibrationEffect.createOneShot(3, 255)
+                vibratorManager!!.vibrate(CombinedVibration.createParallel(vibration))
+            } else {
+                val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                vibrator.vibrate(if(beat.isHigh) 10 else 3)
+            }
         }
         coroutineScope.launch {
             delay(ChronalApp.getInstance().settings.visualLatency.value.toLong())

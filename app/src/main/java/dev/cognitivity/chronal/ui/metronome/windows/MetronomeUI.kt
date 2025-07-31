@@ -1,7 +1,10 @@
 package dev.cognitivity.chronal.ui.metronome.windows
 
+import android.content.Context
+import android.os.Build
 import android.os.CombinedVibration
 import android.os.VibrationEffect
+import android.os.Vibrator
 import android.view.Window
 import android.view.WindowManager
 import androidx.compose.animation.core.Animatable
@@ -334,19 +337,35 @@ fun setBPM(new: Int) {
     if(metronome.bpm == 1 || metronome.bpm == 500) {
         if(System.currentTimeMillis() - lastVibration < 100) return
         lastVibration = System.currentTimeMillis()
-         vibratorManager.vibrate(
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null)
+            vibratorManager!!.vibrate(
             CombinedVibration.createParallel(
                 VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK)
             )
-        )
+        ) else {
+            val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+            vibrator.vibrate(10)
+        }
     } else {
         val tickPattern = longArrayOf(5)
-        val tickAmplitude = intArrayOf((metronome.bpm /2).coerceIn(1, 255))
-        vibratorManager.vibrate(
-            CombinedVibration.createParallel(
-                VibrationEffect.createWaveform(tickPattern,tickAmplitude, -1)
+        val tickAmplitude = intArrayOf((metronome.bpm / 2).coerceIn(1, 255))
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null) {
+            vibratorManager!!.vibrate(
+                CombinedVibration.createParallel(
+                    VibrationEffect.createWaveform(tickPattern,tickAmplitude, -1)
+                )
             )
-        )
+        } else {
+            val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+            vibrator.vibrate(5)
+        }
+
+//        vibratorManager.vibrate(
+//            CombinedVibration.createParallel(
+//                VibrationEffect.createWaveform(tickPattern,tickAmplitude, -1)
+//            )
+//        )
     }
 }
 

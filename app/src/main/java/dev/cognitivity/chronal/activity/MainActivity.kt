@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Path
 import android.media.AudioManager
+import android.os.Build
 import android.os.Bundle
 import android.os.VibratorManager
 import android.provider.Settings
@@ -51,7 +52,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.ui.metronome.windows.MetronomePageMain
 import dev.cognitivity.chronal.ui.metronome.windows.metronome
@@ -62,7 +62,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 lateinit var audioManager: AudioManager
-lateinit var vibratorManager: VibratorManager
+var vibratorManager: VibratorManager? = null
 
 class MainActivity : ComponentActivity() {
 
@@ -84,7 +84,7 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
 
         audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
-        vibratorManager = getSystemService(VIBRATOR_MANAGER_SERVICE) as VibratorManager
+        vibratorManager = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) getSystemService(VIBRATOR_MANAGER_SERVICE) as VibratorManager else null
         microphoneEnabled = ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -113,7 +113,7 @@ class MainActivity : ComponentActivity() {
     override fun onPause() {
         super.onPause()
         if(!ChronalApp.getInstance().metronome.playing) {
-            val notificationManager = context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.cancel(1)
         }
     }
@@ -242,7 +242,7 @@ class MainActivity : ComponentActivity() {
                 }
             ) {
                 if(!metronome.playing) {
-                    val notificationManager = ChronalApp.context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+                    val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
                     notificationManager.cancel(1)
                 }
                 window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -257,12 +257,11 @@ class MainActivity : ComponentActivity() {
                 }
             ) {
                 if(!metronome.playing) {
-                    val notificationManager = ChronalApp.context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+                    val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
                     notificationManager.cancel(1)
                 }
                 window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 SettingsPageMain(expanded, padding)
-//                SettingsPage(LocalContext.current, padding)
                 ChronalApp.getInstance().tuner?.stop()
             }
         }
@@ -309,7 +308,7 @@ class MainActivity : ComponentActivity() {
                                                 (item.selectedIcon as NavigationIcon.ResourceIcon).resourceId
                                         else icon.resourceId
                                     ),
-                                    contentDescription = "${context.getString(item.label)} icon"
+                                    contentDescription = "${getString(item.label)} icon"
                                 )
                             }
                             is NavigationIcon.VectorIcon -> {
@@ -319,12 +318,12 @@ class MainActivity : ComponentActivity() {
                                             (item.selectedIcon as NavigationIcon.VectorIcon).imageVector
                                         else icon.imageVector
                                     ),
-                                    contentDescription = "${context.getString(item.label)} icon"
+                                    contentDescription = "${getString(item.label)} icon"
                                 )
                             }
                         }
                     },
-                    label = { Text(context.getString(item.label), style = MaterialTheme.typography.bodyMedium) }
+                    label = { Text(getString(item.label), style = MaterialTheme.typography.bodyMedium) }
                 )
             }
         }
@@ -378,7 +377,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     },
-                    label = { Text(context.getString(item.label), style = MaterialTheme.typography.bodyMedium) }
+                    label = { Text(getString(item.label), style = MaterialTheme.typography.bodyMedium) }
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
@@ -386,7 +385,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun requestPermission() {
-        Toast.makeText(ChronalApp.context, ActivityCompat.shouldShowRequestPermissionRationale(
+        Toast.makeText(this, ActivityCompat.shouldShowRequestPermissionRationale(
             this@MainActivity, Manifest.permission.RECORD_AUDIO).toString(), Toast.LENGTH_SHORT).show()
         ActivityCompat.requestPermissions(this@MainActivity, arrayOf(Manifest.permission.RECORD_AUDIO), 0)
     }
