@@ -24,6 +24,7 @@
     <string name="generic_number_invalid">Invalid number</string>
     <string name="generic_okay">Okay</string>
     <string name="generic_pause">Pause</string>
+    <string name="generic_play">Play</string>
     <string name="generic_required_field">Required field</string>
     <string name="generic_reset">Reset</string>
     <string name="generic_resume">Resume</string>
@@ -98,6 +99,7 @@
     <string name="metronome_option_beat_detector">Beat detector</string>
     <string name="metronome_option_change_sounds">Change sounds</string>
     <string name="metronome_option_fullscreen_mode">Fullscreen mode</string>
+    <string name="metronome_option_play_audio">Play audio</string>
     <string name="metronome_option_tap_tempo">Tap tempo</string>
 
     <string name="editor_bpm_decrease">Decrease BPM</string>
@@ -152,6 +154,15 @@
     <string name="instrument_tune_key_octave">Tuned in %s, %s. C4 = Concert %s%d</string>
     <string name="instrument_tune_octave">Tuned %s. C4 = Concert C%d</string>
     <string name="instrument_tune_unknown">C4 = ???</string>
+
+    <string name="audio_player_title">Audio Player</string>
+    <string name="audio_player_back_5">Back 5 seconds</string>
+    <string name="audio_player_forward_5">Forward 5 seconds</string>
+    <string name="audio_player_skip_start">Skip to beginning</string>
+    <string name="audio_player_skip_end">Skip to end</string>
+    <string name="audio_player_media_volume">Media volume</string>
+    <string name="audio_player_metronome_volume">Metronome volume</string>
+    <string name="audio_player_volume_controls">Volume controls</string>
 
     <string name="beat_detector_title">Beat Detector</string>
     <string name="beat_detector_disabled">Disabled</string>

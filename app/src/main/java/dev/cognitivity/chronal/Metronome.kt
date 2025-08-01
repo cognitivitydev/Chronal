@@ -24,10 +24,10 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.activity.MainActivity
-import dev.cognitivity.chronal.activity.editor.Beat
-import dev.cognitivity.chronal.activity.editor.Rhythm
-import dev.cognitivity.chronal.activity.editor.RhythmNote
-import dev.cognitivity.chronal.activity.editor.RhythmTuplet
+import dev.cognitivity.chronal.rhythm.metronome.Rhythm
+import dev.cognitivity.chronal.rhythm.metronome.Beat
+import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
+import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.ui.metronome.windows.paused
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

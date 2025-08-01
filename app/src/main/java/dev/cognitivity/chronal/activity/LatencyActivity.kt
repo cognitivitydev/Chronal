@@ -38,7 +38,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.Metronome
-import dev.cognitivity.chronal.activity.editor.Rhythm
+import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.pxToDp
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import dev.cognitivity.chronal.R

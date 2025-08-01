@@ -26,7 +26,7 @@ import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.MusicFont
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.SimpleRhythm
-import dev.cognitivity.chronal.activity.editor.Rhythm
+import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.toSp
 import dev.cognitivity.chronal.ui.metronome.windows.secondaryEnabled
 import dev.cognitivity.chronal.ui.metronome.windows.showRhythmPrimary

@@ -34,8 +34,8 @@ import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.activity.editor.RhythmNote
-import dev.cognitivity.chronal.activity.editor.RhythmTuplet
+import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
+import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.round
 import dev.cognitivity.chronal.toPx
 import dev.cognitivity.chronal.ui.metronome.windows.metronome

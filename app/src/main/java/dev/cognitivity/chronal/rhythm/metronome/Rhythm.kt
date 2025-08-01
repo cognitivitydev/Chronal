@@ -1,6 +1,9 @@
-package dev.cognitivity.chronal.activity.editor
+package dev.cognitivity.chronal.rhythm.metronome
 
 import dev.cognitivity.chronal.MusicFont
+import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmElement
+import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
+import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import kotlin.math.pow
 
 /**
@@ -153,30 +156,3 @@ data class Rhythm(
     }
 
 }
-
-data class Measure(
-    val timeSig: Pair<Int, Int>,
-    val elements: List<RhythmElement>
-)
-
-sealed class RhythmElement
-
-data class RhythmNote(
-    val display: String,
-    val isRest: Boolean,
-    val isInverted: Boolean,
-    val duration: Double,
-    val dots: Int
-) : RhythmElement()
-
-data class RhythmTuplet(
-    val ratio: Pair<Int, Int>,
-    val notes: List<RhythmNote>
-) : RhythmElement()
-
-data class Beat(
-    val duration: Double,
-    val isHigh: Boolean,
-    val measure: Int,
-    val index: Int
-)
