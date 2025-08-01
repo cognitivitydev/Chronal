@@ -42,7 +42,7 @@
             android:theme="@style/Theme.Chronal">
         </activity>
         <activity
-            android:name=".activity.editor.RhythmEditorActivity"
+            android:name=".activity.RhythmEditorActivity"
             android:exported="false"
             android:theme="@style/Theme.Chronal">
         </activity>
@@ -63,6 +63,11 @@
         </activity>
         <activity
             android:name=".activity.HelpActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Chronal">
+        </activity>
+        <activity
+            android:name=".activity.AudioPlayerActivity"
             android:exported="false"
             android:theme="@style/Theme.Chronal">
         </activity>

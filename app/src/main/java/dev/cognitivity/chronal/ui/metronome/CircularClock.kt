@@ -32,7 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
-import dev.cognitivity.chronal.activity.editor.Beat
+import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.activity.vibratorManager
 import dev.cognitivity.chronal.ui.metronome.windows.drawBeats
 import kotlinx.coroutines.delay

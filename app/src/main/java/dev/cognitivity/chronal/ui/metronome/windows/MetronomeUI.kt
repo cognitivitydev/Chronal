@@ -51,8 +51,8 @@ import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.activity.NavigationIcon
 import dev.cognitivity.chronal.activity.NavigationItem
-import dev.cognitivity.chronal.activity.editor.Beat
 import dev.cognitivity.chronal.activity.vibratorManager
+import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.ui.metronome.sheets.EditRhythm
 import dev.cognitivity.chronal.ui.metronome.sheets.EditSubdivision
 import dev.cognitivity.chronal.ui.metronome.sheets.EditTimeSignature
@@ -80,10 +80,8 @@ var showSubdivisionSecondary by mutableStateOf(false)
 
 var secondaryEnabled by mutableStateOf(ChronalApp.getInstance().settings.metronomeState.value.secondaryEnabled)
 
-
-var vibratePrimary by mutableStateOf(true) // TODO temp
-var vibrateSecondary by mutableStateOf(false)
-
+var vibratePrimary by mutableStateOf(ChronalApp.getInstance().settings.metronomeVibrations.value)
+var vibrateSecondary by mutableStateOf(ChronalApp.getInstance().settings.metronomeVibrationsSecondary.value)
 
 var paused by mutableStateOf(true)
 
@@ -360,12 +358,6 @@ fun setBPM(new: Int) {
             val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
             vibrator.vibrate(5)
         }
-
-//        vibratorManager.vibrate(
-//            CombinedVibration.createParallel(
-//                VibrationEffect.createWaveform(tickPattern,tickAmplitude, -1)
-//            )
-//        )
     }
 }
 

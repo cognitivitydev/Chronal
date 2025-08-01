@@ -54,6 +54,7 @@ import androidx.navigation.compose.rememberNavController
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.ui.metronome.windows.MetronomePageMain
+import dev.cognitivity.chronal.ui.metronome.windows.activity
 import dev.cognitivity.chronal.ui.metronome.windows.metronome
 import dev.cognitivity.chronal.ui.settings.windows.SettingsPageMain
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
@@ -66,6 +67,8 @@ var vibratorManager: VibratorManager? = null
 
 class MainActivity : ComponentActivity() {
 
+
+
     fun runActivity(activity: Class<*>) {
         val k = Intent(this, activity)
         startActivity(k)
@@ -76,6 +79,15 @@ class MainActivity : ComponentActivity() {
     val microphonePermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { permission ->
         microphoneEnabled = permission
         showMicrophoneDialog = !permission
+    }
+    val fileActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if(it.resultCode == RESULT_OK) {
+            activity.startActivity(
+                Intent(this, AudioPlayerActivity::class.java).apply {
+                    putExtra("file", it.data?.data.toString())
+                }
+            )
+        }
     }
 
 

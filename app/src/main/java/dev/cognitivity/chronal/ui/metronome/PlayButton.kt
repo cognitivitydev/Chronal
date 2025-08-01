@@ -1,5 +1,6 @@
 package dev.cognitivity.chronal.ui.metronome
 
+import android.content.Intent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
@@ -12,11 +13,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
@@ -108,12 +109,12 @@ fun ColumnScope.PlayButton(weight: Float) {
         label = "animatedColor"
     )
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .align(Alignment.CenterHorizontally)
             .weight(weight),
-        horizontalAlignment = Alignment.CenterHorizontally,
+        contentAlignment = Alignment.Center,
     ) {
         MaterialTheme(
             colorScheme = MaterialTheme.colorScheme.copy(
@@ -124,7 +125,7 @@ fun ColumnScope.PlayButton(weight: Float) {
             )
         ) {
             Box(
-                modifier = Modifier.align(Alignment.CenterHorizontally).offset(
+                modifier = Modifier.align(Alignment.Center).offset(
                     x = 32.dp,
                     y = (-32).dp
                 )
@@ -148,11 +149,18 @@ fun ColumnScope.PlayButton(weight: Float) {
                     DropdownItem(R.string.metronome_option_change_sounds, painterResource(R.drawable.outline_volume_up_24)) {
                         activity.runActivity(EditSounds::class.java)
                     }
+                    DropdownItem(R.string.metronome_option_play_audio, painterResource(R.drawable.outline_audio_file_24)) {
+                        activity.fileActivity.launch(Intent().apply {
+                            action = Intent.ACTION_GET_CONTENT
+                            type = "audio/*"
+                            addCategory(Intent.CATEGORY_OPENABLE)
+                        })
+                    }
                 }
             }
         }
 
-        Box(modifier = Modifier.weight(1f)) {
+        Box(modifier = Modifier.fillMaxSize()) {
             Row(
                 modifier = Modifier.align(Alignment.Center)
             ) {
