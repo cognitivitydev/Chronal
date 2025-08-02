@@ -192,8 +192,10 @@ fun NoteDisplay(tuner: Tuner?, hz: Float, instrument: Instrument) {
             .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(18.dp))
             .padding(horizontal = 8.dp)
     ) {
-        Row(
-            modifier = Modifier.align(Alignment.CenterHorizontally).padding(start = 4.dp, top = 8.dp, end = 4.dp),
+        FlowRow(
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+                .padding(start = 4.dp, top = 8.dp, end = 4.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
             Box(
                 modifier = Modifier.padding(2.dp)
@@ -207,7 +209,6 @@ fun NoteDisplay(tuner: Tuner?, hz: Float, instrument: Instrument) {
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             }
-            Spacer(modifier = Modifier.weight(1f))
             Box(
                 modifier = Modifier.padding(2.dp)
                     .background(MaterialTheme.colorScheme.secondaryContainer, RoundedCornerShape(8.dp))

@@ -18,6 +18,7 @@
     <string name="generic_info">Info</string>
     <string name="generic_menu_collapse">Collapse</string>
     <string name="generic_menu_expand">Expand</string>
+    <string name="generic_menu_toggle">Toggle menu</string>
     <string name="generic_microphone">Microphone</string>
     <string name="generic_more_options">More options</string>
     <string name="generic_not_applicable">N/A</string>
@@ -94,8 +95,8 @@
     <string name="metronome_emphasis_none">None</string>
     <string name="metronome_increase_tempo">Increase tempo</string>
     <string name="metronome_notification_title">%d BPM</string>
-    <string name="metronome_notification_playing">The metronome is currently playing.</string>
-    <string name="metronome_notification_paused">The metronome is currently paused.</string>
+    <string name="metronome_notification_playing">Playing.</string>
+    <string name="metronome_notification_paused">Paused.</string>
     <string name="metronome_option_beat_detector">Beat detector</string>
     <string name="metronome_option_change_sounds">Change sounds</string>
     <string name="metronome_option_fullscreen_mode">Fullscreen mode</string>

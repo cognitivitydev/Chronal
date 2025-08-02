@@ -24,8 +24,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.activity.MainActivity
-import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.rhythm.metronome.Beat
+import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.ui.metronome.windows.paused
@@ -315,10 +315,21 @@ class Metronome(private var rhythm: Rhythm, private val sendNotifications: Boole
         this.listenerEdit[id] = listener
     }
 
-    private fun sendRunningNotification() {
+    private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createNotificationChannel()
+            val name = "Metronome controls"
+            val descriptionText = "Metronome controls for background playback"
+            val importance = NotificationManager.IMPORTANCE_LOW
+            val channel = NotificationChannel("PlayingBackground", name, importance).apply {
+                description = descriptionText
+            }
+            val notificationManager: NotificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
         }
+    }
+
+    private fun sendRunningNotification() {
+        createNotificationChannel()
 
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -351,22 +362,8 @@ class Metronome(private var rhythm: Rhythm, private val sendNotifications: Boole
         notificationManager.notify(1, builder.build())
     }
 
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "Metronome controls"
-            val descriptionText = "Metronome controls for background playback"
-            val importance = NotificationManager.IMPORTANCE_LOW
-            val channel = NotificationChannel("PlayingBackground", name, importance).apply {
-                description = descriptionText
-            }
-            val notificationManager: NotificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-        }
-    }
-
     override fun onReceive(context: Context?, intent: Intent?) {
-        Log.d("Metronome", "Received intent: ${intent?.action}")
-        if (intent?.action == "dev.cognitivity.metronome.PlayPause") {
+        if (intent?.action == "dev.cognitivity.chronal.PlayPause") {
             if(playing) {
                 stop()
                 paused = true
@@ -375,7 +372,7 @@ class Metronome(private var rhythm: Rhythm, private val sendNotifications: Boole
                 paused = false
             }
         }
-        if (intent?.action == "dev.cognitivity.metronome.Stop") {
+        if (intent?.action == "dev.cognitivity.chronal.Stop") {
             if(playing) stop()
             paused = true
             val notificationManager = ChronalApp.context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

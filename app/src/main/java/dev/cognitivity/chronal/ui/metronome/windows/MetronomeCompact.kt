@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -124,7 +125,7 @@ fun MetronomePageCompact(
                                 modifier = Modifier.fillMaxSize()
                             ) {
                                 Box(
-                                    modifier = Modifier.fillMaxWidth(0.8f)
+                                    modifier = Modifier.fillMaxHeight()
                                         .aspectRatio(1f)
                                         .align(Alignment.Center)
                                 ) {

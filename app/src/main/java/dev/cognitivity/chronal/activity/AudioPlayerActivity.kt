@@ -10,6 +10,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -17,15 +18,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.*
+import androidx.compose.material3.ToggleFloatingActionButtonDefaults.animateIcon
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -37,6 +40,7 @@ import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.rhythm.player.PlayerRhythm
 import dev.cognitivity.chronal.rhythm.player.elements.Pause
+import dev.cognitivity.chronal.rhythm.player.elements.PlayerRhythmElement
 import dev.cognitivity.chronal.rhythm.player.elements.SetTempo
 import dev.cognitivity.chronal.round
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
@@ -216,23 +220,18 @@ class AudioPlayerActivity : ComponentActivity() {
                     button = {
                         ToggleFloatingActionButton(
                             checked = fabExpanded,
-                            onCheckedChange = {
-                                fabExpanded = it
-                            },
+                            onCheckedChange = { fabExpanded = !fabExpanded },
                         ) {
-                            if(!fabExpanded) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Add,
-                                    contentDescription = getString(R.string.generic_add),
-                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Outlined.Close,
-                                    contentDescription = getString(R.string.generic_close),
-                                    tint = MaterialTheme.colorScheme.onPrimary
-                                )
+                            val imageVector by remember {
+                                derivedStateOf {
+                                    if (checkedProgress > 0.5f) Icons.Filled.Close else Icons.Filled.Add
+                                }
                             }
+                            Icon(
+                                painter = rememberVectorPainter(imageVector),
+                                contentDescription = if(fabExpanded) getString(R.string.generic_close) else getString(R.string.generic_add),
+                                modifier = Modifier.animateIcon({ checkedProgress }),
+                            )
                         }
                     }
                 ) {
@@ -297,318 +296,35 @@ class AudioPlayerActivity : ComponentActivity() {
             }
 
             if(showBpmDialog) {
-                var useTime by remember { mutableStateOf(true) }
-                val last = rhythm.elements.lastOrNull()
-                val lastBpm = if(last is SetTempo) last.tempo else null
-
-                var bpm by remember { mutableIntStateOf(lastBpm ?: 0) }
-                var bpmText by remember { mutableStateOf(lastBpm?.toString() ?: "") }
-
-                var length by remember { mutableFloatStateOf(0f) }
-                var lengthText by remember { mutableStateOf("") }
-
-                var beatsText by remember { mutableStateOf("") }
-                var beats by remember { mutableIntStateOf(-1) }
-
-                AlertDialog(
-                    onDismissRequest = { showBpmDialog = false },
-                    title = { Text("Set BPM") },
-                    text = {
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            OutlinedTextField(
-                                label = { Text("Tempo") },
-                                value = bpmText,
-                                onValueChange = {
-                                    bpmText = it.filter { char -> char.isDigit() }
-                                    bpm = bpmText.toIntOrNull() ?: 0
-                                },
-                                isError = (bpm <= 0 || bpm >= 500) && bpmText != "",
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Number
-                                )
-                            )
-
-                            Text(
-                                text = "Duration type",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(top = 16.dp, bottom = 4.dp)
-                            )
-                            Row(
-                                modifier = Modifier.padding(bottom = 16.dp),
-                                horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)
-                            ) {
-                                ToggleButton(
-                                    checked = useTime,
-                                    onCheckedChange = {
-                                        useTime = true
-                                        length = 0f
-                                        beats = -1
-                                        lengthText = ""
-                                        beatsText = ""
-                                    },
-                                    shapes = ButtonGroupDefaults.connectedLeadingButtonShapes(),
-                                    contentPadding = ButtonDefaults.ContentPadding
-                                ) {
-                                    if (useTime) {
-                                        Icon(
-                                            imageVector = Icons.Default.Check,
-                                            contentDescription = ChronalApp.Companion.context.getString(R.string.generic_selected),
-                                        )
-                                        Spacer(modifier = Modifier.Companion.width(ToggleButtonDefaults.IconSpacing))
-                                    }
-                                    Text("Time")
-                                }
-                                ToggleButton(
-                                    checked = !useTime,
-                                    onCheckedChange = {
-                                        useTime = false
-                                        length = 0f
-                                        beats = -1
-                                        lengthText = ""
-                                        beatsText = ""
-                                    },
-                                    shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
-                                    contentPadding = ButtonDefaults.ContentPadding
-                                ) {
-                                    if (!useTime) {
-                                        Icon(
-                                            imageVector = Icons.Default.Check,
-                                            contentDescription = ChronalApp.Companion.context.getString(R.string.generic_selected),
-                                        )
-                                        Spacer(modifier = Modifier.Companion.width(ToggleButtonDefaults.IconSpacing))
-                                    }
-                                    Text("Beats")
-                                }
+                ElementDialog(
+                    index = rhythm.elements.size,
+                    isTempo = true,
+                    onDismiss = { showBpmDialog = false },
+                    onConfirm = { new ->
+                        showBpmDialog = false
+                        val newRhythm = rhythm.copy(
+                            elements = rhythm.elements.toMutableList().apply {
+                                add(new)
                             }
-
-                            if(useTime) {
-                                OutlinedTextField(
-                                    label = { Text("Time (seconds)") },
-                                    value = lengthText,
-                                    onValueChange = {
-                                        lengthText = it.filter { char -> char.isDigit() || char == '.' }
-                                        length = it.toFloatOrNull() ?: 0f
-                                    },
-                                    isError = length <= 0f && lengthText != "",
-                                    keyboardOptions = KeyboardOptions(
-                                        keyboardType = KeyboardType.Decimal
-                                    )
-                                )
-                            } else {
-                                OutlinedTextField(
-                                    label = { Text("Beats") },
-                                    value = beatsText,
-                                    onValueChange = {
-                                        beatsText = it.filter { char -> char.isDigit() }
-                                        beats = it.toIntOrNull() ?: 0
-                                        length = beats.toFloat() * (60f / (lastBpm ?: 1))
-                                    },
-                                    isError = length <= 0 && beatsText != "",
-                                    keyboardOptions = KeyboardOptions(
-                                        keyboardType = KeyboardType.Number
-                                    )
-                                )
-                            }
-                        }
-                    },
-                    confirmButton = {
-                        TextButton(onClick = {
-                            if(beats > 0 && bpm > 0 && bpm < 500) {
-                                val newRhythm = rhythm.copy(
-                                    elements = rhythm.elements.toMutableList().apply {
-                                        add(SetTempo(
-                                            startTime = last?.endTime ?: 0,
-                                            beats = beats,
-                                            maxEnd = audioLength,
-                                            tempo = bpm
-                                        ))
-                                    }
-                                )
-                                rhythm = newRhythm
-                            } else if(length > 0 && bpm > 0 && bpm < 500) {
-                                val newRhythm = rhythm.copy(
-                                    elements = rhythm.elements.toMutableList().apply {
-                                        add(SetTempo(
-                                            startTime = last?.endTime ?: 0,
-                                            endTime = minOf((last?.endTime ?: 0) + (length * 1000L).toLong(), audioLength),
-                                            tempo = bpm
-                                        ))
-                                    }
-                                )
-                                rhythm = newRhythm
-                            } else {
-                                if(bpm <= 0 || bpm >= 500) {
-                                    Toast.makeText(this, "Invalid BPM", Toast.LENGTH_SHORT).show()
-                                } else {
-                                    Toast.makeText(this, "Invalid length", Toast.LENGTH_SHORT).show()
-                                }
-                                return@TextButton
-                            }
-                            showBpmDialog = false
-                        }) {
-                            Text(getString(R.string.generic_confirm))
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = {
-                            showBpmDialog = false
-                        }) {
-                            Text(getString(R.string.generic_cancel))
-                        }
+                        )
+                        rhythm = newRhythm
                     }
                 )
             }
 
             if(showPauseDialog) {
-                var useTime by remember { mutableStateOf(true) }
-                val last = rhythm.elements.lastOrNull()
-                val lastBpm = if(last is SetTempo) last.tempo else null
-
-                var length by remember { mutableFloatStateOf(0f) }
-                var lengthText by remember { mutableStateOf("") }
-
-                var beatsText by remember { mutableStateOf("") }
-                var beats by remember { mutableIntStateOf(-1) }
-
-                AlertDialog(
-                    onDismissRequest = { showPauseDialog = false },
-                    title = { Text("Add pause") },
-                    text = {
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                text = "Duration type",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(bottom = 4.dp)
-                            )
-                            if(lastBpm == null) {
-                                Text(
-                                    text = "Beats are disabled because the previous element is not a tempo change.",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.error
-                                )
+                ElementDialog(
+                    index = rhythm.elements.size,
+                    isTempo = false,
+                    onDismiss = { showPauseDialog = false },
+                    onConfirm = { new ->
+                        showPauseDialog = false
+                        val newRhythm = rhythm.copy(
+                            elements = rhythm.elements.toMutableList().apply {
+                                add(new)
                             }
-                            Row(
-                                modifier = Modifier.padding(bottom = 16.dp),
-                                horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)
-                            ) {
-                                ToggleButton(
-                                    checked = useTime,
-                                    onCheckedChange = {
-                                        useTime = true
-                                        length = 0f
-                                        beats = -1
-                                        lengthText = ""
-                                        beatsText = ""
-                                    },
-                                    shapes = ButtonGroupDefaults.connectedLeadingButtonShapes(),
-                                    contentPadding = ButtonDefaults.ContentPadding
-                                ) {
-                                    if (useTime) {
-                                        Icon(
-                                            imageVector = Icons.Default.Check,
-                                            contentDescription = ChronalApp.Companion.context.getString(R.string.generic_selected),
-                                        )
-                                        Spacer(modifier = Modifier.Companion.width(ToggleButtonDefaults.IconSpacing))
-                                    }
-                                    Text("Time")
-                                }
-                                ToggleButton(
-                                    checked = !useTime,
-                                    onCheckedChange = {
-                                        if(lastBpm != null) {
-                                            useTime = false
-                                            length = 0f
-                                            beats = -1
-                                            lengthText = ""
-                                            beatsText = ""
-                                        }
-                                    },
-                                    enabled = lastBpm != null,
-                                    shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
-                                    contentPadding = ButtonDefaults.ContentPadding
-                                ) {
-                                    if (!useTime) {
-                                        Icon(
-                                            imageVector = Icons.Default.Check,
-                                            contentDescription = ChronalApp.Companion.context.getString(R.string.generic_selected),
-                                        )
-                                        Spacer(modifier = Modifier.Companion.width(ToggleButtonDefaults.IconSpacing))
-                                    }
-                                    Text("Beats")
-                                }
-                            }
-
-                            if(useTime) {
-                                OutlinedTextField(
-                                    label = { Text("Time (seconds)") },
-                                    value = lengthText,
-                                    onValueChange = {
-                                        lengthText = it.filter { char -> char.isDigit() || char == '.' }
-                                        length = it.toFloatOrNull() ?: 0f
-                                    },
-                                    isError = length <= 0f && lengthText != "",
-                                    keyboardOptions = KeyboardOptions(
-                                        keyboardType = KeyboardType.Decimal
-                                    )
-                                )
-                            } else {
-                                OutlinedTextField(
-                                    label = { Text("Beats") },
-                                    value = beatsText,
-                                    onValueChange = {
-                                        beatsText = it.filter { char -> char.isDigit() }
-                                        beats = it.toIntOrNull() ?: 0
-                                        length = beats.toFloat() * (60f / (lastBpm ?: 1))
-                                    },
-                                    isError = length <= 0 && beatsText != "",
-                                    keyboardOptions = KeyboardOptions(
-                                        keyboardType = KeyboardType.Number
-                                    )
-                                )
-                            }
-                        }
-                    },
-                    confirmButton = {
-                        TextButton(onClick = {
-                            if(beats > 0 && lastBpm != null) {
-                                val newRhythm = rhythm.copy(
-                                    elements = rhythm.elements.toMutableList().apply {
-                                        add(Pause(
-                                            startTime = last?.endTime ?: 0,
-                                            beats = beats,
-                                            maxEnd = audioLength,
-                                            tempo = lastBpm
-                                        ))
-                                    }
-                                )
-                                rhythm = newRhythm
-                            } else if(length > 0) {
-                                val newRhythm = rhythm.copy(
-                                    elements = rhythm.elements.toMutableList().apply {
-                                        add(Pause(
-                                            startTime = last?.endTime ?: 0,
-                                            endTime = minOf((last?.endTime ?: 0) + (length * 1000L).toLong(), audioLength)
-                                        ))
-                                    }
-                                )
-                                rhythm = newRhythm
-                            } else {
-                                Toast.makeText(this, "Invalid BPM or length", Toast.LENGTH_SHORT).show()
-                                return@TextButton
-                            }
-                            showPauseDialog = false
-                        }) {
-                            Text(getString(R.string.generic_confirm))
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = {
-                            showPauseDialog = false
-                        }) {
-                            Text(getString(R.string.generic_cancel))
-                        }
+                        )
+                        rhythm = newRhythm
                     }
                 )
             }
@@ -813,26 +529,24 @@ class AudioPlayerActivity : ComponentActivity() {
                         contentDescription = getString(R.string.generic_more_options),
                         modifier = Modifier.size(IconButtonDefaults.mediumIconSize),
                     )
-                    if(showMore) {
-                        //dropdown
-                        DropdownMenu(
-                            expanded = showMore,
-                            onDismissRequest = { showMore = false },
-                        ) {
-                            DropdownMenuItem(
-                                leadingIcon = {
-                                    Icon(
-                                        painter = painterResource(R.drawable.outline_volume_up_24),
-                                        contentDescription = getString(R.string.audio_player_volume_controls)
-                                    )
-                                },
-                                text = { Text(getString(R.string.audio_player_volume_controls)) },
-                                onClick = {
-                                    showVolume = !showVolume
-                                    showMore = false
-                                }
-                            )
-                        }
+                    //dropdown
+                    DropdownMenu(
+                        expanded = showMore,
+                        onDismissRequest = { showMore = false },
+                    ) {
+                        DropdownMenuItem(
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(R.drawable.outline_volume_up_24),
+                                    contentDescription = getString(R.string.audio_player_volume_controls)
+                                )
+                            },
+                            text = { Text(getString(R.string.audio_player_volume_controls)) },
+                            onClick = {
+                                showVolume = !showVolume
+                                showMore = false
+                            }
+                        )
                     }
                 }
             }
@@ -895,6 +609,8 @@ class AudioPlayerActivity : ComponentActivity() {
             modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
         ) {
             items(rhythm.elements.size) { index ->
+                var edit by remember { mutableStateOf(false) }
+
                 val element = rhythm.elements[index]
 
                 val color = when (element) {
@@ -929,7 +645,10 @@ class AudioPlayerActivity : ComponentActivity() {
                         .fillMaxWidth()
                         .padding(8.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(if(isNow) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceContainerLow)
+                        .background(if (isNow) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceContainerLow)
+                        .clickable {
+                            edit = true
+                        }
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
                     Box(
@@ -976,7 +695,7 @@ class AudioPlayerActivity : ComponentActivity() {
                                     .padding(vertical = 8.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                if(element.beats != null) {
+                                if (element.beats != null) {
                                     Text(
                                         text = "${element.beats} beats",
                                         style = MaterialTheme.typography.labelLarge,
@@ -986,12 +705,45 @@ class AudioPlayerActivity : ComponentActivity() {
                                 Text(
                                     text = "${((element.endTime - element.startTime) / 1000f).round(2)} seconds",
                                     style = MaterialTheme.typography.labelLarge,
-                                    color = if(element.beats != null) color else onColorContainer
+                                    color = if (element.beats != null) color else onColorContainer
                                 )
                             }
                         }
                     }
                     Spacer(modifier = Modifier.width(32.dp))
+                }
+
+                if (edit) {
+                    ElementDialog(
+                        index = index,
+                        isTempo = element is SetTempo,
+                        onDismiss = { edit = false },
+                        onConfirm = { new ->
+                            edit = false
+                            val newElements = rhythm.elements.toMutableList()
+                            newElements[index] = new
+                            for (i in (index + 1) until newElements.size) {
+                                val prev = newElements[i - 1]
+                                if(newElements[i] is SetTempo) {
+                                    val tempo = newElements[i] as SetTempo
+                                    newElements[i] = SetTempo(
+                                        startTime = prev.endTime,
+                                        endTime = minOf(tempo.endTime + tempo.endTime - tempo.startTime, tempo.endTime),
+                                        beats = tempo.beats ?: 0,
+                                        tempo = tempo.tempo
+                                    )
+                                } else if(newElements[i] is Pause) {
+                                    val pause = newElements[i] as Pause
+                                    newElements[i] = Pause(
+                                        startTime = prev.endTime,
+                                        endTime = minOf(pause.endTime + pause.endTime - pause.startTime, pause.endTime),
+                                        beats = pause.beats ?: 0
+                                    )
+                                }
+                            }
+                            rhythm = rhythm.copy(elements = newElements)
+                        }
+                    )
                 }
             }
             item {
@@ -1016,5 +768,200 @@ class AudioPlayerActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
+    @Composable
+    fun ElementDialog(index: Int, isTempo: Boolean, onDismiss: () -> Unit, onConfirm: (PlayerRhythmElement) -> Unit) {
+        val element = rhythm.elements.getOrNull(index)
+
+        var useTime by remember { mutableStateOf(element?.beats == null) }
+        val last = if(index == 0) null else rhythm.elements[index - 1]
+        val lastBpm = if(last is SetTempo) last.tempo else null
+
+        var bpm by remember { mutableIntStateOf(if(element is SetTempo) element.tempo else lastBpm ?: 0) }
+        var bpmText by remember { mutableStateOf(if(bpm == 0) "" else bpm.toString()) }
+
+        var length by remember { mutableFloatStateOf(if(element != null) (element.endTime - element.startTime) / 1000f else 0f) }
+        var lengthText by remember { mutableStateOf(if(length == 0f) "" else length.toString()) }
+
+        var beats by remember { mutableIntStateOf(element?.beats ?: -1) }
+        var beatsText by remember { mutableStateOf(beats.toString()) }
+
+        AlertDialog(
+            onDismissRequest = { onDismiss() },
+            title = { Text("Edit element") },
+            text = {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    if(isTempo) {
+                        OutlinedTextField(
+                            label = { Text("Tempo") },
+                            value = bpmText,
+                            onValueChange = {
+                                bpmText = it.filter { char -> char.isDigit() }
+                                bpm = bpmText.toIntOrNull() ?: 0
+                            },
+                            isError = (bpm <= 0 || bpm >= 500) && bpmText != "",
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+
+                    Text(
+                        text = "Duration type",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                    if(lastBpm == null && !isTempo) {
+                        Text(
+                            text = "Beats are disabled because the previous element is not a tempo change.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.padding(bottom = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)
+                    ) {
+                        ToggleButton(
+                            checked = useTime,
+                            onCheckedChange = {
+                                useTime = true
+                                length = 0f
+                                beats = -1
+                                lengthText = ""
+                                beatsText = ""
+                            },
+                            shapes = ButtonGroupDefaults.connectedLeadingButtonShapes(),
+                            contentPadding = ButtonDefaults.ContentPadding
+                        ) {
+                            if (useTime) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = ChronalApp.Companion.context.getString(R.string.generic_selected),
+                                )
+                                Spacer(modifier = Modifier.Companion.width(ToggleButtonDefaults.IconSpacing))
+                            }
+                            Text("Time")
+                        }
+                        ToggleButton(
+                            checked = !useTime,
+                            onCheckedChange = {
+                                useTime = false
+                                length = 0f
+                                beats = -1
+                                lengthText = ""
+                                beatsText = ""
+                            },
+                            shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
+                            contentPadding = ButtonDefaults.ContentPadding,
+                            enabled = lastBpm != null || isTempo
+                        ) {
+                            if (!useTime) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = ChronalApp.Companion.context.getString(R.string.generic_selected),
+                                )
+                                Spacer(modifier = Modifier.Companion.width(ToggleButtonDefaults.IconSpacing))
+                            }
+                            Text("Beats")
+                        }
+                    }
+
+                    if(useTime) {
+                        OutlinedTextField(
+                            label = { Text("Time (seconds)") },
+                            value = lengthText,
+                            onValueChange = {
+                                lengthText = it.filter { char -> char.isDigit() || char == '.' }
+                                length = it.toFloatOrNull() ?: 0f
+                            },
+                            isError = length <= 0f && lengthText != "",
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Decimal
+                            )
+                        )
+                    } else {
+                        OutlinedTextField(
+                            label = { Text("Beats") },
+                            value = beatsText,
+                            onValueChange = {
+                                beatsText = it.filter { char -> char.isDigit() }
+                                beats = it.toIntOrNull() ?: 0
+                                length = beats.toFloat() * (60f / (lastBpm ?: 1))
+                            },
+                            isError = length <= 0 && beatsText != "",
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number
+                            )
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    if(isTempo) {
+                        if(beats > 0 && bpm > 0 && bpm < 500) {
+                            onConfirm(
+                                SetTempo(
+                                    startTime = last?.endTime ?: 0,
+                                    beats = beats,
+                                    maxEnd = audioLength,
+                                    tempo = bpm
+                                )
+                            )
+                        } else if(length > 0 && bpm > 0 && bpm < 500) {
+                            onConfirm(
+                                SetTempo(
+                                    startTime = last?.endTime ?: 0,
+                                    endTime = minOf((last?.endTime ?: 0) + (length * 1000L).toLong(), audioLength),
+                                    tempo = bpm
+                                )
+                            )
+                        } else {
+                            if(bpm <= 0 || bpm >= 500) {
+                                Toast.makeText(this, "Invalid BPM", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(this, "Invalid length", Toast.LENGTH_SHORT).show()
+                            }
+                            return@TextButton
+                        }
+                    } else {
+                        if(beats > 0 && lastBpm != null) {
+                            onConfirm(
+                                Pause(
+                                    startTime = last?.endTime ?: 0,
+                                    beats = beats,
+                                    maxEnd = audioLength,
+                                    tempo = lastBpm
+                                )
+                            )
+                        } else if(length > 0) {
+                            onConfirm(
+                                Pause(
+                                    startTime = last?.endTime ?: 0,
+                                    endTime = minOf((last?.endTime ?: 0) + (length * 1000L).toLong(), audioLength)
+                                )
+                            )
+                        } else {
+                            Toast.makeText(this, "Invalid BPM or length", Toast.LENGTH_SHORT).show()
+                            return@TextButton
+                        }
+                    }
+                }) {
+                    Text(getString(R.string.generic_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    onDismiss()
+                }) {
+                    Text(getString(R.string.generic_cancel))
+                }
+            }
+        )
     }
 }

@@ -12,13 +12,15 @@ Chronal is a metronome and tuner app for Android made for beginner and advanced 
 * Notation editor for creating custom rhythms
 * Fullscreen mode for easy peripheral viewing
 * Seven custom sound packs (with more to come!)
+* Play audio files with custom tempos
 
 ### Tuner
-* Tuner with pitch detection
-* Real-time BPM detection from microphone
 * Transpose to any instrument
 * Custom tuning to any frequency
-* A4 tuning reference audio
+* Tuner graph
+* Real-time BPM detection from microphone
+* A4 reference tone
+* Custom A4 frequencies
 
 ## Screenshots
 
