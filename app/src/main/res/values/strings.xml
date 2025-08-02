@@ -164,6 +164,25 @@
     <string name="audio_player_media_volume">Media volume</string>
     <string name="audio_player_metronome_volume">Metronome volume</string>
     <string name="audio_player_volume_controls">Volume controls</string>
+    <string name="audio_player_updating">Updating audio…</string>
+    <string name="audio_player_add_tempo">Add tempo change</string>
+    <string name="audio_player_add_pause">Add pause</string>
+    <string name="audio_player_set_bpm">Set BPM</string>
+    <string name="audio_player_pause">Pause</string>
+    <string name="audio_player_bpm_alt">%d BPM</string>
+    <string name="audio_player_seconds_alt">%.2f s</string>
+    <string name="audio_player_length_beats">%d beats</string>
+    <string name="audio_player_length_seconds">%.2f seconds</string>
+    <string name="audio_player_edit_element">Edit element</string>
+    <string name="audio_player_element_tempo">Tempo</string>
+    <string name="audio_player_element_duration_type">Duration type</string>
+    <string name="audio_player_element_beats_disabled">Beats are disabled because the previous element is not a tempo change.</string>
+    <string name="audio_player_element_duration_time">Time</string>
+    <string name="audio_player_element_duration_beats">Beats</string>
+    <string name="audio_player_element_time_seconds">Time (seconds)</string>
+    <string name="audio_player_element_error_tempo">Invalid tempo</string>
+    <string name="audio_player_element_error_duration">Invalid duration</string>
+    <string name="audio_player_element_error_beats">Invalid beats</string>
 
     <string name="beat_detector_title">Beat Detector</string>
     <string name="beat_detector_disabled">Disabled</string>
