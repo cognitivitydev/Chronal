@@ -42,7 +42,6 @@ import dev.cognitivity.chronal.rhythm.player.PlayerRhythm
 import dev.cognitivity.chronal.rhythm.player.elements.Pause
 import dev.cognitivity.chronal.rhythm.player.elements.PlayerRhythmElement
 import dev.cognitivity.chronal.rhythm.player.elements.SetTempo
-import dev.cognitivity.chronal.round
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -156,9 +155,11 @@ class AudioPlayerActivity : ComponentActivity() {
             if (playing) {
                 if (!mediaPlayer.isPlaying) {
                     CoroutineScope(coroutineContext).launch {
+                        mediaPlayer.seekTo(progress.toInt())
                         mediaPlayer.start()
                     }
                     CoroutineScope(coroutineContext).launch {
+                        metronomePlayer.seekTo(progress.toInt())
                         metronomePlayer.start()
                     }
                 }
@@ -236,11 +237,11 @@ class AudioPlayerActivity : ComponentActivity() {
                     }
                 ) {
                     FloatingActionButtonMenuItem(
-                        text = { Text("Set BPM") },
+                        text = { Text(getString(R.string.audio_player_add_tempo)) },
                         icon = {
                             Icon(
                                 painter = painterResource(R.drawable.baseline_music_note_24),
-                                contentDescription = "Set BPM"
+                                contentDescription = getString(R.string.audio_player_add_tempo)
                             )
                         },
                         onClick = {
@@ -249,11 +250,11 @@ class AudioPlayerActivity : ComponentActivity() {
                         }
                     )
                     FloatingActionButtonMenuItem(
-                        text = { Text("Add pause") },
+                        text = { Text(getString(R.string.audio_player_add_pause)) },
                         icon = {
                             Icon(
                                 painter = painterResource(R.drawable.baseline_music_off_24),
-                                contentDescription = "Add pause"
+                                contentDescription = getString(R.string.audio_player_add_pause)
                             )
                         },
                         onClick = {
@@ -339,7 +340,7 @@ class AudioPlayerActivity : ComponentActivity() {
                         contentAlignment = Alignment.Center
                     ) {
                         ContainedLoadingIndicator()
-                        Text("Updating audio...", modifier = Modifier.padding(top = 96.dp))
+                        Text(getString(R.string.audio_player_updating), modifier = Modifier.padding(top = 96.dp))
                     }
                 }
             }
@@ -630,13 +631,15 @@ class AudioPlayerActivity : ComponentActivity() {
                     is Pause -> MaterialTheme.colorScheme.onSecondaryContainer
                 }
 
-                val text = when (element) {
-                    is SetTempo -> "Set tempo"
-                    is Pause -> "Pause"
-                }
+                val text = getString(
+                    when (element) {
+                        is SetTempo -> R.string.audio_player_set_bpm
+                        is Pause -> R.string.audio_player_pause
+                    }
+                )
                 val altText = when (element) {
-                    is SetTempo -> "${element.tempo} BPM"
-                    is Pause -> "${((element.endTime - element.startTime) / 1000f).round(2)} s"
+                    is SetTempo -> getString(R.string.audio_player_bpm_alt, element.tempo)
+                    is Pause -> getString(R.string.audio_player_seconds_alt, ((element.endTime - element.startTime) / 1000f))
                 }
 
                 val isNow = element.startTime <= progress && element.endTime >= progress
@@ -697,13 +700,14 @@ class AudioPlayerActivity : ComponentActivity() {
                             ) {
                                 if (element.beats != null) {
                                     Text(
-                                        text = "${element.beats} beats",
+                                        text = getString(R.string.audio_player_length_beats, element.beats),
                                         style = MaterialTheme.typography.labelLarge,
                                         color = onColorContainer
                                     )
                                 }
                                 Text(
-                                    text = "${((element.endTime - element.startTime) / 1000f).round(2)} seconds",
+                                    text = getString(R.string.audio_player_length_seconds,
+                                        ((element.endTime - element.startTime) / 1000f)),
                                     style = MaterialTheme.typography.labelLarge,
                                     color = if (element.beats != null) color else onColorContainer
                                 )
@@ -790,12 +794,13 @@ class AudioPlayerActivity : ComponentActivity() {
 
         AlertDialog(
             onDismissRequest = { onDismiss() },
-            title = { Text("Edit element") },
+            title = { Text(getString(if(element != null) R.string.audio_player_edit_element
+                else if(isTempo) R.string.audio_player_add_tempo else R.string.audio_player_add_pause)) },
             text = {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     if(isTempo) {
                         OutlinedTextField(
-                            label = { Text("Tempo") },
+                            label = { Text(getString(R.string.audio_player_element_tempo)) },
                             value = bpmText,
                             onValueChange = {
                                 bpmText = it.filter { char -> char.isDigit() }
@@ -810,14 +815,14 @@ class AudioPlayerActivity : ComponentActivity() {
                     }
 
                     Text(
-                        text = "Duration type",
+                        text = getString(R.string.audio_player_element_duration_type),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(bottom = 4.dp)
                     )
                     if(lastBpm == null && !isTempo) {
                         Text(
-                            text = "Beats are disabled because the previous element is not a tempo change.",
+                            text = getString(R.string.audio_player_element_beats_disabled),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error
                         )
@@ -845,7 +850,7 @@ class AudioPlayerActivity : ComponentActivity() {
                                 )
                                 Spacer(modifier = Modifier.Companion.width(ToggleButtonDefaults.IconSpacing))
                             }
-                            Text("Time")
+                            Text(getString(R.string.audio_player_element_duration_time))
                         }
                         ToggleButton(
                             checked = !useTime,
@@ -867,13 +872,13 @@ class AudioPlayerActivity : ComponentActivity() {
                                 )
                                 Spacer(modifier = Modifier.Companion.width(ToggleButtonDefaults.IconSpacing))
                             }
-                            Text("Beats")
+                            Text(getString(R.string.audio_player_element_duration_beats))
                         }
                     }
 
                     if(useTime) {
                         OutlinedTextField(
-                            label = { Text("Time (seconds)") },
+                            label = { Text(getString(R.string.audio_player_element_time_seconds)) },
                             value = lengthText,
                             onValueChange = {
                                 lengthText = it.filter { char -> char.isDigit() || char == '.' }
@@ -886,7 +891,7 @@ class AudioPlayerActivity : ComponentActivity() {
                         )
                     } else {
                         OutlinedTextField(
-                            label = { Text("Beats") },
+                            label = { Text(getString(R.string.audio_player_element_duration_beats)) },
                             value = beatsText,
                             onValueChange = {
                                 beatsText = it.filter { char -> char.isDigit() }
@@ -923,9 +928,9 @@ class AudioPlayerActivity : ComponentActivity() {
                             )
                         } else {
                             if(bpm <= 0 || bpm >= 500) {
-                                Toast.makeText(this, "Invalid BPM", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(this, getString(R.string.audio_player_element_error_tempo), Toast.LENGTH_SHORT).show()
                             } else {
-                                Toast.makeText(this, "Invalid length", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(this, getString(R.string.audio_player_element_error_duration), Toast.LENGTH_SHORT).show()
                             }
                             return@TextButton
                         }
@@ -947,7 +952,11 @@ class AudioPlayerActivity : ComponentActivity() {
                                 )
                             )
                         } else {
-                            Toast.makeText(this, "Invalid BPM or length", Toast.LENGTH_SHORT).show()
+                            if(beats <= 0) {
+                                Toast.makeText(this, getString(R.string.audio_player_element_error_beats), Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(this, getString(R.string.audio_player_element_error_duration), Toast.LENGTH_SHORT).show()
+                            }
                             return@TextButton
                         }
                     }
