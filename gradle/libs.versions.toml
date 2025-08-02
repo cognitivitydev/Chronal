@@ -11,7 +11,7 @@ activityCompose = "1.10.1"
 composeBom = "2025.07.00"
 coreSplashscreen = "1.0.1"
 graphicsShapesAndroid = "1.0.1"
-navigationCompose = "2.9.2"
+navigationCompose = "2.9.3"
 runtimeLivedata = "1.8.3"
 rxandroid = "2.1.0"
 rxjava = "2.2.9"
@@ -37,7 +37,7 @@ androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", versi
 androidx-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-androidx-material3 = { group = "androidx.compose.material3", name = "material3", version = "1.4.0-alpha18" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3", version = "1.5.0-alpha01" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-graphics-shapes-android = { group = "androidx.graphics", name = "graphics-shapes-android", version.ref = "graphicsShapesAndroid" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }

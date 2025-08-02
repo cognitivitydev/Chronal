@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
@@ -91,7 +92,9 @@ fun BoxScope.TempoChanger() {
                 modifier = Modifier.align(Alignment.CenterVertically),
                 text = metronome.bpm.toString(),
                 style = MaterialTheme.typography.displayLarge,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Visible
             )
             Text(
                 modifier = Modifier
@@ -99,7 +102,9 @@ fun BoxScope.TempoChanger() {
                     .align(Alignment.Bottom),
                 text = context.getString(R.string.metronome_bpm),
                 style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Visible
             )
         }
 

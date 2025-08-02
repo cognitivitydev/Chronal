@@ -74,45 +74,98 @@ fun TunerPageCompact(
     var showTuningDialog by remember { mutableStateOf(false) }
     var tuningNote by remember { mutableIntStateOf(-1) }
     val hz = tuner?.hz ?: -1f
-    val tune: Pair<String, Float> = if(tuner != null && hz != 0f) {
+    val tune: Pair<String, Float> = if (tuner != null && hz != 0f) {
         frequencyToNote(tuner.hz)
     } else {
         context.getString(R.string.generic_not_applicable) to Float.NaN
     }
     val instrument = ChronalApp.getInstance().settings.primaryInstrument.value
 
-    Scaffold(
-        modifier = Modifier.padding(bottom = padding.calculateBottomPadding()).fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.surface,
-        topBar = {
-            TopBar(tuner, hz, instrument)
-        },
-    ) { innerPadding ->
-        Box(
-            Modifier.padding(top = innerPadding.calculateTopPadding()).fillMaxSize()
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize().padding(vertical = 40.dp)
-                    .align(Alignment.Center)
+    BoxWithConstraints(
+        modifier = Modifier
+            .padding(bottom = padding.calculateBottomPadding())
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)
+    ) {
+        val isWide = this.maxWidth > this.maxHeight
+
+        if (isWide) {
+            //side bar
+            Row(
+                Modifier.fillMaxSize()
             ) {
-                PitchGraph(tune.second, tuner)
+                Box(
+                    Modifier.fillMaxWidth(0.4f)
+                        .fillMaxHeight()
+                        .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                ) {
+                    TopBar(tuner, hz, instrument, wide = true)
+                }
+
+                //content
+                Box(
+                    Modifier
+                        .weight(1f)
+                        .padding(vertical = 40.dp)
+                        .fillMaxHeight()
+                ) {
+                    PitchGraph(tune.second, tuner)
+                    FilledIconToggleButton(
+                        checked = playing,
+                        onCheckedChange = {
+                            showTuningDialog = true
+                        },
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .align(Alignment.TopStart)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.outline_volume_up_24),
+                            contentDescription = mainActivity.getString(R.string.tuner_play_frequency),
+                        )
+                    }
+                }
             }
-            FilledIconToggleButton(
-                checked = playing,
-                onCheckedChange = {
-                    showTuningDialog = true
+        } else {
+            Scaffold(
+                modifier = Modifier.fillMaxSize(),
+                containerColor = MaterialTheme.colorScheme.surface,
+                topBar = {
+                    TopBar(tuner, hz, instrument, wide = false)
                 },
-                modifier = Modifier.padding(8.dp)
-                    .align(Alignment.TopStart)
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.outline_volume_up_24),
-                    contentDescription = mainActivity.getString(R.string.tuner_play_frequency),
-                )
+            ) { innerPadding ->
+                Box(
+                    Modifier
+                        .padding(top = innerPadding.calculateTopPadding())
+                        .fillMaxSize()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(vertical = 40.dp)
+                            .align(Alignment.Center)
+                    ) {
+                        PitchGraph(tune.second, tuner)
+                    }
+                    FilledIconToggleButton(
+                        checked = playing,
+                        onCheckedChange = {
+                            showTuningDialog = true
+                        },
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .align(Alignment.TopStart)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.outline_volume_up_24),
+                            contentDescription = mainActivity.getString(R.string.tuner_play_frequency),
+                        )
+                    }
+                }
             }
         }
 
-        if(showTuningDialog) {
+        if (showTuningDialog) {
             AudioDialog(false, tuningNote,
                 onChange = {
                     tuningNote = it
@@ -134,32 +187,30 @@ fun TunerPageCompact(
             )
         }
 
-        if(ContextCompat.checkSelfPermission(mainActivity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            PermissionWarning(innerPadding, mainActivity)
+        if (ContextCompat.checkSelfPermission(mainActivity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            PermissionWarning(padding, mainActivity)
         }
     }
 }
 
 @Composable
-fun TopBar(tuner: Tuner?, hz: Float, instrument: Instrument) {
+fun TopBar(tuner: Tuner?, hz: Float, instrument: Instrument, wide: Boolean) {
     Surface(
         color = MaterialTheme.colorScheme.surfaceContainerLow,
         shape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.225f)
+            modifier = Modifier.fillMaxWidth()
+                .fillMaxHeight(if(wide) 1f else 0.225f)
                 .windowInsetsPadding(WindowInsets.statusBars)
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.CenterHorizontally)
+            FlowRow(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
                 Box(
                     modifier = Modifier.padding(4.dp)
-                        .align(Alignment.TopCenter)
+                        .align(Alignment.CenterVertically)
                         .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(8.dp))
                 ) {
                     val hertz = context.getString(R.string.tuner_hz, ChronalApp.getInstance().settings.tunerFrequency.value)
@@ -172,7 +223,7 @@ fun TopBar(tuner: Tuner?, hz: Float, instrument: Instrument) {
                 }
                 Box(
                     modifier = Modifier.padding(4.dp, 4.dp, 16.dp, 4.dp)
-                        .align(Alignment.TopEnd)
+                        .align(Alignment.CenterVertically)
                         .background(MaterialTheme.colorScheme.secondaryContainer, RoundedCornerShape(8.dp))
                 ) {
                     Text(
@@ -188,39 +239,69 @@ fun TopBar(tuner: Tuner?, hz: Float, instrument: Instrument) {
 
             Box {
                 val showTransposition = ChronalApp.getInstance().settings.transposeNotes.value
-                if(showTransposition) {
-                    Box(
-                        Modifier.align(Alignment.Center)
-                            .background(MaterialTheme.colorScheme.outline)
-                            .width(1.dp)
-                            .fillMaxHeight(0.75f)
-                    )
-                }
-                Row(
-                    Modifier.align(Alignment.Center)
-                        .fillMaxSize(),
-                    horizontalArrangement = Arrangement.Center,
-                ) {
+
+                if(wide) {
                     Column(
-                        Modifier.align(Alignment.CenterVertically)
-                            .then(if(showTransposition) Modifier.weight(1f) else Modifier.fillMaxWidth(0.5f))
+                        modifier = Modifier.align(Alignment.Center)
+                            .fillMaxSize(),
+                        verticalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        Text(context.getString(R.string.tuner_concert_pitch),
-                            modifier = Modifier.fillMaxWidth()
-                                .align(Alignment.CenterHorizontally),
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        DrawNote(hz)
+                        Column(
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(context.getString(R.string.tuner_concert_pitch),
+                                modifier = Modifier.fillMaxWidth()
+                                    .align(Alignment.CenterHorizontally),
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            DrawNote(hz)
+                        }
+                        if(showTransposition) {
+                            Column(
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                DrawName(instrument.name, instrument.shortened)
+                                DrawNote(transposeFrequency(hz, -instrument.transposition))
+                            }
+                        }
                     }
+                } else {
                     if(showTransposition) {
+                        Box(
+                            Modifier.align(Alignment.Center)
+                                .background(MaterialTheme.colorScheme.outline)
+                                .width(1.dp)
+                                .fillMaxHeight(0.75f)
+                        )
+                    }
+                    Row(
+                        Modifier.align(Alignment.Center)
+                            .fillMaxSize(),
+                        horizontalArrangement = Arrangement.Center,
+                    ) {
                         Column(
                             Modifier.align(Alignment.CenterVertically)
-                                .weight(1f)
+                                .then(if(showTransposition) Modifier.weight(1f) else Modifier.fillMaxWidth(0.5f))
                         ) {
-                            DrawName(instrument.name, instrument.shortened)
-                            DrawNote(transposeFrequency(hz, -instrument.transposition))
+                            Text(context.getString(R.string.tuner_concert_pitch),
+                                modifier = Modifier.fillMaxWidth()
+                                    .align(Alignment.CenterHorizontally),
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            DrawNote(hz)
+                        }
+                        if(showTransposition) {
+                            Column(
+                                Modifier.align(Alignment.CenterVertically)
+                                    .weight(1f)
+                            ) {
+                                DrawName(instrument.name, instrument.shortened)
+                                DrawNote(transposeFrequency(hz, -instrument.transposition))
+                            }
                         }
                     }
                 }
@@ -232,22 +313,16 @@ fun TopBar(tuner: Tuner?, hz: Float, instrument: Instrument) {
 
 @Composable
 fun PitchGraph(cents: Float, tuner: Tuner?) {
-    Row(
-        Modifier.fillMaxSize()
+    Box(
+        modifier = Modifier.fillMaxSize()
     ) {
-        Box(
-            Modifier.fillMaxWidth(0.6f)
+        Column(
+            modifier = Modifier.fillMaxWidth(0.6f)
                 .fillMaxHeight()
-        )
-        Box(
-            Modifier.fillMaxSize()
+                .align(Alignment.CenterEnd),
+            verticalArrangement = Arrangement.SpaceEvenly
         ) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.SpaceEvenly
-            ) {
-                DrawLines(cents.isNaN())
-            }
+            DrawLines(cents.isNaN())
         }
     }
     PitchPointer(cents, tuner)
