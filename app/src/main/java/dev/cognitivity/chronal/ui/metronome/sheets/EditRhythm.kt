@@ -35,6 +35,7 @@ import dev.cognitivity.chronal.MetronomeState
 import dev.cognitivity.chronal.MusicFont
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.SimpleRhythm
+import dev.cognitivity.chronal.activity.PresetActivity
 import dev.cognitivity.chronal.activity.RhythmEditorActivity
 import dev.cognitivity.chronal.rhythm.metronome.Measure
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
@@ -51,7 +52,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun EditRhythm(primary: Boolean, expanded: Boolean, advancedButtonListener: () -> Unit = {} ) {
+fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} ) {
     var showSimpleWarning by remember { mutableStateOf(false) }
 
     var hidden by remember { mutableStateOf(false) }
@@ -178,7 +179,7 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, advancedButtonListener: () -
                     .padding(vertical = 64.dp),
                 contentPadding = ButtonDefaults.contentPaddingFor(ButtonDefaults.MediumContainerHeight),
                 onClick = {
-                    advancedButtonListener()
+                    onDismiss()
                     ChronalApp.getInstance().startActivity(
                         Intent(context, RhythmEditorActivity::class.java)
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -191,21 +192,46 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, advancedButtonListener: () -
                     style = ButtonDefaults.textStyleFor(ButtonDefaults.MediumContainerHeight)
                 )
             }
-            Button(
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+            Row(
+                modifier = Modifier.fillMaxWidth()
+                    .align(Alignment.CenterHorizontally)
                     .padding(bottom = 16.dp),
-                onClick = {
-                    showSimpleWarning = true
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if(primary) MaterialTheme.colorScheme.primaryContainer
-                        else MaterialTheme.colorScheme.tertiaryContainer,
-                    contentColor = if(primary) MaterialTheme.colorScheme.onPrimaryContainer
-                        else MaterialTheme.colorScheme.onTertiaryContainer
-                ),
-                enabled = enabled
+                horizontalArrangement = Arrangement.SpaceAround
             ) {
-                Text(context.getString(R.string.metronome_edit_rhythm_switch_simple))
+                Button(
+                    modifier = Modifier.align(Alignment.CenterVertically),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (primary) MaterialTheme.colorScheme.primaryContainer
+                        else MaterialTheme.colorScheme.tertiaryContainer,
+                        contentColor = if (primary) MaterialTheme.colorScheme.onPrimaryContainer
+                        else MaterialTheme.colorScheme.onTertiaryContainer
+                    ),
+                    onClick = {
+                        onDismiss()
+                        ChronalApp.getInstance().startActivity(
+                            Intent(context, PresetActivity::class.java)
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        )
+                    },
+                    enabled = enabled
+                ) {
+                    Text(context.getString(R.string.metronome_edit_rhythm_view_presets))
+                }
+                Button(
+                    modifier = Modifier.align(Alignment.CenterVertically),
+                    onClick = {
+                        showSimpleWarning = true
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (primary) MaterialTheme.colorScheme.primaryContainer
+                            else MaterialTheme.colorScheme.tertiaryContainer,
+                        contentColor = if (primary) MaterialTheme.colorScheme.onPrimaryContainer
+                            else MaterialTheme.colorScheme.onTertiaryContainer
+                    ),
+                    enabled = enabled
+                ) {
+                    Text(context.getString(R.string.metronome_edit_rhythm_switch_simple))
+                }
             }
         } else {
             Row(modifier = Modifier
@@ -344,19 +370,44 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, advancedButtonListener: () -
                     }
                 }
             }
-            FilledTonalButton(
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                onClick = {
-                    advancedButtonListener()
-                    ChronalApp.getInstance().startActivity(
-                        Intent(context, RhythmEditorActivity::class.java)
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            .putExtra("isPrimary", primary)
-                    )
-                },
-                enabled = enabled
+            Row(
+                modifier = Modifier.fillMaxWidth()
+                    .align(Alignment.CenterHorizontally),
+                horizontalArrangement = Arrangement.SpaceAround
             ) {
-                Text(context.getString(R.string.metronome_edit_rhythm_switch_advanced))
+                Button(
+                    modifier = Modifier.align(Alignment.CenterVertically),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if(primary) MaterialTheme.colorScheme.primaryContainer
+                        else MaterialTheme.colorScheme.tertiaryContainer,
+                        contentColor = if(primary) MaterialTheme.colorScheme.onPrimaryContainer
+                        else MaterialTheme.colorScheme.onTertiaryContainer
+                    ),
+                    onClick = {
+                        onDismiss()
+                        ChronalApp.getInstance().startActivity(
+                            Intent(context, PresetActivity::class.java)
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        )
+                    },
+                    enabled = enabled
+                ) {
+                    Text(context.getString(R.string.metronome_edit_rhythm_view_presets))
+                }
+                FilledTonalButton(
+                    modifier = Modifier.align(Alignment.CenterVertically),
+                    onClick = {
+                        onDismiss()
+                        ChronalApp.getInstance().startActivity(
+                            Intent(context, RhythmEditorActivity::class.java)
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                .putExtra("isPrimary", primary)
+                        )
+                    },
+                    enabled = enabled
+                ) {
+                    Text(context.getString(R.string.metronome_edit_rhythm_switch_advanced))
+                }
             }
         }
     }
@@ -411,7 +462,7 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, advancedButtonListener: () -
                     scope.launch {
                         ChronalApp.getInstance().settings.save()
                     }
-                    advancedButtonListener()
+                    onDismiss()
                 }) {
                     Text(context.getString(R.string.generic_switch))
                 }

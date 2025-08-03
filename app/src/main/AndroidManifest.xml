@@ -71,5 +71,10 @@
             android:exported="false"
             android:theme="@style/Theme.Chronal">
         </activity>
+        <activity
+            android:name=".activity.PresetActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Chronal">
+        </activity>
     </application>
 </manifest>

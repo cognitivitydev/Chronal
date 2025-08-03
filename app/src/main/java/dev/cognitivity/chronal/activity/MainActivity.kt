@@ -66,9 +66,6 @@ lateinit var audioManager: AudioManager
 var vibratorManager: VibratorManager? = null
 
 class MainActivity : ComponentActivity() {
-
-
-
     fun runActivity(activity: Class<*>) {
         val k = Intent(this, activity)
         startActivity(k)

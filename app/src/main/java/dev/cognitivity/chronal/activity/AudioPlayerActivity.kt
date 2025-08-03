@@ -49,6 +49,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.*
+import kotlin.math.ceil
 
 
 class AudioPlayerActivity : ComponentActivity() {
@@ -654,10 +655,24 @@ class AudioPlayerActivity : ComponentActivity() {
                         }
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
-                    Box(
-                        modifier = Modifier.padding(8.dp)
+                    Column(
+                        modifier = Modifier.padding(6.dp)
                     ) {
                         Timer(time = element.startTime)
+                        if(isNow) {
+                            val text = if(element.beats != null) {
+                                val tempo = if (element is SetTempo) element.tempo else (rhythm.elements.getOrNull(index - 1) as? SetTempo)?.tempo ?: 1
+                                val currentBeats = ceil((progress - element.startTime) / (60.0 / tempo * 1000)).toInt()
+                                getString(R.string.audio_player_length_beats, currentBeats)
+                            } else {
+                                getString(R.string.audio_player_length_seconds, (progress - element.startTime) / 1000f)
+                            }
+                            Text(
+                                text = text,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = color
+                            )
+                        }
                     }
                     Spacer(modifier = Modifier.width(32.dp))
                     Box(

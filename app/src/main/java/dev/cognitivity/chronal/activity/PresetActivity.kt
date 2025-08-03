@@ -1,0 +1,597 @@
+package dev.cognitivity.chronal.activity
+
+import android.annotation.SuppressLint
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import dev.cognitivity.chronal.ChronalApp
+import dev.cognitivity.chronal.MetronomePreset
+import dev.cognitivity.chronal.MetronomeState
+import dev.cognitivity.chronal.MusicFont
+import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.toSp
+import dev.cognitivity.chronal.ui.theme.MetronomeTheme
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+
+class PresetActivity : ComponentActivity() {
+
+    @SuppressLint("SourceLockedOrientationActivity")
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            MetronomeTheme {
+                MainContent()
+            }
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+    @Composable
+    fun MainContent() {
+        val scope = rememberCoroutineScope()
+
+        val settings = ChronalApp.getInstance().settings
+        val setting = settings.metronomePresets
+        val presets = remember { mutableStateListOf<MetronomePreset>().apply { addAll(setting.value) } }
+
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(getString(R.string.presets_title))
+                    },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = { finish() }
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                                contentDescription = getString(R.string.generic_back)
+                            )
+                        }
+                    }
+                )
+            },
+            floatingActionButton = {
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        val metronome = ChronalApp.getInstance().metronome
+                        val metronomeSecondary = ChronalApp.getInstance().metronomeSecondary
+                        val newPreset = MetronomePreset(
+                            name = getString(R.string.presets_new_name),
+                            state = MetronomeState(
+                                bpm = metronome.bpm,
+                                beatValuePrimary = metronome.beatValue,
+                                beatValueSecondary = metronomeSecondary.beatValue,
+                                secondaryEnabled = metronomeSecondary.active
+                            ),
+                            primaryRhythm = metronome.getRhythm(),
+                            secondaryRhythm = metronomeSecondary.getRhythm(),
+                            primarySimpleRhythm = settings.metronomeSimpleRhythm.value,
+                            secondarySimpleRhythm = settings.metronomeSimpleRhythmSecondary.value
+                        )
+                        presets.add(newPreset)
+                        setting.value = presets
+                        scope.launch {
+                            ChronalApp.getInstance().settings.save()
+                        }
+                    },
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Add,
+                        contentDescription = getString(R.string.presets_add)
+                    )
+                    Spacer(modifier = Modifier.size(8.dp))
+                    Text(getString(R.string.presets_add), style = MaterialTheme.typography.bodyLarge)
+                }
+            },
+            modifier = Modifier.fillMaxSize()
+        ) { innerPadding ->
+            LazyColumn(
+                modifier = Modifier.fillMaxSize()
+                    .padding(innerPadding),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(
+                    items = presets,
+                    key = { it.timestamp }
+                ) { preset ->
+                    val index = presets.indexOf(preset)
+
+                    var showDialog by remember { mutableStateOf(false) }
+
+                    var preset by remember { mutableStateOf(presets[index]) }
+
+                    Row(
+                        modifier = Modifier.fillMaxSize()
+                            .clickable { showDialog = true }
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(
+                                text = preset.name,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                            Text(
+                                text = getString(R.string.presets_bpm, preset.state.bpm),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
+                            contentDescription = getString(R.string.presets_edit),
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                    if(showDialog) {
+                        var renameDialog by remember { mutableStateOf(false) }
+                        var deleteDialog by remember { mutableStateOf(false) }
+
+                        Dialog(
+                            onDismissRequest = { showDialog = false },
+                            properties = DialogProperties(
+                                usePlatformDefaultWidth = false,
+                                decorFitsSystemWindows = false
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxSize()
+                                    .background(MaterialTheme.colorScheme.surface)
+                            ) {
+                                TopAppBar(
+                                    title = {
+                                        Text(getString(R.string.presets_edit_title))
+                                    },
+                                    navigationIcon = {
+                                        IconButton(
+                                            onClick = { showDialog = false }
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                                                contentDescription = getString(R.string.generic_back)
+                                            )
+                                        }
+                                    },
+                                    colors = TopAppBarDefaults.topAppBarColors(
+                                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                                    )
+                                )
+                                Column(
+                                    modifier = Modifier.verticalScroll(rememberScrollState())
+                                ) {
+                                    DialogContent(preset,
+                                        onDismiss = { showDialog = false },
+                                        onRename = { renameDialog = it },
+                                        onDelete = { deleteDialog = it },
+                                        onUpdate = { newPreset ->
+                                            preset = newPreset
+                                            presets[index] = newPreset
+                                            setting.value = presets.toMutableList()
+                                            scope.launch {
+                                                ChronalApp.getInstance().settings.save()
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+
+                            if(renameDialog) {
+                                var newName by remember { mutableStateOf(preset.name) }
+                                AlertDialog(
+                                    onDismissRequest = { renameDialog = false },
+                                    title = { Text(getString(R.string.presets_rename)) },
+                                    text = {
+                                        OutlinedTextField(
+                                            value = newName,
+                                            onValueChange = { newName = it },
+                                            label = { Text(getString(R.string.presets_rename_hint)) },
+                                            singleLine = true
+                                        )
+                                    },
+                                    confirmButton = {
+                                        TextButton(
+                                            onClick = {
+                                                preset = preset.copy(name = newName)
+                                                presets[index] = preset
+                                                ChronalApp.getInstance().settings.metronomePresets.value = presets
+                                                renameDialog = false
+                                                scope.launch {
+                                                    ChronalApp.getInstance().settings.save()
+                                                }
+                                            }
+                                        ) {
+                                            Text(getString(R.string.generic_confirm))
+                                        }
+                                    },
+                                    dismissButton = {
+                                        TextButton(
+                                            onClick = { renameDialog = false }
+                                        ) {
+                                            Text(getString(R.string.generic_cancel))
+                                        }
+                                    }
+                                )
+                            }
+                            if(deleteDialog) {
+                                AlertDialog(
+                                    onDismissRequest = { deleteDialog = false },
+                                    title = { Text(getString(R.string.presets_delete)) },
+                                    text = { Text(getString(R.string.presets_delete_confirm, preset.name)) },
+                                    confirmButton = {
+                                        TextButton(
+                                            onClick = {
+                                                presets.removeAt(index)
+                                                ChronalApp.getInstance().settings.metronomePresets.value = presets
+                                                deleteDialog = false
+                                                showDialog = false
+                                                scope.launch {
+                                                    ChronalApp.getInstance().settings.save()
+                                                }
+                                            }
+                                        ) {
+                                            Text(getString(R.string.generic_confirm))
+                                        }
+                                    },
+                                    dismissButton = {
+                                        TextButton(
+                                            onClick = { deleteDialog = false }
+                                        ) {
+                                            Text(getString(R.string.generic_cancel))
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
+    @Composable
+    fun ColumnScope.DialogContent(preset: MetronomePreset, onDismiss: () -> Unit, onRename: (Boolean) -> Unit, onDelete: (Boolean) -> Unit, onUpdate: (MetronomePreset) -> Unit) {
+        val scope = rememberCoroutineScope()
+        val settings = ChronalApp.getInstance().settings
+        var checked by remember { mutableStateOf(false) }
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = preset.name,
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(top = 32.dp)
+            )
+
+            val created = preset.timestamp
+            val time = SimpleDateFormat.getDateTimeInstance(2, 2).format(created)
+            Text(
+                text = getString(R.string.presets_created_at, time),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 8.dp, bottom = 24.dp)
+            )
+            val size = SplitButtonDefaults.MediumContainerHeight
+            SplitButtonLayout(
+                leadingButton = {
+                    SplitButtonDefaults.LeadingButton(
+                        modifier = Modifier.heightIn(size),
+                        shapes = SplitButtonDefaults.leadingButtonShapesFor(size),
+                        contentPadding = SplitButtonDefaults.leadingButtonContentPaddingFor(size),
+                        onClick = {
+                            onDismiss()
+
+                            val metronome = ChronalApp.getInstance().metronome
+                            val metronomeSecondary = ChronalApp.getInstance().metronomeSecondary
+                            metronome.bpm = preset.state.bpm
+                            metronome.beatValue = preset.state.beatValuePrimary
+                            metronomeSecondary.bpm = preset.state.bpm
+                            metronomeSecondary.active = true
+                            metronomeSecondary.beatValue = preset.state.beatValueSecondary
+                            metronomeSecondary.active = preset.state.secondaryEnabled
+
+                            settings.metronomeState.value = preset.state
+                            settings.metronomeRhythm.value = preset.primaryRhythm.serialize()
+                            settings.metronomeRhythmSecondary.value = preset.secondaryRhythm.serialize()
+                            settings.metronomeSimpleRhythm.value = preset.primarySimpleRhythm
+                            settings.metronomeSimpleRhythmSecondary.value = preset.secondarySimpleRhythm
+                            metronome.setRhythm(preset.primaryRhythm)
+                            metronomeSecondary.setRhythm(preset.secondaryRhythm)
+
+                            scope.launch {
+                                ChronalApp.getInstance().settings.save()
+                                finish()
+                            }
+                        }
+                    ) {
+                        Text(getString(R.string.presets_use), style = ButtonDefaults.textStyleFor(size))
+                    }
+                },
+                trailingButton = {
+                    SplitButtonDefaults.TrailingButton(
+                        modifier = Modifier.heightIn(size),
+                        shapes = SplitButtonDefaults.trailingButtonShapesFor(size),
+                        contentPadding = SplitButtonDefaults.trailingButtonContentPaddingFor(size),
+                        checked = checked,
+                        onCheckedChange = { checked = it }
+                    ) {
+                        val rotation: Float by
+                        animateFloatAsState(
+                            targetValue = if (checked) 180f else 0f,
+                            label = "Trailing Icon Rotation",
+                        )
+                        Icon(
+                            Icons.Filled.KeyboardArrowDown,
+                            modifier = Modifier.size(SplitButtonDefaults.trailingButtonIconSizeFor(size))
+                                .graphicsLayer {
+                                    this.rotationZ = rotation
+                                },
+                            contentDescription = getString(if(checked) R.string.generic_menu_collapse else R.string.generic_menu_expand),
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = checked,
+                        onDismissRequest = { checked = false },
+                    ) {
+                        DropdownMenuItem(
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.Edit,
+                                    contentDescription = getString(R.string.presets_rename),
+                                )
+                            },
+                            text = { Text(getString(R.string.presets_rename)) },
+                            onClick = {
+                                checked = false
+                                onRename(true)
+                            }
+                        )
+                        DropdownMenuItem(
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(R.drawable.baseline_music_note_24),
+                                    contentDescription = getString(R.string.presets_set_current),
+                                )
+                            },
+                            text = { Text(getString(R.string.presets_set_current)) },
+                            onClick = {
+                                checked = false
+                                val metronome = ChronalApp.getInstance().metronome
+                                val metronomeSecondary = ChronalApp.getInstance().metronomeSecondary
+
+                                val newPreset = preset.copy(
+                                    state = MetronomeState(
+                                        bpm = metronome.bpm,
+                                        beatValuePrimary = metronome.beatValue,
+                                        beatValueSecondary = metronomeSecondary.beatValue,
+                                        secondaryEnabled = metronomeSecondary.active
+                                    ),
+                                    primaryRhythm = metronome.getRhythm(),
+                                    secondaryRhythm = metronomeSecondary.getRhythm(),
+                                    primarySimpleRhythm = settings.metronomeSimpleRhythm.value,
+                                    secondarySimpleRhythm = settings.metronomeSimpleRhythmSecondary.value,
+                                )
+
+                                scope.launch {
+                                    ChronalApp.getInstance().settings.save()
+                                    onUpdate(newPreset)
+                                }
+                            }
+                        )
+                        DropdownMenuItem(
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.Delete,
+                                    contentDescription = getString(R.string.presets_delete),
+                                )
+                            },
+                            text = { Text(getString(R.string.presets_delete)) },
+                            onClick = {
+                                checked = false
+                                onDelete(true)
+                            }
+                        )
+                    }
+                }
+            )
+        }
+
+        Row(
+            modifier = Modifier.padding(top = 32.dp)
+                .align(Alignment.CenterHorizontally),
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.baseline_music_note_24),
+                contentDescription = getString(R.string.presets_bpm, preset.state.bpm),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = getString(R.string.presets_bpm, preset.state.bpm),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth()
+                .padding(32.dp),
+            horizontalArrangement = Arrangement.spacedBy(32.dp),
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+                    .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(16.dp))
+                    .padding(4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = getString(R.string.presets_rhythm_primary),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                RhythmInfo(preset, true)
+            }
+
+            val enabled = preset.state.secondaryEnabled
+            Column(
+                modifier = Modifier.weight(1f)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(if(enabled) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.surfaceContainer)
+                    .padding(4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = getString(R.string.presets_rhythm_secondary),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = if(enabled) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                RhythmInfo(preset, false, preset.state.secondaryEnabled)
+            }
+        }
+    }
+
+    @Composable
+    fun RhythmInfo(
+        preset: MetronomePreset,
+        isPrimary: Boolean,
+        enabled: Boolean = true
+    ) {
+        val textColor = if(enabled) {
+            if(isPrimary) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onTertiaryContainer
+        } else MaterialTheme.colorScheme.onSurface
+        val rhythm = if(isPrimary) preset.primaryRhythm else preset.secondaryRhythm
+        val simpleRhythm = if(isPrimary) preset.primarySimpleRhythm else preset.secondarySimpleRhythm
+        val isAdvanced = simpleRhythm.timeSignature == 0 to 0
+        Row(
+            modifier = Modifier.fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            if(!enabled) {
+                Box(
+                    modifier = Modifier.height(64.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Close,
+                        contentDescription = getString(R.string.presets_disabled),
+                        tint = textColor,
+                        modifier = Modifier.size(64.dp)
+                            .align(Alignment.Center)
+                    )
+                }
+                return
+            }
+            val timeSignature = preset.primaryRhythm.measures[0].timeSig
+            Box(modifier = Modifier.weight(1f).height(64.dp)) {
+                Box(
+                    modifier = Modifier.align(Alignment.Center)
+                ) {
+                    MusicFont.Number.TimeSignature(timeSignature.first, timeSignature.second, textColor)
+                }
+            }
+            Box(
+                modifier = Modifier.fillMaxHeight()
+                    .weight(1f)
+                    .align(Alignment.CenterVertically)
+            ) {
+                val subdivision = if(isAdvanced) rhythm.measures[0].timeSig.second else simpleRhythm.subdivision
+                val isTuplet = (subdivision and (subdivision - 1)) != 0
+                val noteValue = if(!isTuplet) subdivision else (subdivision / (3f / 2f)).toInt()
+                val char = MusicFont.Notation.convert(noteValue, false)
+                val offset = MusicFont.Notation.entries.find { it.char == char }?.offset ?: Offset(0f, 0f)
+
+                Text(
+                    text = char.toString(),
+                    color = textColor,
+                    style = TextStyle(
+                        fontFamily = FontFamily(Font(R.font.bravuratext)),
+                        fontSize = 64.dp.toSp()
+                    ),
+                    modifier = Modifier.align(Alignment.Center)
+                        .offset(64.dp * offset.x, 64.dp * offset.y)
+                        .offset(0.dp, if(isTuplet) 8.dp else 0.dp)
+                )
+
+                if(isTuplet) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                            .align(Alignment.TopCenter)
+                            .offset(y = (-16).dp),
+                    ) {
+                        Box(
+                            modifier = Modifier.height(1.dp)
+                                .padding(horizontal = 4.dp)
+                                .weight(1f)
+                                .align(Alignment.CenterVertically)
+                                .background(textColor)
+                        )
+                        Text(
+                            text = "3",
+                            color = textColor,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                                .padding(4.dp)
+                        )
+                        Box(
+                            modifier = Modifier.height(1.dp)
+                                .padding(horizontal = 4.dp)
+                                .weight(1f)
+                                .align(Alignment.CenterVertically)
+                                .background(textColor)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+

@@ -97,7 +97,6 @@ fun TunerPageCompact(
                 Box(
                     Modifier.fillMaxWidth(0.4f)
                         .fillMaxHeight()
-                        .background(MaterialTheme.colorScheme.surfaceContainerLow)
                 ) {
                     TopBar(tuner, hz, instrument, wide = true)
                 }
@@ -196,8 +195,8 @@ fun TunerPageCompact(
 @Composable
 fun TopBar(tuner: Tuner?, hz: Float, instrument: Instrument, wide: Boolean) {
     Surface(
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        shape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)
+        color = if(wide) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = if(wide) RoundedCornerShape(topEnd = 24.dp) else RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)
     ) {
         Column(
             modifier = Modifier.fillMaxWidth()

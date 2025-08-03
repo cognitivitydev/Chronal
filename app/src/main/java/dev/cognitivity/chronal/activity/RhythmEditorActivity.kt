@@ -89,11 +89,11 @@ class RhythmEditorActivity : ComponentActivity() {
     private var musicSelected by mutableIntStateOf(-1)
 
     private var rhythm by mutableStateOf("{4/4}Q;q;q;q;")
-    private var parsedRhythm by mutableStateOf(Rhythm.Companion.deserialize(rhythm))
+    private var parsedRhythm by mutableStateOf(Rhythm.deserialize(rhythm))
     private var backupRhythm by mutableStateOf(parsedRhythm)
 
     private val metronome = Metronome(parsedRhythm, sendNotifications = false)
-    private var appMetronome by mutableStateOf(ChronalApp.Companion.getInstance().metronome)
+    private var appMetronome by mutableStateOf(ChronalApp.getInstance().metronome)
     var isPlaying by mutableStateOf(false)
 
     private var showTimeSignature by mutableIntStateOf(-1)
@@ -111,8 +111,8 @@ class RhythmEditorActivity : ComponentActivity() {
         }
         isPrimary = intent.getBooleanExtra("isPrimary", true)
 
-        this.rhythm = if(isPrimary) ChronalApp.Companion.getInstance().settings.metronomeRhythm.value else ChronalApp.Companion.getInstance().settings.metronomeRhythmSecondary.value
-        parsedRhythm = Rhythm.Companion.deserialize(rhythm)
+        this.rhythm = if(isPrimary) ChronalApp.getInstance().settings.metronomeRhythm.value else ChronalApp.getInstance().settings.metronomeRhythmSecondary.value
+        parsedRhythm = Rhythm.deserialize(rhythm)
 
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -131,7 +131,7 @@ class RhythmEditorActivity : ComponentActivity() {
             }
         }
 
-        appMetronome = if(isPrimary) ChronalApp.Companion.getInstance().metronome else ChronalApp.Companion.getInstance().metronomeSecondary
+        appMetronome = if(isPrimary) ChronalApp.getInstance().metronome else ChronalApp.getInstance().metronomeSecondary
         metronome.bpm = appMetronome.bpm
         metronome.beatValue = appMetronome.beatValue
 
@@ -139,7 +139,7 @@ class RhythmEditorActivity : ComponentActivity() {
         metronome.setUpdateListener(2) { beat ->
             val timestamp = metronome.timestamp
             lifecycleScope.launch {
-                delay(ChronalApp.Companion.getInstance().settings.visualLatency.value.toLong())
+                delay(ChronalApp.getInstance().settings.visualLatency.value.toLong())
                 if(metronome.playing && timestamp == metronome.timestamp) musicSelected = beat.index
             }
         }
@@ -148,7 +148,7 @@ class RhythmEditorActivity : ComponentActivity() {
             isPlaying = !isPaused
             if(isPaused) musicSelected = -1
             lifecycleScope.launch {
-                delay(ChronalApp.Companion.getInstance().settings.visualLatency.value.toLong())
+                delay(ChronalApp.getInstance().settings.visualLatency.value.toLong())
                 if(timestamp == metronome.timestamp) musicSelected = if(isPaused) -1 else 0
             }
         }
@@ -184,25 +184,25 @@ class RhythmEditorActivity : ComponentActivity() {
 
         val animatedRatio by animateFloatAsState(
             targetValue = if (isPlaying) 1.5f else 1f,
-            animationSpec = MotionScheme.Companion.expressive().fastSpatialSpec(),
+            animationSpec = MotionScheme.expressive().fastSpatialSpec(),
             label = "animatedRatio"
         )
 
         Scaffold(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface),
         ) {
             Column {
                 Box(
-                    modifier = Modifier.Companion
+                    modifier = Modifier
                         .fillMaxSize()
                         .weight(4f)
                         .background(MaterialTheme.colorScheme.surfaceContainer)
                         .padding(32.dp, 0.dp)
                 ) {
                     LazyRow(
-                        modifier = Modifier.Companion
+                        modifier = Modifier
                             .fillMaxSize()
                             .padding(1.dp, 0.dp),
                     ) {
@@ -213,15 +213,15 @@ class RhythmEditorActivity : ComponentActivity() {
                             var showTimeSignature by remember { mutableStateOf(false) }
 
                             Box(
-                                modifier = Modifier.Companion
+                                modifier = Modifier
                                     .fillMaxHeight()
                                     .background(MaterialTheme.colorScheme.surfaceContainer)
                             ) {
-                                Column(modifier = Modifier.Companion.align(Alignment.Companion.Center)) {
+                                Column(modifier = Modifier.align(Alignment.Center)) {
                                     Button(
-                                        modifier = Modifier.Companion
+                                        modifier = Modifier
                                             .padding(16.dp, 4.dp)
-                                            .align(Alignment.Companion.CenterHorizontally),
+                                            .align(Alignment.CenterHorizontally),
                                         onClick = {
                                             showTimeSignature = true
                                         }
@@ -229,17 +229,17 @@ class RhythmEditorActivity : ComponentActivity() {
                                         Icon(
                                             imageVector = Icons.Default.Add,
                                             contentDescription = getString(R.string.editor_measure_add),
-                                            modifier = Modifier.Companion.align(Alignment.Companion.CenterVertically)
+                                            modifier = Modifier.align(Alignment.CenterVertically)
                                         )
                                         Text(
                                             getString(R.string.editor_measure_add),
-                                            modifier = Modifier.Companion.align(Alignment.Companion.CenterVertically)
+                                            modifier = Modifier.align(Alignment.CenterVertically)
                                         )
                                     }
                                     FilledTonalButton(
-                                        modifier = Modifier.Companion
+                                        modifier = Modifier
                                             .padding(16.dp, 4.dp)
-                                            .align(Alignment.Companion.CenterHorizontally),
+                                            .align(Alignment.CenterHorizontally),
                                         onClick = {
                                             val measures = parsedRhythm.measures.toMutableList()
                                             if (measures.size > 1) {
@@ -253,11 +253,11 @@ class RhythmEditorActivity : ComponentActivity() {
                                         Icon(
                                             painter = painterResource(R.drawable.baseline_remove_24),
                                             contentDescription = getString(R.string.editor_measure_remove),
-                                            modifier = Modifier.Companion.align(Alignment.Companion.CenterVertically)
+                                            modifier = Modifier.align(Alignment.CenterVertically)
                                         )
                                         Text(
                                             getString(R.string.editor_measure_remove),
-                                            modifier = Modifier.Companion.align(Alignment.Companion.CenterVertically)
+                                            modifier = Modifier.align(Alignment.CenterVertically)
                                         )
                                     }
                                 }
@@ -274,18 +274,18 @@ class RhythmEditorActivity : ComponentActivity() {
                                     title = { Text(getString(R.string.editor_set_time_signature)) },
                                     text = {
                                         Column(
-                                            modifier = Modifier.Companion
+                                            modifier = Modifier
                                                 .aspectRatio(1f)
                                                 .background(
                                                     MaterialTheme.colorScheme.surfaceContainer,
-                                                    MaterialShapes.Companion.Bun.toShape(0)
+                                                    MaterialShapes.Bun.toShape(0)
                                                 )
                                         ) {
                                             Row(
-                                                modifier = Modifier.Companion
+                                                modifier = Modifier
                                                     .weight(1f)
                                                     .padding(horizontal = 32.dp),
-                                                verticalAlignment = Alignment.Companion.CenterVertically,
+                                                verticalAlignment = Alignment.CenterVertically,
                                             ) {
                                                 IconButton(
                                                     onClick = {
@@ -302,11 +302,11 @@ class RhythmEditorActivity : ComponentActivity() {
                                                     )
                                                 }
                                                 Box(
-                                                    modifier = Modifier.Companion
+                                                    modifier = Modifier
                                                         .weight(1f)
                                                         .fillMaxHeight(0.8f)
-                                                        .align(Alignment.Companion.CenterVertically),
-                                                    contentAlignment = Alignment.Companion.Center
+                                                        .align(Alignment.CenterVertically),
+                                                    contentAlignment = Alignment.Center
                                                 ) {
                                                     MusicFont.Number.TimeSignatureLine(
                                                         timeSignature.first,
@@ -329,10 +329,10 @@ class RhythmEditorActivity : ComponentActivity() {
                                                 }
                                             }
                                             Row(
-                                                modifier = Modifier.Companion
+                                                modifier = Modifier
                                                     .weight(1f)
                                                     .padding(horizontal = 32.dp),
-                                                verticalAlignment = Alignment.Companion.CenterVertically,
+                                                verticalAlignment = Alignment.CenterVertically,
                                             ) {
                                                 IconButton(
                                                     onClick = {
@@ -349,11 +349,11 @@ class RhythmEditorActivity : ComponentActivity() {
                                                     )
                                                 }
                                                 Box(
-                                                    modifier = Modifier.Companion
+                                                    modifier = Modifier
                                                         .weight(1f)
                                                         .fillMaxHeight(0.8f)
-                                                        .align(Alignment.Companion.CenterVertically),
-                                                    contentAlignment = Alignment.Companion.Center
+                                                        .align(Alignment.CenterVertically),
+                                                    contentAlignment = Alignment.Center
                                                 ) {
                                                     MusicFont.Number.TimeSignatureLine(
                                                         timeSignature.second,
@@ -418,24 +418,24 @@ class RhythmEditorActivity : ComponentActivity() {
                         }
                     }
 
-                    Row(modifier = Modifier.Companion.fillMaxSize()) {
+                    Row(modifier = Modifier.fillMaxSize()) {
                         Box(
-                            modifier = Modifier.Companion
-                                .align(Alignment.Companion.CenterVertically)
+                            modifier = Modifier
+                                .align(Alignment.CenterVertically)
                                 .fillMaxHeight(0.8f)
                                 .width(1.dp)
                                 .background(MaterialTheme.colorScheme.onSurfaceVariant)
                         )
                         Box(
-                            modifier = Modifier.Companion
-                                .align(Alignment.Companion.CenterVertically)
+                            modifier = Modifier
+                                .align(Alignment.CenterVertically)
                                 .weight(1f)
                                 .height(1.dp)
                                 .background(MaterialTheme.colorScheme.onSurfaceVariant)
                         )
                         Box(
-                            modifier = Modifier.Companion
-                                .align(Alignment.Companion.CenterVertically)
+                            modifier = Modifier
+                                .align(Alignment.CenterVertically)
                                 .fillMaxHeight(0.8f)
                                 .width(1.dp)
                                 .background(MaterialTheme.colorScheme.onSurfaceVariant)
@@ -514,23 +514,23 @@ class RhythmEditorActivity : ComponentActivity() {
                 var emphasis by remember { mutableStateOf(true) }
 
                 Box(
-                    modifier = Modifier.Companion
+                    modifier = Modifier
                         .fillMaxWidth()
                         .weight(4f)
                         .background(MaterialTheme.colorScheme.surface)
                         .padding(vertical = 4.dp)
                 ) {
                     LazyRow(
-                        modifier = Modifier.Companion
+                        modifier = Modifier
                             .fillMaxHeight()
-                            .align(Alignment.Companion.Center),
+                            .align(Alignment.Center),
                         contentPadding = PaddingValues(horizontal = 8.dp),
-                        verticalAlignment = Alignment.Companion.CenterVertically,
+                        verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
                         item {
                             Column(
-                                modifier = Modifier.Companion
+                                modifier = Modifier
                                     .width(IntrinsicSize.Max)
                                     .fillMaxHeight()
                                     .padding(8.dp, 0.dp)
@@ -541,7 +541,7 @@ class RhythmEditorActivity : ComponentActivity() {
                         }
                         item {
                             Column(
-                                modifier = Modifier.Companion
+                                modifier = Modifier
                                     .width(IntrinsicSize.Max)
                                     .fillMaxHeight()
                                     .padding(8.dp, 0.dp)
@@ -552,15 +552,15 @@ class RhythmEditorActivity : ComponentActivity() {
                         }
                         item {
                             Box(
-                                modifier = Modifier.Companion
+                                modifier = Modifier
                                     .width(IntrinsicSize.Max)
                                     .padding(24.dp, 0.dp)
                                     .fillMaxHeight()
                             ) {
                                 WavyVerticalLine(
-                                    modifier = Modifier.Companion
+                                    modifier = Modifier
                                         .fillMaxHeight(0.75f)
-                                        .align(Alignment.Companion.Center),
+                                        .align(Alignment.Center),
                                     MaterialTheme.colorScheme.outlineVariant
                                 )
                             }
@@ -568,7 +568,7 @@ class RhythmEditorActivity : ComponentActivity() {
                         for (i in 0..4) {
                             item {
                                 Column(
-                                    modifier = Modifier.Companion
+                                    modifier = Modifier
                                         .width(IntrinsicSize.Max)
                                         .fillMaxHeight()
                                         .padding(8.dp, 0.dp)
@@ -593,12 +593,12 @@ class RhythmEditorActivity : ComponentActivity() {
                         }
                         item {
                             Column(
-                                modifier = Modifier.Companion.padding(horizontal = 16.dp)
+                                modifier = Modifier.padding(horizontal = 16.dp)
                                     .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(8.dp))
                                     .padding(8.dp, 16.dp, 16.dp, 16.dp)
                             ) {
                                 Row(
-                                    verticalAlignment = Alignment.Companion.CenterVertically,
+                                    verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     val interactionSource = remember { MutableInteractionSource() }
                                     RadioButton(
@@ -607,13 +607,13 @@ class RhythmEditorActivity : ComponentActivity() {
                                         enabled = notesEnabled,
                                         interactionSource = interactionSource
                                     )
-                                    Spacer(modifier = Modifier.Companion.width(8.dp))
+                                    Spacer(modifier = Modifier.width(8.dp))
                                     Text(
                                         text = getString(R.string.editor_emphasis_high),
                                         style = MaterialTheme.typography.bodyLarge,
                                         color = if (emphasis && notesEnabled) MaterialTheme.colorScheme.onSurface
                                         else MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.Companion.clickable(
+                                        modifier = Modifier.clickable(
                                             enabled = notesEnabled,
                                             interactionSource = interactionSource,
                                             indication = null
@@ -621,7 +621,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                     )
                                 }
                                 Row(
-                                    verticalAlignment = Alignment.Companion.CenterVertically,
+                                    verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     val interactionSource = remember { MutableInteractionSource() }
                                     RadioButton(
@@ -630,13 +630,13 @@ class RhythmEditorActivity : ComponentActivity() {
                                         enabled = notesEnabled,
                                         interactionSource = interactionSource
                                     )
-                                    Spacer(modifier = Modifier.Companion.width(8.dp))
+                                    Spacer(modifier = Modifier.width(8.dp))
                                     Text(
                                         text = getString(R.string.editor_emphasis_low),
                                         style = MaterialTheme.typography.bodyLarge,
                                         color = if (!emphasis && notesEnabled) MaterialTheme.colorScheme.onSurface
                                         else MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.Companion.clickable(
+                                        modifier = Modifier.clickable(
                                             enabled = notesEnabled,
                                             interactionSource = interactionSource,
                                             indication = null
@@ -648,7 +648,7 @@ class RhythmEditorActivity : ComponentActivity() {
                     }
                 }
                 Row(
-                    modifier = Modifier.Companion
+                    modifier = Modifier
                         .fillMaxWidth()
                         .weight(2f)
                         .background(MaterialTheme.colorScheme.surfaceContainerLow)
@@ -658,7 +658,7 @@ class RhythmEditorActivity : ComponentActivity() {
                     MaterialTheme(
                         colorScheme = MaterialTheme.colorScheme.copy(surfaceContainer = MaterialTheme.colorScheme.surfaceContainerHigh),
                         shapes = MaterialTheme.shapes.copy(
-                            extraSmall = androidx.compose.foundation.shape.RoundedCornerShape(
+                            extraSmall = RoundedCornerShape(
                                 16.dp
                             )
                         )
@@ -681,9 +681,9 @@ class RhythmEditorActivity : ComponentActivity() {
                                     appMetronome.bpm = metronome.bpm
                                     appMetronome.beatValue = metronome.beatValue
 
-                                    val primaryMetronome = ChronalApp.Companion.getInstance().metronome
-                                    val secondaryMetronome = ChronalApp.Companion.getInstance().metronomeSecondary
-                                    ChronalApp.Companion.getInstance().settings.metronomeState.value = MetronomeState(
+                                    val primaryMetronome = ChronalApp.getInstance().metronome
+                                    val secondaryMetronome = ChronalApp.getInstance().metronomeSecondary
+                                    ChronalApp.getInstance().settings.metronomeState.value = MetronomeState(
                                         bpm = metronome.bpm,
                                         beatValuePrimary = primaryMetronome.beatValue,
                                         beatValueSecondary = secondaryMetronome.beatValue,
@@ -691,18 +691,18 @@ class RhythmEditorActivity : ComponentActivity() {
                                     )
 
                                     if (isPrimary) {
-                                        ChronalApp.Companion.getInstance().settings.metronomeRhythm.value =
+                                        ChronalApp.getInstance().settings.metronomeRhythm.value =
                                             parsedRhythm.serialize()
-                                        ChronalApp.Companion.getInstance().settings.metronomeSimpleRhythm.value =
+                                        ChronalApp.getInstance().settings.metronomeSimpleRhythm.value =
                                             SimpleRhythm(0 to 0, 0, 0)
                                     } else {
-                                        ChronalApp.Companion.getInstance().settings.metronomeRhythmSecondary.value =
+                                        ChronalApp.getInstance().settings.metronomeRhythmSecondary.value =
                                             parsedRhythm.serialize()
-                                        ChronalApp.Companion.getInstance().settings.metronomeSimpleRhythmSecondary.value =
+                                        ChronalApp.getInstance().settings.metronomeSimpleRhythmSecondary.value =
                                             SimpleRhythm(0 to 0, 0, 0)
                                     }
                                     scope.launch {
-                                        ChronalApp.Companion.getInstance().settings.save()
+                                        ChronalApp.getInstance().settings.save()
                                         finish()
                                     }
                                 },
@@ -736,8 +736,8 @@ class RhythmEditorActivity : ComponentActivity() {
                         }
                     }
                     IconButton(
-                        modifier = Modifier.Companion
-                            .align(Alignment.Companion.CenterVertically)
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
                             .padding(8.dp, 0.dp),
                         onClick = {
                             backDropdown = true
@@ -750,7 +750,7 @@ class RhythmEditorActivity : ComponentActivity() {
                         )
                     }
                     Button(
-                        modifier = Modifier.Companion.align(Alignment.Companion.CenterVertically),
+                        modifier = Modifier.align(Alignment.CenterVertically),
                         onClick = {
                             showSimpleWarning = true
                         },
@@ -764,13 +764,13 @@ class RhythmEditorActivity : ComponentActivity() {
                         Text(getString(R.string.metronome_edit_rhythm_switch_simple))
                     }
                     Box(
-                        modifier = Modifier.Companion
+                        modifier = Modifier
                             .weight(1f)
-                            .align(Alignment.Companion.CenterVertically)
+                            .align(Alignment.CenterVertically)
                     ) {
 
                         Row(
-                            Modifier.Companion.align(Alignment.Companion.Center),
+                            Modifier.align(Alignment.Center),
                             horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)
                         ) {
                             ToggleButton(
@@ -779,7 +779,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                 shapes = ButtonGroupDefaults.connectedLeadingButtonShapes(),
                                 contentPadding = ButtonDefaults.ContentPadding
                             ) {
-                                Text("Notes")
+                                Text(getString(R.string.editor_input_notes))
                             }
 
                             ToggleButton(
@@ -788,14 +788,14 @@ class RhythmEditorActivity : ComponentActivity() {
                                 shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
                                 contentPadding = ButtonDefaults.ContentPadding
                             ) {
-                                Text("Rests")
+                                Text(getString(R.string.editor_input_rests))
                             }
                         }
 
                     }
                     Row(
-                        modifier = Modifier.Companion
-                            .align(Alignment.Companion.CenterVertically)
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                             .clickable {
@@ -813,24 +813,24 @@ class RhythmEditorActivity : ComponentActivity() {
                                 fontFamily = FontFamily(Font(R.font.bravuratext)),
                                 fontSize = 32.dp.toSp()
                             ),
-                            modifier = Modifier.Companion
-                                .align(Alignment.Companion.CenterVertically)
+                            modifier = Modifier
+                                .align(Alignment.CenterVertically)
                                 .offset(xOffset, yOffset)
                         )
                         Spacer(
-                            modifier = Modifier.Companion.width(8.dp)
+                            modifier = Modifier.width(8.dp)
                         )
                         Text(
                             "= ${metronome.bpm}",
-                            modifier = Modifier.Companion.align(Alignment.Companion.CenterVertically),
+                            modifier = Modifier.align(Alignment.CenterVertically),
                             color = MaterialTheme.colorScheme.onSurface,
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }
                     Box(
-                        modifier = Modifier.Companion
+                        modifier = Modifier
                             .padding(start = 8.dp)
-                            .align(Alignment.Companion.CenterVertically)
+                            .align(Alignment.CenterVertically)
                             .fillMaxHeight(0.8f)
                             .aspectRatio(1.5f)
                     ) {
@@ -838,12 +838,12 @@ class RhythmEditorActivity : ComponentActivity() {
                             targetValue = if (isPlaying) MaterialTheme.colorScheme.tertiaryContainer
                             else if (errors.isNotEmpty()) MaterialTheme.colorScheme.errorContainer
                             else MaterialTheme.colorScheme.primaryContainer,
-                            animationSpec = MotionScheme.Companion.expressive().defaultEffectsSpec(),
+                            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
                             label = "animatedColor"
                         )
 
                         Box(
-                            modifier = Modifier.Companion
+                            modifier = Modifier
                                 .aspectRatio(animatedRatio, true)
                                 .clip(CircleShape)
                                 .background(animatedColor)
@@ -860,15 +860,17 @@ class RhythmEditorActivity : ComponentActivity() {
                                         metronome.stop()
                                     }
                                 }
-                                .align(Alignment.Companion.Center),
+                                .align(Alignment.Center),
                         ) {
                             Box(
-                                modifier = Modifier.Companion.align(Alignment.Companion.Center)
+                                modifier = Modifier.fillMaxHeight(0.5f)
+                                    .aspectRatio(1f, true)
+                                    .align(Alignment.Center)
                             ) {
                                 if (errors.isEmpty()) {
                                     PlayPauseIcon(
                                         !isPlaying,
-                                        modifier = Modifier.Companion.size(32.dp),
+                                        modifier = Modifier.fillMaxSize(),
                                         pauseColor = MaterialTheme.colorScheme.onPrimaryContainer,
                                         playColor = MaterialTheme.colorScheme.onTertiaryContainer
                                     )
@@ -876,9 +878,6 @@ class RhythmEditorActivity : ComponentActivity() {
                                     Icon(
                                         painter = painterResource(R.drawable.outline_warning_24),
                                         contentDescription = getString(R.string.generic_error),
-                                        modifier = Modifier.Companion
-                                            .size(32.dp)
-                                            .align(Alignment.Companion.Center),
                                         tint = MaterialTheme.colorScheme.onErrorContainer
                                     )
                                 }
@@ -900,23 +899,23 @@ class RhythmEditorActivity : ComponentActivity() {
                     text = {
                         Column {
                             Text(getString(R.string.editor_invalid_rhythm_text))
-                            HorizontalDivider(modifier = Modifier.Companion.padding(vertical = 8.dp))
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                             Text(
                                 getString(R.string.editor_invalid_rhythm_amount, errors.size),
                                 style = MaterialTheme.typography.labelLarge,
-                                modifier = Modifier.Companion.align(Alignment.Companion.CenterHorizontally)
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
                             )
-                            Spacer(modifier = Modifier.Companion.height(4.dp))
+                            Spacer(modifier = Modifier.height(4.dp))
                             LazyColumn(
-                                modifier = Modifier.Companion
+                                modifier = Modifier
                                     .fillMaxWidth()
                                     .background(
                                         MaterialTheme.colorScheme.surfaceContainer,
-                                        androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+                                        RoundedCornerShape(8.dp)
                                     )
                             ) {
                                 items(errors) { error ->
-                                    Text(error, modifier = Modifier.Companion.padding(8.dp, 4.dp))
+                                    Text(error, modifier = Modifier.padding(8.dp, 4.dp))
                                 }
                             }
                         }
@@ -983,9 +982,9 @@ class RhythmEditorActivity : ComponentActivity() {
                                 )))
 
                         appMetronome.beatValue = 4f
-                        val primaryMetronome = ChronalApp.Companion.getInstance().metronome
-                        val secondaryMetronome = ChronalApp.Companion.getInstance().metronomeSecondary
-                        ChronalApp.Companion.getInstance().settings.metronomeState.value = MetronomeState(
+                        val primaryMetronome = ChronalApp.getInstance().metronome
+                        val secondaryMetronome = ChronalApp.getInstance().metronomeSecondary
+                        ChronalApp.getInstance().settings.metronomeState.value = MetronomeState(
                             bpm = metronome.bpm,
                             beatValuePrimary = primaryMetronome.beatValue,
                             beatValueSecondary = secondaryMetronome.beatValue,
@@ -993,23 +992,23 @@ class RhythmEditorActivity : ComponentActivity() {
                         )
 
                         if (isPrimary) {
-                            ChronalApp.Companion.getInstance().settings.metronomeRhythm.value =
+                            ChronalApp.getInstance().settings.metronomeRhythm.value =
                                 metronome.getRhythm().serialize()
-                            ChronalApp.Companion.getInstance().settings.metronomeSimpleRhythm.value = SimpleRhythm(
+                            ChronalApp.getInstance().settings.metronomeSimpleRhythm.value = SimpleRhythm(
                                 parsedRhythm.measures[0].timeSig,
                                 parsedRhythm.measures[0].timeSig.second, 0
                             )
                         } else {
-                            ChronalApp.Companion.getInstance().settings.metronomeRhythmSecondary.value =
+                            ChronalApp.getInstance().settings.metronomeRhythmSecondary.value =
                                 metronome.getRhythm().serialize()
-                            ChronalApp.Companion.getInstance().settings.metronomeSimpleRhythmSecondary.value =
+                            ChronalApp.getInstance().settings.metronomeSimpleRhythmSecondary.value =
                                 SimpleRhythm(
                                     parsedRhythm.measures[0].timeSig,
                                     parsedRhythm.measures[0].timeSig.second, 0
                                 )
                         }
                         scope.launch {
-                            ChronalApp.Companion.getInstance().settings.save()
+                            ChronalApp.getInstance().settings.save()
                         }
                         finish()
                     }) {
@@ -1062,25 +1061,25 @@ class RhythmEditorActivity : ComponentActivity() {
             )
         ) {
             Surface(
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(32.dp),
+                shape = RoundedCornerShape(32.dp),
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                modifier = Modifier.Companion.padding(16.dp).fillMaxWidth(0.5f)
+                modifier = Modifier.padding(16.dp).fillMaxWidth(0.5f)
             ) {
                 Column(
-                    modifier = Modifier.Companion.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                         .padding(16.dp)
                 ) {
                     Text(
                         getString(R.string.editor_bpm_set),
-                        modifier = Modifier.Companion.padding(start = 8.dp),
+                        modifier = Modifier.padding(start = 8.dp),
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    Spacer(Modifier.Companion.height(16.dp))
+                    Spacer(Modifier.height(16.dp))
 
                     LazyHorizontalGrid(
                         rows = GridCells.Fixed(2),
-                        modifier = Modifier.Companion.padding(bottom = 16.dp).fillMaxWidth().height(144.dp),
+                        modifier = Modifier.padding(bottom = 16.dp).fillMaxWidth().height(144.dp),
                         horizontalArrangement = Arrangement.Center,
                         verticalArrangement = Arrangement.Center
                     ) {
@@ -1097,9 +1096,9 @@ class RhythmEditorActivity : ComponentActivity() {
                                 if (isSelected) selectedNote = string
 
                                 Box(
-                                    modifier = Modifier.Companion.padding(4.dp)
+                                    modifier = Modifier.padding(4.dp)
                                         .size(64.dp)
-                                        .clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
+                                        .clip(RoundedCornerShape(16.dp))
                                         .background(
                                             if (isSelected) MaterialTheme.colorScheme.primaryContainer
                                             else MaterialTheme.colorScheme.surfaceContainer
@@ -1108,7 +1107,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                             selectedNote = string
                                             beatValue = value
                                         },
-                                    contentAlignment = Alignment.Companion.Center
+                                    contentAlignment = Alignment.Center
                                 ) {
                                     val xOffset = (48 * char.offset.x).dp
                                     val yOffset = (48 * char.offset.y).dp
@@ -1119,7 +1118,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                             fontFamily = FontFamily(Font(R.font.bravuratext)),
                                             fontSize = 48.dp.toSp()
                                         ),
-                                        modifier = Modifier.Companion.offset(xOffset, yOffset),
+                                        modifier = Modifier.offset(xOffset, yOffset),
                                         color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
                                         else MaterialTheme.colorScheme.onSurface
                                     )
@@ -1128,7 +1127,7 @@ class RhythmEditorActivity : ComponentActivity() {
                         }
                     }
                     Row(
-                        modifier = Modifier.Companion.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth()
                             .pointerInput(Unit) {
                                 detectVerticalDragGestures { _, dragAmount ->
                                     change += dragAmount.toInt()
@@ -1139,7 +1138,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                     }
                                 }
                             },
-                        verticalAlignment = Alignment.Companion.CenterVertically,
+                        verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
                         val xOffset = (64 * MusicFont.Notation.N_QUARTER.offset.x).dp
@@ -1152,8 +1151,8 @@ class RhythmEditorActivity : ComponentActivity() {
                                 fontFamily = FontFamily(Font(R.font.bravuratext)),
                                 fontSize = 64.dp.toSp()
                             ),
-                            modifier = Modifier.Companion
-                                .align(Alignment.Companion.CenterVertically)
+                            modifier = Modifier
+                                .align(Alignment.CenterVertically)
                                 .offset(xOffset, yOffset)
                                 .padding(horizontal = 8.dp)
                         )
@@ -1161,25 +1160,25 @@ class RhythmEditorActivity : ComponentActivity() {
                             "=",
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.displayMedium,
-                            modifier = Modifier.Companion.padding(horizontal = 8.dp)
+                            modifier = Modifier.padding(horizontal = 8.dp)
                         )
                         Row(
-                            modifier = Modifier.Companion.padding(horizontal = 8.dp)
+                            modifier = Modifier.padding(horizontal = 8.dp)
                         ) {
                             Text(
                                 "$bpm",
-                                modifier = Modifier.Companion.align(Alignment.Companion.CenterVertically),
+                                modifier = Modifier.align(Alignment.CenterVertically),
                                 color = MaterialTheme.colorScheme.onSurface,
                                 style = MaterialTheme.typography.displayLarge
                             )
-                            Spacer(modifier = Modifier.Companion.width(4.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
                             Column(
-                                modifier = Modifier.Companion.align(Alignment.Companion.CenterVertically)
+                                modifier = Modifier.align(Alignment.CenterVertically)
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.KeyboardArrowUp,
                                     contentDescription = getString(R.string.editor_bpm_increase),
-                                    modifier = Modifier.Companion.pointerInput(Unit) {
+                                    modifier = Modifier.pointerInput(Unit) {
                                         detectTapGestures(
                                             onPress = {
                                                 var isHeld = true
@@ -1201,7 +1200,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                 Icon(
                                     imageVector = Icons.Default.KeyboardArrowDown,
                                     contentDescription = getString(R.string.editor_bpm_decrease),
-                                    modifier = Modifier.Companion.pointerInput(Unit) {
+                                    modifier = Modifier.pointerInput(Unit) {
                                         detectTapGestures(
                                             onPress = {
                                                 var isHeld = true
@@ -1224,17 +1223,17 @@ class RhythmEditorActivity : ComponentActivity() {
                         }
                     }
 
-                    Spacer(Modifier.Companion.height(16.dp))
+                    Spacer(Modifier.height(16.dp))
 
                     Row(
-                        modifier = Modifier.Companion.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth()
                             .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.End
                     ) {
                         TextButton(onClick = { showBpm = false }) {
                             Text(getString(R.string.generic_cancel))
                         }
-                        Spacer(Modifier.Companion.width(8.dp))
+                        Spacer(Modifier.width(8.dp))
                         TextButton(onClick = {
                             metronome.stop()
                             metronome.beatValue = beatValue
@@ -1255,13 +1254,13 @@ class RhythmEditorActivity : ComponentActivity() {
         val backgroundColor by animateColorAsState(
             targetValue = if (!enabled) MaterialTheme.colorScheme.surfaceContainer
             else MaterialTheme.colorScheme.primaryContainer,
-            animationSpec = MotionScheme.Companion.expressive().defaultEffectsSpec(),
+            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
             label = "backgroundColor"
         )
         val textColor by animateColorAsState(
             targetValue = if (!enabled) MaterialTheme.colorScheme.onSurfaceVariant
             else MaterialTheme.colorScheme.onPrimaryContainer,
-            animationSpec = MotionScheme.Companion.expressive().defaultEffectsSpec(),
+            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
             label = "textColor"
         )
 
@@ -1281,11 +1280,11 @@ class RhythmEditorActivity : ComponentActivity() {
         }
 
         Row(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
                 .padding(vertical = 4.dp)
-                .clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(16.dp))
                 .background(backgroundColor)
                 .clickable(enabled) {
                     showTimeSignature = measureIndex
@@ -1294,24 +1293,24 @@ class RhythmEditorActivity : ComponentActivity() {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Box(
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .fillMaxHeight(0.5f)
-                    .align(Alignment.Companion.CenterVertically)
+                    .align(Alignment.CenterVertically)
             ) {
                 val timeSig = parsedRhythm.measures.getOrNull(measureIndex)?.timeSig ?: (4 to 4)
                 MusicFont.Number.TimeSignature(timeSig.first, timeSig.second, textColor)
             }
 
-            Spacer(modifier = Modifier.Companion.weight(1f))
+            Spacer(modifier = Modifier.weight(1f))
 
             Text(
                 text = getString(R.string.editor_set_time_signature),
-                modifier = Modifier.Companion.align(Alignment.Companion.CenterVertically),
+                modifier = Modifier.align(Alignment.CenterVertically),
                 style = MaterialTheme.typography.bodyLarge,
                 color = textColor,
             )
 
-            Spacer(modifier = Modifier.Companion.weight(1f))
+            Spacer(modifier = Modifier.weight(1f))
         }
     }
 
@@ -1323,22 +1322,22 @@ class RhythmEditorActivity : ComponentActivity() {
         val backgroundColor by animateColorAsState(
             targetValue = if (!enabled) MaterialTheme.colorScheme.surfaceContainer
             else MaterialTheme.colorScheme.primaryContainer,
-            animationSpec = MotionScheme.Companion.expressive().defaultEffectsSpec(),
+            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
             label = "backgroundColor"
         )
         val textColor by animateColorAsState(
             targetValue = if (!enabled) MaterialTheme.colorScheme.onSurfaceVariant
             else MaterialTheme.colorScheme.onPrimaryContainer,
-            animationSpec = MotionScheme.Companion.expressive().defaultEffectsSpec(),
+            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
             label = "textColor"
         )
 
         Row(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
                 .padding(vertical = 4.dp)
-                .clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(16.dp))
                 .background(backgroundColor)
                 .clickable(enabled) {
                     showDialog = true
@@ -1349,20 +1348,20 @@ class RhythmEditorActivity : ComponentActivity() {
             Icon(
                 painter = painterResource(R.drawable.outline_volume_up_24),
                 contentDescription = getString(R.string.editor_change_emphasis),
-                modifier = Modifier.Companion.align(Alignment.Companion.CenterVertically),
+                modifier = Modifier.align(Alignment.CenterVertically),
                 tint = textColor
             )
 
-            Spacer(modifier = Modifier.Companion.weight(1f))
+            Spacer(modifier = Modifier.weight(1f))
 
             Text(
                 text = getString(R.string.editor_change_emphasis),
-                modifier = Modifier.Companion.align(Alignment.Companion.CenterVertically),
+                modifier = Modifier.align(Alignment.CenterVertically),
                 style = MaterialTheme.typography.bodyLarge,
                 color = textColor,
             )
 
-            Spacer(modifier = Modifier.Companion.weight(1f))
+            Spacer(modifier = Modifier.weight(1f))
         }
 
         if(showDialog) {
@@ -1373,7 +1372,7 @@ class RhythmEditorActivity : ComponentActivity() {
                 text = {
                     Column {
                         Row(
-                            verticalAlignment = Alignment.Companion.CenterVertically,
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             val interactionSource = remember { MutableInteractionSource() }
                             RadioButton(
@@ -1382,20 +1381,20 @@ class RhythmEditorActivity : ComponentActivity() {
                                 enabled = enabled,
                                 interactionSource = interactionSource
                             )
-                            Spacer(modifier = Modifier.Companion.width(8.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = getString(R.string.editor_emphasis_high),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = if (emphasis) MaterialTheme.colorScheme.onSurface
                                 else MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.Companion.clickable(
+                                modifier = Modifier.clickable(
                                     interactionSource = interactionSource,
                                     indication = null
                                 ) { emphasis = true }
                             )
                         }
                         Row(
-                            verticalAlignment = Alignment.Companion.CenterVertically,
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             val interactionSource = remember { MutableInteractionSource() }
                             RadioButton(
@@ -1404,13 +1403,13 @@ class RhythmEditorActivity : ComponentActivity() {
                                 enabled = enabled,
                                 interactionSource = interactionSource
                             )
-                            Spacer(modifier = Modifier.Companion.width(8.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = getString(R.string.editor_emphasis_low),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = if (!emphasis) MaterialTheme.colorScheme.onSurface
                                 else MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.Companion.clickable(
+                                modifier = Modifier.clickable(
                                     interactionSource = interactionSource,
                                     indication = null
                                 ) { emphasis = false }
@@ -1454,23 +1453,23 @@ class RhythmEditorActivity : ComponentActivity() {
             targetValue = if (!enabled) MaterialTheme.colorScheme.surfaceContainer
             else if (tupletSelected) MaterialTheme.colorScheme.secondaryContainer
             else MaterialTheme.colorScheme.primaryContainer,
-            animationSpec = MotionScheme.Companion.expressive().defaultEffectsSpec(),
+            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
             label = "backgroundColor"
         )
         val textColor by animateColorAsState(
             targetValue = if (!enabled) MaterialTheme.colorScheme.onSurfaceVariant
             else if (tupletSelected) MaterialTheme.colorScheme.onSecondaryContainer
             else MaterialTheme.colorScheme.onPrimaryContainer,
-            animationSpec = MotionScheme.Companion.expressive().defaultEffectsSpec(),
+            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
             label = "textColor"
         )
 
         Row(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
                 .padding(vertical = 4.dp)
-                .clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(16.dp))
                 .background(backgroundColor)
                 .clickable(enabled) {
                     if (!tupletSelected) {
@@ -1552,20 +1551,20 @@ class RhythmEditorActivity : ComponentActivity() {
             Icon(
                 painter = painterResource(R.drawable.outline_avg_pace_24),
                 contentDescription = text,
-                modifier = Modifier.Companion.align(Alignment.Companion.CenterVertically),
+                modifier = Modifier.align(Alignment.CenterVertically),
                 tint = textColor
             )
 
-            Spacer(modifier = Modifier.Companion.weight(1f))
+            Spacer(modifier = Modifier.weight(1f))
 
             Text(
                 text = text,
-                modifier = Modifier.Companion.align(Alignment.Companion.CenterVertically),
+                modifier = Modifier.align(Alignment.CenterVertically),
                 style = MaterialTheme.typography.bodyLarge,
                 color = textColor,
             )
 
-            Spacer(modifier = Modifier.Companion.weight(1f))
+            Spacer(modifier = Modifier.weight(1f))
         }
 
         if(showDialog) {
@@ -1579,12 +1578,12 @@ class RhythmEditorActivity : ComponentActivity() {
                 )
             ) {
                 Surface(
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(32.dp),
+                    shape = RoundedCornerShape(32.dp),
                     color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    modifier = Modifier.Companion.padding(16.dp)
+                    modifier = Modifier.padding(16.dp)
                 ) {
                     Column(
-                        modifier = Modifier.Companion
+                        modifier = Modifier
                             .width(IntrinsicSize.Max)
                             .padding(16.dp)
                     ) {
@@ -1593,21 +1592,21 @@ class RhythmEditorActivity : ComponentActivity() {
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.onSurface
                         )
-                        Spacer(Modifier.Companion.height(16.dp))
+                        Spacer(Modifier.height(16.dp))
 
                         Box(
-                            modifier = Modifier.Companion
+                            modifier = Modifier
                                 .width(400.dp)
                                 .height(128.dp)
                                 .padding(horizontal = 32.dp)
                                 .background(
                                     MaterialTheme.colorScheme.surfaceContainer,
-                                    androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+                                    RoundedCornerShape(16.dp)
                                 )
                                 .offset(y = 16.dp)
                         ) {
                             LazyRow(
-                                modifier = Modifier.Companion.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.Center
                             ) {
                                 for (element in tuplet.notes) {
@@ -1616,48 +1615,48 @@ class RhythmEditorActivity : ComponentActivity() {
                             }
                             // tuplet header
                             Box(
-                                modifier = Modifier.Companion
+                                modifier = Modifier
                                     .padding(horizontal = 8.dp)
                                     .matchParentSize()
                             ) {
                                 Row(
-                                    modifier = Modifier.Companion.align(Alignment.Companion.TopCenter)
+                                    modifier = Modifier.align(Alignment.TopCenter)
                                 ) {
                                     Box(
-                                        modifier = Modifier.Companion
+                                        modifier = Modifier
                                             .width(1.dp)
                                             .height(8.dp)
-                                            .align(Alignment.Companion.CenterVertically)
+                                            .align(Alignment.CenterVertically)
                                             .offset(0.dp, 4.dp)
                                             .background(MaterialTheme.colorScheme.onSurface)
                                     )
                                     Box(
-                                        modifier = Modifier.Companion
+                                        modifier = Modifier
                                             .weight(1f)
                                             .height(1.dp)
-                                            .align(Alignment.Companion.CenterVertically)
+                                            .align(Alignment.CenterVertically)
                                             .background(MaterialTheme.colorScheme.onSurface)
                                     )
                                     Text(
                                         "${tuplet.ratio.first}:${tuplet.ratio.second}",
-                                        modifier = Modifier.Companion
-                                            .align(Alignment.Companion.CenterVertically)
+                                        modifier = Modifier
+                                            .align(Alignment.CenterVertically)
                                             .padding(horizontal = 16.dp),
                                         color = MaterialTheme.colorScheme.onSurface,
                                         style = MaterialTheme.typography.labelLarge,
                                     )
                                     Box(
-                                        modifier = Modifier.Companion
+                                        modifier = Modifier
                                             .weight(1f)
                                             .height(1.dp)
-                                            .align(Alignment.Companion.CenterVertically)
+                                            .align(Alignment.CenterVertically)
                                             .background(MaterialTheme.colorScheme.onSurface)
                                     )
                                     Box(
-                                        modifier = Modifier.Companion
+                                        modifier = Modifier
                                             .width(1.dp)
                                             .height(8.dp)
-                                            .align(Alignment.Companion.CenterVertically)
+                                            .align(Alignment.CenterVertically)
                                             .offset(0.dp, 4.dp)
                                             .background(MaterialTheme.colorScheme.onSurface)
                                     )
@@ -1665,10 +1664,10 @@ class RhythmEditorActivity : ComponentActivity() {
                             }
                         }
 
-                        Spacer(Modifier.Companion.height(16.dp))
+                        Spacer(Modifier.height(16.dp))
 
                         Row(
-                            modifier = Modifier.Companion
+                            modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp)
                         ) {
@@ -1691,7 +1690,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                     contentDescription = getString(R.string.generic_subtract)
                                 )
                             }
-                            Spacer(modifier = Modifier.Companion.weight(1f))
+                            Spacer(modifier = Modifier.weight(1f))
                             Button(onClick = {
                                 showDialog = false
 
@@ -1744,7 +1743,7 @@ class RhythmEditorActivity : ComponentActivity() {
                             }) {
                                 Text(getString(R.string.generic_confirm))
                             }
-                            Spacer(modifier = Modifier.Companion.weight(1f))
+                            Spacer(modifier = Modifier.weight(1f))
                             FilledTonalIconButton(onClick = {
                                 val first = ratio!!.first + 1
                                 var second = 1
@@ -1780,7 +1779,7 @@ class RhythmEditorActivity : ComponentActivity() {
                 2 -> MaterialTheme.colorScheme.tertiaryContainer
                 else -> MaterialTheme.colorScheme.secondaryContainer
             },
-            animationSpec = MotionScheme.Companion.expressive().defaultEffectsSpec(),
+            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
             label = "backgroundColor"
         )
         val textColor by animateColorAsState(
@@ -1790,16 +1789,16 @@ class RhythmEditorActivity : ComponentActivity() {
                 2 -> MaterialTheme.colorScheme.onTertiaryContainer
                 else -> MaterialTheme.colorScheme.onSecondaryContainer
             },
-            animationSpec = MotionScheme.Companion.expressive().defaultEffectsSpec(),
+            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
             label = "textColor"
         )
 
         Row(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
                 .padding(vertical = 4.dp)
-                .clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(16.dp))
                 .background(backgroundColor)
                 .clickable(enabled && oldElement != null) {
                     val oldDuration = oldElement!!.duration
@@ -1830,20 +1829,20 @@ class RhythmEditorActivity : ComponentActivity() {
             Icon(
                 painter = painterResource(R.drawable.baseline_music_note_24),
                 contentDescription = getString(R.string.editor_toggle_dot),
-                modifier = Modifier.Companion.align(Alignment.Companion.CenterVertically),
+                modifier = Modifier.align(Alignment.CenterVertically),
                 tint = textColor
             )
 
-            Spacer(modifier = Modifier.Companion.weight(1f))
+            Spacer(modifier = Modifier.weight(1f))
 
             Text(
                 text = getString(R.string.editor_toggle_dot),
-                modifier = Modifier.Companion.align(Alignment.Companion.CenterVertically),
+                modifier = Modifier.align(Alignment.CenterVertically),
                 style = MaterialTheme.typography.bodyLarge,
                 color = textColor,
             )
 
-            Spacer(modifier = Modifier.Companion.weight(1f))
+            Spacer(modifier = Modifier.weight(1f))
         }
     }
 
@@ -1852,11 +1851,11 @@ class RhythmEditorActivity : ComponentActivity() {
     fun ColumnScope.NoteButton(value: Int, rest: Boolean, emphasized: Boolean, enabled: Boolean) {
         if(value > 1024) {
             Box(
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .weight(1f)
                     .padding(0.dp, 4.dp, 0.dp, 8.dp)
                     .aspectRatio(1f)
-                    .clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
+                    .clip(RoundedCornerShape(16.dp))
                     .background(MaterialTheme.colorScheme.surfaceContainer)
             )
             return
@@ -1864,21 +1863,21 @@ class RhythmEditorActivity : ComponentActivity() {
 
         val animatedColor = animateColorAsState(
             targetValue = if (!enabled) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
-            animationSpec = MotionScheme.Companion.expressive().defaultEffectsSpec(),
+            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
             label = "animatedColor"
         )
         val animatedOnColor = animateColorAsState(
             targetValue = if (!enabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
-            animationSpec = MotionScheme.Companion.expressive().defaultEffectsSpec(),
+            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
             label = "animatedOnColor"
         )
 
         Box(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .weight(1f)
                 .padding(0.dp, 8.dp, 0.dp, 4.dp)
                 .aspectRatio(1f)
-                .clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(16.dp))
                 .background(animatedColor.value)
                 .clickable(enabled) {
                     val restModifier = if (rest) -1 else 1
@@ -1904,12 +1903,12 @@ class RhythmEditorActivity : ComponentActivity() {
             if (value >= 256) {
                 val animatedFontWeight by animateIntAsState(
                     targetValue = if (rest) 300 else 900,
-                    animationSpec = MotionScheme.Companion.expressive().fastEffectsSpec(),
+                    animationSpec = MotionScheme.expressive().fastEffectsSpec(),
                     label = "animatedFontWeight"
                 )
                 Text(
                     "$value",
-                    modifier = Modifier.Companion.align(Alignment.Companion.Center),
+                    modifier = Modifier.align(Alignment.Center),
                     color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight(animatedFontWeight),
@@ -1926,18 +1925,18 @@ class RhythmEditorActivity : ComponentActivity() {
                 val xOffset = if (note == null) 0.dp else ((40 * note.offset.x).dp)
                 val yOffset = if (note == null) 0.dp else ((40 * note.offset.y).dp)
                 Box(
-                    modifier = Modifier.Companion
+                    modifier = Modifier
                         .fillMaxWidth(0.25f)
                         .height(1.dp)
                         .offset(0.dp, (if (!rest) yOffset - 4.dp else 0.dp))
                         .background(MaterialTheme.colorScheme.onSurface)
-                        .align(Alignment.Companion.Center)
+                        .align(Alignment.Center)
                 )
 
                 Text(
                     text.toString(),
-                    modifier = Modifier.Companion
-                        .align(Alignment.Companion.Center)
+                    modifier = Modifier
+                        .align(Alignment.Center)
                         .offset(xOffset, yOffset),
                     color = animatedOnColor.value,
                     style = TextStyle(
@@ -2013,13 +2012,13 @@ class RhythmEditorActivity : ComponentActivity() {
                 measureErrored = true
             }
             Row(
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .fillMaxWidth()
                     .padding(0.dp, 8.dp, if (indexOffset == 0 && editable) 32.dp else 0.dp, 8.dp)
                     .background(
                         if ((measureErrored || allErrored) && editable) MaterialTheme.colorScheme.errorContainer.copy(
                             alpha = 0.5f
-                        ) else Color.Companion.Transparent
+                        ) else Color.Transparent
                     )
             ) {
                 if (measureIndex != 0) {
@@ -2053,7 +2052,7 @@ class RhythmEditorActivity : ComponentActivity() {
 
                         is RhythmTuplet -> {
                             Box(
-                                modifier = Modifier.Companion
+                                modifier = Modifier
                                     .fillMaxSize()
                                     .padding(16.dp, 0.dp)
                             ) {
@@ -2079,50 +2078,50 @@ class RhythmEditorActivity : ComponentActivity() {
                                 }
                                 // tuplet header
                                 Box(
-                                    modifier = Modifier.Companion
+                                    modifier = Modifier
                                         .padding(8.dp, 0.dp)
                                         .matchParentSize()
                                 ) {
                                     Row(
-                                        modifier = Modifier.Companion
+                                        modifier = Modifier
                                             .fillMaxWidth()
-                                            .align(Alignment.Companion.TopCenter)
+                                            .align(Alignment.TopCenter)
                                     ) {
                                         Box(
-                                            modifier = Modifier.Companion
+                                            modifier = Modifier
                                                 .width(1.dp)
                                                 .height(8.dp)
-                                                .align(Alignment.Companion.CenterVertically)
+                                                .align(Alignment.CenterVertically)
                                                 .offset(0.dp, 4.dp)
                                                 .background(MaterialTheme.colorScheme.onSurface)
                                         )
                                         Box(
-                                            modifier = Modifier.Companion
+                                            modifier = Modifier
                                                 .weight(1f)
                                                 .height(1.dp)
-                                                .align(Alignment.Companion.CenterVertically)
+                                                .align(Alignment.CenterVertically)
                                                 .background(MaterialTheme.colorScheme.onSurface)
                                         )
                                         Text(
                                             "${element.ratio.first}:${element.ratio.second}",
-                                            modifier = Modifier.Companion
-                                                .align(Alignment.Companion.CenterVertically)
+                                            modifier = Modifier
+                                                .align(Alignment.CenterVertically)
                                                 .padding(16.dp, 0.dp),
                                             color = MaterialTheme.colorScheme.onSurface,
                                             style = MaterialTheme.typography.labelLarge,
                                         )
                                         Box(
-                                            modifier = Modifier.Companion
+                                            modifier = Modifier
                                                 .weight(1f)
                                                 .height(1.dp)
-                                                .align(Alignment.Companion.CenterVertically)
+                                                .align(Alignment.CenterVertically)
                                                 .background(MaterialTheme.colorScheme.onSurface)
                                         )
                                         Box(
-                                            modifier = Modifier.Companion
+                                            modifier = Modifier
                                                 .width(1.dp)
                                                 .height(8.dp)
-                                                .align(Alignment.Companion.CenterVertically)
+                                                .align(Alignment.CenterVertically)
                                                 .offset(0.dp, 4.dp)
                                                 .background(MaterialTheme.colorScheme.onSurface)
                                         )
@@ -2147,35 +2146,35 @@ class RhythmEditorActivity : ComponentActivity() {
         val isMusicSelected = noteIndex == musicSelected
 
         val color = animateColorAsState(
-            targetValue = if (!editable) Color.Companion.Transparent
+            targetValue = if (!editable) Color.Transparent
             else if (isNoteSelected) MaterialTheme.colorScheme.secondaryContainer
             else if (isMusicSelected) MaterialTheme.colorScheme.tertiaryContainer
             else if (errored) MaterialTheme.colorScheme.errorContainer
             else MaterialTheme.colorScheme.surfaceContainer,
-            animationSpec = MotionScheme.Companion.expressive().fastEffectsSpec(),
+            animationSpec = MotionScheme.expressive().fastEffectsSpec(),
             label = "noteColor"
         )
 
         val corner = animateFloatAsState(
             targetValue = if (((isNoteSelected || errored) && !isMusicSelected)) 100f else 25f,
-            animationSpec = MotionScheme.Companion.expressive().defaultSpatialSpec(),
+            animationSpec = MotionScheme.expressive().defaultSpatialSpec(),
             label = "corner"
         )
 
         Box(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .padding(16.dp, 0.dp)
                 .width(48.dp)
                 .fillMaxHeight()
-                .clip(androidx.compose.foundation.shape.RoundedCornerShape(corner.value.toInt().coerceIn(0, 100)))
+                .clip(RoundedCornerShape(corner.value.toInt().coerceIn(0, 100)))
                 .background(color.value)
                 .clickable(editable) {
                     noteSelected = if (isNoteSelected) -1 else noteIndex
                 }
         ) {
             Text(
-                modifier = Modifier.Companion
-                    .align(Alignment.Companion.Center)
+                modifier = Modifier
+                    .align(Alignment.Center)
                     .offset(0.dp, 5.dp),
                 text = note,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -2190,16 +2189,16 @@ class RhythmEditorActivity : ComponentActivity() {
     @Composable
     fun MeasureBreak(hasTimeSignature: Boolean) {
         Box(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .padding(0.dp, 0.dp, if (hasTimeSignature) 0.dp else 32.dp, 0.dp)
                 .width(1.dp)
                 .fillMaxHeight()
         ) {
             Box(
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight(0.75f)
-                    .align(Alignment.Companion.Center)
+                    .align(Alignment.Center)
                     .background(MaterialTheme.colorScheme.outline)
             )
         }
@@ -2211,7 +2210,7 @@ class RhythmEditorActivity : ComponentActivity() {
         val (numerator, denominator) = measure.timeSig
 
         Box(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .padding(end = 16.dp)
                 .fillMaxHeight()
                 .background(MaterialTheme.colorScheme.surfaceContainerHigh)
@@ -2221,9 +2220,9 @@ class RhythmEditorActivity : ComponentActivity() {
                 .padding(10.dp, 0.dp)
         ) {
             Box(
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .fillMaxHeight(0.45f)
-                    .align(Alignment.Companion.Center)
+                    .align(Alignment.Center)
             ) {
                 MusicFont.Number.TimeSignature(numerator, denominator, MaterialTheme.colorScheme.onSurface)
             }
@@ -2240,23 +2239,23 @@ class RhythmEditorActivity : ComponentActivity() {
             title = { Text(getString(R.string.editor_set_time_signature_dialog)) },
             text = {
                 Box(
-                    modifier = Modifier.Companion.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
-                        modifier = Modifier.Companion
+                        modifier = Modifier
                             .fillMaxHeight(0.75f)
                             .aspectRatio(1f)
-                            .align(Alignment.Companion.Center)
+                            .align(Alignment.Center)
                             .background(
                                 MaterialTheme.colorScheme.surfaceContainer,
-                                MaterialShapes.Companion.Bun.toShape(0)
+                                MaterialShapes.Bun.toShape(0)
                             )
                     ) {
                         Row(
-                            modifier = Modifier.Companion
+                            modifier = Modifier
                                 .weight(1f)
                                 .padding(horizontal = 32.dp),
-                            verticalAlignment = Alignment.Companion.CenterVertically,
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             IconButton(
                                 onClick = {
@@ -2271,11 +2270,11 @@ class RhythmEditorActivity : ComponentActivity() {
                                 )
                             }
                             Box(
-                                modifier = Modifier.Companion
+                                modifier = Modifier
                                     .weight(1f)
                                     .fillMaxHeight(0.8f)
-                                    .align(Alignment.Companion.CenterVertically),
-                                contentAlignment = Alignment.Companion.Center
+                                    .align(Alignment.CenterVertically),
+                                contentAlignment = Alignment.Center
                             ) {
                                 MusicFont.Number.TimeSignatureLine(
                                     timeSignature.first,
@@ -2296,10 +2295,10 @@ class RhythmEditorActivity : ComponentActivity() {
                             }
                         }
                         Row(
-                            modifier = Modifier.Companion
+                            modifier = Modifier
                                 .weight(1f)
                                 .padding(horizontal = 32.dp),
-                            verticalAlignment = Alignment.Companion.CenterVertically,
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             IconButton(
                                 onClick = {
@@ -2314,11 +2313,11 @@ class RhythmEditorActivity : ComponentActivity() {
                                 )
                             }
                             Box(
-                                modifier = Modifier.Companion
+                                modifier = Modifier
                                     .weight(1f)
                                     .fillMaxHeight(0.8f)
-                                    .align(Alignment.Companion.CenterVertically),
-                                contentAlignment = Alignment.Companion.Center
+                                    .align(Alignment.CenterVertically),
+                                contentAlignment = Alignment.Center
                             ) {
                                 MusicFont.Number.TimeSignatureLine(
                                     timeSignature.second,

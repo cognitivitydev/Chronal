@@ -180,13 +180,13 @@ class EditSounds: ComponentActivity() {
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
                         Text(
-                            "Sound",
+                            text = getString(R.string.edit_sounds_header_sound),
                             modifier = Modifier.weight(1f),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.secondary
                         )
                         Text(
-                            "High",
+                            text = getString(R.string.edit_sounds_header_high),
                             modifier = Modifier.width(48.dp),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.secondary,
@@ -194,7 +194,7 @@ class EditSounds: ComponentActivity() {
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            "Low",
+                            text = getString(R.string.edit_sounds_header_low),
                             modifier = Modifier.width(48.dp),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.secondary,
@@ -286,7 +286,8 @@ class EditSounds: ComponentActivity() {
                             modifier = Modifier.padding(horizontal = 32.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text("Set as...",
+                            Text(
+                                text = getString(R.string.edit_sounds_set_as),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
