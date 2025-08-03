@@ -35,6 +35,7 @@ import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.activity.vibratorManager
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.ui.metronome.windows.drawBeats
+import dev.cognitivity.chronal.ui.metronome.windows.secondaryEnabled
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -53,6 +54,9 @@ fun BoxScope.CircularClock(primary: Boolean, trackSize: Float, trackOff: Color, 
     metronome.setEditListener(1) {
         rhythm = it
         intervals = metronome.getIntervals()
+        if(!primary) {
+            secondaryEnabled = metronome.active
+        }
     }
 
     val progress = remember { Animatable(0f) }

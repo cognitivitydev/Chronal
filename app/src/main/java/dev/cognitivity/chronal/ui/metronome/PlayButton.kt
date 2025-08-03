@@ -12,15 +12,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
@@ -227,6 +219,9 @@ fun ColumnScope.PlayButton(weight: Float) {
             }
             Box(
                 modifier = Modifier
+                    .aspectRatio(1f)
+                    .requiredSizeIn(maxWidth = 96.dp, maxHeight = 96.dp)
+                    .align(Alignment.Center)
                     .clip(
                         MorphedShape(
                             morph,
@@ -234,8 +229,6 @@ fun ColumnScope.PlayButton(weight: Float) {
                             animatedRotation.value
                         )
                     )
-                    .size(96.dp)
-                    .align(Alignment.Center)
                     .background(animatedColor)
                     .clickable {
                         paused = !paused
@@ -252,7 +245,7 @@ fun ColumnScope.PlayButton(weight: Float) {
             ) {
                 PlayPauseIcon(
                     paused = paused,
-                    modifier = Modifier.size(48.dp)
+                    modifier = Modifier.fillMaxSize(0.5f)
                         .align(Alignment.Center)
                 )
             }

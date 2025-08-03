@@ -8,7 +8,9 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.google.gson.Gson
+import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import kotlinx.coroutines.flow.first
 
 enum class SettingKey(val category: Int, val settingName: Int) {
@@ -36,6 +38,7 @@ enum class SettingKey(val category: Int, val settingName: Int) {
     METRONOME_VIBRATIONS_SECONDARY(R.string.setting_category_internal, R.string.setting_name_metronome_vibrations_secondary),
     METRONOME_SOUNDS(R.string.setting_category_internal, R.string.setting_name_metronome_sounds),
     METRONOME_STATE(R.string.setting_category_internal, R.string.setting_name_metronome_state),
+    METRONOME_PRESETS(R.string.setting_category_internal, R.string.setting_name_metronome_presets),
     FULLSCREEN_WARNING(R.string.setting_category_internal, R.string.setting_name_fullscreen_warning),
     TUNER_LAYOUT(R.string.setting_category_internal, R.string.setting_name_tuner_layout)
     ;
@@ -177,6 +180,29 @@ class SettingsManager(val context: Context) {
         hint = R.string.setting_description_metronome_state,
         default = MetronomeState(bpm = 120, beatValuePrimary = 4f, beatValueSecondary = 4f, secondaryEnabled = false)
     )
+     val metronomePresets = Setting(
+         SettingKey.METRONOME_PRESETS,
+         hint = R.string.setting_description_metronome_presets,
+         menu = SettingMenu.Expandable("Presets"),
+         default = mutableListOf(
+             MetronomePreset(
+                 name = context.getString(R.string.presets_example_default),
+                 primaryRhythm = Rhythm.deserialize("{4/4}Q;q;q;q;"),
+                 primarySimpleRhythm = SimpleRhythm(2 to 4, 4, 3),
+                 secondaryRhythm = Rhythm.deserialize("{4/4}Q;q;q;q;"),
+                 secondarySimpleRhythm = SimpleRhythm(4 to 4, 4, 1),
+                 state = MetronomeState(bpm = 120, beatValuePrimary = 4f, beatValueSecondary = 4f, secondaryEnabled = true)
+             ),
+             MetronomePreset(
+                 name = context.getString(R.string.presets_example_3_2),
+                 primaryRhythm = Rhythm.deserialize("{2/4}Q;Q;"),
+                 primarySimpleRhythm = SimpleRhythm(2 to 4, 4, 0),
+                 secondaryRhythm = Rhythm.deserialize("{2/4}3:2[q:q:q];"),
+                 secondarySimpleRhythm = SimpleRhythm(2 to 4, 6, 1),
+                 state = MetronomeState(bpm = 120, beatValuePrimary = 4f, beatValueSecondary = 4f, secondaryEnabled = true)
+             ),
+         )
+     )
     val fullscreenWarning = Setting(
         SettingKey.FULLSCREEN_WARNING,
         hint = R.string.setting_description_fullscreen_warning,
@@ -275,6 +301,9 @@ class SettingsManager(val context: Context) {
             val metronomeStateKey = stringPreferencesKey(metronomeState.key.toString())
             settings[metronomeStateKey] = metronomeState.value.toJson().toString()
 
+            val metronomePresetsKey = stringPreferencesKey(metronomePresets.key.toString())
+            settings[metronomePresetsKey] = Gson().toJson(metronomePresets.value.map { it.toJson() })
+
             val fullscreenWarningKey = booleanPreferencesKey(fullscreenWarning.key.toString())
             settings[fullscreenWarningKey] = fullscreenWarning.value
 
@@ -340,6 +369,11 @@ class SettingsManager(val context: Context) {
 
         metronomeState.value = prefs[stringPreferencesKey(metronomeState.key.toString())]
             ?.let { MetronomeState.fromJson(it) } ?: metronomeState.default
+
+        metronomePresets.value = prefs[stringPreferencesKey(metronomePresets.key.toString())]?.let {
+            val jsonArray = Gson().fromJson(it, JsonArray::class.java)
+            jsonArray.map { preset -> MetronomePreset.fromJson(preset.asJsonObject) }.toCollection(ArrayList())
+        } ?: metronomePresets.default
 
         fullscreenWarning.value = prefs[booleanPreferencesKey(fullscreenWarning.key.toString())]
             ?: fullscreenWarning.default
@@ -442,6 +476,41 @@ data class MetronomeState(
             addProperty("valuePrimary", beatValuePrimary)
             addProperty("valueSecondary", beatValueSecondary)
             addProperty("secondaryEnabled", secondaryEnabled)
+        }
+    }
+}
+
+data class MetronomePreset(
+    val timestamp: Long = System.currentTimeMillis(),
+    val name: String,
+    val primaryRhythm: Rhythm,
+    val primarySimpleRhythm: SimpleRhythm,
+    val secondaryRhythm: Rhythm,
+    val secondarySimpleRhythm: SimpleRhythm,
+    val state: MetronomeState
+) {
+    companion object {
+        fun fromJson(jsonObject: JsonObject): MetronomePreset {
+            return MetronomePreset(
+                timestamp = jsonObject.get("timestamp")?.asLong ?: System.currentTimeMillis(),
+                name = jsonObject.get("name").asString,
+                primaryRhythm = Rhythm.deserialize(jsonObject["primaryRhythm"].asString),
+                primarySimpleRhythm = SimpleRhythm.fromJson(jsonObject["primarySimpleRhythm"].asJsonObject),
+                secondaryRhythm = Rhythm.deserialize(jsonObject["secondaryRhythm"].asString),
+                secondarySimpleRhythm = SimpleRhythm.fromJson(jsonObject["secondarySimpleRhythm"].asJsonObject),
+                state = MetronomeState.fromJson(jsonObject["state"].asJsonObject)
+            )
+        }
+    }
+    fun toJson(): JsonObject {
+        return JsonObject().apply {
+            addProperty("timestamp", timestamp)
+            addProperty("name", name)
+            addProperty("primaryRhythm", primaryRhythm.serialize())
+            add("primarySimpleRhythm", primarySimpleRhythm.toJson())
+            addProperty("secondaryRhythm", secondaryRhythm.serialize())
+            add("secondarySimpleRhythm", secondarySimpleRhythm.toJson())
+            add("state", state.toJson())
         }
     }
 }
