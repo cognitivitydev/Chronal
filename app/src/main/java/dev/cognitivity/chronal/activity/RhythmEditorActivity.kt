@@ -140,7 +140,24 @@ class RhythmEditorActivity : ComponentActivity() {
             val timestamp = metronome.timestamp
             lifecycleScope.launch {
                 delay(ChronalApp.getInstance().settings.visualLatency.value.toLong())
-                if(metronome.playing && timestamp == metronome.timestamp) musicSelected = beat.index
+                if(metronome.playing && timestamp == metronome.timestamp) {
+                    if(beat.measure == 0) {
+                        musicSelected = beat.index
+                    } else {
+                        //calc the index of the note in the measure
+                        var index = 0
+                        for (i in 0 until beat.measure) {
+                            for(element in parsedRhythm.measures[i].elements) {
+                                index += when (element) {
+                                    is RhythmNote -> 1
+                                    is RhythmTuplet -> element.notes.size
+                                }
+                            }
+                        }
+                        index += beat.index
+                        musicSelected = index
+                    }
+                }
             }
         }
         metronome.setPauseListener(2) { isPaused ->
@@ -546,7 +563,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                     .fillMaxHeight()
                                     .padding(8.dp, 0.dp)
                             ) {
-                                AddTuplet(noteSelected != -1, isTuplet)
+                                AddTuplet(noteSelected != -1 && (dots == 0 || isTuplet), isTuplet)
                                 ToggleDot(noteSelected != -1 && dots != nextDots, selectedNote, nextDots)
                             }
                         }
@@ -593,7 +610,8 @@ class RhythmEditorActivity : ComponentActivity() {
                         }
                         item {
                             Column(
-                                modifier = Modifier.padding(horizontal = 16.dp)
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp)
                                     .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(8.dp))
                                     .padding(8.dp, 16.dp, 16.dp, 16.dp)
                             ) {
@@ -863,7 +881,8 @@ class RhythmEditorActivity : ComponentActivity() {
                                 .align(Alignment.Center),
                         ) {
                             Box(
-                                modifier = Modifier.fillMaxHeight(0.5f)
+                                modifier = Modifier
+                                    .fillMaxHeight(0.5f)
                                     .aspectRatio(1f, true)
                                     .align(Alignment.Center)
                             ) {
@@ -1063,10 +1082,13 @@ class RhythmEditorActivity : ComponentActivity() {
             Surface(
                 shape = RoundedCornerShape(32.dp),
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                modifier = Modifier.padding(16.dp).fillMaxWidth(0.5f)
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(0.5f)
             ) {
                 Column(
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
                         .padding(16.dp)
                 ) {
                     Text(
@@ -1079,7 +1101,10 @@ class RhythmEditorActivity : ComponentActivity() {
 
                     LazyHorizontalGrid(
                         rows = GridCells.Fixed(2),
-                        modifier = Modifier.padding(bottom = 16.dp).fillMaxWidth().height(144.dp),
+                        modifier = Modifier
+                            .padding(bottom = 16.dp)
+                            .fillMaxWidth()
+                            .height(144.dp),
                         horizontalArrangement = Arrangement.Center,
                         verticalArrangement = Arrangement.Center
                     ) {
@@ -1096,7 +1121,8 @@ class RhythmEditorActivity : ComponentActivity() {
                                 if (isSelected) selectedNote = string
 
                                 Box(
-                                    modifier = Modifier.padding(4.dp)
+                                    modifier = Modifier
+                                        .padding(4.dp)
                                         .size(64.dp)
                                         .clip(RoundedCornerShape(16.dp))
                                         .background(
@@ -1127,7 +1153,8 @@ class RhythmEditorActivity : ComponentActivity() {
                         }
                     }
                     Row(
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
                             .pointerInput(Unit) {
                                 detectVerticalDragGestures { _, dragAmount ->
                                     change += dragAmount.toInt()
@@ -1226,7 +1253,8 @@ class RhythmEditorActivity : ComponentActivity() {
                     Spacer(Modifier.height(16.dp))
 
                     Row(
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
                             .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.End
                     ) {
@@ -1451,15 +1479,15 @@ class RhythmEditorActivity : ComponentActivity() {
 
         val backgroundColor by animateColorAsState(
             targetValue = if (!enabled) MaterialTheme.colorScheme.surfaceContainer
-            else if (tupletSelected) MaterialTheme.colorScheme.secondaryContainer
-            else MaterialTheme.colorScheme.primaryContainer,
+                else if (tupletSelected) MaterialTheme.colorScheme.secondaryContainer
+                else MaterialTheme.colorScheme.primaryContainer,
             animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
             label = "backgroundColor"
         )
         val textColor by animateColorAsState(
             targetValue = if (!enabled) MaterialTheme.colorScheme.onSurfaceVariant
-            else if (tupletSelected) MaterialTheme.colorScheme.onSecondaryContainer
-            else MaterialTheme.colorScheme.onPrimaryContainer,
+                else if (tupletSelected) MaterialTheme.colorScheme.onSecondaryContainer
+                else MaterialTheme.colorScheme.onPrimaryContainer,
             animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
             label = "textColor"
         )
@@ -1489,10 +1517,10 @@ class RhythmEditorActivity : ComponentActivity() {
                                     }
 
                                     is RhythmTuplet -> {
-                                        for (note in element.notes) {
+                                        for (i in element.notes.indices) {
                                             if (globalIndex == noteSelected) {
                                                 selectedTuplet = element
-                                                Log.d("a", "found tuplet at $measureIndex $measureElement")
+                                                noteSelected -= i // move selection to first note in tuplet
                                                 break
                                             }
                                             globalIndex++
@@ -1509,7 +1537,7 @@ class RhythmEditorActivity : ComponentActivity() {
                         if (selectedTuplet == null) return@clickable
 
                         val duration = selectedTuplet.notes.sumOf { abs(it.duration) }
-                        //get dots
+                        // get dots
                         for (i in 0..2) {
                             val dotModifier = 1 + (1..i).sumOf { 1.0 / (2.0.pow(it)) }
                             val dottedDuration = duration * dotModifier
@@ -1546,8 +1574,8 @@ class RhythmEditorActivity : ComponentActivity() {
                 .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            val text =
-                if (tupletSelected) getString(R.string.editor_tuplet_remove) else getString(R.string.editor_tuplet_add)
+            val text = if (tupletSelected) getString(R.string.editor_tuplet_remove)
+                else getString(R.string.editor_tuplet_add)
             Icon(
                 painter = painterResource(R.drawable.outline_avg_pace_24),
                 contentDescription = text,
@@ -2457,23 +2485,26 @@ class RhythmEditorActivity : ComponentActivity() {
         var globalIndex = 0
         var measureIndex = 0
         var foundElement: RhythmElement? = null
-        for(element in parsedRhythm.measures[measureIndex].elements) {
-            when(element) {
-                is RhythmNote -> {
-                    if(globalIndex + 1 > noteSelected) {
+        for(measure in parsedRhythm.measures) {
+            for(element in measure.elements) {
+                if(element is RhythmNote) {
+                    if (globalIndex == noteSelected) {
                         foundElement = element
                         break
                     }
-                    globalIndex += 1
-                }
-                is RhythmTuplet -> {
-                    if (globalIndex + element.notes.size > noteSelected) {
-                        foundElement = element
-                        break
+                    globalIndex++
+                } else if(element is RhythmTuplet) {
+                    for(note in element.notes) {
+                        if (globalIndex == noteSelected) {
+                            foundElement = element
+                            break
+                        }
+                        globalIndex++
+                        if (foundElement != null) break
                     }
-                    globalIndex += element.notes.size
                 }
             }
+            if (foundElement != null) break
             measureIndex++
         }
         if(foundElement == null) {
