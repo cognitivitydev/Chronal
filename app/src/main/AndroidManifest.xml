@@ -76,5 +76,32 @@
             android:exported="false"
             android:theme="@style/Theme.Chronal">
         </activity>
+        <activity
+            android:name=".activity.WidgetConfigurationActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Chronal">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
+        <receiver android:name=".glance.ClockWidgetReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/clock_widget_info" />
+        </receiver>
+        <receiver android:name=".glance.PresetListWidgetReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/preset_list_widget_info" />
+        </receiver>
     </application>
 </manifest>

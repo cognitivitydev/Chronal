@@ -56,17 +56,9 @@ import dev.cognitivity.chronal.ui.metronome.windows.metronomeSecondary
 import dev.cognitivity.chronal.ui.metronome.windows.paused
 import dev.cognitivity.chronal.ui.metronome.windows.showTempoTapper
 
-//var timer by mutableLongStateOf(0L)
-
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ColumnScope.PlayButton(weight: Float) {
-//    LaunchedEffect(paused) {
-//        while(!paused) {
-//            delay(1000)
-//            timer++
-//        }
-//    }
 
     val shapeA = remember {
         RoundedPolygon.star(9, rounding = CornerRounding(0.2f), radius = 1.8f)
@@ -250,21 +242,6 @@ fun ColumnScope.PlayButton(weight: Float) {
                 )
             }
         }
-        // TODO make better
-//        Box(
-//            modifier = Modifier.align(Alignment.CenterHorizontally)
-//        ) {
-//            val clock = if (timer < 3600) {
-//                "${timer / 60}:${String.format(Locale.US, "%02d", timer % 60)}"
-//            } else {
-//                "${timer / 3600}:${String.format(Locale.US, "%02d", (timer % 3600) / 60)}:${String.format(Locale.US, "%02d", timer % 60)}"
-//            }
-//            Text(clock,
-//                style = MaterialTheme.typography.titleLargeEmphasized,
-//                color = MaterialTheme.colorScheme.onSurface,
-//                modifier = Modifier.padding(bottom = 24.dp)
-//            )
-//        }
     }
 }
 

@@ -233,7 +233,8 @@ class InstrumentActivity : ComponentActivity() {
                                     }
                                 },
                                 isError = nameError,
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true
                             )
                             OutlinedTextField(
                                 value = shortened,
@@ -251,7 +252,8 @@ class InstrumentActivity : ComponentActivity() {
                                     ))
                                 },
                                 isError = shortenedError,
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true
                             )
                             Spacer(modifier = Modifier.height(12.dp))
                             ExposedDropdownMenuBox(
@@ -280,7 +282,8 @@ class InstrumentActivity : ComponentActivity() {
                                     isError = keyError,
                                     modifier = Modifier
                                         .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
-                                        .fillMaxWidth()
+                                        .fillMaxWidth(),
+                                    singleLine = true
                                 )
 
                                 ExposedDropdownMenu(
@@ -329,7 +332,8 @@ class InstrumentActivity : ComponentActivity() {
                                 ),
                                 isError = octaveError ||
                                         (octave.isNotEmpty() && (octave.toIntOrNull() == null || abs(octave.toInt()) > 4)),
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true
                             )
                             WavyHorizontalLine(
                                 modifier = Modifier

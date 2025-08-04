@@ -4,7 +4,6 @@ import android.media.MediaPlayer
 import android.media.SyncParams
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -89,7 +88,6 @@ class AudioPlayerActivity : ComponentActivity() {
         playing = false
 
         val tempFile = File.createTempFile("temp_metronome", ".wav", cacheDir)
-        Log.d("a", "${tempFile.absolutePath}")
         rhythm.toWav(tempFile)
 
         metronomeUri = Uri.fromFile(tempFile)
@@ -110,7 +108,6 @@ class AudioPlayerActivity : ComponentActivity() {
                 }
                 syncParams.syncSource = SyncParams.SYNC_SOURCE_SYSTEM_CLOCK
                 syncParams.audioAdjustMode = SyncParams.AUDIO_ADJUST_MODE_STRETCH
-
             }
         }
         audioLength = mediaPlayer.duration.toLong()
@@ -824,7 +821,8 @@ class AudioPlayerActivity : ComponentActivity() {
                             isError = (bpm <= 0 || bpm >= 500) && bpmText != "",
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Number
-                            )
+                            ),
+                            singleLine = true
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                     }
@@ -902,7 +900,8 @@ class AudioPlayerActivity : ComponentActivity() {
                             isError = length <= 0f && lengthText != "",
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Decimal
-                            )
+                            ),
+                            singleLine = true
                         )
                     } else {
                         OutlinedTextField(
@@ -916,7 +915,8 @@ class AudioPlayerActivity : ComponentActivity() {
                             isError = length <= 0 && beatsText != "",
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Number
-                            )
+                            ),
+                            singleLine = true
                         )
                     }
                 }

@@ -16,11 +16,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 
 class MusicFont {
@@ -61,6 +63,7 @@ class MusicFont {
                 number: Int,
                 color: Color = Color.White,
             ) {
+                val ltr = LocalLayoutDirection.current == LayoutDirection.Ltr
                 val glyphs = convert(number.toString()).toCharArray()
 
                 BoxWithConstraints(
@@ -79,7 +82,7 @@ class MusicFont {
 
                     Row(
                         horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxSize().offset(x = -width * 0.75f, y = (-maxHeight/3))
+                        modifier = Modifier.fillMaxSize().offset(x = width * 0.75f * (if(ltr) -1 else 1), y = (-maxHeight/3))
                     ) {
                         glyphs.forEach {
                             Text(it.toString(), style = textStyle, color = color, modifier = Modifier.padding(horizontal = width/1.75f))
@@ -95,6 +98,7 @@ class MusicFont {
                 color: Color = Color.White,
                 lineSpacing: Dp = 0.dp
             ) {
+                val ltr = LocalLayoutDirection.current == LayoutDirection.Ltr
                 val numeratorGlyphs = convert(numerator.toString()).toCharArray()
                 val denominatorGlyphs = convert(denominator.toString()).toCharArray()
 
@@ -114,7 +118,7 @@ class MusicFont {
 
                     Box(
                         contentAlignment = Alignment.Center,
-                        modifier = Modifier.fillMaxSize().offset(x = -width * 0.75f, y = (-maxHeight/2) - (lineSpacing/2))
+                        modifier = Modifier.fillMaxSize().offset(x = width * 0.75f * (if(ltr) -1 else 1), y = (-maxHeight/2) - (lineSpacing/2))
                     ) {
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(width),
