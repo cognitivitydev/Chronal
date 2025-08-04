@@ -21,9 +21,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
@@ -103,6 +105,7 @@ fun EditSubdivision(window: Window, primary: Boolean, expanded: Boolean) {
 
 @Composable
 fun SubdivisionNote(window: Window, primary: Boolean, value: SimpleRhythm, i: Int, onUpdate: (SimpleRhythm) -> Unit = {}) {
+    val ltr = LocalLayoutDirection.current == LayoutDirection.Ltr
     val isTuplet = i >= 6
     val noteValue = if(isTuplet) 2.0.pow(i - 4.0).toInt() else 2.0.pow(i.toDouble()).toInt()
     val tupletValue = if(isTuplet) 3 else 2
@@ -142,7 +145,7 @@ fun SubdivisionNote(window: Window, primary: Boolean, value: SimpleRhythm, i: In
                 fontSize = size.toSp()
             ),
             modifier = Modifier.align(Alignment.Center)
-                .offset(size * offset.x, size * offset.y)
+                .offset(size * offset.x * (if(ltr) 1 else -1), size * offset.y)
                 .offset(0.dp, if(isTuplet) 8.dp else 0.dp)
         )
 

@@ -1,6 +1,10 @@
 package dev.cognitivity.chronal.activity
 
-import android.annotation.SuppressLint
+import android.app.PendingIntent
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -35,18 +39,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import dev.cognitivity.chronal.ChronalApp
+import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.MetronomePreset
 import dev.cognitivity.chronal.MetronomeState
 import dev.cognitivity.chronal.MusicFont
 import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.glance.ClockWidgetReceiver
 import dev.cognitivity.chronal.toSp
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.launch
@@ -54,7 +62,6 @@ import java.text.SimpleDateFormat
 
 class PresetActivity : ComponentActivity() {
 
-    @SuppressLint("SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -69,10 +76,13 @@ class PresetActivity : ComponentActivity() {
     @Composable
     fun MainContent() {
         val scope = rememberCoroutineScope()
+        val snackbarHostState = remember { SnackbarHostState() }
 
         val settings = ChronalApp.getInstance().settings
         val setting = settings.metronomePresets
         val presets = remember { mutableStateListOf<MetronomePreset>().apply { addAll(setting.value) } }
+
+        var showCreateDialog by remember { mutableStateOf(false) }
 
         Scaffold(
             topBar = {
@@ -94,36 +104,21 @@ class PresetActivity : ComponentActivity() {
             },
             floatingActionButton = {
                 ExtendedFloatingActionButton(
-                    onClick = {
-                        val metronome = ChronalApp.getInstance().metronome
-                        val metronomeSecondary = ChronalApp.getInstance().metronomeSecondary
-                        val newPreset = MetronomePreset(
-                            name = getString(R.string.presets_new_name),
-                            state = MetronomeState(
-                                bpm = metronome.bpm,
-                                beatValuePrimary = metronome.beatValue,
-                                beatValueSecondary = metronomeSecondary.beatValue,
-                                secondaryEnabled = metronomeSecondary.active
-                            ),
-                            primaryRhythm = metronome.getRhythm(),
-                            secondaryRhythm = metronomeSecondary.getRhythm(),
-                            primarySimpleRhythm = settings.metronomeSimpleRhythm.value,
-                            secondarySimpleRhythm = settings.metronomeSimpleRhythmSecondary.value
-                        )
-                        presets.add(newPreset)
-                        setting.value = presets
-                        scope.launch {
-                            ChronalApp.getInstance().settings.save()
-                        }
-                    },
+                    onClick = { showCreateDialog = true },
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Add,
-                        contentDescription = getString(R.string.presets_add)
+                        contentDescription = getString(R.string.presets_create)
                     )
                     Spacer(modifier = Modifier.size(8.dp))
-                    Text(getString(R.string.presets_add), style = MaterialTheme.typography.bodyLarge)
+                    Text(getString(R.string.presets_create), style = MaterialTheme.typography.bodyLarge)
                 }
+            },
+            snackbarHost = {
+                SnackbarHost(
+                    hostState = snackbarHostState,
+                    modifier = Modifier.padding(8.dp)
+                )
             },
             modifier = Modifier.fillMaxSize()
         ) { innerPadding ->
@@ -214,7 +209,7 @@ class PresetActivity : ComponentActivity() {
                                             presets[index] = newPreset
                                             setting.value = presets.toMutableList()
                                             scope.launch {
-                                                ChronalApp.getInstance().settings.save()
+                                                settings.save()
                                             }
                                         }
                                     )
@@ -239,10 +234,10 @@ class PresetActivity : ComponentActivity() {
                                             onClick = {
                                                 preset = preset.copy(name = newName)
                                                 presets[index] = preset
-                                                ChronalApp.getInstance().settings.metronomePresets.value = presets
+                                                setting.value = presets
                                                 renameDialog = false
                                                 scope.launch {
-                                                    ChronalApp.getInstance().settings.save()
+                                                    settings.save()
                                                 }
                                             }
                                         ) {
@@ -267,11 +262,22 @@ class PresetActivity : ComponentActivity() {
                                         TextButton(
                                             onClick = {
                                                 presets.removeAt(index)
-                                                ChronalApp.getInstance().settings.metronomePresets.value = presets
+                                                setting.value = presets
                                                 deleteDialog = false
                                                 showDialog = false
                                                 scope.launch {
-                                                    ChronalApp.getInstance().settings.save()
+                                                    settings.save()
+                                                    snackbarHostState.showSnackbar(
+                                                        message = getString(R.string.presets_deleted, preset.name),
+                                                        actionLabel = getString(R.string.generic_undo),
+                                                        duration = SnackbarDuration.Short
+                                                    ).let { result ->
+                                                        if (result == SnackbarResult.ActionPerformed) {
+                                                            presets.add(preset)
+                                                            settings.metronomePresets.value = presets
+                                                            settings.save()
+                                                        }
+                                                    }
                                                 }
                                             }
                                         ) {
@@ -290,6 +296,69 @@ class PresetActivity : ComponentActivity() {
                         }
                     }
                 }
+            }
+            if(showCreateDialog) {
+                var newName by remember { mutableStateOf("") }
+                AlertDialog(
+                    onDismissRequest = { showCreateDialog = false },
+                    title = { Text(getString(R.string.presets_create)) },
+                    text = {
+                        OutlinedTextField(
+                            placeholder = { Text(getString(R.string.presets_new_name))},
+                            value = newName,
+                            onValueChange = { newName = it },
+                            label = { Text(getString(R.string.presets_create_hint)) },
+                            singleLine = true,
+                        )
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                val metronome = ChronalApp.getInstance().metronome
+                                val metronomeSecondary = ChronalApp.getInstance().metronomeSecondary
+                                val newPreset = MetronomePreset(
+                                    name = newName.trim().ifBlank { getString(R.string.presets_new_name) },
+                                    state = MetronomeState(
+                                        bpm = metronome.bpm,
+                                        beatValuePrimary = metronome.beatValue,
+                                        beatValueSecondary = metronomeSecondary.beatValue,
+                                        secondaryEnabled = metronomeSecondary.active
+                                    ),
+                                    primaryRhythm = metronome.getRhythm(),
+                                    secondaryRhythm = metronomeSecondary.getRhythm(),
+                                    primarySimpleRhythm = settings.metronomeSimpleRhythm.value,
+                                    secondarySimpleRhythm = settings.metronomeSimpleRhythmSecondary.value
+                                )
+                                presets.add(newPreset)
+                                setting.value = presets
+                                scope.launch {
+                                    settings.save()
+                                    showCreateDialog = false
+                                    snackbarHostState.showSnackbar(
+                                        message = getString(R.string.presets_created, newPreset.name),
+                                        actionLabel = getString(R.string.generic_undo),
+                                        duration = SnackbarDuration.Short
+                                    ).let { result ->
+                                        if (result == SnackbarResult.ActionPerformed) {
+                                            presets.remove(newPreset)
+                                            setting.value = presets
+                                            settings.save()
+                                        }
+                                    }
+                                }
+                            }
+                        ) {
+                            Text(getString(R.string.generic_confirm))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = { showCreateDialog = false }
+                        ) {
+                            Text(getString(R.string.generic_cancel))
+                        }
+                    }
+                )
             }
         }
     }
@@ -347,7 +416,7 @@ class PresetActivity : ComponentActivity() {
                             metronomeSecondary.setRhythm(preset.secondaryRhythm)
 
                             scope.launch {
-                                ChronalApp.getInstance().settings.save()
+                                settings.save()
                                 finish()
                             }
                         }
@@ -421,8 +490,35 @@ class PresetActivity : ComponentActivity() {
                                 )
 
                                 scope.launch {
-                                    ChronalApp.getInstance().settings.save()
+                                    settings.save()
                                     onUpdate(newPreset)
+                                }
+                            }
+                        )
+                        DropdownMenuItem(
+                            leadingIcon = {
+                                Icon(
+                                   painter = painterResource(R.drawable.outline_widgets_24),
+                                    contentDescription = getString(R.string.presets_widget_create),
+                                )
+                            },
+                            text = { Text(getString(R.string.presets_widget_create)) },
+                            onClick = {
+                                checked = false
+
+                                val widgetManager = AppWidgetManager.getInstance(context)
+                                val widgetProvider = ComponentName(context, ClockWidgetReceiver::class.java)
+
+                                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    val successCallback = PendingIntent.getActivity(
+                                        context,
+                                        0,
+                                        Intent(context, WidgetConfigurationActivity::class.java)
+                                            .putExtra("preset", preset.toJson().toString()),
+                                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                                    )
+
+                                    widgetManager.requestPinAppWidget(widgetProvider, null, successCallback)
                                 }
                             }
                         )
@@ -504,6 +600,7 @@ class PresetActivity : ComponentActivity() {
         isPrimary: Boolean,
         enabled: Boolean = true
     ) {
+        val ltr = LocalLayoutDirection.current == LayoutDirection.Ltr
         val textColor = if(enabled) {
             if(isPrimary) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onTertiaryContainer
         } else MaterialTheme.colorScheme.onSurface
@@ -557,7 +654,7 @@ class PresetActivity : ComponentActivity() {
                         fontSize = 64.dp.toSp()
                     ),
                     modifier = Modifier.align(Alignment.Center)
-                        .offset(64.dp * offset.x, 64.dp * offset.y)
+                        .offset(64.dp * offset.x * (if(ltr) 1 else -1), 64.dp * offset.y)
                         .offset(0.dp, if(isTuplet) 8.dp else 0.dp)
                 )
 

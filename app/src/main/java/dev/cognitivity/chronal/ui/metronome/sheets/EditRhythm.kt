@@ -23,11 +23,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
@@ -53,6 +55,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} ) {
+    val ltr = LocalLayoutDirection.current == LayoutDirection.Ltr
     var showSimpleWarning by remember { mutableStateOf(false) }
 
     var hidden by remember { mutableStateOf(false) }
@@ -335,7 +338,7 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
                                     fontSize = 96.dp.toSp()
                                 ),
                                 modifier = Modifier.align(Alignment.Center)
-                                    .offset(96.dp * offset.x, 96.dp * offset.y)
+                                    .offset(96.dp * offset.x * (if(ltr) 1 else -1), 96.dp * offset.y)
                                     .offset(0.dp, if(isTuplet) 8.dp else 0.dp)
                             )
                         }

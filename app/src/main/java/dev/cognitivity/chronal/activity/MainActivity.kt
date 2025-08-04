@@ -45,6 +45,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
+import androidx.glance.appwidget.updateAll
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -59,6 +60,9 @@ import dev.cognitivity.chronal.ui.metronome.windows.metronome
 import dev.cognitivity.chronal.ui.settings.windows.SettingsPageMain
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import dev.cognitivity.chronal.ui.tuner.windows.TunerPageMain
+import dev.cognitivity.chronal.widgets.ClockWidget
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -88,6 +92,7 @@ class MainActivity : ComponentActivity() {
     }
 
 
+    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         installSplashScreen()
@@ -121,7 +126,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onPause() {
         super.onPause()
-        if(!ChronalApp.getInstance().metronome.playing) {
+        CoroutineScope(Dispatchers.IO).launch {
+            ClockWidget().updateAll(this@MainActivity)
+        }
+        if(ChronalApp.getInstance().isInitialized() && !ChronalApp.getInstance().metronome.playing) {
             val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.cancel(1)
         }

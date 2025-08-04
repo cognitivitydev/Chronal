@@ -41,6 +41,7 @@ class ChronalApp : Application() {
             metronomeSecondary.bpm = state.bpm
             metronomeSecondary.beatValue = state.beatValueSecondary
             metronomeSecondary.active = state.secondaryEnabled
+
         }
     }
 

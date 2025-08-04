@@ -16,9 +16,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -98,6 +100,7 @@ fun ColumnScope.RhythmButtons(weight: Float, navController: NavController) {
 
 @Composable
 fun DrawContent(rhythm: Rhythm, simpleRhythm: SimpleRhythm, isAdvanced: Boolean, textColor: Color) {
+    val ltr = LocalLayoutDirection.current == LayoutDirection.Ltr
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -126,7 +129,7 @@ fun DrawContent(rhythm: Rhythm, simpleRhythm: SimpleRhythm, isAdvanced: Boolean,
                     fontSize = 64.dp.toSp()
                 ),
                 modifier = Modifier.align(Alignment.Center)
-                    .offset(64.dp * offset.x, 64.dp * offset.y)
+                    .offset(64.dp * offset.x * (if(ltr) 1 else -1), 64.dp * offset.y)
                     .offset(0.dp, if(isTuplet) 8.dp else 0.dp)
             )
             if(isTuplet) {

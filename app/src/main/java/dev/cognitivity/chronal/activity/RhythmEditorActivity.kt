@@ -36,25 +36,19 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -195,6 +189,7 @@ class RhythmEditorActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
     fun MainContent() {
+        val ltr = LocalLayoutDirection.current == LayoutDirection.Ltr
         var backDropdown by remember { mutableStateOf(false) }
         var notesEnabled by remember { mutableStateOf(true) }
         var showSimpleWarning by remember { mutableStateOf(false) }
@@ -222,6 +217,7 @@ class RhythmEditorActivity : ComponentActivity() {
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(1.dp, 0.dp),
+                        reverseLayout = !ltr // always display ltr
                     ) {
                         item {
                             DrawRhythm(parsedRhythm, updateBackup = true)
@@ -821,7 +817,7 @@ class RhythmEditorActivity : ComponentActivity() {
                             }
                             .padding(24.dp, 8.dp)
                     ) {
-                        val xOffset = (32 * MusicFont.Notation.N_QUARTER.offset.x).dp
+                        val xOffset = (32 * MusicFont.Notation.N_QUARTER.offset.x * (if(ltr) 1 else -1)).dp
                         val yOffset = (32 * MusicFont.Notation.N_QUARTER.offset.y).dp
 
                         Text(
@@ -1067,6 +1063,7 @@ class RhythmEditorActivity : ComponentActivity() {
 
     @Composable
     fun EditBpmDialog() {
+        val ltr = LocalLayoutDirection.current == LayoutDirection.Ltr
         var beatValue by remember { mutableFloatStateOf(metronome.beatValue) }
         var selectedNote by remember { mutableStateOf("") }
         var bpm by remember { mutableIntStateOf(metronome.bpm) }
@@ -1135,7 +1132,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                         },
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    val xOffset = (48 * char.offset.x).dp
+                                    val xOffset = (48 * char.offset.x * (if(ltr) 1 else -1)).dp
                                     val yOffset = (48 * char.offset.y).dp
 
                                     Text(
@@ -1168,7 +1165,7 @@ class RhythmEditorActivity : ComponentActivity() {
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        val xOffset = (64 * MusicFont.Notation.N_QUARTER.offset.x).dp
+                        val xOffset = (64 * MusicFont.Notation.N_QUARTER.offset.x * (if(ltr) 1 else -1)).dp
                         val yOffset = (64 * MusicFont.Notation.N_QUARTER.offset.y).dp
 
                         Text(
@@ -1877,6 +1874,7 @@ class RhythmEditorActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
     fun ColumnScope.NoteButton(value: Int, rest: Boolean, emphasized: Boolean, enabled: Boolean) {
+        val ltr = LocalLayoutDirection.current == LayoutDirection.Ltr
         if(value > 1024) {
             Box(
                 modifier = Modifier
@@ -1950,7 +1948,7 @@ class RhythmEditorActivity : ComponentActivity() {
                         note = character
                     }
                 }
-                val xOffset = if (note == null) 0.dp else ((40 * note.offset.x).dp)
+                val xOffset = if (note == null) 0.dp else ((40 * note.offset.x * (if(ltr) 1 else -1)).dp)
                 val yOffset = if (note == null) 0.dp else ((40 * note.offset.y).dp)
                 Box(
                     modifier = Modifier
@@ -2039,127 +2037,129 @@ class RhythmEditorActivity : ComponentActivity() {
                 anyError = true
                 measureErrored = true
             }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(0.dp, 8.dp, if (indexOffset == 0 && editable) 32.dp else 0.dp, 8.dp)
-                    .background(
-                        if ((measureErrored || allErrored) && editable) MaterialTheme.colorScheme.errorContainer.copy(
-                            alpha = 0.5f
-                        ) else Color.Transparent
-                    )
-            ) {
-                if (measureIndex != 0) {
-                    MeasureBreak(measure.timeSig != previousTimeSig)
-                }
-                if ((measureIndex == 0 || measure.timeSig != previousTimeSig) && measure.timeSig != 0 to 0) {
-                    TimeSignatureDisplay(measureIndex)
-                }
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(0.dp, 8.dp, if (indexOffset == 0 && editable) 32.dp else 0.dp, 8.dp)
+                        .background(
+                            if ((measureErrored || allErrored) && editable) MaterialTheme.colorScheme.errorContainer.copy(
+                                alpha = 0.5f
+                            ) else Color.Transparent
+                        )
+                ) {
+                    if (measureIndex != 0) {
+                        MeasureBreak(measure.timeSig != previousTimeSig)
+                    }
+                    if ((measureIndex == 0 || measure.timeSig != previousTimeSig) && measure.timeSig != 0 to 0) {
+                        TimeSignatureDisplay(measureIndex)
+                    }
 
-                measure.elements.forEach { element ->
-                    when (element) {
-                        is RhythmNote -> {
-                            var errored = false
-                            if (element.display.contains("?") && editable) {
-                                val errorDisplay = element.display.replace(MusicFont.Notation.DOT.char, '.')
-                                val error = getString(
-                                    R.string.editor_error_invalid_note,
-                                    globalIndex,
-                                    errorDisplay,
-                                    element.duration
-                                )
-                                if (!errors.contains(error)) {
-                                    Log.e("RhythmEditorActivity", error)
-                                    errors.add(error)
-                                }
-                                anyError = true
-                                errored = true
-                            }
-                            NoteText(element.display, globalIndex++, errored, editable)
-                        }
-
-                        is RhythmTuplet -> {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(16.dp, 0.dp)
-                            ) {
-                                Row {
-                                    val tupletRhythm = Rhythm(
-                                        arrayListOf(
-                                            Measure(
-                                                0 to 0,
-                                                element.notes
-                                            )
-                                        )
-                                    )
-                                    DrawRhythm(
-                                        tupletRhythm,
+                    measure.elements.forEach { element ->
+                        when (element) {
+                            is RhythmNote -> {
+                                var errored = false
+                                if (element.display.contains("?") && editable) {
+                                    val errorDisplay = element.display.replace(MusicFont.Notation.DOT.char, '.')
+                                    val error = getString(
+                                        R.string.editor_error_invalid_note,
                                         globalIndex,
-                                        measureIndex,
-                                        element.ratio.second.toDouble() / element.ratio.first,
-                                        allErrored = allErrored,
-                                        editable = editable,
-                                        complete = false
+                                        errorDisplay,
+                                        element.duration
                                     )
-                                    globalIndex += element.notes.size
+                                    if (!errors.contains(error)) {
+                                        Log.e("RhythmEditorActivity", error)
+                                        errors.add(error)
+                                    }
+                                    anyError = true
+                                    errored = true
                                 }
-                                // tuplet header
+                                NoteText(element.display, globalIndex++, errored, editable)
+                            }
+
+                            is RhythmTuplet -> {
                                 Box(
                                     modifier = Modifier
-                                        .padding(8.dp, 0.dp)
-                                        .matchParentSize()
+                                        .fillMaxSize()
+                                        .padding(16.dp, 0.dp)
                                 ) {
-                                    Row(
+                                    Row {
+                                        val tupletRhythm = Rhythm(
+                                            arrayListOf(
+                                                Measure(
+                                                    0 to 0,
+                                                    element.notes
+                                                )
+                                            )
+                                        )
+                                        DrawRhythm(
+                                            tupletRhythm,
+                                            globalIndex,
+                                            measureIndex,
+                                            element.ratio.second.toDouble() / element.ratio.first,
+                                            allErrored = allErrored,
+                                            editable = editable,
+                                            complete = false
+                                        )
+                                        globalIndex += element.notes.size
+                                    }
+                                    // tuplet header
+                                    Box(
                                         modifier = Modifier
-                                            .fillMaxWidth()
-                                            .align(Alignment.TopCenter)
+                                            .padding(8.dp, 0.dp)
+                                            .matchParentSize()
                                     ) {
-                                        Box(
+                                        Row(
                                             modifier = Modifier
-                                                .width(1.dp)
-                                                .height(8.dp)
-                                                .align(Alignment.CenterVertically)
-                                                .offset(0.dp, 4.dp)
-                                                .background(MaterialTheme.colorScheme.onSurface)
-                                        )
-                                        Box(
-                                            modifier = Modifier
-                                                .weight(1f)
-                                                .height(1.dp)
-                                                .align(Alignment.CenterVertically)
-                                                .background(MaterialTheme.colorScheme.onSurface)
-                                        )
-                                        Text(
-                                            "${element.ratio.first}:${element.ratio.second}",
-                                            modifier = Modifier
-                                                .align(Alignment.CenterVertically)
-                                                .padding(16.dp, 0.dp),
-                                            color = MaterialTheme.colorScheme.onSurface,
-                                            style = MaterialTheme.typography.labelLarge,
-                                        )
-                                        Box(
-                                            modifier = Modifier
-                                                .weight(1f)
-                                                .height(1.dp)
-                                                .align(Alignment.CenterVertically)
-                                                .background(MaterialTheme.colorScheme.onSurface)
-                                        )
-                                        Box(
-                                            modifier = Modifier
-                                                .width(1.dp)
-                                                .height(8.dp)
-                                                .align(Alignment.CenterVertically)
-                                                .offset(0.dp, 4.dp)
-                                                .background(MaterialTheme.colorScheme.onSurface)
-                                        )
+                                                .fillMaxWidth()
+                                                .align(Alignment.TopCenter)
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .width(1.dp)
+                                                    .height(8.dp)
+                                                    .align(Alignment.CenterVertically)
+                                                    .offset(0.dp, 4.dp)
+                                                    .background(MaterialTheme.colorScheme.onSurface)
+                                            )
+                                            Box(
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .height(1.dp)
+                                                    .align(Alignment.CenterVertically)
+                                                    .background(MaterialTheme.colorScheme.onSurface)
+                                            )
+                                            Text(
+                                                "${element.ratio.first}:${element.ratio.second}",
+                                                modifier = Modifier
+                                                    .align(Alignment.CenterVertically)
+                                                    .padding(16.dp, 0.dp),
+                                                color = MaterialTheme.colorScheme.onSurface,
+                                                style = MaterialTheme.typography.labelLarge,
+                                            )
+                                            Box(
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .height(1.dp)
+                                                    .align(Alignment.CenterVertically)
+                                                    .background(MaterialTheme.colorScheme.onSurface)
+                                            )
+                                            Box(
+                                                modifier = Modifier
+                                                    .width(1.dp)
+                                                    .height(8.dp)
+                                                    .align(Alignment.CenterVertically)
+                                                    .offset(0.dp, 4.dp)
+                                                    .background(MaterialTheme.colorScheme.onSurface)
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+                    previousTimeSig = measure.timeSig
                 }
-                previousTimeSig = measure.timeSig
             }
         }
         if(updateBackup && !anyError) {

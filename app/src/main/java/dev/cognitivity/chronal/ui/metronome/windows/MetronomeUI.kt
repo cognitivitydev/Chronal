@@ -43,9 +43,12 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.google.gson.Gson
+import com.google.gson.JsonObject
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.Metronome
+import dev.cognitivity.chronal.MetronomePreset
 import dev.cognitivity.chronal.MetronomeState
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.MainActivity
@@ -95,8 +98,31 @@ var lastTapTime: Long? = null
 fun MetronomePageMain(window: Window, expanded: Boolean, mainActivity: MainActivity, padding: PaddingValues) {
     metronome = ChronalApp.getInstance().metronome
     metronomeSecondary = ChronalApp.getInstance().metronomeSecondary
+    val settings = ChronalApp.getInstance().settings
 
     activity = mainActivity
+
+    //load preset from widget if available
+    val presetJson = mainActivity.intent.getStringExtra("preset")
+    if(presetJson != null && presetJson.isNotEmpty()) {
+        val preset = MetronomePreset.fromJson(Gson().fromJson(presetJson, JsonObject::class.java))
+        metronome.bpm = preset.state.bpm
+        metronome.beatValue = preset.state.beatValuePrimary
+        metronomeSecondary.bpm = preset.state.bpm
+        metronomeSecondary.active = true
+        metronomeSecondary.beatValue = preset.state.beatValueSecondary
+        metronomeSecondary.active = preset.state.secondaryEnabled
+
+        settings.metronomeState.value = preset.state
+        settings.metronomeRhythm.value = preset.primaryRhythm.serialize()
+        settings.metronomeRhythmSecondary.value = preset.secondaryRhythm.serialize()
+        settings.metronomeSimpleRhythm.value = preset.primarySimpleRhythm
+        settings.metronomeSimpleRhythmSecondary.value = preset.secondarySimpleRhythm
+        metronome.setRhythm(preset.primaryRhythm)
+        metronomeSecondary.setRhythm(preset.secondaryRhythm)
+
+        mainActivity.intent.removeExtra("preset")
+    }
 
     val navController = rememberNavController()
 
@@ -393,13 +419,11 @@ fun BottomSheet(
 @Composable
 fun Dialog(onDismissRequest: () -> Unit, title: @Composable () -> Unit, text: @Composable () -> Unit, confirmButton: @Composable () -> Unit) {
     AlertDialog(
-        onDismissRequest = { },
+        onDismissRequest = onDismissRequest,
         modifier = Modifier.fillMaxWidth(0.9f),
-        title = { title() },
+        title = title,
         properties = DialogProperties(usePlatformDefaultWidth = false),
-        text = { text() },
-        confirmButton = {
-            confirmButton()
-        }
+        text = text,
+        confirmButton = confirmButton
     )
 }
