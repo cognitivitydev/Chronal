@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
@@ -86,7 +87,8 @@
         </activity>
 
         <receiver android:name=".glance.ClockWidgetReceiver"
-            android:exported="true">
+            android:exported="true"
+            android:label="@string/widget_clock_title">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -95,7 +97,8 @@
                 android:resource="@xml/clock_widget_info" />
         </receiver>
         <receiver android:name=".glance.PresetListWidgetReceiver"
-            android:exported="true">
+            android:exported="true"
+            android:label="@string/widget_list_title">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -103,5 +106,20 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/preset_list_widget_info" />
         </receiver>
+        <receiver android:name=".glance.TunerWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_tuner_title">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/tuner_widget_info" />
+        </receiver>
+
+        <service
+            android:name=".services.TunerWidgetService"
+            android:foregroundServiceType="microphone"
+            android:exported="false"/>
     </application>
 </manifest>

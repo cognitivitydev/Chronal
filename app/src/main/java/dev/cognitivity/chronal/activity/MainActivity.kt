@@ -56,11 +56,12 @@ import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.ui.metronome.windows.MetronomePageMain
 import dev.cognitivity.chronal.ui.metronome.windows.activity
-import dev.cognitivity.chronal.ui.metronome.windows.metronome
 import dev.cognitivity.chronal.ui.settings.windows.SettingsPageMain
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import dev.cognitivity.chronal.ui.tuner.windows.TunerPageMain
 import dev.cognitivity.chronal.widgets.ClockWidget
+import dev.cognitivity.chronal.widgets.PresetListWidget
+import dev.cognitivity.chronal.widgets.TunerWidget
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -128,8 +129,10 @@ class MainActivity : ComponentActivity() {
         super.onPause()
         CoroutineScope(Dispatchers.IO).launch {
             ClockWidget().updateAll(this@MainActivity)
+            PresetListWidget().updateAll(this@MainActivity)
+            TunerWidget().updateAll(this@MainActivity)
         }
-        if(ChronalApp.getInstance().isInitialized() && !ChronalApp.getInstance().metronome.playing) {
+        if(ChronalApp.getInstance().isInitialized()) {
             val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.cancel(1)
         }
@@ -231,11 +234,13 @@ class MainActivity : ComponentActivity() {
                 slideOutHorizontally(MotionScheme.expressive().slowSpatialSpec(), targetOffsetX = { if(forward) -it else it })
             }
         }
+        val startDestination = intent.getStringExtra("destination") ?: "metronome"
+        intent.removeExtra("destination")
 
         NavHost(
             modifier = Modifier.fillMaxSize(),
             navController = navController,
-            startDestination = "metronome",
+            startDestination = startDestination,
         ) {
             composable("metronome",
                 enterTransition = {
@@ -258,7 +263,7 @@ class MainActivity : ComponentActivity() {
                     exitTransition(to == "settings")
                 }
             ) {
-                if(!metronome.playing) {
+                if(ChronalApp.getInstance().isInitialized() && !ChronalApp.getInstance().metronome.playing) {
                     val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
                     notificationManager.cancel(1)
                 }
@@ -273,7 +278,7 @@ class MainActivity : ComponentActivity() {
                     exitTransition(false)
                 }
             ) {
-                if(!metronome.playing) {
+                if(!ChronalApp.getInstance().metronome.playing) {
                     val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
                     notificationManager.cancel(1)
                 }

@@ -94,6 +94,7 @@ fun PermissionWarning(innerPadding: PaddingValues, mainActivity: MainActivity) {
                     modifier = Modifier.padding(8.dp),
                     tint = MaterialTheme.colorScheme.error
                 )
+
                 Text(context.getString(R.string.tuner_microphone_disabled),
                     Modifier.weight(1f)
                         .padding(start = 8.dp),

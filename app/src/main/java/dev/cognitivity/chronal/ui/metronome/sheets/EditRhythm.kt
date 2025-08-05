@@ -554,7 +554,7 @@ fun BoxScope.ClockPreview(primary: Boolean, value: SimpleRhythm) {
             )
         }
         if(primary) {
-            drawBeats(remember { Animatable(-1f) }, 4.dp.toPx(),
+            ClockBeats(remember { Animatable(-1f) }, 4.dp.toPx(),
                 metronome.getIntervals().filter { it.measure == 0 },
                 majorOffColor = MaterialTheme.colorScheme.primaryContainer,
                 minorOffColor = MaterialTheme.colorScheme.onPrimary,
@@ -563,7 +563,7 @@ fun BoxScope.ClockPreview(primary: Boolean, value: SimpleRhythm) {
                 surface = MaterialTheme.colorScheme.surfaceContainerHigh
             )
         } else {
-            drawBeats(remember { Animatable(-1f) }, 4.dp.toPx(),
+            ClockBeats(remember { Animatable(-1f) }, 4.dp.toPx(),
                 metronome.getIntervals().filter { it.measure == 0 },
                 majorOffColor = MaterialTheme.colorScheme.tertiaryContainer,
                 minorOffColor = MaterialTheme.colorScheme.onTertiary,

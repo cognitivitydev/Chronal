@@ -2,6 +2,7 @@ package dev.cognitivity.chronal
 
 import android.app.Application
 import android.content.Context
+import android.graphics.Bitmap
 import android.util.TypedValue
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalDensity
@@ -22,6 +23,7 @@ class ChronalApp : Application() {
     lateinit var metronomeSecondary: Metronome
     lateinit var settings: SettingsManager
     var tuner: Tuner? = null
+    var widgetGraph: Bitmap? = null
     val developmentBuild = true
 
     override fun onCreate() {
@@ -41,7 +43,6 @@ class ChronalApp : Application() {
             metronomeSecondary.bpm = state.bpm
             metronomeSecondary.beatValue = state.beatValueSecondary
             metronomeSecondary.active = state.secondaryEnabled
-
         }
     }
 

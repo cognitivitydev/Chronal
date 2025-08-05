@@ -14,7 +14,7 @@ import be.tarsos.dsp.pitch.PitchProcessor
 
 class Tuner {
     var hz by mutableFloatStateOf(0f)
-    var history = mutableListOf<Pair<Long, Float>>()
+    var history = mutableListOf<Pair<Long, Float>>() // max 100
     var probability by mutableFloatStateOf(0f)
     var lastUpdate = 0L
     var threshold = ChronalApp.getInstance().settings.audioThreshold
