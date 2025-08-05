@@ -71,7 +71,7 @@ class PresetListWidget : GlanceAppWidget() {
                             imageProvider = ImageProvider(R.drawable.outline_refresh_24),
                             contentDescription = context.getString(R.string.widget_list_reload),
                             backgroundColor = null,
-                            contentColor = GlanceTheme.colors.onSurface,
+                            contentColor = GlanceTheme.colors.secondary,
                             onClick = {
                                 presets = settings.metronomePresets.value
                             }

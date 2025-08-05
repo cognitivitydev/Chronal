@@ -34,7 +34,7 @@ import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.activity.vibratorManager
 import dev.cognitivity.chronal.rhythm.metronome.Beat
-import dev.cognitivity.chronal.ui.metronome.windows.drawBeats
+import dev.cognitivity.chronal.ui.metronome.windows.ClockBeats
 import dev.cognitivity.chronal.ui.metronome.windows.secondaryEnabled
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -254,7 +254,7 @@ fun BoxScope.CircularClock(primary: Boolean, trackSize: Float, trackOff: Color, 
                     )
                 )
             }
-            drawBeats(progress, trackSize, intervals.filter { it.measure == currentMeasure }, majorOff, minorOff, majorPrimary, minorPrimary)
+            ClockBeats(progress, trackSize, intervals.filter { it.measure == currentMeasure }, majorOff, minorOff, majorPrimary, minorPrimary)
         }
         TempoChanger()
     }

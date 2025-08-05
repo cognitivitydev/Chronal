@@ -276,8 +276,8 @@ fun TopBar(navController: NavController, color: Color, padding: Boolean, clipSha
     }
 }
 @Composable
-fun drawBeats(progress: Animatable<Float, AnimationVector1D>, trackSize: Float, beats: List<Beat>, majorOffColor: Color, minorOffColor: Color, majorPrimaryColor: Color, minorPrimaryColor: Color,
-              surface: Color = MaterialTheme.colorScheme.surface) {
+fun ClockBeats(progress: Animatable<Float, AnimationVector1D>, trackSize: Float, beats: List<Beat>, majorOffColor: Color, minorOffColor: Color, majorPrimaryColor: Color, minorPrimaryColor: Color,
+               surface: Color = MaterialTheme.colorScheme.surface) {
     val showBeats = ChronalApp.getInstance().settings.showBeats.value
     val showSubdivisions = ChronalApp.getInstance().settings.showSubdivisions.value
     if (!showBeats && !showSubdivisions) return

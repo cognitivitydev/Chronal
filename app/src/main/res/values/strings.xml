@@ -403,12 +403,22 @@
     <string name="sound_tambourine">Tambourine</string>
     <string name="sound_block">Block</string>
 
+    <string name="widget_clock_title">Preset</string>
+    <string name="widget_clock_description">Create a shortcut for a preset or your previous settings.</string>
+
     <string name="widget_choose_preset_title">Choose a preset</string>
-    <string name="widget_choose_preset_hint">Select a preset below to use when clicking the widget.</string>
+    <string name="widget_choose_preset_hint">Select a preset below to use when clicking the widget</string>
     <string name="widget_choose_none">None</string>
     <string name="widget_choose_none_hint">Use your previous metronome settings</string>
 
     <string name="widget_list_title">Presets</string>
+    <string name="widget_list_description">Quickly access all of your metronome presets</string>
     <string name="widget_list_reload">Reload list</string>
     <string name="widget_list_none">No presets available</string>
+
+    <string name="widget_tuner_title">Tuner</string>
+    <string name="widget_tuner_start">Tap to start/stop</string>
+    <string name="widget_tuner_graph_unavailable">Graph unavailable</string>
+    <string name="widget_tuner_notification_title">Tuner active</string>
+    <string name="widget_tuner_notification_text">Tuner is </string>
 </resources>
