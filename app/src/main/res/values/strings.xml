@@ -291,50 +291,17 @@
 
     <string name="help_title">Help</string>
     <string name="help_metronome_delay_title">Why is the metronome delayed?</string>
-    <string name="help_metronome_delay">
-        The metronome audio may be delayed due to hardware or bluetooth latencies. You can adjust the visual latency in the settings to correct for this. There is
-        also a latency tester available in the settings to help you find the optimal value.
-    </string>
+    <string name="help_metronome_delay">The metronome audio may be delayed due to hardware or bluetooth latencies. You can adjust the visual latency in the settings to correct for this. There is also a latency tester available in the settings to help you find the optimal value.</string>
     <string name="help_metronome_edit_rhythm_title">How do I edit the rhythm?</string>
-    <string name="help_metronome_edit_rhythm">
-        To edit the rhythm of the metronome, tap on the button with the time signature and beat. The left-most button is for the primary rhythm, and the
-        right-most button is for an optional secondary rhythm. You can use the simple editor, which has a limited number of options, or the advanced editor,
-        which allows you to edit the rhythm with a notation-like interface.
-    </string>
+    <string name="help_metronome_edit_rhythm">To edit the rhythm of the metronome, tap on the button with the time signature and beat. The left-most button is for the primary rhythm, and the right-most button is for an optional secondary rhythm. You can use the simple editor, which has a limited number of options, or the advanced editor, which allows you to edit the rhythm with a notation-like interface.</string>
     <string name="help_metronome_edit_rhythm_simple_title">How do I use the Simple Editor?</string>
-    <string name="help_metronome_edit_rhythm_simple">
-        The Simple Editor allows you to quickly edit the rhythm of the metronome. You can change the time signature, add or remove beats, and change the
-        emphasis of the beats.\n\nTo edit the time signature, add or subtract the number of beats to change the top number, and change the beat type to edit
-        the bottom number (quarter note = 4). Some time signatures may not be compatible with your selected beat value.\n\nTo change the beats in the rhythm,
-        click on the "Beat" tab. From there, you can change the duration of each beat, as well as their emphasis. Emphasis changes the strength of each beat,
-        with high emphasis beats having a stronger vibration, a higher pitch, and a larger indicator. Some beats may not fit with your time signature.\n\nThe
-        Simple Editor has limited options. You can switch to the Advanced Editor at the bottom of the popup.
-    </string>
+    <string name="help_metronome_edit_rhythm_simple">The Simple Editor allows you to quickly edit the rhythm of the metronome. You can change the time signature, add or remove beats, and change the emphasis of the beats.\n\nTo edit the time signature, add or subtract the number of beats to change the top number, and change the beat type to edit the bottom number (quarter note = 4). Some time signatures may not be compatible with your selected beat value.\n\nTo change the beats in the rhythm, click on the "Beat" tab. From there, you can change the duration of each beat, as well as their emphasis. Emphasis changes the strength of each beat, with high emphasis beats having a stronger vibration, a higher pitch, and a larger indicator. Some beats may not fit with your time signature.\n\nThe Simple Editor has limited options. You can switch to the Advanced Editor at the bottom of the popup.</string>
     <string name="help_metronome_edit_rhythm_advanced_title">How do I use the Advanced Editor?</string>
-    <string name="help_metronome_edit_rhythm_advanced">
-        The Advanced Editor allows you to edit the rhythm of the metronome with a notation-like interface. Unlike the Simple Editor, you can add multiple
-        measures, change each measure\'s time signatures, and add or remove beats.\n\nYou can change the time signature of a measure by clicking the time
-        signature itself (if visible) or by using the button in your toolbar. To edit a note, click on it, then select the note type from the toolbar. You
-        can switch between notes and rests at the bottom, and change the emphasis of inputted notes at the far right of the toolbar. Notes with a high
-        emphasis are displayed with a stem up, while lower emphasis notes are displayed with a stem down. Notes can have up to two dots to increase its
-        duration. Select a note, then click the "Toggle dot" button to cycle between zero, one, and two dots (if the note can fit). You can also add
-        tuplets to your rhythm by clicking on the "Add tuplet" button in the toolbar, and then selecting a ratio. Most triplets use a 3:2 ratio. To remove a
-        tuplet, select any note inside a tuplet and click on the "Remove tuplet" button in the toolbar.\n\nTo preview the rhythm, click on the play button in
-        the bottom right corner. You can also change the BPM with the button next to it. You can also change the beat value of the tempo in the same menu.
-        \n\nYou can switch back to the Simple Editor at any time, but it will remove all changes made in the Advanced Editor.
-    </string>
+    <string name="help_metronome_edit_rhythm_advanced">The Advanced Editor allows you to edit the rhythm of the metronome with a notation-like interface. Unlike the Simple Editor, you can add multiple measures, change each measure\'s time signatures, and add or remove beats.\n\nYou can change the time signature of a measure by clicking the time signature itself (if visible) or by using the button in your toolbar. To edit a note, click on it, then select the note type from the toolbar. You can switch between notes and rests at the bottom, and change the emphasis of inputted notes at the far right of the toolbar. Notes with a high emphasis are displayed with a stem up, while lower emphasis notes are displayed with a stem down. Notes can have up to two dots to increase its duration. Select a note, then click the "Toggle dot" button to cycle between zero, one, and two dots (if the note can fit). You can also add tuplets to your rhythm by clicking on the "Add tuplet" button in the toolbar, and then selecting a ratio. Most triplets use a 3:2 ratio. To remove a tuplet, select any note inside a tuplet and click on the "Remove tuplet" button in the toolbar.\n\nTo preview the rhythm, click on the play button in the bottom right corner. You can also change the BPM with the button next to it. You can also change the beat value of the tempo in the same menu.\n\nYou can switch back to the Simple Editor at any time, but it will remove all changes made in the Advanced Editor.</string>
     <string name="help_tuner_detection_title">Why is the tuner not detecting my notes?</string>
-    <string name="help_tuner_detection">
-        The tuner uses the device\'s microphone to detect notes. Make sure that you have granted microphone access to the app. Additionally, the tuner tries
-        to remove background noise by filtering out quieter sounds. You can change the audio threshold in the settings to make it more or less sensitive. When
-        the tuner hears a note, it will display the minimum threshold. You can use this value to adjust the audio threshold in the settings.
-    </string>
+    <string name="help_tuner_detection">The tuner uses the device\'s microphone to detect notes. Make sure that you have granted microphone access to the app. Additionally, the tuner tries to remove background noise by filtering out quieter sounds. You can change the audio threshold in the settings to make it more or less sensitive. When the tuner hears a note, it will display the minimum threshold. You can use this value to adjust the audio threshold in the settings.</string>
     <string name="help_tuner_transpose_title">How can I transpose to my instrument?</string>
-    <string name="help_tuner_transpose">
-        By default, the tuner shows the concert pitch of the note being played. In settings, you can enable transposition and change your primary instrument.
-        If you cannot find your instrument in the list, you can create a new instrument with the + button at the top. There, you can change the key of the
-        instrument and the octave difference from Concert C4.
-    </string>
+    <string name="help_tuner_transpose">By default, the tuner shows the concert pitch of the note being played. In settings, you can enable transposition and change your primary instrument. If you cannot find your instrument in the list, you can create a new instrument with the + button at the top. There, you can change the key of the instrument and the octave difference from Concert C4.</string>
 
     <string name="credits_title">Credits</string>
     <string name="credits_contributors">Contributors</string>
