@@ -43,7 +43,6 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -66,7 +65,6 @@ import dev.cognitivity.chronal.Instrument
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.Tuner
 import dev.cognitivity.chronal.activity.MainActivity
-import dev.cognitivity.chronal.pxToDp
 import dev.cognitivity.chronal.toSp
 import dev.cognitivity.chronal.ui.MorphedShape
 import dev.cognitivity.chronal.ui.tuner.AudioDialog
@@ -404,16 +402,13 @@ fun PitchPointerHorizontal(cents: Float, tuner: Tuner?) {
             .fillMaxHeight(0.5f)
             .weight(40f)
         ) {
-            val density = LocalDensity.current
-            val parentWidthPx = this@BoxWithConstraints.constraints.maxWidth.toFloat()
-            val xOffsetPx = parentWidthPx * animatedPosition.value
-
-            val xOffsetDp = with(density) { xOffsetPx.toDp() }
-            val xOffsetPaddedDp = xOffsetDp.coerceIn(40.dp, parentWidthPx.pxToDp() - 40.dp)
-
+            val lineOffset = this.maxWidth / 21
+            val maxWidth = this.maxWidth - lineOffset
+            val xOffset = maxWidth * animatedPosition.value + lineOffset / 2
+            val xOffsetPadded = xOffset.coerceIn(40.dp, maxWidth - 40.dp)
 
             Box(
-                modifier = Modifier.offset(x = xOffsetPaddedDp - 80.dp, y = -(80).dp)
+                modifier = Modifier.offset(x = xOffsetPadded - 80.dp, y = -(80).dp)
                     .align(Alignment.CenterStart)
                     .clip(
                         MorphedShape(
@@ -455,7 +450,7 @@ fun PitchPointerHorizontal(cents: Float, tuner: Tuner?) {
                 }
             }
             Box(
-                modifier = Modifier.offset(x = xOffsetDp - 0.dp, y = 80.dp)
+                modifier = Modifier.offset(x = xOffset - 0.dp, y = 80.dp)
                     .align(Alignment.CenterStart)
                     .size(64.dp)
             ) {

@@ -2,9 +2,9 @@ package dev.cognitivity.chronal.ui.tuner.windows
 
 import android.Manifest
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
@@ -22,7 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -129,8 +129,7 @@ fun DrawLineOrElse(
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = Modifier.fillMaxWidth()
             .onGloballyPositioned { coordinates ->
                 availableWidth = coordinates.size.width
             }
@@ -301,8 +300,8 @@ fun BoxScope.DrawVerticalLine(mono: Boolean, number: Int) {
         Text(
             (if(number >= 0) "+" else "") + number.toString(),
             Modifier.align(Alignment.CenterVertically)
-                .padding(0.dp, 0.dp, 8.dp, 0.dp),
-            style = MaterialTheme.typography.titleMedium,
+                .padding(end = 4.dp),
+            style = MaterialTheme.typography.labelLarge,
             color = textColor.value,
             overflow = TextOverflow.Visible,
             maxLines = 1
@@ -312,17 +311,9 @@ fun BoxScope.DrawVerticalLine(mono: Boolean, number: Int) {
                 .align(Alignment.CenterVertically)
                 .width(lineSize)
                 .height(4.dp)
-        ) {
-            Canvas(
-                Modifier.fillMaxSize()
-            ) {
-                drawRoundRect(
-                    color = lineColor.value,
-                    size = size,
-                    cornerRadius = CornerRadius(size.height)
-                )
-            }
-        }
+                .clip(CircleShape)
+                .background(lineColor.value)
+        )
     }
 }
 
@@ -363,12 +354,12 @@ fun BoxScope.DrawHorizontalLine(mono: Boolean, number: Int) {
     ) {
         Box(
             Modifier.align(Alignment.CenterHorizontally)
-                .padding(bottom = 8.dp)
+                .padding(bottom = 4.dp)
         ) {
             Text(
                 text = (if (number >= 0) "+" else "") + number.toString(),
                 modifier = Modifier.align(Alignment.Center),
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.labelMedium,
                 color = textColor.value,
                 softWrap = false,
                 overflow = TextOverflow.Visible,
@@ -380,17 +371,9 @@ fun BoxScope.DrawHorizontalLine(mono: Boolean, number: Int) {
                 .align(Alignment.CenterHorizontally)
                 .width(4.dp)
                 .height(lineSize)
-        ) {
-            Canvas(
-                Modifier.fillMaxSize()
-            ) {
-                drawRoundRect(
-                    color = lineColor.value,
-                    size = size,
-                    cornerRadius = CornerRadius(size.height)
-                )
-            }
-        }
+                .clip(CircleShape)
+                .background(lineColor.value)
+        )
     }
 }
 
