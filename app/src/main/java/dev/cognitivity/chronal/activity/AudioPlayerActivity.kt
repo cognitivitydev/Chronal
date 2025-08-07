@@ -714,14 +714,14 @@ class AudioPlayerActivity : ComponentActivity() {
                                     Text(
                                         text = getString(R.string.audio_player_length_beats, element.beats),
                                         style = MaterialTheme.typography.labelLarge,
-                                        color = onColorContainer
+                                        color = color
                                     )
                                 }
                                 Text(
                                     text = getString(R.string.audio_player_length_seconds,
                                         ((element.endTime - element.startTime) / 1000f)),
                                     style = MaterialTheme.typography.labelLarge,
-                                    color = if (element.beats != null) color else onColorContainer
+                                    color = color
                                 )
                             }
                         }

@@ -185,7 +185,7 @@ class BeatDetectorActivity : ComponentActivity() {
                             modifier = Modifier.align(Alignment.CenterVertically),
                             text = "${round(viewModel.bpm).toInt()}",
                             fontSize = 96.sp,
-                            color = if(isRecording) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+                            color = if(isRecording) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.surfaceVariant,
                         )
                         Text(
                             modifier = Modifier
@@ -272,7 +272,7 @@ class BeatDetectorActivity : ComponentActivity() {
             Icon(
                 painter = painterResource(R.drawable.outline_music_cast_24),
                 contentDescription = getString(R.string.generic_microphone),
-                tint = if(isRecording) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+                tint = if(isRecording) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
                 modifier = Modifier.fillMaxSize(0.333f)
                     .aspectRatio(1f)
                     .align(Alignment.Center)

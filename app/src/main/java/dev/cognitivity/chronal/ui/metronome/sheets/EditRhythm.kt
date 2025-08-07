@@ -576,7 +576,9 @@ fun BoxScope.ClockPreview(primary: Boolean, value: SimpleRhythm) {
             .fillMaxHeight(0.5f)
             .align(Alignment.Center)
         ) {
-            MusicFont.Number.TimeSignature(timeSignature.first, timeSignature.second, MaterialTheme.colorScheme.onPrimaryContainer)
+            MusicFont.Number.TimeSignature(timeSignature.first, timeSignature.second,
+                color = if(primary) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
+            )
         }
     }
 }

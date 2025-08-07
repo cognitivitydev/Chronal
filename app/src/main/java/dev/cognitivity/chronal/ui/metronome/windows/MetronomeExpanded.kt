@@ -135,9 +135,9 @@ fun MetronomePageExpanded(
                                     trackSecondary = MaterialTheme.colorScheme.secondary,
                                     majorOffColor = MaterialTheme.colorScheme.primaryContainer,
                                     minorOffColor = MaterialTheme.colorScheme.onPrimary,
-                                    majorPrimaryColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    majorPrimaryColor = MaterialTheme.colorScheme.primary,
                                     minorPrimaryColor = MaterialTheme.colorScheme.primary,
-                                    majorSecondaryColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    majorSecondaryColor = MaterialTheme.colorScheme.secondary,
                                     minorSecondaryColor = MaterialTheme.colorScheme.secondary,
                                 )
                             }
@@ -149,14 +149,14 @@ fun MetronomePageExpanded(
                                 ) {
                                     CircularClock(false,
                                         trackSize = 4.dp.toPx(),
-                                        trackOff = MaterialTheme.colorScheme.onSecondary,
+                                        trackOff = MaterialTheme.colorScheme.tertiaryContainer,
                                         trackPrimary = MaterialTheme.colorScheme.tertiary,
                                         trackSecondary = MaterialTheme.colorScheme.secondary,
                                         majorOffColor = MaterialTheme.colorScheme.tertiaryContainer,
                                         minorOffColor = MaterialTheme.colorScheme.onTertiary,
-                                        majorPrimaryColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                                        majorPrimaryColor = MaterialTheme.colorScheme.tertiary,
                                         minorPrimaryColor = MaterialTheme.colorScheme.tertiary,
-                                        majorSecondaryColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                        majorSecondaryColor = MaterialTheme.colorScheme.secondary,
                                         minorSecondaryColor = MaterialTheme.colorScheme.secondary,
                                     )
                                 }
