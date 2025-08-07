@@ -37,7 +37,7 @@ import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.activity.PresetActivity
-import dev.cognitivity.chronal.ui.theme.AquaGlanceTheme
+import dev.cognitivity.chronal.ui.theme.colors.AquaGlanceTheme
 
 class PresetListWidget : GlanceAppWidget() {
     override val sizeMode = SizeMode.Exact
@@ -47,7 +47,7 @@ class PresetListWidget : GlanceAppWidget() {
         provideContent {
             GlanceTheme(
                 colors = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) GlanceTheme.colors
-                else AquaGlanceTheme.colors
+                else AquaGlanceTheme()
             ) {
                 WidgetContent(context)
             }

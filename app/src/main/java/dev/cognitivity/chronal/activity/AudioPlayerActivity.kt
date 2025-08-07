@@ -859,9 +859,9 @@ class AudioPlayerActivity : ComponentActivity() {
                             if (useTime) {
                                 Icon(
                                     imageVector = Icons.Default.Check,
-                                    contentDescription = ChronalApp.Companion.context.getString(R.string.generic_selected),
+                                    contentDescription = ChronalApp.context.getString(R.string.generic_selected),
                                 )
-                                Spacer(modifier = Modifier.Companion.width(ToggleButtonDefaults.IconSpacing))
+                                Spacer(modifier = Modifier.width(ToggleButtonDefaults.IconSpacing))
                             }
                             Text(getString(R.string.audio_player_element_duration_time))
                         }
@@ -881,9 +881,9 @@ class AudioPlayerActivity : ComponentActivity() {
                             if (!useTime) {
                                 Icon(
                                     imageVector = Icons.Default.Check,
-                                    contentDescription = ChronalApp.Companion.context.getString(R.string.generic_selected),
+                                    contentDescription = ChronalApp.context.getString(R.string.generic_selected),
                                 )
-                                Spacer(modifier = Modifier.Companion.width(ToggleButtonDefaults.IconSpacing))
+                                Spacer(modifier = Modifier.width(ToggleButtonDefaults.IconSpacing))
                             }
                             Text(getString(R.string.audio_player_element_duration_beats))
                         }

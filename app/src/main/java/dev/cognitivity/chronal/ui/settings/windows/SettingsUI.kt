@@ -5,12 +5,18 @@ import android.content.Intent
 import androidx.compose.foundation.Indication
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -29,15 +35,18 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
+import dev.cognitivity.chronal.ColorScheme
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.Setting
 import dev.cognitivity.chronal.activity.CreditsActivity
 import dev.cognitivity.chronal.activity.HelpActivity
 import dev.cognitivity.chronal.activity.InstrumentActivity
 import dev.cognitivity.chronal.activity.LatencyActivity
+import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.ui.settings.ExpandableButtonRow
 import dev.cognitivity.chronal.ui.settings.ExpandableOption
 import dev.cognitivity.chronal.ui.settings.ExpandableSlider
+import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.floor
@@ -114,8 +123,7 @@ fun SettingsPageMain(expanded: Boolean, padding: PaddingValues) {
             Row(
                 modifier = Modifier.fillMaxWidth()
                     .clickable {
-                        //TODO
-                        val intent = Intent(Intent.ACTION_VIEW, "https://crowdin.com/".toUri())
+                        val intent = Intent(Intent.ACTION_VIEW, "https://crowdin.com/project/chronal".toUri())
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         ChronalApp.getInstance().startActivity(intent)
                     }
@@ -286,6 +294,7 @@ fun BoxScope.MoreSettingsDropdown() {
             )
         }
     }
+
     IconButton(
         onClick = {
             expanded = !expanded
@@ -328,6 +337,10 @@ fun DrawSetting(
                     setting = setting,
                 ) {
                     when (setting.menu.id) {
+                        "Colors" -> {
+                            ColorSetting(setting as Setting<ColorScheme>)
+                        }
+
                         "Accidentals" -> {
                             Box(
                                 modifier = Modifier.fillMaxWidth(),
@@ -351,61 +364,7 @@ fun DrawSetting(
                         }
 
                         "Note" -> {
-                            var selection by remember { mutableIntStateOf(setting.value as Int) }
-
-                            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                                repeat(6) { index ->
-                                    val interactionSource = remember { MutableInteractionSource() }
-                                    Row(
-                                        modifier = Modifier.clickable(
-                                            interactionSource = interactionSource,
-                                            indication = null,
-                                        ) {
-                                            selection = index
-                                            scope.launch {
-                                                (setting as Setting<Int>).value = index
-                                                ChronalApp.getInstance().settings.save()
-                                            }
-                                        },
-                                        verticalAlignment = Alignment.CenterVertically,
-                                    ) {
-                                        RadioButton(
-                                            selected = selection == index,
-                                            onClick = {
-                                                selection = index
-                                                scope.launch {
-                                                    (setting as Setting<Int>).value = index
-                                                    ChronalApp.getInstance().settings.save()
-                                                }
-                                            },
-                                            interactionSource = interactionSource
-                                        )
-                                        val text = when (index) {
-                                            0 -> R.string.setting_note_name_english to R.string.setting_note_example_english
-                                            1 -> R.string.setting_note_name_solfege_english to R.string.setting_note_example_solfege_english
-                                            2 -> R.string.setting_note_name_solfege_chromatic to R.string.setting_note_example_solfege_chromatic
-                                            3 -> R.string.setting_note_name_solfege_latin to R.string.setting_note_example_solfege_latin
-                                            4 -> R.string.setting_note_name_german to R.string.setting_note_example_german
-                                            5 -> R.string.setting_note_name_nashville to R.string.setting_note_example_nashville
-                                            else -> R.string.generic_unknown to R.string.generic_unknown
-                                        }
-                                        Column(
-                                            modifier = Modifier.weight(1f)
-                                        ) {
-                                            Text(
-                                                text = context.getString(text.first),
-                                                style = MaterialTheme.typography.titleMedium,
-                                                color = if (selection == index) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
-                                            )
-                                            Text(
-                                                text = context.getString(text.second),
-                                                style = MaterialTheme.typography.bodyMedium,
-                                                color = if (selection == index) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
-                                            )
-                                        }
-                                    }
-                                }
-                            }
+                            NoteSetting(setting as Setting<Int>)
                         }
 
                         "Percentage" -> {
@@ -492,6 +451,244 @@ fun DrawSetting(
                     }
                 }
             )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun ColorSetting(setting: Setting<ColorScheme>) {
+    var selection by remember { mutableStateOf(setting.value) }
+    var initialValue by remember { mutableStateOf(setting.value) }
+    val scope = rememberCoroutineScope()
+
+    val surfaceContainerLow = MaterialTheme.colorScheme.surfaceContainerLow
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(context.getString(R.string.setting_color_scheme_title),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier.padding(8.dp)
+        )
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            items(ColorScheme.Color.entries) { color ->
+                val selected = selection.color == color
+                MetronomeTheme(color) {
+                    Box(
+                        modifier = Modifier.size(80.dp)
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(MaterialTheme.colorScheme.primaryContainer)
+                            .clickable {
+                                selection = selection.copy(
+                                    color = color,
+                                    contrast = if(color == ColorScheme.Color.SYSTEM) ColorScheme.Contrast.SYSTEM
+                                    else if(selection.contrast == ColorScheme.Contrast.SYSTEM) ColorScheme.Contrast.LOW
+                                    else selection.contrast
+                                )
+                            }
+                            .border(2.dp, if(selected) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(24.dp))
+                            .border(5.dp, if(selected) surfaceContainerLow
+                                else MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(24.dp))
+                    ) {
+                        Box(
+                            modifier = Modifier.size(56.dp)
+                                .align(Alignment.Center)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary)
+                        )
+                    }
+                }
+            }
+        }
+
+        Text(context.getString(R.string.setting_color_theme_title),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier.padding(8.dp)
+        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)
+        ) {
+            repeat(3) { i ->
+                val theme = ColorScheme.Theme.entries[i]
+                ToggleButton(
+                    checked = selection.theme == theme,
+                    onCheckedChange = {
+                        selection = selection.copy(theme = theme)
+                    },
+                    shapes = when (i) {
+                        0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                        2 -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                        else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                    },
+                    colors = ToggleButtonDefaults.toggleButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                    ),
+                    contentPadding = ButtonDefaults.ContentPadding
+                ) {
+                    if (selection.theme == theme) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = context.getString(R.string.generic_selected),
+                        )
+                        Spacer(modifier = Modifier.width(ToggleButtonDefaults.IconSpacing))
+                    }
+                    Text(
+                        text = when(theme) {
+                            ColorScheme.Theme.SYSTEM -> context.getString(R.string.setting_color_theme_system)
+                            ColorScheme.Theme.LIGHT -> context.getString(R.string.setting_color_theme_light)
+                            ColorScheme.Theme.DARK -> context.getString(R.string.setting_color_theme_dark)
+                        }
+                    )
+                }
+            }
+        }
+
+        Text(context.getString(R.string.setting_color_contrast_title),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier.padding(8.dp)
+        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)
+        ) {
+            repeat(4) { i ->
+                val contrast = ColorScheme.Contrast.entries[i]
+                ToggleButton(
+                    checked = selection.contrast == contrast,
+                    onCheckedChange = {
+                        selection = selection.copy(contrast = contrast)
+                    },
+                    shapes = when (i) {
+                        0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                        3 -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                        else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                    },
+                    colors = ToggleButtonDefaults.toggleButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                    ),
+                    contentPadding = ButtonDefaults.ContentPadding,
+                    enabled = if(selection.color == ColorScheme.Color.SYSTEM) i == 0 else i != 0
+                ) {
+                    if (selection.contrast == contrast) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = context.getString(R.string.generic_selected),
+                        )
+                        Spacer(modifier = Modifier.width(ToggleButtonDefaults.IconSpacing))
+                    }
+                    Text(
+                        text = when(contrast) {
+                            ColorScheme.Contrast.SYSTEM -> context.getString(R.string.setting_color_contrast_system)
+                            ColorScheme.Contrast.LOW -> context.getString(R.string.setting_color_contrast_low)
+                            ColorScheme.Contrast.MEDIUM -> context.getString(R.string.setting_color_contrast_medium)
+                            ColorScheme.Contrast.HIGH -> context.getString(R.string.setting_color_contrast_high)
+                        }
+                    )
+                }
+            }
+        }
+        if(selection.color == ColorScheme.Color.SYSTEM) {
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Info,
+                    contentDescription = context.getString(R.string.generic_info),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = context.getString(R.string.setting_color_contrast_unavailable),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                )
+            }
+        }
+
+        if(selection != initialValue) {
+            FilledTonalButton(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                onClick = {
+                    scope.launch {
+                        setting.value = selection
+                        ChronalApp.getInstance().settings.save()
+                        context.startActivity(
+                            Intent(context, MainActivity::class.java)
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                                .putExtra("destination", "settings")
+                        )
+                    }
+                },
+            ) {
+                Text(context.getString(R.string.setting_color_save_reload))
+            }
+        }
+    }
+}
+
+@Composable
+fun NoteSetting(setting: Setting<Int>) {
+    var selection by remember { mutableIntStateOf(setting.value) }
+    val scope = rememberCoroutineScope()
+
+    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        repeat(6) { index ->
+            val interactionSource = remember { MutableInteractionSource() }
+            Row(
+                modifier = Modifier.clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                ) {
+                    selection = index
+                    scope.launch {
+                        setting.value = index
+                        ChronalApp.getInstance().settings.save()
+                    }
+                },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                RadioButton(
+                    selected = selection == index,
+                    onClick = {
+                        selection = index
+                        scope.launch {
+                            setting.value = index
+                            ChronalApp.getInstance().settings.save()
+                        }
+                    },
+                    interactionSource = interactionSource
+                )
+                val text = when (index) {
+                    0 -> R.string.setting_note_name_english to R.string.setting_note_example_english
+                    1 -> R.string.setting_note_name_solfege_english to R.string.setting_note_example_solfege_english
+                    2 -> R.string.setting_note_name_solfege_chromatic to R.string.setting_note_example_solfege_chromatic
+                    3 -> R.string.setting_note_name_solfege_latin to R.string.setting_note_example_solfege_latin
+                    4 -> R.string.setting_note_name_german to R.string.setting_note_example_german
+                    5 -> R.string.setting_note_name_nashville to R.string.setting_note_example_nashville
+                    else -> R.string.generic_unknown to R.string.generic_unknown
+                }
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = context.getString(text.first),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = if (selection == index) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        text = context.getString(text.second),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (selection == index) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
         }
     }
 }

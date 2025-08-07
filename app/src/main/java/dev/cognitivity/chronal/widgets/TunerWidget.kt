@@ -38,7 +38,7 @@ import androidx.glance.unit.ColorProvider
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.services.TunerWidgetService
-import dev.cognitivity.chronal.ui.theme.AquaGlanceTheme
+import dev.cognitivity.chronal.ui.theme.colors.AquaGlanceTheme
 import dev.cognitivity.chronal.ui.tuner.windows.frequencyToNote
 import dev.cognitivity.chronal.ui.tuner.windows.toDisplayNote
 import dev.cognitivity.chronal.ui.tuner.windows.transposeFrequency
@@ -66,7 +66,7 @@ class TunerWidget : GlanceAppWidget() {
         provideContent {
             GlanceTheme(
                 colors = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) GlanceTheme.colors
-                else AquaGlanceTheme.colors
+                else AquaGlanceTheme()
             ) {
                 WidgetContent(context)
             }
