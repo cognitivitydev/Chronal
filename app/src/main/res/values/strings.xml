@@ -218,6 +218,7 @@
     <string name="setting_category_metronome">Metronome</string>
     <string name="setting_category_tuner">Tuner</string>
 
+    <string name="setting_name_color_scheme">Color scheme</string>
     <string name="setting_name_primary_instrument">Primary instrument</string>
     <string name="setting_name_visual_latency">Visual latency</string>
     <string name="setting_name_show_beats">Show high emphasis</string>
@@ -243,6 +244,7 @@
     <string name="setting_name_fullscreen_warning">Fullscreen photosensitivity warning</string>
     <string name="setting_name_tuner_layout">Tuner layout</string>
 
+    <string name="setting_description_color_scheme">Changes the color scheme of the app.</string>
     <string name="setting_description_primary_instrument">Changes the primary instrument for transpositions and other features.</string>
     <string name="setting_description_visual_latency">Changes the delay between the visual metronome and audio to correct for hardware and bluetooth latencies.</string>
     <string name="setting_description_show_beats">Marks the location of high emphasis beats on the metronome.</string>
@@ -270,6 +272,19 @@
 
     <string name="setting_info_recommended_value">Recommended value:\ </string>
 
+    <string name="setting_color_scheme_title">Color</string>
+    <string name="setting_color_theme_title">Theme</string>
+    <string name="setting_color_theme_system">System</string>
+    <string name="setting_color_theme_light">Light</string>
+    <string name="setting_color_theme_dark">Dark</string>
+    <string name="setting_color_contrast_title">Contrast</string>
+    <string name="setting_color_contrast_system">System</string>
+    <string name="setting_color_contrast_low">Default</string>
+    <string name="setting_color_contrast_medium">Medium</string>
+    <string name="setting_color_contrast_high">High</string>
+    <string name="setting_color_contrast_unavailable">Custom contrast is unavailable with a dynamic color scheme.</string>
+    <string name="setting_color_save_reload">Save and reload</string>
+
     <string name="setting_accidental_flats">Flats</string>
     <string name="setting_accidental_sharps">Sharps</string>
     <string name="setting_accidentals_sharps_flats">Sharps and Flats</string>
@@ -279,7 +294,7 @@
     <string name="setting_note_name_english">English</string>
     <string name="setting_note_name_german">German</string>
     <string name="setting_note_name_nashville">Nashville Numbers</string>
-    <string name="setting_note_name_solfege_chromatic">Solfège (Chromatic</string>
+    <string name="setting_note_name_solfege_chromatic">Solfège (Chromatic)</string>
     <string name="setting_note_name_solfege_english">Solfège (English)</string>
     <string name="setting_note_name_solfege_latin">Solfège (Latin)</string>
     <string name="setting_note_example_english" translatable="false">C, C♯/D♭, D, …</string>

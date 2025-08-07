@@ -53,16 +53,15 @@ fun ExpandableOption(
     }
 
     Column(
-        modifier = Modifier.Companion
-            .fillMaxWidth()
+        modifier = Modifier.fillMaxWidth()
             .padding(0.dp, 0.dp, 0.dp, if (!expanded) 0.dp else 8.dp)
             .clip(RoundedCornerShape(24.dp))
             .background(background)
     ) {
         val interactionSource = remember { MutableInteractionSource() }
         SettingOption(
-            name = ChronalApp.Companion.context.getString(setting.key.settingName),
-            hint = ChronalApp.Companion.context.getString(setting.hint),
+            name = ChronalApp.context.getString(setting.key.settingName),
+            hint = ChronalApp.context.getString(setting.hint),
             onClick = {
                 expanded = !expanded
             },
@@ -77,16 +76,15 @@ fun ExpandableOption(
             ) {
                 Icon(
                     imageVector = Icons.Default.KeyboardArrowUp,
-                    contentDescription = ChronalApp.Companion.context.getString(if (expanded) R.string.generic_menu_collapse else R.string.generic_menu_expand),
-                    modifier = Modifier.Companion.rotate(rotation.value),
+                    contentDescription = ChronalApp.context.getString(if (expanded) R.string.generic_menu_collapse else R.string.generic_menu_expand),
+                    modifier = Modifier.rotate(rotation.value),
                 )
             }
         }
 
         if (expanded) {
             Box(
-                modifier = Modifier.Companion
-                    .fillMaxWidth()
+                modifier = Modifier.fillMaxWidth()
                     .padding(8.dp)
             ) {
                 menu()
@@ -121,9 +119,9 @@ fun ExpandableButtonRow(setting: Setting<*>, labels: List<String>, isSelected: (
                 if (isSelected(i, selection)) {
                     Icon(
                         imageVector = Icons.Default.Check,
-                        contentDescription = ChronalApp.Companion.context.getString(R.string.generic_selected),
+                        contentDescription = ChronalApp.context.getString(R.string.generic_selected),
                     )
-                    Spacer(modifier = Modifier.Companion.width(ToggleButtonDefaults.IconSpacing))
+                    Spacer(modifier = Modifier.width(ToggleButtonDefaults.IconSpacing))
                 }
                 Text(labels[i])
             }
@@ -137,18 +135,17 @@ fun ExpandableSlider(setting: Setting<*>, range: ClosedFloatingPointRange<Float>
                      onValueChange: (Float) -> Unit, valueText: (Float) -> String, content: @Composable ColumnScope.() -> Unit = {}) {
     Column {
         Row(
-            modifier = Modifier.Companion.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
         ) {
             Box(
-                modifier = Modifier.Companion
-                    .align(Alignment.Companion.CenterVertically)
+                modifier = Modifier.align(Alignment.CenterVertically)
                     .padding(16.dp, 0.dp)
             ) {
                 Text(
                     text = minText,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Companion.End,
+                    textAlign = TextAlign.End,
                     maxLines = 1
                 )
             }
@@ -160,7 +157,7 @@ fun ExpandableSlider(setting: Setting<*>, range: ClosedFloatingPointRange<Float>
                 )
             }
             Slider(
-                modifier = Modifier.Companion.weight(1f),
+                modifier = Modifier.weight(1f),
                 value = value,
                 onValueChange = {
                     value = it
@@ -170,8 +167,7 @@ fun ExpandableSlider(setting: Setting<*>, range: ClosedFloatingPointRange<Float>
             )
 
             Box(
-                modifier = Modifier.Companion
-                    .align(Alignment.Companion.CenterVertically)
+                modifier = Modifier.align(Alignment.CenterVertically)
                     .padding(16.dp, 0.dp)
             ) {
                 Text(
@@ -183,17 +179,16 @@ fun ExpandableSlider(setting: Setting<*>, range: ClosedFloatingPointRange<Float>
             }
         }
         Box(
-            modifier = Modifier.Companion
-                .padding(0.dp, 0.dp, 0.dp, 2.dp)
+            modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 2.dp)
                 .fillMaxWidth()
-                .align(Alignment.Companion.CenterHorizontally)
+                .align(Alignment.CenterHorizontally)
         ) {
             info()
             Row(
-                modifier = Modifier.Companion.align(Alignment.Companion.Center)
+                modifier = Modifier.align(Alignment.Center)
             ) {
                 Text(
-                    text = ChronalApp.Companion.context.getString(R.string.setting_info_recommended_value),
+                    text = ChronalApp.context.getString(R.string.setting_info_recommended_value),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

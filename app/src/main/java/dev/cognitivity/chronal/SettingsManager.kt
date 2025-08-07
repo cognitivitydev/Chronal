@@ -14,6 +14,7 @@ import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import kotlinx.coroutines.flow.first
 
 enum class SettingKey(val category: Int, val settingName: Int) {
+    COLOR_SCHEME(R.string.setting_category_general, R.string.setting_name_color_scheme),
     PRIMARY_INSTRUMENT(R.string.setting_category_general, R.string.setting_name_primary_instrument),
 
     VISUAL_LATENCY(R.string.setting_category_metronome, R.string.setting_name_visual_latency),
@@ -63,6 +64,16 @@ val Context.dataStore by preferencesDataStore("settings")
 
 class SettingsManager(val context: Context) {
     /******* GENERAL *******/
+    val colorScheme = Setting(
+        SettingKey.COLOR_SCHEME,
+        hint = R.string.setting_description_color_scheme,
+        menu = SettingMenu.Expandable("Colors"),
+        default = ColorScheme(
+            color = ColorScheme.Color.SYSTEM,
+            theme = ColorScheme.Theme.SYSTEM,
+            contrast = ColorScheme.Contrast.SYSTEM
+        )
+    )
     val primaryInstrument = Setting(
         SettingKey.PRIMARY_INSTRUMENT,
         hint = R.string.setting_description_primary_instrument,
@@ -218,8 +229,8 @@ class SettingsManager(val context: Context) {
 
     val keyMap: Map<SettingKey, Setting<*>> = mapOf(
         /******* GENERAL *******/
+        SettingKey.COLOR_SCHEME to colorScheme,
         SettingKey.PRIMARY_INSTRUMENT to primaryInstrument,
-//        SettingKey.COLOR_SCHEME to colorScheme,
 
         /******* METRONOME *******/
         SettingKey.VISUAL_LATENCY to visualLatency,
@@ -252,6 +263,9 @@ class SettingsManager(val context: Context) {
             /******* GENERAL *******/
             val primaryInstrumentKey = stringPreferencesKey(primaryInstrument.key.toString())
             settings[primaryInstrumentKey] = primaryInstrument.value.toJson().toString()
+
+            val colorSchemeKey = stringPreferencesKey(colorScheme.key.toString())
+            settings[colorSchemeKey] = colorScheme.value.toJson().toString()
 
             /******* METRONOME *******/
             val visualLatencyKey = intPreferencesKey(visualLatency.key.toString())
@@ -316,6 +330,9 @@ class SettingsManager(val context: Context) {
         val prefs = context.dataStore.data.first()
 
         /******* GENERAL *******/
+        colorScheme.value = prefs[stringPreferencesKey(colorScheme.key.toString())]
+            ?.let { ColorScheme.fromJson(it) } ?: colorScheme.default
+
         primaryInstrument.value = prefs[stringPreferencesKey(primaryInstrument.key.toString())]
             ?.let { Instrument.fromJson(it) } ?: primaryInstrument.default
 
@@ -511,6 +528,59 @@ data class MetronomePreset(
             addProperty("secondaryRhythm", secondaryRhythm.serialize())
             add("secondarySimpleRhythm", secondarySimpleRhythm.toJson())
             add("state", state.toJson())
+        }
+    }
+}
+
+data class ColorScheme(
+    val color: Color,
+    val theme: Theme,
+    val contrast: Contrast
+) {
+    enum class Color {
+        /** Defaults to AQUA when API < 31 */
+        SYSTEM,
+        RED,
+        ORANGE,
+        YELLOW,
+        GREEN,
+        AQUA,
+        BLUE,
+        PURPLE
+    }
+    enum class Theme {
+        SYSTEM,
+        LIGHT,
+        DARK
+    }
+    enum class Contrast {
+        /** Only when color is SYSTEM */
+        SYSTEM,
+        /** Unavailable when color is SYSTEM */
+        LOW,
+        /** Unavailable when color is SYSTEM */
+        MEDIUM,
+        /** Unavailable when color is SYSTEM */
+        HIGH
+    }
+    companion object {
+        fun fromJson(jsonObject: JsonObject): ColorScheme {
+            return ColorScheme(
+                color = Color.entries[jsonObject.get("color").asInt],
+                theme = Theme.entries[jsonObject.get("theme").asInt],
+                contrast = Contrast.entries[jsonObject.get("contrast").asInt]
+            )
+        }
+        fun fromJson(json: String): ColorScheme {
+            val jsonObject = Gson().fromJson(json, JsonObject::class.java)
+            return fromJson(jsonObject)
+        }
+    }
+    fun toJson(): JsonObject {
+        return JsonObject().apply {
+            addProperty("color", color.ordinal)
+            addProperty("theme", theme.ordinal)
+            addProperty("contrast", contrast.ordinal)
         }
     }
 }

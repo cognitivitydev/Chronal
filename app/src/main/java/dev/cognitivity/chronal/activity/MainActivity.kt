@@ -92,7 +92,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -122,7 +121,6 @@ class MainActivity : ComponentActivity() {
 
             keepSplashScreen = false
         }
-
     }
 
     override fun onPause() {

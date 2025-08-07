@@ -35,7 +35,7 @@ import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.MetronomePreset
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.MainActivity
-import dev.cognitivity.chronal.ui.theme.AquaGlanceTheme
+import dev.cognitivity.chronal.ui.theme.colors.AquaGlanceTheme
 
 class ClockWidget : GlanceAppWidget() {
     override val sizeMode = SizeMode.Exact
@@ -47,7 +47,7 @@ class ClockWidget : GlanceAppWidget() {
         provideContent {
             GlanceTheme(
                 colors = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) GlanceTheme.colors
-                else AquaGlanceTheme.colors
+                else AquaGlanceTheme()
             ) {
                 WidgetContent(presetJson, context)
             }
