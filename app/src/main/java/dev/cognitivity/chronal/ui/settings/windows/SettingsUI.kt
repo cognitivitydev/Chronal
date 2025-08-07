@@ -106,7 +106,7 @@ fun SettingsPageMain(expanded: Boolean, padding: PaddingValues) {
                     contentDescription = context.getString(R.string.settings_feedback_open_issue_text),
                     tint = MaterialTheme.colorScheme.onSurface,
                 )
-                Spacer(modifier = Modifier.width(16.dp))
+                Spacer(Modifier.width(16.dp))
                 Column {
                     Text(
                         text = context.getString(R.string.settings_feedback_open_issue_title),
@@ -135,7 +135,7 @@ fun SettingsPageMain(expanded: Boolean, padding: PaddingValues) {
                     contentDescription = context.getString(R.string.settings_feedback_translate_title),
                     tint = MaterialTheme.colorScheme.onSurface,
                 )
-                Spacer(modifier = Modifier.width(16.dp))
+                Spacer(Modifier.width(16.dp))
                 Column {
                     Text(
                         text = context.getString(R.string.settings_feedback_translate_title),
@@ -164,7 +164,7 @@ fun SettingsPageMain(expanded: Boolean, padding: PaddingValues) {
                     contentDescription = context.getString(R.string.settings_feedback_review_title),
                     tint = MaterialTheme.colorScheme.onSurface,
                 )
-                Spacer(modifier = Modifier.width(16.dp))
+                Spacer(Modifier.width(16.dp))
                 Column {
                     Text(
                         text = context.getString(R.string.settings_feedback_review_title),
@@ -193,7 +193,7 @@ fun SettingsPageMain(expanded: Boolean, padding: PaddingValues) {
                     contentDescription = context.getString(R.string.settings_feedback_email_title),
                     tint = MaterialTheme.colorScheme.onSurface,
                 )
-                Spacer(modifier = Modifier.width(16.dp))
+                Spacer(Modifier.width(16.dp))
                 Column {
                     Text(
                         text = context.getString(R.string.settings_feedback_email_title),
@@ -572,7 +572,7 @@ fun ColorSetting(setting: Setting<ColorScheme>) {
                         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
                     ),
                     contentPadding = ButtonDefaults.ContentPadding,
-                    enabled = if(selection.color == ColorScheme.Color.SYSTEM) i == 0 else i != 0
+                    enabled = if(selection.color == ColorScheme.Color.SYSTEM) false else i != 0
                 ) {
                     if (selection.contrast == contrast) {
                         Icon(
@@ -699,8 +699,7 @@ fun CategoryHeader(title: String) {
         text = title,
         style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = Modifier.fillMaxWidth()
             .padding(20.dp, 8.dp)
     )
 }
@@ -708,8 +707,7 @@ fun CategoryHeader(title: String) {
 @Composable
 fun Divider() {
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = Modifier.fillMaxWidth()
             .padding(12.dp, 4.dp)
             .height(1.dp)
             .background(MaterialTheme.colorScheme.outlineVariant)
@@ -723,21 +721,18 @@ fun SettingOption(
     indication: Indication? = LocalIndication.current,
     button: @Composable () -> Unit) {
     Column(
-        modifier = Modifier
-            .clip(RoundedCornerShape(24.dp))
+        modifier = Modifier.clip(RoundedCornerShape(24.dp))
             .clickable(interactionSource = interactionSource, indication = indication) {
                 onClick()
             }
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
                 .padding(16.dp)
         ) {
             Column(
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
+                modifier = Modifier.align(Alignment.CenterVertically)
                     .weight(1f)
                     .padding(end = 8.dp)
             ) {
@@ -759,8 +754,7 @@ fun SettingOption(
             }
 
             Box(
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
+                modifier = Modifier.align(Alignment.CenterVertically)
                     .padding(end = 2.dp)
             ) {
                 button()

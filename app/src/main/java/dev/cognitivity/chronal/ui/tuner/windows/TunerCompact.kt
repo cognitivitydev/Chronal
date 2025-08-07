@@ -34,7 +34,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.asComposePath
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -56,7 +55,6 @@ import dev.cognitivity.chronal.Instrument
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.Tuner
 import dev.cognitivity.chronal.activity.MainActivity
-import dev.cognitivity.chronal.pxToDp
 import dev.cognitivity.chronal.toSp
 import dev.cognitivity.chronal.ui.MorphedShape
 import dev.cognitivity.chronal.ui.tuner.AudioDialog
@@ -82,15 +80,14 @@ fun TunerPageCompact(
     val instrument = ChronalApp.getInstance().settings.primaryInstrument.value
 
     BoxWithConstraints(
-        modifier = Modifier
-            .padding(bottom = padding.calculateBottomPadding())
+        modifier = Modifier.padding(bottom = padding.calculateBottomPadding())
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
     ) {
-        val isWide = this.maxWidth > this.maxHeight
+        val isWide = this.maxWidth > this.maxHeight // maximize space for very small screens or split screen mode
 
         if (isWide) {
-            //side bar
+            // sidebar
             Row(
                 Modifier.fillMaxSize()
             ) {
@@ -101,10 +98,9 @@ fun TunerPageCompact(
                     TopBar(tuner, hz, instrument, wide = true)
                 }
 
-                //content
+                // content
                 Box(
-                    Modifier
-                        .weight(1f)
+                    Modifier.weight(1f)
                         .padding(vertical = 40.dp)
                         .fillMaxHeight()
                 ) {
@@ -114,8 +110,7 @@ fun TunerPageCompact(
                         onCheckedChange = {
                             showTuningDialog = true
                         },
-                        modifier = Modifier
-                            .padding(8.dp)
+                        modifier = Modifier.padding(8.dp)
                             .align(Alignment.TopStart)
                     ) {
                         Icon(
@@ -134,13 +129,11 @@ fun TunerPageCompact(
                 },
             ) { innerPadding ->
                 Box(
-                    Modifier
-                        .padding(top = innerPadding.calculateTopPadding())
+                    Modifier.padding(top = innerPadding.calculateTopPadding())
                         .fillMaxSize()
                 ) {
                     Box(
-                        modifier = Modifier
-                            .fillMaxSize()
+                        modifier = Modifier.fillMaxSize()
                             .padding(vertical = 40.dp)
                             .align(Alignment.Center)
                     ) {
@@ -151,8 +144,7 @@ fun TunerPageCompact(
                         onCheckedChange = {
                             showTuningDialog = true
                         },
-                        modifier = Modifier
-                            .padding(8.dp)
+                        modifier = Modifier.padding(8.dp)
                             .align(Alignment.TopStart)
                     ) {
                         Icon(
@@ -323,13 +315,17 @@ fun PitchGraph(cents: Float, tuner: Tuner?) {
         ) {
             DrawLines(cents.isNaN())
         }
+        PitchPointer(cents, tuner,
+            modifier = Modifier.align(Alignment.Center)
+                .fillMaxWidth(0.5f)
+                .fillMaxHeight()
+        )
     }
-    PitchPointer(cents, tuner)
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun PitchPointer(cents: Float, tuner: Tuner?) {
+fun PitchPointer(cents: Float, tuner: Tuner?, modifier: Modifier = Modifier) {
     val shapeA = remember {
         RoundedPolygon.star(12, rounding = CornerRounding(0.2f), radius = 1.8f)
     }
@@ -391,7 +387,6 @@ fun PitchPointer(cents: Float, tuner: Tuner?) {
     }
 
     val animatedRotation = remember { Animatable(0f) }
-
     LaunchedEffect(Unit) {
         while (true) {
             animatedRotation.snapTo(animatedRotation.value.mod(360f))
@@ -415,87 +410,75 @@ fun PitchPointer(cents: Float, tuner: Tuner?) {
         }
     }
 
-    Column(
-        Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.SpaceEvenly
+    BoxWithConstraints(
+        modifier = modifier
     ) {
-        Spacer(modifier = Modifier.weight(1f)) // offset by half of 1 line
-        BoxWithConstraints(modifier = Modifier.align(Alignment.CenterHorizontally)
-            .fillMaxWidth(0.5f)
-            .fillMaxHeight()
-            .weight(40f),
+        val lineOffset = this.maxHeight / 21
+        val maxHeight = this.maxHeight - lineOffset
+        val yOffset = maxHeight * animatedPosition.value + lineOffset / 2
+        val yOffsetPadded = yOffset.coerceIn(40.dp, maxHeight - 40.dp)
+
+        Box(
+            modifier = Modifier.offset(x = -(80).dp, y = yOffsetPadded - 80.dp)
+                .align(Alignment.TopCenter)
+                .clip(
+                    MorphedShape(
+                        morph,
+                        morphProgress.value,
+                        animatedRotation.value
+                    )
+                )
+                .requiredSize(160.dp)
+                .background(animatedColor.value)
         ) {
-            val density = LocalDensity.current
-            val parentHeightPx = this@BoxWithConstraints.constraints.maxHeight.toFloat()
-            val yOffsetPx = parentHeightPx * animatedPosition.value
-
-            val yOffsetDp = with(density) { yOffsetPx.toDp() }
-            val yOffsetPaddedDp = yOffsetDp.coerceIn(40.dp, parentHeightPx.pxToDp() - 40.dp)
-
-            Box(
-                modifier = Modifier
-                    .offset(x = -(80).dp, y = yOffsetPaddedDp - 80.dp)
-                    .align(Alignment.TopCenter)
-                    .clip(
-                        MorphedShape(
-                            morph,
-                            morphProgress.value,
-                            animatedRotation.value
-                        )
-                    )
-                    .requiredSize(160.dp)
-                    .background(animatedColor.value)
+            Column(
+                modifier = Modifier.align(Alignment.Center)
             ) {
-                Column(
-                    modifier = Modifier.align(Alignment.Center)
-                ) {
-                    Text(
-                        modifier = Modifier.align(Alignment.CenterHorizontally),
-                        text = (if(cents.toInt() < 0) "" else "+") + cents.toInt().toString(),
-                        fontSize = 42.sp,
-                        color = textColor1.value
-                    )
-                    val text: String = if(cents.isNaN()) ""
-                        else if(cents.toInt() > 0) "\uEA66"
-                        else if(cents.toInt() < 0) "\uEA64"
-                        else "\uEA65"
-                    Text(
-                        modifier = Modifier.align(Alignment.CenterHorizontally).offset(
-                            y = -(if (text.contains("♯")) sharpOffset
-                            else if (text.contains("♭")) flatOffset
-                            else 0.dp)
-                        ),
-                        text = text,
-                        style = TextStyle(
-                            fontFamily = FontFamily(Font(R.font.bravuratext)),
-                            fontSize = 48.dp.toSp(),
-                            fontWeight = FontWeight.Medium,
-                        ),
-                        color = textColor2.value
-                    )
-                }
-            }
-            Box(
-                modifier = Modifier.offset(x = 80.dp, y = yOffsetDp - 64.dp)
-                    .align(Alignment.TopCenter)
-                    .size(64.dp)
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxSize()
-                        .drawWithContent {
-                            drawContent()
-                            val scale = min(size.width, size.height)
-                            val matrix = Matrix()
-                            matrix.scale(scale, scale)
-                            matrix.translate(0.25f,0.5f)
-                            matrix.rotateZ(90f)
-                            val path = MaterialShapes.Arrow.toPath(Path()).asComposePath()
-                            path.transform(matrix)
-                            drawPath(path, animatedColor.value.copy(alpha = 0.5f))
-                        }
+                Text(
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    text = (if(cents.toInt() < 0) "" else "+") + cents.toInt().toString(),
+                    fontSize = 42.sp,
+                    color = textColor1.value
+                )
+                val text: String = if(cents.isNaN()) ""
+                    else if(cents.toInt() > 0) "\uEA66"
+                    else if(cents.toInt() < 0) "\uEA64"
+                    else "\uEA65"
+                Text(
+                    modifier = Modifier.align(Alignment.CenterHorizontally).offset(
+                        y = -(if (text.contains("♯")) sharpOffset
+                        else if (text.contains("♭")) flatOffset
+                        else 0.dp)
+                    ),
+                    text = text,
+                    style = TextStyle(
+                        fontFamily = FontFamily(Font(R.font.bravuratext)),
+                        fontSize = 48.dp.toSp(),
+                        fontWeight = FontWeight.Medium,
+                    ),
+                    color = textColor2.value
                 )
             }
         }
-        Spacer(modifier = Modifier.weight(1f))
+        Box(
+            modifier = Modifier.offset(x = 80.dp, y = yOffset - 64.dp)
+                .align(Alignment.TopCenter)
+                .size(64.dp)
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize()
+                    .drawWithContent {
+                        drawContent()
+                        val scale = min(size.width, size.height)
+                        val matrix = Matrix()
+                        matrix.scale(scale, scale)
+                        matrix.translate(0.25f,0.5f)
+                        matrix.rotateZ(90f)
+                        val path = MaterialShapes.Arrow.toPath(Path()).asComposePath()
+                        path.transform(matrix)
+                        drawPath(path, animatedColor.value.copy(alpha = 0.5f))
+                    }
+            )
+        }
     }
 }
