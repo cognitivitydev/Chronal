@@ -220,8 +220,7 @@ fun TopBar(navController: NavController, color: Color, padding: Boolean, clipSha
 
     PrimaryTabRow(
         selectedTabIndex = selectedIndex,
-        modifier = Modifier
-            .windowInsetsPadding(if(padding) WindowInsets.statusBars else WindowInsets(0.dp))
+        modifier = Modifier.windowInsetsPadding(if(padding) WindowInsets.statusBars else WindowInsets(0.dp))
             .selectableGroup()
             .clip(clipShape),
         containerColor = color,
@@ -247,7 +246,7 @@ fun TopBar(navController: NavController, color: Color, padding: Boolean, clipSha
                                         (item.selectedIcon as NavigationIcon.ResourceIcon).resourceId
                                     else icon.resourceId
                                 ),
-                                contentDescription = "${context.getString(item.label)} icon"
+                                contentDescription = context.getString(item.label)
                             )
                         }
 
@@ -258,7 +257,7 @@ fun TopBar(navController: NavController, color: Color, padding: Boolean, clipSha
                                             (item.selectedIcon as NavigationIcon.VectorIcon).imageVector
                                         else icon.imageVector
                                         ),
-                                contentDescription = "${context.getString(item.label)} icon"
+                                contentDescription = context.getString(item.label)
                             )
                         }
                     }
@@ -282,7 +281,7 @@ fun ClockBeats(progress: Animatable<Float, AnimationVector1D>, trackSize: Float,
     val showSubdivisions = ChronalApp.getInstance().settings.showSubdivisions.value
     if (!showBeats && !showSubdivisions) return
 
-    Canvas(modifier = Modifier.fillMaxSize()) {
+    Canvas(Modifier.fillMaxSize()) {
 
         val borderSize = 8.dp.toPx()
         val radius = (size.minDimension / 2) - trackSize / 2

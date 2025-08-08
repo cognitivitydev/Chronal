@@ -93,7 +93,7 @@ fun AudioDialog(expanded: Boolean, midi: Int, onChange: (Int) -> Unit, onConfirm
 
             val primary = MaterialTheme.colorScheme.primary
 
-            Canvas(modifier = Modifier.fillMaxSize()) {
+            Canvas(Modifier.fillMaxSize()) {
                 val sampleRate = 44100f
                 val strokeWidth = 2.dp.toPx()
                 val amplitude = center.y / 4

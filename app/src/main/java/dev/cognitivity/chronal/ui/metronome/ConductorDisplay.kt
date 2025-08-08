@@ -131,7 +131,8 @@ fun ConductorDisplay() {
             if(segments.isEmpty()) {
                 Text(
                     text = context.getString(R.string.metronome_conductor_not_supported),
-                    modifier = Modifier.align(Alignment.Center).padding(8.dp),
+                    modifier = Modifier.align(Alignment.Center)
+                        .padding(8.dp),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center
@@ -197,7 +198,7 @@ fun ConductorDisplay() {
             }
         }
 
-        Box(modifier = Modifier.align(Alignment.CenterHorizontally)) {
+        Box(Modifier.align(Alignment.CenterHorizontally)) {
             TempoChanger()
         }
     }

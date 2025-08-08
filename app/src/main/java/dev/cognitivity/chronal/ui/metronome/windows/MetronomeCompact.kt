@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -45,7 +46,8 @@ fun MetronomePageCompact(
     updateSleepMode(window)
 
     Scaffold(
-        modifier = Modifier.padding(bottom = padding.calculateBottomPadding()).fillMaxSize(),
+        modifier = Modifier.padding(bottom = padding.calculateBottomPadding())
+            .fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             Surface(
@@ -57,8 +59,7 @@ fun MetronomePageCompact(
     ) { innerPadding ->
         var change = 0
         Box(
-            modifier = Modifier
-                .padding(top = innerPadding.calculateTopPadding())
+            modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
                 .fillMaxSize()
                 .pointerInput(Unit) {
                     detectVerticalDragGestures { _, dragAmount ->
@@ -93,10 +94,12 @@ fun MetronomePageCompact(
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                RhythmButtons(0.5f, navController)
+                RhythmButtons(navController,
+                    modifier = Modifier.fillMaxWidth()
+                        .weight(0.5f)
+                )
                 Box(
-                    modifier = Modifier
-                        .weight(1f)
+                    modifier = Modifier.weight(1f)
                         .fillMaxSize()
                 ) {
                     NavHost(navController,
@@ -169,7 +172,11 @@ fun MetronomePageCompact(
                         }
                     }
                 }
-                PlayButton(0.5f)
+                PlayButton(
+                    modifier = Modifier.fillMaxWidth()
+                        .align(Alignment.CenterHorizontally)
+                        .weight(0.5f)
+                )
             }
         }
     }

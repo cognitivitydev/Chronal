@@ -46,7 +46,7 @@ fun BoxScope.TunerGraph(
     val tertiary = MaterialTheme.colorScheme.tertiary
     val primary = MaterialTheme.colorScheme.primary
     val onSurface = MaterialTheme.colorScheme.onSurface
-    Canvas(modifier = Modifier.fillMaxSize()) {
+    Canvas(Modifier.fillMaxSize()) {
         if (history.isEmpty()) return@Canvas
 
         val yRange = maxFreq - minFreq
@@ -106,8 +106,7 @@ fun BoxScope.TunerGraph(
     val min = frequencyToNote(minFreq)
     val showCents = maxFreq - minFreq < 100f && !max.second.isNaN() && !min.second.isNaN()
     Box(
-        modifier = Modifier
-            .align(Alignment.TopStart)
+        modifier = Modifier.align(Alignment.TopStart)
             .background(MaterialTheme.colorScheme.surfaceContainer, CircleShape)
             .padding(horizontal = 4.dp)
     ) {
@@ -120,8 +119,7 @@ fun BoxScope.TunerGraph(
         )
     }
     Box(
-        modifier = Modifier
-            .align(Alignment.BottomStart)
+        modifier = Modifier.align(Alignment.BottomStart)
             .background(MaterialTheme.colorScheme.surfaceContainer, CircleShape)
             .padding(horizontal = 4.dp)
     ) {

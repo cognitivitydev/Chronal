@@ -110,7 +110,7 @@ class PresetActivity : ComponentActivity() {
                         imageVector = Icons.Outlined.Add,
                         contentDescription = getString(R.string.presets_create)
                     )
-                    Spacer(modifier = Modifier.size(8.dp))
+                    Spacer(Modifier.size(8.dp))
                     Text(getString(R.string.presets_create), style = MaterialTheme.typography.bodyLarge)
                 }
             },

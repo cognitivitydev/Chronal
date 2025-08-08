@@ -82,10 +82,13 @@ class MusicFont {
 
                     Row(
                         horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxSize().offset(x = width * 0.75f * (if(ltr) -1 else 1), y = (-maxHeight/3))
+                        modifier = Modifier.fillMaxSize()
+                            .offset(x = width * 0.75f * (if(ltr) -1 else 1), y = (-maxHeight/3))
                     ) {
                         glyphs.forEach {
-                            Text(it.toString(), style = textStyle, color = color, modifier = Modifier.padding(horizontal = width/1.75f))
+                            Text(it.toString(), style = textStyle, color = color,
+                                modifier = Modifier.padding(horizontal = width/1.75f)
+                            )
                         }
                     }
                 }
@@ -103,7 +106,8 @@ class MusicFont {
                 val denominatorGlyphs = convert(denominator.toString()).toCharArray()
 
                 BoxWithConstraints(
-                    modifier = Modifier.fillMaxHeight().aspectRatio(0.4f, true),
+                    modifier = Modifier.fillMaxHeight()
+                        .aspectRatio(0.4f, true),
                     contentAlignment = Alignment.Center
                 ) {
                     val fontSize = this@BoxWithConstraints.maxHeight.toSp()
@@ -118,7 +122,8 @@ class MusicFont {
 
                     Box(
                         contentAlignment = Alignment.Center,
-                        modifier = Modifier.fillMaxSize().offset(x = width * 0.75f * (if(ltr) -1 else 1), y = (-maxHeight/2) - (lineSpacing/2))
+                        modifier = Modifier.fillMaxSize()
+                            .offset(x = width * 0.75f * (if(ltr) -1 else 1), y = (-maxHeight/2) - (lineSpacing/2))
                     ) {
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(width),

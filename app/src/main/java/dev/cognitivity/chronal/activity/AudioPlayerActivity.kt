@@ -264,8 +264,7 @@ class AudioPlayerActivity : ComponentActivity() {
             }
         ) { innerPadding ->
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
+                modifier = Modifier.fillMaxSize()
                     .padding(
                         PaddingValues(
                             start = innerPadding.calculateStartPadding(LocalLayoutDirection.current),
@@ -276,15 +275,13 @@ class AudioPlayerActivity : ComponentActivity() {
                     ),
             ) {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                         .padding(16.dp)
                 ) {
                     AudioControls()
                 }
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                         .weight(1f)
                         .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
                         .background(MaterialTheme.colorScheme.surfaceContainerLow)
@@ -338,7 +335,9 @@ class AudioPlayerActivity : ComponentActivity() {
                         contentAlignment = Alignment.Center
                     ) {
                         ContainedLoadingIndicator()
-                        Text(getString(R.string.audio_player_updating), modifier = Modifier.padding(top = 96.dp))
+                        Text(getString(R.string.audio_player_updating),
+                            modifier = Modifier.padding(top = 96.dp)
+                        )
                     }
                 }
             }
@@ -356,7 +355,7 @@ class AudioPlayerActivity : ComponentActivity() {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Timer(time = progress)
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(Modifier.weight(1f))
                 Timer(time = audioLength)
             }
             Slider(
@@ -369,8 +368,7 @@ class AudioPlayerActivity : ComponentActivity() {
                 modifier = Modifier.fillMaxWidth(),
             )
             FlowRow(
-                modifier = Modifier
-                    .padding(horizontal = 8.dp, vertical = 16.dp)
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 16.dp)
                     .align(Alignment.CenterHorizontally),
                 horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
                 verticalArrangement = Arrangement.spacedBy(2.dp),
@@ -381,8 +379,7 @@ class AudioPlayerActivity : ComponentActivity() {
                         showVolume = it
                     },
                     shapes = ButtonGroupDefaults.connectedLeadingButtonShapes(),
-                    modifier = Modifier
-                        .minimumInteractiveComponentSize()
+                    modifier = Modifier.minimumInteractiveComponentSize()
                         .size(IconButtonDefaults.mediumContainerSize(IconButtonDefaults.IconButtonWidthOption.Narrow)),
                     contentPadding = PaddingValues(0.dp), // its messed up otherwise, idk
                     colors = ToggleButtonDefaults.toggleButtonColors(
@@ -404,8 +401,7 @@ class AudioPlayerActivity : ComponentActivity() {
                         playing = false
                         progress = 0L
                     },
-                    modifier = Modifier
-                        .minimumInteractiveComponentSize()
+                    modifier = Modifier.minimumInteractiveComponentSize()
                         .size(IconButtonDefaults.mediumContainerSize(IconButtonDefaults.IconButtonWidthOption.Narrow)),
                     shape = IconButtonDefaults.mediumRoundShape,
                     colors = IconButtonDefaults.iconButtonColors(
@@ -425,8 +421,7 @@ class AudioPlayerActivity : ComponentActivity() {
                         playing = false
                         progress = (progress - 5000L).coerceAtLeast(0L)
                     },
-                    modifier = Modifier
-                        .minimumInteractiveComponentSize()
+                    modifier = Modifier.minimumInteractiveComponentSize()
                         .size(IconButtonDefaults.mediumContainerSize(IconButtonDefaults.IconButtonWidthOption.Uniform)),
                     shape = IconButtonDefaults.mediumRoundShape,
                     colors = IconButtonDefaults.iconButtonColors(
@@ -451,8 +446,7 @@ class AudioPlayerActivity : ComponentActivity() {
                         playing = it
                     },
                     shapes = ButtonGroupDefaults.connectedMiddleButtonShapes(),
-                    modifier = Modifier
-                        .minimumInteractiveComponentSize()
+                    modifier = Modifier.minimumInteractiveComponentSize()
                         .size(IconButtonDefaults.mediumContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide)),
                     contentPadding = ButtonDefaults.contentPaddingFor(ButtonDefaults.MediumContainerHeight),
                     colors = ToggleButtonDefaults.toggleButtonColors(
@@ -473,8 +467,7 @@ class AudioPlayerActivity : ComponentActivity() {
                     onClick = {
                         progress = (progress + 5000L).coerceAtMost(audioLength)
                     },
-                    modifier = Modifier
-                        .minimumInteractiveComponentSize()
+                    modifier = Modifier.minimumInteractiveComponentSize()
                         .size(IconButtonDefaults.mediumContainerSize(IconButtonDefaults.IconButtonWidthOption.Uniform)),
                     shape = IconButtonDefaults.mediumRoundShape,
                     colors = IconButtonDefaults.iconButtonColors(
@@ -494,8 +487,7 @@ class AudioPlayerActivity : ComponentActivity() {
                         playing = false
                         progress = audioLength
                     },
-                    modifier = Modifier
-                        .minimumInteractiveComponentSize()
+                    modifier = Modifier.minimumInteractiveComponentSize()
                         .size(IconButtonDefaults.mediumContainerSize(IconButtonDefaults.IconButtonWidthOption.Narrow)),
                     shape = IconButtonDefaults.mediumRoundShape,
                     colors = IconButtonDefaults.iconButtonColors(
@@ -514,8 +506,7 @@ class AudioPlayerActivity : ComponentActivity() {
                     onClick = {
                         showMore = !showMore
                     },
-                    modifier = Modifier
-                        .minimumInteractiveComponentSize()
+                    modifier = Modifier.minimumInteractiveComponentSize()
                         .size(IconButtonDefaults.mediumContainerSize(IconButtonDefaults.IconButtonWidthOption.Narrow)),
                     shape = IconButtonDefaults.mediumRoundShape,
                     colors = IconButtonDefaults.iconButtonColors(
@@ -642,8 +633,7 @@ class AudioPlayerActivity : ComponentActivity() {
 
                 val isNow = element.startTime <= progress && element.endTime >= progress
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                         .padding(8.dp)
                         .clip(RoundedCornerShape(16.dp))
                         .background(if (isNow) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceContainerLow)

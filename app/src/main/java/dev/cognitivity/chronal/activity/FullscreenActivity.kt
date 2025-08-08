@@ -153,8 +153,7 @@ class FullscreenActivity : ComponentActivity() {
         var change = 0
 
         Scaffold(
-            modifier = Modifier
-                .fillMaxSize()
+            modifier = Modifier.fillMaxSize()
                 .pointerInput(Unit) {
                     detectVerticalDragGestures { _, dragAmount ->
                         change += dragAmount.toInt()
@@ -188,14 +187,12 @@ class FullscreenActivity : ComponentActivity() {
                 modifier = Modifier.fillMaxSize()
             ) {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                         .fillMaxHeight(abs(progress.value))
                         .background(if(!invert) invertColor else color),
                 )
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                         .weight(1f)
                         .background(if(!invert) color else invertColor),
                 )
@@ -218,7 +215,8 @@ class FullscreenActivity : ComponentActivity() {
                 }
 
                 Row(
-                    modifier = Modifier.padding(16.dp).displayCutoutPadding()
+                    modifier = Modifier.padding(16.dp)
+                        .displayCutoutPadding()
                 ) {
                     Text(
                         text = time,
@@ -489,8 +487,7 @@ class FullscreenActivity : ComponentActivity() {
         ) {
             val shapeSize = if (this@BoxWithConstraints.maxHeight > maxWidth) maxHeight / 2 else maxWidth / 2
             Box(
-                modifier = Modifier
-                    .padding(8.dp)
+                modifier = Modifier.padding(8.dp)
                     .aspectRatio(1f)
                     .size(shapeSize)
                     .align(Alignment.Center)
@@ -505,24 +502,21 @@ class FullscreenActivity : ComponentActivity() {
                         text = metronome.bpm.toString(),
                         fontSize = 96.sp,
                         color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier
-                            .offset(y = (8).dp)
+                        modifier = Modifier.offset(y = (8).dp)
                             .align(Alignment.CenterHorizontally)
                     )
                     Text(
                         text = getString(R.string.metronome_bpm),
                         fontSize = 48.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier
-                            .offset(y = (-8).dp)
+                        modifier = Modifier.offset(y = (-8).dp)
                             .align(Alignment.CenterHorizontally)
                     )
                 }
             }
 
             Box(
-                modifier = Modifier
-                    .aspectRatio(1f)
+                modifier = Modifier.aspectRatio(1f)
                     .size(shapeSize)
                     .offset(x = shapeSize / 2, y = -shapeSize / 2)
                     .align(Alignment.TopEnd)
@@ -530,8 +524,7 @@ class FullscreenActivity : ComponentActivity() {
             )
 
             Box(
-                modifier = Modifier
-                    .aspectRatio(1f)
+                modifier = Modifier.aspectRatio(1f)
                     .size(shapeSize)
                     .offset(x = -shapeSize / 2, y = shapeSize / 2)
                     .align(Alignment.BottomStart)

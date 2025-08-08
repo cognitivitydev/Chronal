@@ -86,15 +86,13 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
             label = "animatedText"
         )
         Row(
-            modifier = Modifier
-                .padding(16.dp, 16.dp, 16.dp, 8.dp)
+            modifier = Modifier.padding(16.dp, 16.dp, 16.dp, 8.dp)
                 .fillMaxWidth(0.9f)
                 .align(Alignment.CenterHorizontally)
         ) {
             val weight = if(expanded) Modifier else Modifier.weight(1f)
             Row(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(16.dp))
+                modifier = Modifier.clip(RoundedCornerShape(16.dp))
                     .background(animatedBackground)
                     .then(weight)
                     .clickable {
@@ -120,8 +118,7 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
                 Text(context.getString(if(primary) R.string.metronome_edit_rhythm_primary_enabled else R.string.metronome_edit_rhythm_secondary_enable),
                     style = MaterialTheme.typography.titleLarge,
                     color = animatedText,
-                    modifier = Modifier
-                        .padding(16.dp, 8.dp)
+                    modifier = Modifier.padding(16.dp, 8.dp)
                         .then(weight)
                         .align(Alignment.CenterVertically)
                 )
@@ -142,15 +139,13 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
                         checkedTrackColor = if(primary) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary,
                         checkedThumbColor = if(primary) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onTertiary
                     ),
-                    modifier = Modifier
-                        .padding(16.dp, 8.dp)
+                    modifier = Modifier.padding(16.dp, 8.dp)
                         .align(Alignment.CenterVertically)
                 )
             }
             if(expanded) {
                 Box(
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
+                    modifier = Modifier.align(Alignment.CenterVertically)
                         .weight(1f),
                     contentAlignment = Alignment.Center
                 ) {
@@ -176,8 +171,7 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
         val isAdvanced = simpleRhythm == SimpleRhythm(0 to 0, 0, 0)
         if(isAdvanced) {
             FilledTonalButton(
-                modifier = Modifier
-                    .heightIn(ButtonDefaults.MediumContainerHeight)
+                modifier = Modifier.heightIn(ButtonDefaults.MediumContainerHeight)
                     .align(Alignment.CenterHorizontally)
                     .padding(vertical = 64.dp),
                 contentPadding = ButtonDefaults.contentPaddingFor(ButtonDefaults.MediumContainerHeight),
@@ -237,16 +231,15 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
                 }
             }
         } else {
-            Row(modifier = Modifier
-                .align(Alignment.CenterHorizontally)
+            Row(
+                modifier = Modifier.align(Alignment.CenterHorizontally)
                 .padding(top = 8.dp)
             ) {
                 Text(context.getString(R.string.metronome_edit_rhythm_time_signature),
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
+                    modifier = Modifier.align(Alignment.CenterVertically)
                         .weight(1f)
                 )
                 Spacer(modifier = Modifier.padding(24.dp, 0.dp))
@@ -254,26 +247,22 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
+                    modifier = Modifier.align(Alignment.CenterVertically)
                         .weight(1f)
                 )
             }
 
             Row(
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
+                modifier = Modifier.align(Alignment.CenterHorizontally)
                     .weight(1f)
             ) {
                 Box(
-                    modifier = Modifier
-                        .padding(16.dp)
+                    modifier = Modifier.padding(16.dp)
                         .weight(1f)
                         .align(Alignment.CenterVertically)
                 ) {
                     Box(
-                        modifier = Modifier
-                            .aspectRatio(1f, matchHeightConstraintsFirst = true)
+                        modifier = Modifier.aspectRatio(1f, matchHeightConstraintsFirst = true)
                             .align(Alignment.Center)
                             .clip(MaterialShapes.Bun.toShape(0))
                             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
@@ -286,8 +275,7 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
                             }
                     ) {
                         Box(
-                            modifier = Modifier
-                                .fillMaxHeight(0.75f)
+                            modifier = Modifier.fillMaxHeight(0.75f)
                                 .align(Alignment.Center)
                         ) {
                             MusicFont.Number.TimeSignature(simpleRhythm.timeSignature.first, simpleRhythm.timeSignature.second,
@@ -297,19 +285,16 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
                     }
                 }
                 WavyVerticalLine(
-                    modifier = Modifier
-                        .padding(24.dp, 0.dp)
+                    modifier = Modifier.padding(24.dp, 0.dp)
                         .height(128.dp)
                         .align(Alignment.CenterVertically)
                 )
                 Box(
-                    modifier = Modifier
-                        .padding(16.dp)
+                    modifier = Modifier.padding(16.dp)
                         .weight(1f)
                 ) {
                     Box(
-                        modifier = Modifier
-                            .aspectRatio(1f, matchHeightConstraintsFirst = true)
+                        modifier = Modifier.aspectRatio(1f, matchHeightConstraintsFirst = true)
                             .align(Alignment.Center)
                             .clip(MaterialShapes.Cookie4Sided.toShape(0))
                             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
@@ -483,20 +468,19 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
 fun Vibration(primary: Boolean, enabled: Boolean) {
     val interactionSource = remember { MutableInteractionSource() }
     Row(
-        modifier = Modifier
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null
-            ) {
-                if (!enabled) return@clickable
-                if (primary) {
-                    vibratePrimary = !vibratePrimary
-                    ChronalApp.getInstance().settings.metronomeVibrations.value = vibratePrimary
-                } else {
-                    vibrateSecondary = !vibrateSecondary
-                    ChronalApp.getInstance().settings.metronomeVibrationsSecondary.value = vibrateSecondary
-                }
+        modifier = Modifier.clickable(
+            interactionSource = interactionSource,
+            indication = null
+        ) {
+            if (!enabled) return@clickable
+            if (primary) {
+                vibratePrimary = !vibratePrimary
+                ChronalApp.getInstance().settings.metronomeVibrations.value = vibratePrimary
+            } else {
+                vibrateSecondary = !vibrateSecondary
+                ChronalApp.getInstance().settings.metronomeVibrationsSecondary.value = vibrateSecondary
             }
+        }
     ) {
         Checkbox(
             checked = if (primary) vibratePrimary else vibrateSecondary,
@@ -535,8 +519,7 @@ fun BoxScope.ClockPreview(primary: Boolean, value: SimpleRhythm) {
     val trackColor = MaterialTheme.colorScheme.secondaryContainer
 
     Box(
-        modifier = Modifier
-            .size(180.dp)
+        modifier = Modifier.size(180.dp)
             .align(Alignment.Center)
     ) {
         Canvas(
@@ -572,9 +555,9 @@ fun BoxScope.ClockPreview(primary: Boolean, value: SimpleRhythm) {
                 surface = MaterialTheme.colorScheme.surfaceContainerHigh
             )
         }
-        Box(modifier = Modifier
-            .fillMaxHeight(0.5f)
-            .align(Alignment.Center)
+        Box(
+            modifier = Modifier.fillMaxHeight(0.5f)
+                .align(Alignment.Center)
         ) {
             MusicFont.Number.TimeSignature(timeSignature.first, timeSignature.second,
                 color = if(primary) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary

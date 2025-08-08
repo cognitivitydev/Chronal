@@ -201,21 +201,18 @@ class RhythmEditorActivity : ComponentActivity() {
         )
 
         Scaffold(
-            modifier = Modifier
-                .fillMaxSize()
+            modifier = Modifier.fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface),
         ) {
             Column {
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
+                    modifier = Modifier.fillMaxSize()
                         .weight(4f)
                         .background(MaterialTheme.colorScheme.surfaceContainer)
                         .padding(32.dp, 0.dp)
                 ) {
                     LazyRow(
-                        modifier = Modifier
-                            .fillMaxSize()
+                        modifier = Modifier.fillMaxSize()
                             .padding(1.dp, 0.dp),
                         reverseLayout = !ltr // always display ltr
                     ) {
@@ -226,14 +223,12 @@ class RhythmEditorActivity : ComponentActivity() {
                             var showTimeSignature by remember { mutableStateOf(false) }
 
                             Box(
-                                modifier = Modifier
-                                    .fillMaxHeight()
+                                modifier = Modifier.fillMaxHeight()
                                     .background(MaterialTheme.colorScheme.surfaceContainer)
                             ) {
                                 Column(modifier = Modifier.align(Alignment.Center)) {
                                     Button(
-                                        modifier = Modifier
-                                            .padding(16.dp, 4.dp)
+                                        modifier = Modifier.padding(16.dp, 4.dp)
                                             .align(Alignment.CenterHorizontally),
                                         onClick = {
                                             showTimeSignature = true
@@ -250,8 +245,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                         )
                                     }
                                     FilledTonalButton(
-                                        modifier = Modifier
-                                            .padding(16.dp, 4.dp)
+                                        modifier = Modifier.padding(16.dp, 4.dp)
                                             .align(Alignment.CenterHorizontally),
                                         onClick = {
                                             val measures = parsedRhythm.measures.toMutableList()
@@ -287,16 +281,14 @@ class RhythmEditorActivity : ComponentActivity() {
                                     title = { Text(getString(R.string.editor_set_time_signature)) },
                                     text = {
                                         Column(
-                                            modifier = Modifier
-                                                .aspectRatio(1f)
+                                            modifier = Modifier.aspectRatio(1f)
                                                 .background(
                                                     MaterialTheme.colorScheme.surfaceContainer,
                                                     MaterialShapes.Bun.toShape(0)
                                                 )
                                         ) {
                                             Row(
-                                                modifier = Modifier
-                                                    .weight(1f)
+                                                modifier = Modifier.weight(1f)
                                                     .padding(horizontal = 32.dp),
                                                 verticalAlignment = Alignment.CenterVertically,
                                             ) {
@@ -315,8 +307,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                                     )
                                                 }
                                                 Box(
-                                                    modifier = Modifier
-                                                        .weight(1f)
+                                                    modifier = Modifier.weight(1f)
                                                         .fillMaxHeight(0.8f)
                                                         .align(Alignment.CenterVertically),
                                                     contentAlignment = Alignment.Center
@@ -342,8 +333,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                                 }
                                             }
                                             Row(
-                                                modifier = Modifier
-                                                    .weight(1f)
+                                                modifier = Modifier.weight(1f)
                                                     .padding(horizontal = 32.dp),
                                                 verticalAlignment = Alignment.CenterVertically,
                                             ) {
@@ -362,8 +352,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                                     )
                                                 }
                                                 Box(
-                                                    modifier = Modifier
-                                                        .weight(1f)
+                                                    modifier = Modifier.weight(1f)
                                                         .fillMaxHeight(0.8f)
                                                         .align(Alignment.CenterVertically),
                                                     contentAlignment = Alignment.Center
@@ -393,27 +382,21 @@ class RhythmEditorActivity : ComponentActivity() {
                                     confirmButton = {
                                         TextButton(onClick = {
                                             val measures = parsedRhythm.measures.toMutableList()
-                                            measures.add(
-                                                Measure(
-                                                    timeSig = timeSignature,
-                                                    elements = mutableListOf<RhythmElement>().apply {
-                                                        repeat(timeSignature.first) {
-                                                            add(
-                                                                RhythmNote(
-                                                                    display = MusicFont.Notation.convert(
-                                                                        timeSignature.second,
-                                                                        false
-                                                                    ).toString(),
-                                                                    isRest = true,
-                                                                    isInverted = false,
-                                                                    duration = 1.0 / timeSignature.second,
-                                                                    dots = 0
-                                                                )
-                                                            )
-                                                        }
-                                                    }
-                                                )
-                                            )
+                                            val elements = mutableListOf<RhythmElement>().apply {
+                                                repeat(timeSignature.first) {
+                                                    add(RhythmNote(
+                                                        display = MusicFont.Notation.convert(timeSignature.second, false).toString(),
+                                                        isRest = true,
+                                                        isInverted = false,
+                                                        duration = 1.0 / timeSignature.second,
+                                                        dots = 0
+                                                    ))
+                                                }
+                                            }
+                                            measures.add(Measure(
+                                                timeSig = timeSignature,
+                                                elements = elements
+                                            ))
                                             parsedRhythm = Rhythm(measures)
                                             metronome.setRhythm(parsedRhythm)
                                             showTimeSignature = false
@@ -433,22 +416,19 @@ class RhythmEditorActivity : ComponentActivity() {
 
                     Row(modifier = Modifier.fillMaxSize()) {
                         Box(
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
+                            modifier = Modifier.align(Alignment.CenterVertically)
                                 .fillMaxHeight(0.8f)
                                 .width(1.dp)
                                 .background(MaterialTheme.colorScheme.onSurfaceVariant)
                         )
                         Box(
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
+                            modifier = Modifier.align(Alignment.CenterVertically)
                                 .weight(1f)
                                 .height(1.dp)
                                 .background(MaterialTheme.colorScheme.onSurfaceVariant)
                         )
                         Box(
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
+                            modifier = Modifier.align(Alignment.CenterVertically)
                                 .fillMaxHeight(0.8f)
                                 .width(1.dp)
                                 .background(MaterialTheme.colorScheme.onSurfaceVariant)
@@ -527,15 +507,13 @@ class RhythmEditorActivity : ComponentActivity() {
                 var emphasis by remember { mutableStateOf(true) }
 
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                         .weight(4f)
                         .background(MaterialTheme.colorScheme.surface)
                         .padding(vertical = 4.dp)
                 ) {
                     LazyRow(
-                        modifier = Modifier
-                            .fillMaxHeight()
+                        modifier = Modifier.fillMaxHeight()
                             .align(Alignment.Center),
                         contentPadding = PaddingValues(horizontal = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
@@ -543,8 +521,7 @@ class RhythmEditorActivity : ComponentActivity() {
                     ) {
                         item {
                             Column(
-                                modifier = Modifier
-                                    .width(IntrinsicSize.Max)
+                                modifier = Modifier.width(IntrinsicSize.Max)
                                     .fillMaxHeight()
                                     .padding(8.dp, 0.dp)
                             ) {
@@ -554,8 +531,7 @@ class RhythmEditorActivity : ComponentActivity() {
                         }
                         item {
                             Column(
-                                modifier = Modifier
-                                    .width(IntrinsicSize.Max)
+                                modifier = Modifier.width(IntrinsicSize.Max)
                                     .fillMaxHeight()
                                     .padding(8.dp, 0.dp)
                             ) {
@@ -565,14 +541,12 @@ class RhythmEditorActivity : ComponentActivity() {
                         }
                         item {
                             Box(
-                                modifier = Modifier
-                                    .width(IntrinsicSize.Max)
+                                modifier = Modifier.width(IntrinsicSize.Max)
                                     .padding(24.dp, 0.dp)
                                     .fillMaxHeight()
                             ) {
                                 WavyVerticalLine(
-                                    modifier = Modifier
-                                        .fillMaxHeight(0.75f)
+                                    modifier = Modifier.fillMaxHeight(0.75f)
                                         .align(Alignment.Center),
                                     MaterialTheme.colorScheme.outlineVariant
                                 )
@@ -581,8 +555,7 @@ class RhythmEditorActivity : ComponentActivity() {
                         for (i in 0..4) {
                             item {
                                 Column(
-                                    modifier = Modifier
-                                        .width(IntrinsicSize.Max)
+                                    modifier = Modifier.width(IntrinsicSize.Max)
                                         .fillMaxHeight()
                                         .padding(8.dp, 0.dp)
                                 ) {
@@ -606,8 +579,7 @@ class RhythmEditorActivity : ComponentActivity() {
                         }
                         item {
                             Column(
-                                modifier = Modifier
-                                    .padding(horizontal = 16.dp)
+                                modifier = Modifier.padding(horizontal = 16.dp)
                                     .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(8.dp))
                                     .padding(8.dp, 16.dp, 16.dp, 16.dp)
                             ) {
@@ -662,8 +634,7 @@ class RhythmEditorActivity : ComponentActivity() {
                     }
                 }
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                         .weight(2f)
                         .background(MaterialTheme.colorScheme.surfaceContainerLow)
                         .padding(16.dp, 0.dp)
@@ -750,8 +721,7 @@ class RhythmEditorActivity : ComponentActivity() {
                         }
                     }
                     IconButton(
-                        modifier = Modifier
-                            .align(Alignment.CenterVertically)
+                        modifier = Modifier.align(Alignment.CenterVertically)
                             .padding(8.dp, 0.dp),
                         onClick = {
                             backDropdown = true
@@ -778,8 +748,7 @@ class RhythmEditorActivity : ComponentActivity() {
                         Text(getString(R.string.metronome_edit_rhythm_switch_simple))
                     }
                     Box(
-                        modifier = Modifier
-                            .weight(1f)
+                        modifier = Modifier.weight(1f)
                             .align(Alignment.CenterVertically)
                     ) {
 
@@ -808,8 +777,7 @@ class RhythmEditorActivity : ComponentActivity() {
 
                     }
                     Row(
-                        modifier = Modifier
-                            .align(Alignment.CenterVertically)
+                        modifier = Modifier.align(Alignment.CenterVertically)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                             .clickable {
@@ -827,8 +795,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                 fontFamily = FontFamily(Font(R.font.bravuratext)),
                                 fontSize = 32.dp.toSp()
                             ),
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
+                            modifier = Modifier.align(Alignment.CenterVertically)
                                 .offset(xOffset, yOffset)
                         )
                         Spacer(
@@ -842,8 +809,7 @@ class RhythmEditorActivity : ComponentActivity() {
                         )
                     }
                     Box(
-                        modifier = Modifier
-                            .padding(start = 8.dp)
+                        modifier = Modifier.padding(start = 8.dp)
                             .align(Alignment.CenterVertically)
                             .fillMaxHeight(0.8f)
                             .aspectRatio(1.5f)
@@ -857,8 +823,7 @@ class RhythmEditorActivity : ComponentActivity() {
                         )
 
                         Box(
-                            modifier = Modifier
-                                .aspectRatio(animatedRatio, true)
+                            modifier = Modifier.aspectRatio(animatedRatio, true)
                                 .clip(CircleShape)
                                 .background(animatedColor)
                                 .clickable {
@@ -877,8 +842,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                 .align(Alignment.Center),
                         ) {
                             Box(
-                                modifier = Modifier
-                                    .fillMaxHeight(0.5f)
+                                modifier = Modifier.fillMaxHeight(0.5f)
                                     .aspectRatio(1f, true)
                                     .align(Alignment.Center)
                             ) {
@@ -922,8 +886,7 @@ class RhythmEditorActivity : ComponentActivity() {
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             LazyColumn(
-                                modifier = Modifier
-                                    .fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth()
                                     .background(
                                         MaterialTheme.colorScheme.surfaceContainer,
                                         RoundedCornerShape(8.dp)
@@ -972,29 +935,22 @@ class RhythmEditorActivity : ComponentActivity() {
                 confirmButton = {
                     TextButton(onClick = {
                         showSimpleWarning = false
-                        appMetronome.setRhythm(
-                            Rhythm(
-                                listOf(
-                                    Measure(
-                                        parsedRhythm.measures[0].timeSig,
-                                        arrayListOf<RhythmElement>().apply {
-                                            repeat(parsedRhythm.measures[0].timeSig.first) {
-                                                add(
-                                                    RhythmNote(
-                                                        display = MusicFont.Notation.convert(
-                                                            parsedRhythm.measures[0].timeSig.second,
-                                                            false
-                                                        ).toString(),
-                                                        isRest = false,
-                                                        isInverted = false,
-                                                        duration = 1.0 / parsedRhythm.measures[0].timeSig.second,
-                                                        dots = 0
-                                                    )
-                                                )
-                                            }
-                                        }
+                        val elements = arrayListOf<RhythmElement>().apply {
+                            repeat(parsedRhythm.measures[0].timeSig.first) {
+                                add(
+                                    RhythmNote(
+                                        display = MusicFont.Notation.convert(parsedRhythm.measures[0].timeSig.second, false).toString(),
+                                        isRest = false,
+                                        isInverted = false,
+                                        duration = 1.0 / parsedRhythm.measures[0].timeSig.second,
+                                        dots = 0
                                     )
-                                )))
+                                )
+                            }
+                        }
+                        appMetronome.setRhythm(
+                            Rhythm(listOf(Measure(parsedRhythm.measures[0].timeSig, elements)))
+                        )
 
                         appMetronome.beatValue = 4f
                         val primaryMetronome = ChronalApp.getInstance().metronome
@@ -1079,13 +1035,11 @@ class RhythmEditorActivity : ComponentActivity() {
             Surface(
                 shape = RoundedCornerShape(32.dp),
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                modifier = Modifier
-                    .padding(16.dp)
+                modifier = Modifier.padding(16.dp)
                     .fillMaxWidth(0.5f)
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                         .padding(16.dp)
                 ) {
                     Text(
@@ -1098,8 +1052,7 @@ class RhythmEditorActivity : ComponentActivity() {
 
                     LazyHorizontalGrid(
                         rows = GridCells.Fixed(2),
-                        modifier = Modifier
-                            .padding(bottom = 16.dp)
+                        modifier = Modifier.padding(bottom = 16.dp)
                             .fillMaxWidth()
                             .height(144.dp),
                         horizontalArrangement = Arrangement.Center,
@@ -1118,8 +1071,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                 if (isSelected) selectedNote = string
 
                                 Box(
-                                    modifier = Modifier
-                                        .padding(4.dp)
+                                    modifier = Modifier.padding(4.dp)
                                         .size(64.dp)
                                         .clip(RoundedCornerShape(16.dp))
                                         .background(
@@ -1150,8 +1102,7 @@ class RhythmEditorActivity : ComponentActivity() {
                         }
                     }
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth()
                             .pointerInput(Unit) {
                                 detectVerticalDragGestures { _, dragAmount ->
                                     change += dragAmount.toInt()
@@ -1175,8 +1126,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                 fontFamily = FontFamily(Font(R.font.bravuratext)),
                                 fontSize = 64.dp.toSp()
                             ),
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
+                            modifier = Modifier.align(Alignment.CenterVertically)
                                 .offset(xOffset, yOffset)
                                 .padding(horizontal = 8.dp)
                         )
@@ -1250,8 +1200,7 @@ class RhythmEditorActivity : ComponentActivity() {
                     Spacer(Modifier.height(16.dp))
 
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth()
                             .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.End
                     ) {
@@ -1305,8 +1254,7 @@ class RhythmEditorActivity : ComponentActivity() {
         }
 
         Row(
-            modifier = Modifier
-                .weight(1f)
+            modifier = Modifier.weight(1f)
                 .fillMaxWidth()
                 .padding(vertical = 4.dp)
                 .clip(RoundedCornerShape(16.dp))
@@ -1318,8 +1266,7 @@ class RhythmEditorActivity : ComponentActivity() {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Box(
-                modifier = Modifier
-                    .fillMaxHeight(0.5f)
+                modifier = Modifier.fillMaxHeight(0.5f)
                     .align(Alignment.CenterVertically)
             ) {
                 val timeSig = parsedRhythm.measures.getOrNull(measureIndex)?.timeSig ?: (4 to 4)
@@ -1358,8 +1305,7 @@ class RhythmEditorActivity : ComponentActivity() {
         )
 
         Row(
-            modifier = Modifier
-                .weight(1f)
+            modifier = Modifier.weight(1f)
                 .fillMaxWidth()
                 .padding(vertical = 4.dp)
                 .clip(RoundedCornerShape(16.dp))
@@ -1490,8 +1436,7 @@ class RhythmEditorActivity : ComponentActivity() {
         )
 
         Row(
-            modifier = Modifier
-                .weight(1f)
+            modifier = Modifier.weight(1f)
                 .fillMaxWidth()
                 .padding(vertical = 4.dp)
                 .clip(RoundedCornerShape(16.dp))
@@ -1608,8 +1553,7 @@ class RhythmEditorActivity : ComponentActivity() {
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Column(
-                        modifier = Modifier
-                            .width(IntrinsicSize.Max)
+                        modifier = Modifier.width(IntrinsicSize.Max)
                             .padding(16.dp)
                     ) {
                         Text(
@@ -1620,8 +1564,7 @@ class RhythmEditorActivity : ComponentActivity() {
                         Spacer(Modifier.height(16.dp))
 
                         Box(
-                            modifier = Modifier
-                                .width(400.dp)
+                            modifier = Modifier.width(400.dp)
                                 .height(128.dp)
                                 .padding(horizontal = 32.dp)
                                 .background(
@@ -1640,46 +1583,40 @@ class RhythmEditorActivity : ComponentActivity() {
                             }
                             // tuplet header
                             Box(
-                                modifier = Modifier
-                                    .padding(horizontal = 8.dp)
+                                modifier = Modifier.padding(horizontal = 8.dp)
                                     .matchParentSize()
                             ) {
                                 Row(
                                     modifier = Modifier.align(Alignment.TopCenter)
                                 ) {
                                     Box(
-                                        modifier = Modifier
-                                            .width(1.dp)
+                                        modifier = Modifier.width(1.dp)
                                             .height(8.dp)
                                             .align(Alignment.CenterVertically)
                                             .offset(0.dp, 4.dp)
                                             .background(MaterialTheme.colorScheme.onSurface)
                                     )
                                     Box(
-                                        modifier = Modifier
-                                            .weight(1f)
+                                        modifier = Modifier.weight(1f)
                                             .height(1.dp)
                                             .align(Alignment.CenterVertically)
                                             .background(MaterialTheme.colorScheme.onSurface)
                                     )
                                     Text(
                                         "${tuplet.ratio.first}:${tuplet.ratio.second}",
-                                        modifier = Modifier
-                                            .align(Alignment.CenterVertically)
+                                        modifier = Modifier.align(Alignment.CenterVertically)
                                             .padding(horizontal = 16.dp),
                                         color = MaterialTheme.colorScheme.onSurface,
                                         style = MaterialTheme.typography.labelLarge,
                                     )
                                     Box(
-                                        modifier = Modifier
-                                            .weight(1f)
+                                        modifier = Modifier.weight(1f)
                                             .height(1.dp)
                                             .align(Alignment.CenterVertically)
                                             .background(MaterialTheme.colorScheme.onSurface)
                                     )
                                     Box(
-                                        modifier = Modifier
-                                            .width(1.dp)
+                                        modifier = Modifier.width(1.dp)
                                             .height(8.dp)
                                             .align(Alignment.CenterVertically)
                                             .offset(0.dp, 4.dp)
@@ -1692,8 +1629,7 @@ class RhythmEditorActivity : ComponentActivity() {
                         Spacer(Modifier.height(16.dp))
 
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth()
                                 .padding(horizontal = 16.dp)
                         ) {
                             FilledTonalIconButton(onClick = {
@@ -1819,8 +1755,7 @@ class RhythmEditorActivity : ComponentActivity() {
         )
 
         Row(
-            modifier = Modifier
-                .weight(1f)
+            modifier = Modifier.weight(1f)
                 .fillMaxWidth()
                 .padding(vertical = 4.dp)
                 .clip(RoundedCornerShape(16.dp))
@@ -1877,8 +1812,7 @@ class RhythmEditorActivity : ComponentActivity() {
         val ltr = LocalLayoutDirection.current == LayoutDirection.Ltr
         if(value > 1024) {
             Box(
-                modifier = Modifier
-                    .weight(1f)
+                modifier = Modifier.weight(1f)
                     .padding(0.dp, 4.dp, 0.dp, 8.dp)
                     .aspectRatio(1f)
                     .clip(RoundedCornerShape(16.dp))
@@ -1899,8 +1833,7 @@ class RhythmEditorActivity : ComponentActivity() {
         )
 
         Box(
-            modifier = Modifier
-                .weight(1f)
+            modifier = Modifier.weight(1f)
                 .padding(0.dp, 8.dp, 0.dp, 4.dp)
                 .aspectRatio(1f)
                 .clip(RoundedCornerShape(16.dp))
@@ -1951,8 +1884,7 @@ class RhythmEditorActivity : ComponentActivity() {
                 val xOffset = if (note == null) 0.dp else ((40 * note.offset.x * (if(ltr) 1 else -1)).dp)
                 val yOffset = if (note == null) 0.dp else ((40 * note.offset.y).dp)
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth(0.25f)
+                    modifier = Modifier.fillMaxWidth(0.25f)
                         .height(1.dp)
                         .offset(0.dp, (if (!rest) yOffset - 4.dp else 0.dp))
                         .background(MaterialTheme.colorScheme.onSurface)
@@ -1961,8 +1893,7 @@ class RhythmEditorActivity : ComponentActivity() {
 
                 Text(
                     text.toString(),
-                    modifier = Modifier
-                        .align(Alignment.Center)
+                    modifier = Modifier.align(Alignment.Center)
                         .offset(xOffset, yOffset),
                     color = animatedOnColor.value,
                     style = TextStyle(
@@ -2039,8 +1970,7 @@ class RhythmEditorActivity : ComponentActivity() {
             }
             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                         .padding(0.dp, 8.dp, if (indexOffset == 0 && editable) 32.dp else 0.dp, 8.dp)
                         .background(
                             if ((measureErrored || allErrored) && editable) MaterialTheme.colorScheme.errorContainer.copy(
@@ -2079,18 +2009,12 @@ class RhythmEditorActivity : ComponentActivity() {
 
                             is RhythmTuplet -> {
                                 Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
+                                    modifier = Modifier.fillMaxSize()
                                         .padding(16.dp, 0.dp)
                                 ) {
                                     Row {
                                         val tupletRhythm = Rhythm(
-                                            arrayListOf(
-                                                Measure(
-                                                    0 to 0,
-                                                    element.notes
-                                                )
-                                            )
+                                            arrayListOf(Measure(0 to 0, element.notes))
                                         )
                                         DrawRhythm(
                                             tupletRhythm,
@@ -2105,48 +2029,41 @@ class RhythmEditorActivity : ComponentActivity() {
                                     }
                                     // tuplet header
                                     Box(
-                                        modifier = Modifier
-                                            .padding(8.dp, 0.dp)
+                                        modifier = Modifier.padding(8.dp, 0.dp)
                                             .matchParentSize()
                                     ) {
                                         Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
+                                            modifier = Modifier.fillMaxWidth()
                                                 .align(Alignment.TopCenter)
                                         ) {
                                             Box(
-                                                modifier = Modifier
-                                                    .width(1.dp)
+                                                modifier = Modifier.width(1.dp)
                                                     .height(8.dp)
                                                     .align(Alignment.CenterVertically)
                                                     .offset(0.dp, 4.dp)
                                                     .background(MaterialTheme.colorScheme.onSurface)
                                             )
                                             Box(
-                                                modifier = Modifier
-                                                    .weight(1f)
+                                                modifier = Modifier.weight(1f)
                                                     .height(1.dp)
                                                     .align(Alignment.CenterVertically)
                                                     .background(MaterialTheme.colorScheme.onSurface)
                                             )
                                             Text(
                                                 "${element.ratio.first}:${element.ratio.second}",
-                                                modifier = Modifier
-                                                    .align(Alignment.CenterVertically)
+                                                modifier = Modifier.align(Alignment.CenterVertically)
                                                     .padding(16.dp, 0.dp),
                                                 color = MaterialTheme.colorScheme.onSurface,
                                                 style = MaterialTheme.typography.labelLarge,
                                             )
                                             Box(
-                                                modifier = Modifier
-                                                    .weight(1f)
+                                                modifier = Modifier.weight(1f)
                                                     .height(1.dp)
                                                     .align(Alignment.CenterVertically)
                                                     .background(MaterialTheme.colorScheme.onSurface)
                                             )
                                             Box(
-                                                modifier = Modifier
-                                                    .width(1.dp)
+                                                modifier = Modifier.width(1.dp)
                                                     .height(8.dp)
                                                     .align(Alignment.CenterVertically)
                                                     .offset(0.dp, 4.dp)
@@ -2190,8 +2107,7 @@ class RhythmEditorActivity : ComponentActivity() {
         )
 
         Box(
-            modifier = Modifier
-                .padding(16.dp, 0.dp)
+            modifier = Modifier.padding(16.dp, 0.dp)
                 .width(48.dp)
                 .fillMaxHeight()
                 .clip(RoundedCornerShape(corner.value.toInt().coerceIn(0, 100)))
@@ -2201,8 +2117,7 @@ class RhythmEditorActivity : ComponentActivity() {
                 }
         ) {
             Text(
-                modifier = Modifier
-                    .align(Alignment.Center)
+                modifier = Modifier.align(Alignment.Center)
                     .offset(0.dp, 5.dp),
                 text = note,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -2217,14 +2132,12 @@ class RhythmEditorActivity : ComponentActivity() {
     @Composable
     fun MeasureBreak(hasTimeSignature: Boolean) {
         Box(
-            modifier = Modifier
-                .padding(0.dp, 0.dp, if (hasTimeSignature) 0.dp else 32.dp, 0.dp)
+            modifier = Modifier.padding(0.dp, 0.dp, if (hasTimeSignature) 0.dp else 32.dp, 0.dp)
                 .width(1.dp)
                 .fillMaxHeight()
         ) {
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
+                modifier = Modifier.fillMaxWidth()
                     .fillMaxHeight(0.75f)
                     .align(Alignment.Center)
                     .background(MaterialTheme.colorScheme.outline)
@@ -2238,8 +2151,7 @@ class RhythmEditorActivity : ComponentActivity() {
         val (numerator, denominator) = measure.timeSig
 
         Box(
-            modifier = Modifier
-                .padding(end = 16.dp)
+            modifier = Modifier.padding(end = 16.dp)
                 .fillMaxHeight()
                 .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                 .clickable {
@@ -2248,8 +2160,7 @@ class RhythmEditorActivity : ComponentActivity() {
                 .padding(10.dp, 0.dp)
         ) {
             Box(
-                modifier = Modifier
-                    .fillMaxHeight(0.45f)
+                modifier = Modifier.fillMaxHeight(0.45f)
                     .align(Alignment.Center)
             ) {
                 MusicFont.Number.TimeSignature(numerator, denominator, MaterialTheme.colorScheme.onSurface)
@@ -2270,8 +2181,7 @@ class RhythmEditorActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
-                        modifier = Modifier
-                            .fillMaxHeight(0.75f)
+                        modifier = Modifier.fillMaxHeight(0.75f)
                             .aspectRatio(1f)
                             .align(Alignment.Center)
                             .background(
@@ -2280,15 +2190,13 @@ class RhythmEditorActivity : ComponentActivity() {
                             )
                     ) {
                         Row(
-                            modifier = Modifier
-                                .weight(1f)
+                            modifier = Modifier.weight(1f)
                                 .padding(horizontal = 32.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             IconButton(
                                 onClick = {
-                                    timeSignature =
-                                        Pair((timeSignature.first - 1).coerceIn(1..32), timeSignature.second)
+                                    timeSignature = Pair((timeSignature.first - 1).coerceIn(1..32), timeSignature.second)
                                 }
                             ) {
                                 Icon(
@@ -2298,8 +2206,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                 )
                             }
                             Box(
-                                modifier = Modifier
-                                    .weight(1f)
+                                modifier = Modifier.weight(1f)
                                     .fillMaxHeight(0.8f)
                                     .align(Alignment.CenterVertically),
                                 contentAlignment = Alignment.Center
@@ -2311,8 +2218,7 @@ class RhythmEditorActivity : ComponentActivity() {
                             }
                             IconButton(
                                 onClick = {
-                                    timeSignature =
-                                        Pair((timeSignature.first + 1).coerceIn(1..32), timeSignature.second)
+                                    timeSignature = Pair((timeSignature.first + 1).coerceIn(1..32), timeSignature.second)
                                 }
                             ) {
                                 Icon(
@@ -2323,15 +2229,13 @@ class RhythmEditorActivity : ComponentActivity() {
                             }
                         }
                         Row(
-                            modifier = Modifier
-                                .weight(1f)
+                            modifier = Modifier.weight(1f)
                                 .padding(horizontal = 32.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             IconButton(
                                 onClick = {
-                                    timeSignature =
-                                        Pair(timeSignature.first, (timeSignature.second / 2).coerceIn(1..32))
+                                    timeSignature = Pair(timeSignature.first, (timeSignature.second / 2).coerceIn(1..32))
                                 }
                             ) {
                                 Icon(
@@ -2341,8 +2245,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                 )
                             }
                             Box(
-                                modifier = Modifier
-                                    .weight(1f)
+                                modifier = Modifier.weight(1f)
                                     .fillMaxHeight(0.8f)
                                     .align(Alignment.CenterVertically),
                                 contentAlignment = Alignment.Center
@@ -2354,8 +2257,7 @@ class RhythmEditorActivity : ComponentActivity() {
                             }
                             IconButton(
                                 onClick = {
-                                    timeSignature =
-                                        Pair(timeSignature.first, (timeSignature.second * 2).coerceIn(1..32))
+                                    timeSignature = Pair(timeSignature.first, (timeSignature.second * 2).coerceIn(1..32))
                                 }
                             ) {
                                 Icon(
@@ -2524,7 +2426,6 @@ class RhythmEditorActivity : ComponentActivity() {
         } else {
             1.0
         }
-        Log.d("a", "element duration is $elementDuration")
 
         val ratio = defaultRatio ?: if(foundElement is RhythmTuplet) {
             foundElement.ratio
@@ -2619,15 +2520,13 @@ class RhythmEditorActivity : ComponentActivity() {
                                 while (remaining > 1e-6) {
                                     val duration = 1.0 / restValue
                                     if (remaining >= duration - 1e-6) {
-                                        newRests.add(
-                                            RhythmNote(
-                                                display = MusicFont.Notation.convert(restValue, true).toString(),
-                                                isRest = true,
-                                                isInverted = false,
-                                                duration = -duration,
-                                                dots = 0
-                                            )
-                                        )
+                                        newRests.add(RhythmNote(
+                                            display = MusicFont.Notation.convert(restValue, true).toString(),
+                                            isRest = true,
+                                            isInverted = false,
+                                            duration = -duration,
+                                            dots = 0
+                                        ))
                                         remaining -= duration
                                     } else {
                                         restValue *= 2
@@ -2675,15 +2574,13 @@ class RhythmEditorActivity : ComponentActivity() {
                                     var restValue = 1
                                     while(restValue < 1024 && remainingDuration > 0) {
                                         if(1.0 / restValue <= remainingDuration) {
-                                            newElements.add(
-                                                RhythmNote(
-                                                    display = MusicFont.Notation.convert(restValue, true).toString(),
-                                                    isRest = true,
-                                                    isInverted = false,
-                                                    duration = -1.0 / restValue,
-                                                    dots = 0
-                                                )
-                                            )
+                                            newElements.add(RhythmNote(
+                                                display = MusicFont.Notation.convert(restValue, true).toString(),
+                                                isRest = true,
+                                                isInverted = false,
+                                                duration = -1.0 / restValue,
+                                                dots = 0
+                                            ))
                                             remainingDuration -= 1.0 / restValue
                                         }
                                         restValue *= 2
@@ -2751,16 +2648,13 @@ class RhythmEditorActivity : ComponentActivity() {
                                         while (remaining > 1e-10) {
                                             val duration = 1.0 / restValue
                                             if (duration <= remaining) {
-                                                newRests.add(
-                                                    RhythmNote(
-                                                        display = MusicFont.Notation.convert(restValue, true)
-                                                            .toString(),
-                                                        isRest = true,
-                                                        isInverted = false,
-                                                        duration = -duration * scale,
-                                                        dots = 0
-                                                    )
-                                                )
+                                                newRests.add(RhythmNote(
+                                                    display = MusicFont.Notation.convert(restValue, true).toString(),
+                                                    isRest = true,
+                                                    isInverted = false,
+                                                    duration = -duration * scale,
+                                                    dots = 0
+                                                ))
                                                 remaining -= duration
                                             } else {
                                                 restValue *= 2
@@ -2789,16 +2683,13 @@ class RhythmEditorActivity : ComponentActivity() {
                                             var restValue = 1
                                             while(restValue < 1024 && remainingDuration > 0) {
                                                 if((1.0 / restValue) * scale <= remainingDuration + 1e-10) {
-                                                    newTupletElements.add(
-                                                        RhythmNote(
-                                                            display = MusicFont.Notation.convert(restValue, true)
-                                                                .toString(),
-                                                            isRest = true,
-                                                            isInverted = false,
-                                                            duration = (-1.0 / restValue) * scale,
-                                                            dots = 0
-                                                        )
-                                                    )
+                                                    newTupletElements.add(RhythmNote(
+                                                        display = MusicFont.Notation.convert(restValue, true).toString(),
+                                                        isRest = true,
+                                                        isInverted = false,
+                                                        duration = (-1.0 / restValue) * scale,
+                                                        dots = 0
+                                                    ))
                                                     remainingDuration -= (1.0 / restValue) * scale
                                                 }
                                                 restValue *= 2
