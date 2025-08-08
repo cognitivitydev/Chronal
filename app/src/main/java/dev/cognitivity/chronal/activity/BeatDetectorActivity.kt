@@ -117,12 +117,12 @@ class BeatDetectorActivity : ComponentActivity() {
             }
         ) { innerPadding ->
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
+                modifier = Modifier.fillMaxSize()
                     .padding(innerPadding)
             ) {
                 Column(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp),
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(vertical = 32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
@@ -188,8 +188,7 @@ class BeatDetectorActivity : ComponentActivity() {
                             color = if(isRecording) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.surfaceVariant,
                         )
                         Text(
-                            modifier = Modifier
-                                .offset(y = (-8).dp)
+                            modifier = Modifier.offset(y = (-8).dp)
                                 .align(Alignment.Bottom),
                             text = getString(R.string.metronome_bpm),
                             fontSize = 48.sp,

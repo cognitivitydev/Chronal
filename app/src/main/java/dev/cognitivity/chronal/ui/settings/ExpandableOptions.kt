@@ -121,7 +121,7 @@ fun ExpandableButtonRow(setting: Setting<*>, labels: List<String>, isSelected: (
                         imageVector = Icons.Default.Check,
                         contentDescription = ChronalApp.context.getString(R.string.generic_selected),
                     )
-                    Spacer(modifier = Modifier.width(ToggleButtonDefaults.IconSpacing))
+                    Spacer(Modifier.width(ToggleButtonDefaults.IconSpacing))
                 }
                 Text(labels[i])
             }

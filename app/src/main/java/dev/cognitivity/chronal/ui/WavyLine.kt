@@ -16,7 +16,8 @@ fun WavyHorizontalLine(modifier: Modifier = Modifier) {
     val outline = MaterialTheme.colorScheme.outline
 
     Canvas(
-        modifier = Modifier.defaultMinSize(64.dp, 0.dp).then(modifier)
+        modifier = Modifier.defaultMinSize(64.dp, 0.dp)
+            .then(modifier)
     ) {
         val strokeWidth = 2.dp.toPx()
         val path = Path().apply {
@@ -36,7 +37,8 @@ fun WavyHorizontalLine(modifier: Modifier = Modifier) {
 @Composable
 fun WavyVerticalLine(modifier: Modifier = Modifier, color: Color = MaterialTheme.colorScheme.outline) {
     Canvas(
-        modifier = Modifier.defaultMinSize(0.dp, 64.dp).then(modifier)
+        modifier = Modifier.defaultMinSize(0.dp, 64.dp)
+            .then(modifier)
     ) {
         val strokeWidth = 2.dp.toPx()
         val path = Path().apply {

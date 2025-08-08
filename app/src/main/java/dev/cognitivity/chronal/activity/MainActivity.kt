@@ -328,7 +328,7 @@ class MainActivity : ComponentActivity() {
                                                 (item.selectedIcon as NavigationIcon.ResourceIcon).resourceId
                                         else icon.resourceId
                                     ),
-                                    contentDescription = "${getString(item.label)} icon"
+                                    contentDescription = getString(item.label)
                                 )
                             }
                             is NavigationIcon.VectorIcon -> {
@@ -338,7 +338,7 @@ class MainActivity : ComponentActivity() {
                                             (item.selectedIcon as NavigationIcon.VectorIcon).imageVector
                                         else icon.imageVector
                                     ),
-                                    contentDescription = "${getString(item.label)} icon"
+                                    contentDescription = getString(item.label)
                                 )
                             }
                         }
@@ -361,7 +361,7 @@ class MainActivity : ComponentActivity() {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(Modifier.weight(1f))
             items.forEach { item ->
                 NavigationRailItem(
                     selected = currentRoute == item.route,
@@ -382,17 +382,14 @@ class MainActivity : ComponentActivity() {
                                             (item.selectedIcon as NavigationIcon.ResourceIcon).resourceId
                                         else icon.resourceId
                                     ),
-                                    contentDescription = "${item.label} icon"
+                                    contentDescription = getString(item.label)
                                 )
                             }
                             is NavigationIcon.VectorIcon -> {
                                 Icon(
-                                    imageVector = (
-                                            if(currentRoute == item.route)
-                                                (item.selectedIcon as NavigationIcon.VectorIcon).imageVector
-                                            else icon.imageVector
-                                            ),
-                                    contentDescription = "${item.label} icon"
+                                    imageVector = if(currentRoute == item.route) (item.selectedIcon as NavigationIcon.VectorIcon).imageVector
+                                        else icon.imageVector,
+                                    contentDescription = getString(item.label)
                                 )
                             }
                         }
@@ -400,7 +397,7 @@ class MainActivity : ComponentActivity() {
                     label = { Text(getString(item.label), style = MaterialTheme.typography.bodyMedium) }
                 )
             }
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(Modifier.weight(1f))
         }
     }
 

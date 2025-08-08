@@ -138,7 +138,7 @@ class PresetListWidget : GlanceAppWidget() {
                                 }
                                 Image(
                                     provider = ImageProvider(R.drawable.baseline_play_arrow_24),
-                                    contentDescription = null,
+                                    contentDescription = context.getString(R.string.generic_play),
                                     modifier = GlanceModifier.padding(end = 8.dp),
                                     colorFilter = ColorFilter.tint(GlanceTheme.colors.secondary)
                                 )

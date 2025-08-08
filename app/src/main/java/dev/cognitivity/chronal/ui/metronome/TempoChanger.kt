@@ -36,15 +36,13 @@ fun BoxScope.TempoChanger() {
             val scope = rememberCoroutineScope()
 
             Column(
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
+                modifier = Modifier.align(Alignment.CenterVertically)
                     .padding(2.dp, 0.dp, 2.dp, 0.dp)
             ) {
                 Icon(
                     imageVector = Icons.Outlined.KeyboardArrowUp,
                     contentDescription = context.getString(R.string.metronome_increase_tempo),
-                    modifier = Modifier
-                        .pointerInput(Unit) {
+                    modifier = Modifier.pointerInput(Unit) {
                             detectTapGestures(
                                 onPress = {
                                     var isHeld = true
@@ -66,8 +64,7 @@ fun BoxScope.TempoChanger() {
                 Icon(
                     imageVector = Icons.Outlined.KeyboardArrowDown,
                     contentDescription = "Decrease tempo",
-                    modifier = Modifier
-                        .pointerInput(Unit) {
+                    modifier = Modifier.pointerInput(Unit) {
                             detectTapGestures(
                                 onPress = {
                                     var isHeld = true
@@ -97,8 +94,7 @@ fun BoxScope.TempoChanger() {
                 overflow = TextOverflow.Visible
             )
             Text(
-                modifier = Modifier
-                    .offset(y = (-4).dp)
+                modifier = Modifier.offset(y = (-4).dp)
                     .align(Alignment.Bottom),
                 text = context.getString(R.string.metronome_bpm),
                 style = MaterialTheme.typography.headlineSmall,

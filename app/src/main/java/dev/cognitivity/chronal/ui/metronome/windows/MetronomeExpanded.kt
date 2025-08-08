@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -171,8 +172,15 @@ fun MetronomePageExpanded(
                     modifier = Modifier.weight(1f)
                         .fillMaxSize()
                 ) {
-                    RhythmButtons(1f, navController)
-                    PlayButton(1f)
+                    RhythmButtons(navController,
+                        modifier = Modifier.fillMaxWidth()
+                            .weight(1f)
+                    )
+                    PlayButton(
+                        modifier = Modifier.fillMaxWidth()
+                            .align(Alignment.CenterHorizontally)
+                            .weight(1f)
+                    )
                 }
             }
         }

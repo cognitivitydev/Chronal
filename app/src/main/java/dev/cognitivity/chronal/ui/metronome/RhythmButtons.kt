@@ -36,7 +36,7 @@ import dev.cognitivity.chronal.ui.metronome.windows.showRhythmSecondary
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun ColumnScope.RhythmButtons(weight: Float, navController: NavController) {
+fun RhythmButtons(navController: NavController, modifier: Modifier = Modifier) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
@@ -48,13 +48,11 @@ fun ColumnScope.RhythmButtons(weight: Float, navController: NavController) {
     val parsedRhythmSecondary = Rhythm.deserialize(ChronalApp.getInstance().settings.metronomeRhythmSecondary.value)
     val isAdvancedSecondary = simpleRhythmSecondary == SimpleRhythm(0 to 0, 0, 0)
     Row(
-        modifier = Modifier
-            .weight(weight)
-            .fillMaxWidth(),
+        modifier = modifier,
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        Box(modifier = Modifier
-            .padding(16.dp, 0.dp, 16.dp, 0.dp)
+        Box(
+            modifier = Modifier.padding(16.dp, 0.dp, 16.dp, 0.dp)
             .fillMaxWidth()
             .fillMaxHeight(0.5f)
             .weight(1f)
@@ -81,17 +79,17 @@ fun ColumnScope.RhythmButtons(weight: Float, navController: NavController) {
             animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
             label = "secondaryText"
         )
-        Box(modifier = Modifier
-            .padding(16.dp, 0.dp, 16.dp, 0.dp)
-            .fillMaxWidth()
-            .fillMaxHeight(0.5f)
-            .weight(1f)
-            .align(Alignment.CenterVertically)
-            .clip(RoundedCornerShape(16.dp))
-            .background(secondaryBackground)
-            .clickable {
-                showRhythmSecondary = true
-            }
+        Box(
+            modifier = Modifier.padding(16.dp, 0.dp, 16.dp, 0.dp)
+                .fillMaxWidth()
+                .fillMaxHeight(0.5f)
+                .weight(1f)
+                .align(Alignment.CenterVertically)
+                .clip(RoundedCornerShape(16.dp))
+                .background(secondaryBackground)
+                .clickable {
+                    showRhythmSecondary = true
+                }
         ) {
             DrawContent(parsedRhythmSecondary, simpleRhythmSecondary, isAdvancedSecondary, secondaryText)
         }
@@ -107,7 +105,7 @@ fun DrawContent(rhythm: Rhythm, simpleRhythm: SimpleRhythm, isAdvanced: Boolean,
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         val timeSignature = rhythm.measures[0].timeSig
-        Box(modifier = Modifier.fillMaxHeight(0.75f)) {
+        Box(Modifier.fillMaxHeight(0.75f)) {
             MusicFont.Number.TimeSignature(timeSignature.first, timeSignature.second, textColor)
         }
         Box(

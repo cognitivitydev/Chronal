@@ -163,99 +163,95 @@ fun BoxScope.CircularClock(primary: Boolean, trackSize: Float, trackOff: Color, 
     metronome.setPauseListener(0) { pauseListener(it) }
 
     Box(
-        modifier = Modifier.align(Alignment.Center)
-    ) {
-        Box(modifier = Modifier
-            .aspectRatio(1f)
+        modifier = Modifier.aspectRatio(1f)
             .align(Alignment.Center)
-        ) {
-            val surface = MaterialTheme.colorScheme.surface
+    ) {
+        val surface = MaterialTheme.colorScheme.surface
 
-            val trackColor = when(trackColorType) {
-                0 -> trackOff
-                1 -> trackPrimary
-                else -> trackSecondary
-            }
-            val progressColor = when(progressColorType) {
-                0 -> trackOff
-                1 -> trackPrimary
-                else -> trackSecondary
-            }
-            val majorOff = when(trackColorType) {
-                0 -> majorOffColor
-                1 -> majorPrimaryColor
-                else -> majorSecondaryColor
-            }
-            val minorOff = when(trackColorType) {
-                0 -> minorOffColor
-                1 -> minorPrimaryColor
-                else -> minorSecondaryColor
-            }
-            val majorPrimary = when(progressColorType) {
-                0 -> majorOffColor
-                1 -> majorPrimaryColor
-                else -> majorSecondaryColor
-            }
-            val minorPrimary = when(progressColorType) {
-                0 -> minorOffColor
-                1 -> minorPrimaryColor
-                else -> minorSecondaryColor
-            }
-
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                val radius = (size.minDimension / 2) - trackSize / 2
-                val center = Offset(size.width / 2, size.height / 2)
-
-                drawCircle(
-                    color = trackColor,
-                    radius = radius,
-                    center = center,
-                    style = Stroke(width = trackSize)
-                )
-
-                val arcAngle = (progress.value * 360f) - 90f
-                if(arcAngle == -90f) return@Canvas // hide outlines when not playing
-
-                drawCircle(
-                    color = surface,
-                    radius = trackSize * 1.5f,
-                    center = Offset(center.x, center.y - radius)
-                )
-                drawCircle(
-                    color = surface,
-                    radius = trackSize * 1.75f,
-                    center = Offset(
-                        center.x + radius * cos(Math.toRadians(arcAngle.toDouble())).toFloat(),
-                        center.y + radius * sin(Math.toRadians(arcAngle.toDouble())).toFloat()
-                    )
-                )
-
-                drawArc(
-                    color = progressColor,
-                    startAngle = -90f,
-                    sweepAngle = progress.value * 360f,
-                    useCenter = false,
-                    topLeft = Offset(center.x - radius, center.y - radius),
-                    size = Size(radius * 2, radius * 2),
-                    style = Stroke(width = trackSize)
-                )
-
-                drawCircle(
-                    color = progressColor,
-                    radius = trackSize / 2,
-                    center = Offset(center.x, center.y - radius)
-                )
-                drawCircle(
-                    color = progressColor,
-                    radius = trackSize / 2,
-                    center = Offset(
-                        center.x + radius * cos(Math.toRadians(arcAngle.toDouble())).toFloat(),
-                        center.y + radius * sin(Math.toRadians(arcAngle.toDouble())).toFloat()
-                    )
-                )
-            }
-            ClockBeats(progress, trackSize, intervals.filter { it.measure == currentMeasure }, majorOff, minorOff, majorPrimary, minorPrimary)
+        val trackColor = when(trackColorType) {
+            0 -> trackOff
+            1 -> trackPrimary
+            else -> trackSecondary
         }
-        TempoChanger()
+        val progressColor = when(progressColorType) {
+            0 -> trackOff
+            1 -> trackPrimary
+            else -> trackSecondary
+        }
+        val majorOff = when(trackColorType) {
+            0 -> majorOffColor
+            1 -> majorPrimaryColor
+            else -> majorSecondaryColor
+        }
+        val minorOff = when(trackColorType) {
+            0 -> minorOffColor
+            1 -> minorPrimaryColor
+            else -> minorSecondaryColor
+        }
+        val majorPrimary = when(progressColorType) {
+            0 -> majorOffColor
+            1 -> majorPrimaryColor
+            else -> majorSecondaryColor
+        }
+        val minorPrimary = when(progressColorType) {
+            0 -> minorOffColor
+            1 -> minorPrimaryColor
+            else -> minorSecondaryColor
+        }
+
+        Canvas(Modifier.fillMaxSize()) {
+            val radius = (size.minDimension / 2) - trackSize / 2
+            val center = Offset(size.width / 2, size.height / 2)
+
+            drawCircle(
+                color = trackColor,
+                radius = radius,
+                center = center,
+                style = Stroke(width = trackSize)
+            )
+
+            val arcAngle = (progress.value * 360f) - 90f
+            if(arcAngle == -90f) return@Canvas // hide outlines when not playing
+
+            drawCircle(
+                color = surface,
+                radius = trackSize * 1.5f,
+                center = Offset(center.x, center.y - radius)
+            )
+            drawCircle(
+                color = surface,
+                radius = trackSize * 1.75f,
+                center = Offset(
+                    center.x + radius * cos(Math.toRadians(arcAngle.toDouble())).toFloat(),
+                    center.y + radius * sin(Math.toRadians(arcAngle.toDouble())).toFloat()
+                )
+            )
+
+            drawArc(
+                color = progressColor,
+                startAngle = -90f,
+                sweepAngle = progress.value * 360f,
+                useCenter = false,
+                topLeft = Offset(center.x - radius, center.y - radius),
+                size = Size(radius * 2, radius * 2),
+                style = Stroke(width = trackSize)
+            )
+
+            drawCircle(
+                color = progressColor,
+                radius = trackSize / 2,
+                center = Offset(center.x, center.y - radius)
+            )
+            drawCircle(
+                color = progressColor,
+                radius = trackSize / 2,
+                center = Offset(
+                    center.x + radius * cos(Math.toRadians(arcAngle.toDouble())).toFloat(),
+                    center.y + radius * sin(Math.toRadians(arcAngle.toDouble())).toFloat()
+                )
+            )
+        }
+        ClockBeats(progress, trackSize, intervals.filter { it.measure == currentMeasure }, majorOff, minorOff, majorPrimary, minorPrimary)
     }
+    TempoChanger()
 }

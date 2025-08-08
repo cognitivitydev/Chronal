@@ -12,7 +12,15 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.requiredSizeIn
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
@@ -58,8 +66,7 @@ import dev.cognitivity.chronal.ui.metronome.windows.showTempoTapper
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun ColumnScope.PlayButton(weight: Float) {
-
+fun PlayButton(modifier: Modifier = Modifier) {
     val shapeA = remember {
         RoundedPolygon.star(9, rounding = CornerRounding(0.2f), radius = 1.8f)
     }
@@ -94,10 +101,7 @@ fun ColumnScope.PlayButton(weight: Float) {
     )
 
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .align(Alignment.CenterHorizontally)
-            .weight(weight),
+        modifier = modifier,
         contentAlignment = Alignment.Center,
     ) {
         MaterialTheme(
@@ -109,10 +113,11 @@ fun ColumnScope.PlayButton(weight: Float) {
             )
         ) {
             Box(
-                modifier = Modifier.align(Alignment.Center).offset(
-                    x = 32.dp,
-                    y = (-32).dp
-                )
+                modifier = Modifier.align(Alignment.Center)
+                    .offset(
+                        x = 32.dp,
+                        y = (-32).dp
+                    )
             ) {
                 DropdownMenu(
                     expanded = dropdownExpanded,
@@ -144,25 +149,22 @@ fun ColumnScope.PlayButton(weight: Float) {
             }
         }
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(Modifier.fillMaxSize()) {
             Row(
                 modifier = Modifier.align(Alignment.Center)
             ) {
                 Spacer(
-                    modifier = Modifier
-                        .weight(0.3f)
+                    modifier = Modifier.weight(0.3f)
                         .fillMaxHeight()
                 )
 
                 Spacer(
-                    modifier = Modifier
-                        .weight(0.1f)
+                    modifier = Modifier.weight(0.1f)
                         .fillMaxHeight()
                 )
             }
             Box(
-                modifier = Modifier
-                    .size(120.dp, 56.dp)
+                modifier = Modifier.size(120.dp, 56.dp)
                     .offset(x = (-60).dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.surfaceContainer)
@@ -174,16 +176,14 @@ fun ColumnScope.PlayButton(weight: Float) {
                 Icon(
                     painter = painterResource(id = R.drawable.outline_timer_24),
                     contentDescription = context.getString(R.string.metronome_option_tap_tempo),
-                    modifier = Modifier
-                        .size(32.dp)
+                    modifier = Modifier.size(32.dp)
                         .offset(x = (12).dp)
                         .align(Alignment.CenterStart),
                     tint = MaterialTheme.colorScheme.onSurface
                 )
             }
             Box(
-                modifier = Modifier
-                    .size(120.dp, 56.dp)
+                modifier = Modifier.size(120.dp, 56.dp)
                     .offset(x = 60.dp)
                     .clip(CircleShape)
                     .background(
@@ -202,16 +202,14 @@ fun ColumnScope.PlayButton(weight: Float) {
                 Icon(
                     painter = painterResource(id = R.drawable.baseline_more_horiz_24),
                     contentDescription = context.getString(R.string.generic_more_options),
-                    modifier = Modifier
-                        .size(32.dp)
+                    modifier = Modifier.size(32.dp)
                         .offset(x = (-12).dp)
                         .align(Alignment.CenterEnd),
                     tint = MaterialTheme.colorScheme.onSurface
                 )
             }
             Box(
-                modifier = Modifier
-                    .aspectRatio(1f)
+                modifier = Modifier.aspectRatio(1f)
                     .requiredSizeIn(maxWidth = 96.dp, maxHeight = 96.dp)
                     .align(Alignment.Center)
                     .clip(
@@ -247,7 +245,8 @@ fun ColumnScope.PlayButton(weight: Float) {
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun PlayPauseIcon(paused: Boolean, playColor: Color = MaterialTheme.colorScheme.onTertiary, pauseColor: Color = MaterialTheme.colorScheme.onSurfaceVariant, modifier: Modifier = Modifier) {
+fun PlayPauseIcon(paused: Boolean, playColor: Color = MaterialTheme.colorScheme.onTertiary, pauseColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+                  modifier: Modifier = Modifier) {
     val animatedColor by animateColorAsState(
         targetValue = if (paused) pauseColor else playColor,
         animationSpec = MotionScheme.expressive().defaultEffectsSpec(),

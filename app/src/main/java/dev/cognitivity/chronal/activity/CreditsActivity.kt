@@ -111,7 +111,7 @@ class CreditsActivity : ComponentActivity() {
                             ) {
                                 Text(getString(R.string.generic_website))
                             }
-                            Spacer(modifier = Modifier.width(16.dp))
+                            Spacer(Modifier.width(16.dp))
                             TextButton(
                                 onClick = {
                                     val intent = Intent(Intent.ACTION_VIEW, "https://stash.reaper.fm/v/40824/Metronomes.zip".toUri())

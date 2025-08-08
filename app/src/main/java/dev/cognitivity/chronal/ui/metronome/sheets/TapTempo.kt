@@ -59,14 +59,12 @@ fun TapTempo() {
                 text = context.getString(R.string.metronome_option_tap_tempo),
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier
-                    .padding(start = 16.dp)
+                modifier = Modifier.padding(start = 16.dp)
                     .weight(1f)
             )
         }
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
                 .padding(vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -78,8 +76,7 @@ fun TapTempo() {
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    modifier = Modifier
-                        .offset(y = (-8).dp)
+                    modifier = Modifier.offset(y = (-8).dp)
                         .align(Alignment.Bottom),
                     text = context.getString(R.string.metronome_bpm),
                     fontSize = 48.sp,
@@ -88,15 +85,13 @@ fun TapTempo() {
             }
             LinearProgressIndicator(
                 progress = { progress.value },
-                modifier = Modifier
-                    .fillMaxWidth(0.8f)
+                modifier = Modifier.fillMaxWidth(0.8f)
                     .padding(8.dp),
             )
         }
         val scope = rememberCoroutineScope()
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
                 .padding(32.dp)
                 .clip(RoundedCornerShape(24.dp))
                 .background(MaterialTheme.colorScheme.surfaceContainerHigh)
@@ -174,8 +169,7 @@ fun TapTempo() {
                 painter = painterResource(id = R.drawable.outline_touch_app_24),
                 contentDescription = context.getString(R.string.metronome_option_tap_tempo),
                 tint = MaterialTheme.colorScheme.outline,
-                modifier = Modifier
-                    .padding(16.dp)
+                modifier = Modifier.padding(16.dp)
                     .size(64.dp)
             )
         }

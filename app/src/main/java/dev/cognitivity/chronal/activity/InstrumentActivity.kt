@@ -94,8 +94,7 @@ class InstrumentActivity : ComponentActivity() {
         }
 
         Scaffold(
-            modifier = Modifier
-                .fillMaxSize()
+            modifier = Modifier.fillMaxSize()
                 .nestedScroll(scrollBehavior.nestedScrollConnection),
             topBar = {
                 LargeTopAppBar(
@@ -255,7 +254,7 @@ class InstrumentActivity : ComponentActivity() {
                                 modifier = Modifier.fillMaxWidth(),
                                 singleLine = true
                             )
-                            Spacer(modifier = Modifier.height(12.dp))
+                            Spacer(Modifier.height(12.dp))
                             ExposedDropdownMenuBox(
                                 expanded = expanded,
                                 onExpandedChange = { expanded = it }
@@ -280,8 +279,7 @@ class InstrumentActivity : ComponentActivity() {
                                         }
                                     },
                                     isError = keyError,
-                                    modifier = Modifier
-                                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
+                                    modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
                                         .fillMaxWidth(),
                                     singleLine = true
                                 )
@@ -336,8 +334,7 @@ class InstrumentActivity : ComponentActivity() {
                                 singleLine = true
                             )
                             WavyHorizontalLine(
-                                modifier = Modifier
-                                    .padding(8.dp, 16.dp)
+                                modifier = Modifier.padding(8.dp, 16.dp)
                                     .fillMaxWidth()
                                     .align(Alignment.CenterHorizontally)
                             )
@@ -355,8 +352,7 @@ class InstrumentActivity : ComponentActivity() {
             }
 
             LazyColumn(
-                modifier = Modifier
-                    .padding(innerPadding)
+                modifier = Modifier.padding(innerPadding)
                     .fillMaxSize()
             ) {
                 for ((_, value) in parsed.entrySet()) {
@@ -369,8 +365,7 @@ class InstrumentActivity : ComponentActivity() {
                             text = name,
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier
-                                .fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth()
                                 .padding(20.dp, 8.dp)
                         )
                     }
@@ -481,8 +476,7 @@ class InstrumentActivity : ComponentActivity() {
                             text = name,
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier
-                                .fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth()
                                 .padding(20.dp, 8.dp)
                         )
 
@@ -534,8 +528,7 @@ class InstrumentActivity : ComponentActivity() {
         val isSelected = selected.name == name && selected.transposition == keyToSemitones(key, octave)
 
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
                 .clip(RoundedCornerShape(24.dp))
                 .clickable {
                     Toast.makeText(context, getString(R.string.instrument_selected, name), Toast.LENGTH_SHORT).show()
@@ -562,8 +555,7 @@ class InstrumentActivity : ComponentActivity() {
                 Icon(
                     imageVector = Icons.Default.Check,
                     contentDescription = getString(R.string.generic_selected),
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
+                    modifier = Modifier.align(Alignment.CenterVertically)
                         .padding(8.dp),
                     tint = MaterialTheme.colorScheme.surfaceTint
                 )

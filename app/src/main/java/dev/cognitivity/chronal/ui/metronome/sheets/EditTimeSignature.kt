@@ -47,12 +47,11 @@ fun EditTimeSignature(window: Window, primary: Boolean, expanded: Boolean) {
     var value by remember { mutableStateOf(setting.value) }
     if(expanded) {
         Row {
-            Box(modifier = Modifier.align(Alignment.CenterVertically)) {
+            Box(Modifier.align(Alignment.CenterVertically)) {
                 ClockPreview(primary, value)
             }
             Column(
-                modifier = Modifier
-                    .weight(1f)
+                modifier = Modifier.weight(1f)
                     .align(Alignment.CenterVertically)
                     .padding(horizontal = 16.dp)
             ) {
@@ -65,13 +64,11 @@ fun EditTimeSignature(window: Window, primary: Boolean, expanded: Boolean) {
                 }
             }
             WavyVerticalLine(
-                modifier = Modifier
-                    .fillMaxHeight()
+                modifier = Modifier.fillMaxHeight()
                     .padding(8.dp, 32.dp)
             )
             Column(
-                modifier = Modifier
-                    .weight(1f)
+                modifier = Modifier.weight(1f)
                     .align(Alignment.CenterVertically)
                     .padding(horizontal = 16.dp)
             ) {
@@ -86,9 +83,10 @@ fun EditTimeSignature(window: Window, primary: Boolean, expanded: Boolean) {
         }
     } else {
         Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-            Box(modifier = Modifier
-                .padding(bottom = 32.dp)
-                .align(Alignment.CenterHorizontally)) {
+            Box(
+                modifier = Modifier.padding(bottom = 32.dp)
+                    .align(Alignment.CenterHorizontally)
+            ) {
                 ClockPreview(primary, value)
             }
             EditBeatCount(primary, value) {
@@ -99,8 +97,7 @@ fun EditTimeSignature(window: Window, primary: Boolean, expanded: Boolean) {
                 }
             }
             WavyHorizontalLine(
-                modifier = Modifier
-                    .fillMaxWidth()
+                modifier = Modifier.fillMaxWidth()
                     .padding(32.dp, 16.dp)
             )
             EditBeatType(primary, value) {
@@ -120,8 +117,7 @@ fun ColumnScope.EditBeatCount(primary: Boolean, value: SimpleRhythm, onUpdate: (
         text = context.getString(R.string.metronome_edit_rhythm_beat_count),
         style = MaterialTheme.typography.headlineSmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier
-            .align(Alignment.CenterHorizontally)
+        modifier = Modifier.align(Alignment.CenterHorizontally)
             .padding(0.dp, 0.dp, 0.dp, 16.dp)
     )
     LazyRow(
@@ -136,8 +132,7 @@ fun ColumnScope.EditBeatCount(primary: Boolean, value: SimpleRhythm, onUpdate: (
         modifier = Modifier.align(Alignment.CenterHorizontally)
     ) {
         Box(
-            modifier = Modifier
-                .padding(8.dp)
+            modifier = Modifier.padding(8.dp)
                 .width(64.dp)
                 .height(40.dp)
                 .clip(RoundedCornerShape(100))
@@ -152,14 +147,12 @@ fun ColumnScope.EditBeatCount(primary: Boolean, value: SimpleRhythm, onUpdate: (
                 painter = painterResource(R.drawable.baseline_remove_24),
                 contentDescription = context.getString(R.string.generic_subtract),
                 tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                modifier = Modifier
-                    .padding(16.dp, 8.dp)
+                modifier = Modifier.padding(16.dp, 8.dp)
                     .align(Alignment.Center)
             )
         }
         Box(
-            modifier = Modifier
-                .size(40.dp)
+            modifier = Modifier.size(40.dp)
                 .align(Alignment.CenterVertically)
                 .clip(RoundedCornerShape(100))
                 .background(if (primary) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.primaryContainer)
@@ -173,8 +166,7 @@ fun ColumnScope.EditBeatCount(primary: Boolean, value: SimpleRhythm, onUpdate: (
             )
         }
         Box(
-            modifier = Modifier
-                .padding(8.dp)
+            modifier = Modifier.padding(8.dp)
                 .width(64.dp)
                 .height(40.dp)
                 .clip(RoundedCornerShape(100))
@@ -187,8 +179,7 @@ fun ColumnScope.EditBeatCount(primary: Boolean, value: SimpleRhythm, onUpdate: (
                 imageVector = Icons.Filled.Add,
                 contentDescription = context.getString(R.string.generic_add),
                 tint = if(primary) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onTertiary,
-                modifier = Modifier
-                    .padding(16.dp, 8.dp)
+                modifier = Modifier.padding(16.dp, 8.dp)
                     .align(Alignment.Center)
             )
         }
@@ -201,14 +192,14 @@ fun ColumnScope.EditBeatType(primary: Boolean, value: SimpleRhythm, onUpdate: (I
         text = "Beat Type",
         style = MaterialTheme.typography.headlineSmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier
-            .align(Alignment.CenterHorizontally)
+        modifier = Modifier.align(Alignment.CenterHorizontally)
             .padding(0.dp, 0.dp, 0.dp, 16.dp)
     )
 
-    Row(modifier = Modifier
-        .align(Alignment.CenterHorizontally)
-        .padding(horizontal = 16.dp)) {
+    Row(
+        modifier = Modifier.align(Alignment.CenterHorizontally)
+            .padding(horizontal = 16.dp)
+    ) {
         for(i in 0..1) {
             val isSelected = value.timeSignature.second == 2.0.pow(i.toDouble()).toInt()
             val color = if (isSelected) {
@@ -220,8 +211,7 @@ fun ColumnScope.EditBeatType(primary: Boolean, value: SimpleRhythm, onUpdate: (I
                 else MaterialTheme.colorScheme.onTertiaryContainer
             } else MaterialTheme.colorScheme.onSecondaryContainer
             Box(
-                modifier = Modifier
-                    .padding(8.dp)
+                modifier = Modifier.padding(8.dp)
                     .weight(1f)
                     .background(color, RoundedCornerShape(8.dp))
                     .clickable {
@@ -235,16 +225,16 @@ fun ColumnScope.EditBeatType(primary: Boolean, value: SimpleRhythm, onUpdate: (I
                         fontFamily = FontFamily(Font(R.font.bravuratext)),
                         fontSize = 64.dp.toSp()
                     ),
-                    modifier = Modifier
-                        .offset((-6).dp, 24.dp)
+                    modifier = Modifier.offset((-6).dp, 24.dp)
                         .align(Alignment.Center)
                 )
             }
         }
     }
-    Row(modifier = Modifier
-        .align(Alignment.CenterHorizontally)
-        .padding(horizontal = 16.dp)) {
+    Row(
+        modifier = Modifier.align(Alignment.CenterHorizontally)
+            .padding(horizontal = 16.dp)
+    ) {
         for(i in 2..4) {
             val isSelected = value.timeSignature.second == 2.0.pow(i.toDouble()).toInt()
             val color = if (isSelected) {
@@ -256,8 +246,7 @@ fun ColumnScope.EditBeatType(primary: Boolean, value: SimpleRhythm, onUpdate: (I
                 else MaterialTheme.colorScheme.onTertiaryContainer
             } else MaterialTheme.colorScheme.onSecondaryContainer
             Box(
-                modifier = Modifier
-                    .padding(8.dp)
+                modifier = Modifier.padding(8.dp)
                     .weight(1f)
                     .background(color, RoundedCornerShape(8.dp))
                     .clickable {
@@ -271,8 +260,7 @@ fun ColumnScope.EditBeatType(primary: Boolean, value: SimpleRhythm, onUpdate: (I
                         fontFamily = FontFamily(Font(R.font.bravuratext)),
                         fontSize = 64.dp.toSp()
                     ),
-                    modifier = Modifier
-                        .offset((-6).dp, 24.dp)
+                    modifier = Modifier.offset((-6).dp, 24.dp)
                         .align(Alignment.Center)
                 )
             }
@@ -284,8 +272,7 @@ fun ColumnScope.EditBeatType(primary: Boolean, value: SimpleRhythm, onUpdate: (I
 @Composable
 fun BeatShape(beat: Int) {
     Box(
-        modifier = Modifier
-            .padding(8.dp)
+        modifier = Modifier.padding(8.dp)
             .size(40.dp)
     ) {
         val color = MaterialTheme.colorScheme.onSurface
@@ -296,8 +283,7 @@ fun BeatShape(beat: Int) {
         }
         if(shape == null) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
+                modifier = Modifier.fillMaxSize()
                     .background(
                         color,
                         RoundedPolygon(numVertices = beat, rounding = CornerRounding(radius = .2f)).normalized()
@@ -313,8 +299,7 @@ fun BeatShape(beat: Int) {
             return
         }
         Box(
-            modifier = Modifier
-                .fillMaxSize()
+            modifier = Modifier.fillMaxSize()
                 .background(color, shape)
         ) {
             Text(

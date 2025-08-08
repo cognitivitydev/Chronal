@@ -115,12 +115,12 @@ class EditSounds: ComponentActivity() {
                         .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom)),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(Modifier.width(8.dp))
                     Text("Selected:",
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    Spacer(modifier = Modifier.weight(1f))
+                    Spacer(Modifier.weight(1f))
 
                     val highSelection = sounds[selectedSound.first]
                     val highName = getString(highSelection.first)
@@ -142,10 +142,10 @@ class EditSounds: ComponentActivity() {
                             painter = painterResource(R.drawable.outline_volume_up_24),
                             contentDescription = getString(R.string.edit_sounds_play_high, highName)
                         )
-                        Spacer(modifier = Modifier.width(ButtonDefaults.iconSpacingFor(ButtonDefaults.MinHeight)))
+                        Spacer(Modifier.width(ButtonDefaults.iconSpacingFor(ButtonDefaults.MinHeight)))
                         Text(getString(R.string.edit_sounds_high, highName))
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(Modifier.width(8.dp))
                     val lowSelection = sounds[selectedSound.second]
                     val lowName = getString(lowSelection.first)
                     FilledTonalButton(
@@ -166,7 +166,7 @@ class EditSounds: ComponentActivity() {
                             painter = painterResource(R.drawable.outline_volume_up_24),
                             contentDescription = getString(R.string.edit_sounds_play_low, lowName),
                         )
-                        Spacer(modifier = Modifier.width(ButtonDefaults.iconSpacingFor(ButtonDefaults.MinHeight)))
+                        Spacer(Modifier.width(ButtonDefaults.iconSpacingFor(ButtonDefaults.MinHeight)))
                         Text(getString(R.string.edit_sounds_low, lowName))
                     }
                 }
