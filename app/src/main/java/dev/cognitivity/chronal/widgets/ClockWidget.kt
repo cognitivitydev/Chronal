@@ -47,7 +47,7 @@ class ClockWidget : GlanceAppWidget() {
         provideContent {
             GlanceTheme(
                 colors = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) GlanceTheme.colors
-                else AquaGlanceTheme()
+                    else AquaGlanceTheme()
             ) {
                 WidgetContent(presetJson, context)
             }

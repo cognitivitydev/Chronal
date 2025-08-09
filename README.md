@@ -1,5 +1,7 @@
 <img src="assets/logo-header.png" alt="Chronal logo">
 
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/M4M41JEDWA)
+
 # Chronal
 Chronal is a metronome and tuner app for Android made for beginner and advanced musicians. 
 

@@ -20,6 +20,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.ui.metronome.windows.metronome
@@ -104,25 +105,12 @@ fun BoxScope.TempoChanger() {
             )
         }
 
-        val resId = when (metronome.bpm) {
-            in 1  ..24  -> R.string.metronome_tempo_larghissimo
-            in 25 ..39  -> R.string.metronome_tempo_grave
-            in 40 ..49  -> R.string.metronome_tempo_lento
-            in 50 ..59  -> R.string.metronome_tempo_largo
-            in 60 ..66  -> R.string.metronome_tempo_larghetto
-            in 67 ..76  -> R.string.metronome_tempo_adagio
-            in 77 ..108 -> R.string.metronome_tempo_andante
-            in 109..120 -> R.string.metronome_tempo_moderato
-            in 121..132 -> R.string.metronome_tempo_allegretto
-            in 133..143 -> R.string.metronome_tempo_allegro
-            in 144..159 -> R.string.metronome_tempo_vivace
-            in 160..199 -> R.string.metronome_tempo_presto
-            in 200..500 -> R.string.metronome_tempo_prestissimo
-            else -> R.string.metronome_tempo_unknown
-        }
+        val markings = ChronalApp.getInstance().settings.tempoMarkings.value.reversed()
+        val marking = markings.firstOrNull { it.range.contains(metronome.bpm) }
+        val string = marking?.name ?: context.getString(R.string.metronome_tempo_unknown)
 
         Text(
-            text = context.getString(resId),
+            text = string,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.tertiary,
             fontStyle = FontStyle.Italic,

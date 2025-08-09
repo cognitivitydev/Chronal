@@ -22,6 +22,7 @@ enum class SettingKey(val category: Int, val settingName: Int) {
     SHOW_SUBDIVISIONS(R.string.setting_category_metronome, R.string.setting_name_show_subdivisions),
     HIGH_CONTRAST(R.string.setting_category_metronome, R.string.setting_name_high_contrast),
     NO_ANIMATION(R.string.setting_category_metronome, R.string.setting_name_no_animation),
+    TEMPO_MARKINGS(R.string.setting_category_metronome, R.string.setting_name_tempo_markings),
 
     TUNER_FREQUENCY(R.string.setting_category_tuner, R.string.setting_name_tuner_frequency),
     SHOW_OCTAVE(R.string.setting_category_tuner, R.string.setting_name_show_octave),
@@ -107,6 +108,26 @@ class SettingsManager(val context: Context) {
         SettingKey.NO_ANIMATION,
         hint = R.string.setting_description_no_animation,
         default = false
+    )
+    val tempoMarkings = Setting(
+        SettingKey.TEMPO_MARKINGS,
+        hint = R.string.setting_description_tempo_markings,
+        menu = SettingMenu.Launch("Markings"),
+        default = mutableListOf(
+            TempoMarking("Larghissimo", 1..24),
+            TempoMarking("Grave", 25..39),
+            TempoMarking("Lento", 40..49),
+            TempoMarking("Largo", 50..59),
+            TempoMarking("Larghetto", 60..66),
+            TempoMarking("Adagio", 67..76),
+            TempoMarking("Andante", 77..108),
+            TempoMarking("Moderato", 109..120),
+            TempoMarking("Allegretto", 121..132),
+            TempoMarking("Allegro", 133..143),
+            TempoMarking("Vivace", 144..159),
+            TempoMarking("Presto", 160..199),
+            TempoMarking("Prestissimo", 200..500)
+        )
     )
 
     /******* TUNER *******/
@@ -238,6 +259,7 @@ class SettingsManager(val context: Context) {
         SettingKey.SHOW_SUBDIVISIONS to showSubdivisions,
         SettingKey.HIGH_CONTRAST to highContrast,
         SettingKey.NO_ANIMATION to noAnimation,
+        SettingKey.TEMPO_MARKINGS to tempoMarkings,
 
         /******* TUNER *******/
         SettingKey.TUNER_FREQUENCY to tunerFrequency,
@@ -276,6 +298,15 @@ class SettingsManager(val context: Context) {
 
             val showSubdivisionsKey = booleanPreferencesKey(showSubdivisions.key.toString())
             settings[showSubdivisionsKey] = showSubdivisions.value
+
+            val highContrastKey = booleanPreferencesKey(highContrast.key.toString())
+            settings[highContrastKey] = highContrast.value
+
+            val noAnimationKey = booleanPreferencesKey(noAnimation.key.toString())
+            settings[noAnimationKey] = noAnimation.value
+
+            val tempoMarkingsKey = stringPreferencesKey(tempoMarkings.key.toString())
+            settings[tempoMarkingsKey] = Gson().toJson(tempoMarkings.value.map { it.toJson() })
 
             /******* TUNER *******/
             val tunerFrequencyKey = intPreferencesKey(tunerFrequency.key.toString())
@@ -345,6 +376,18 @@ class SettingsManager(val context: Context) {
 
         showSubdivisions.value = prefs[booleanPreferencesKey(showSubdivisions.key.toString())]
             ?: showSubdivisions.default
+
+        highContrast.value = prefs[booleanPreferencesKey(highContrast.key.toString())]
+            ?: highContrast.default
+
+        noAnimation.value = prefs[booleanPreferencesKey(noAnimation.key.toString())]
+            ?: noAnimation.default
+
+        tempoMarkings.value = prefs[stringPreferencesKey(tempoMarkings.key.toString())]
+            ?.let { json ->
+                val jsonArray = Gson().fromJson(json, JsonArray::class.java)
+                jsonArray.map { item -> TempoMarking.fromJson(item.asJsonObject) }.toMutableList()
+            } ?: tempoMarkings.default
 
         /******* TUNER *******/
         tunerFrequency.value = prefs[intPreferencesKey(tunerFrequency.key.toString())]
@@ -581,6 +624,32 @@ data class ColorScheme(
             addProperty("color", color.ordinal)
             addProperty("theme", theme.ordinal)
             addProperty("contrast", contrast.ordinal)
+        }
+    }
+}
+
+data class TempoMarking(
+    val name: String,
+    val range: IntRange,
+) {
+    companion object {
+        fun fromJson(jsonObject: JsonObject): TempoMarking {
+            return TempoMarking(
+                name = jsonObject.get("name").asString,
+                range = IntRange(
+                    jsonObject.getAsJsonObject("range").get("min").asInt,
+                    jsonObject.getAsJsonObject("range").get("max").asInt
+                )
+            )
+        }
+    }
+    fun toJson(): JsonObject {
+        return JsonObject().apply {
+            addProperty("name", name)
+            add("range", JsonObject().apply {
+                addProperty("min", range.first)
+                addProperty("max", range.last)
+            })
         }
     }
 }
