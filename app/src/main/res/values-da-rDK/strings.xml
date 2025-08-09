@@ -6,8 +6,10 @@
     <string name="generic_cancel">Cancel</string>
     <string name="generic_close">Close</string>
     <string name="generic_confirm">Confirm</string>
+    <string name="generic_delete">Delete</string>
     <string name="generic_discard">Discard</string>
     <string name="generic_download">Download</string>
+    <string name="generic_edit">Edit</string>
     <string name="generic_error">Error</string>
     <string name="generic_exit">Exit</string>
     <string name="generic_exit_discard">Exit without saving</string>
@@ -198,6 +200,7 @@
     <string name="setting_name_show_subdivisions">Show low emphasis</string>
     <string name="setting_name_high_contrast">Fullscreen high contrast</string>
     <string name="setting_name_no_animation">No fullscreen animation</string>
+    <string name="setting_name_tempo_markings">Tempo markings</string>
     <string name="setting_name_tuner_frequency">A4 Frequency</string>
     <string name="setting_name_show_octave">Show octave</string>
     <string name="setting_name_transpose_notes">Transpose notes</string>
@@ -223,6 +226,7 @@
     <string name="setting_description_show_subdivisions">Marks the location of low emphasis beats on the metronome.</string>
     <string name="setting_description_high_contrast">Enables high contrast mode for the fullscreen metronome.</string>
     <string name="setting_description_no_animation">Disables the fullscreen animation when using fullscreen mode. May be hard to watch at higher tempos, but better at a distance.</string>
+    <string name="setting_description_tempo_markings">Customize tempo markings for BPM ranges.</string>
     <string name="setting_description_tuner_frequency">Changes the frequency of A4 for the tuner.</string>
     <string name="setting_description_show_octave">Shows the octave of the current played note (such as \"A4\").</string>
     <string name="setting_description_transpose_notes">Shows the transposed note for your primary instrument in addition to concert pitch.</string>
@@ -319,7 +323,6 @@
     <string name="presets_deleted">%s has been deleted.</string>
     <string name="presets_delete_confirm">Are you sure you want to delete \"%s\"?</string>
     <string name="presets_disabled">Secondary disabled</string>
-    <string name="presets_edit">Edit</string>
     <string name="presets_use">Use preset</string>
     <string name="presets_set_current">Set to current rhythm</string>
     <string name="presets_rename">Rename</string>
@@ -327,6 +330,20 @@
     <string name="presets_rhythm_primary">Primary rhythm</string>
     <string name="presets_rhythm_secondary">Secondary rhythm</string>
     <string name="presets_widget_create">Create widget</string>
+    <string name="tempo_markings_title">Set tempo markers</string>
+    <string name="tempo_marking_range">"%d–%d BPM"</string>
+    <string name="tempo_markings_add_title">Add tempo marking</string>
+    <string name="tempo_markings_edit_title">Edit tempo marking</string>
+    <string name="tempo_markings_add_name">Name</string>
+    <string name="tempo_markings_add_name_error">Marking name must not be empty.</string>
+    <string name="tempo_markings_add_min">Minimum tempo</string>
+    <string name="tempo_markings_add_max">Maximum tempo</string>
+    <string name="tempo_markings_add_error_invalid">Value must be a valid number.</string>
+    <string name="tempo_markings_add_error_low">Value must be at least 1 BPM.</string>
+    <string name="tempo_markings_add_error_min">Maximum value must be greater than or equal to %d.</string>
+    <string name="tempo_markings_add_error_high">Value must be at most 500 BPM.</string>
+    <string name="tempo_markings_reset_title">Reset to default</string>
+    <string name="tempo_markings_reset_text">Are you sure you want to reset all tempo markings to their default values? This cannot be undone.</string>
     <string name="sound_click">Click</string>
     <string name="sound_sine">Sine</string>
     <string name="sound_square">Square</string>
@@ -348,5 +365,5 @@
     <string name="widget_tuner_start">Tap to start/stop</string>
     <string name="widget_tuner_graph_unavailable">Graph unavailable</string>
     <string name="widget_tuner_notification_title">Tuner active</string>
-    <string name="widget_tuner_notification_text">Tuner is </string>
+    <string name="widget_tuner_notification_text">The tuner is currently running in the background.</string>
 </resources>
