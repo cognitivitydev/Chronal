@@ -17,6 +17,7 @@ captures/
 .cxx/
 *.apk
 output.json
+app/release/
 
 # IntelliJ
 *.iml

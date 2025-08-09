@@ -14,7 +14,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -127,15 +126,10 @@ class PresetActivity : ComponentActivity() {
                     .padding(innerPadding),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(
-                    items = presets,
-                    key = { it.timestamp }
-                ) { preset ->
-                    val index = presets.indexOf(preset)
+                items(presets.size) { i ->
+                    var preset = presets[i]
 
                     var showDialog by remember { mutableStateOf(false) }
-
-                    var preset by remember { mutableStateOf(presets[index]) }
 
                     Row(
                         modifier = Modifier.fillMaxSize()
@@ -160,7 +154,7 @@ class PresetActivity : ComponentActivity() {
                         }
                         Icon(
                             imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
-                            contentDescription = getString(R.string.presets_edit),
+                            contentDescription = getString(R.string.generic_edit),
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
@@ -206,7 +200,7 @@ class PresetActivity : ComponentActivity() {
                                         onDelete = { deleteDialog = it },
                                         onUpdate = { newPreset ->
                                             preset = newPreset
-                                            presets[index] = newPreset
+                                            presets[i] = newPreset
                                             setting.value = presets.toMutableList()
                                             scope.launch {
                                                 settings.save()
@@ -233,7 +227,7 @@ class PresetActivity : ComponentActivity() {
                                         TextButton(
                                             onClick = {
                                                 preset = preset.copy(name = newName)
-                                                presets[index] = preset
+                                                presets[i] = preset
                                                 setting.value = presets
                                                 renameDialog = false
                                                 scope.launch {
@@ -261,7 +255,7 @@ class PresetActivity : ComponentActivity() {
                                     confirmButton = {
                                         TextButton(
                                             onClick = {
-                                                presets.removeAt(index)
+                                                presets.removeAt(i)
                                                 setting.value = presets
                                                 deleteDialog = false
                                                 showDialog = false

@@ -2,6 +2,7 @@ package dev.cognitivity.chronal.ui.settings.windows
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.compose.foundation.Indication
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
@@ -43,6 +44,7 @@ import dev.cognitivity.chronal.activity.HelpActivity
 import dev.cognitivity.chronal.activity.InstrumentActivity
 import dev.cognitivity.chronal.activity.LatencyActivity
 import dev.cognitivity.chronal.activity.MainActivity
+import dev.cognitivity.chronal.activity.TempoMarkingsActivity
 import dev.cognitivity.chronal.ui.settings.ExpandableButtonRow
 import dev.cognitivity.chronal.ui.settings.ExpandableOption
 import dev.cognitivity.chronal.ui.settings.ExpandableSlider
@@ -327,6 +329,14 @@ fun DrawSetting(
                                 context.startActivity(
                                     Intent(context, InstrumentActivity::class.java)
                                 )
+                            }
+                            "Markings" -> {
+                                context.startActivity(
+                                    Intent(context, TempoMarkingsActivity::class.java)
+                                )
+                            }
+                            else -> {
+                                Log.w("SettingsUI", "Unknown menu type: ${setting.menu.id}")
                             }
                         }
                     }
