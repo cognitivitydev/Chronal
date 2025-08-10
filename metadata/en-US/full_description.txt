@@ -1,0 +1,20 @@
+<strong>Features:</strong>
+
+<u>Metronome</u>
+<ul>
+<li>Beat visualization</li>
+<li>Two synchronized metronomes for polyrhythms</li>
+<li>Conductor mode with metronome and tuner</li>
+<li>Notation editor for creating custom rhythms</li>
+<li>Fullscreen mode for easy peripheral viewing</li>
+<li>Play audio files with custom tempos</li>
+</ul>
+
+<u>Tuner</u>
+<ul>
+<li>Transpose to any instrument</li>
+<li>Custom tuning to any frequency</li>
+<li>Tuner graph</li>
+<li>Real-time BPM detection from microphone</li>
+<li>A4 reference tone</li>
+</ul>
