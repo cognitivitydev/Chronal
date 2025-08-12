@@ -14,22 +14,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.MusicFont
-import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.SimpleRhythm
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
-import dev.cognitivity.chronal.toSp
 import dev.cognitivity.chronal.ui.metronome.windows.secondaryEnabled
 import dev.cognitivity.chronal.ui.metronome.windows.showRhythmPrimary
 import dev.cognitivity.chronal.ui.metronome.windows.showRhythmSecondary
@@ -98,7 +90,6 @@ fun RhythmButtons(navController: NavController, modifier: Modifier = Modifier) {
 
 @Composable
 fun DrawContent(rhythm: Rhythm, simpleRhythm: SimpleRhythm, isAdvanced: Boolean, textColor: Color) {
-    val ltr = LocalLayoutDirection.current == LayoutDirection.Ltr
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -117,18 +108,12 @@ fun DrawContent(rhythm: Rhythm, simpleRhythm: SimpleRhythm, isAdvanced: Boolean,
             val isTuplet = (subdivision and (subdivision - 1)) != 0
             val noteValue = if(!isTuplet) subdivision else (subdivision / (3f / 2f)).toInt()
             val char = MusicFont.Notation.convert(noteValue, false)
-            val offset = MusicFont.Notation.entries.find { it.char == char }?.offset ?: Offset(0f, 0f)
 
-            Text(
-                text = char.toString(),
+            MusicFont.Notation.NoteCentered(
+                note = MusicFont.Notation.entries.find { it.char == char } ?: MusicFont.Notation.N_QUARTER,
                 color = textColor,
-                style = TextStyle(
-                    fontFamily = FontFamily(Font(R.font.bravuratext)),
-                    fontSize = 64.dp.toSp()
-                ),
+                size = 52.dp,
                 modifier = Modifier.align(Alignment.Center)
-                    .offset(64.dp * offset.x * (if(ltr) 1 else -1), 64.dp * offset.y)
-                    .offset(0.dp, if(isTuplet) 8.dp else 0.dp)
             )
             if(isTuplet) {
                 Row(

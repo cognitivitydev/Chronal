@@ -1,14 +1,7 @@
 package dev.cognitivity.chronal
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
+import android.os.Build
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +14,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -87,7 +81,9 @@ class MusicFont {
                     ) {
                         glyphs.forEach {
                             Text(it.toString(), style = textStyle, color = color,
-                                modifier = Modifier.padding(horizontal = width/1.75f)
+                                modifier = Modifier.padding(horizontal = width/1.75f),
+                                maxLines = 1,
+                                overflow = TextOverflow.Visible
                             )
                         }
                     }
@@ -129,7 +125,10 @@ class MusicFont {
                             horizontalArrangement = Arrangement.spacedBy(width),
                         ) {
                             numeratorGlyphs.forEach {
-                                Text(it.toString(), style = textStyle, color = color)
+                                Text(it.toString(), style = textStyle, color = color,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Visible
+                                )
                             }
                         }
 
@@ -138,7 +137,10 @@ class MusicFont {
                             modifier = Modifier.offset(y = fontSize.toDp() / 2.25f + lineSpacing)
                         ) {
                             denominatorGlyphs.forEach {
-                                Text(it.toString(), style = textStyle, color = color)
+                                Text(it.toString(), style = textStyle, color = color,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Visible
+                                )
                             }
                         }
                     }
@@ -146,32 +148,32 @@ class MusicFont {
             }
         }
     }
-    enum class Notation(val char: Char, val offset: Offset = Offset(0f, 0f)) {
+    enum class Notation(val char: Char, val offset: Offset = Offset(0f, 0f), val displayOffset: Offset = Offset(0f, 0f)) {
         DOT('\uE1E7'),
 
         N_WHOLE('\uE1D2', Offset(0f, 0.1f)),
-        N_HALF('\uE1D3', Offset(0f, 0.4f)),
-        N_QUARTER('\uE1D5', Offset(0f, 0.4f)),
-        N_EIGHTH('\uE1D7', Offset(0.08f, 0.4f)),
-        N_16TH('\uE1D9', Offset(0.08f, 0.4f)),
-        N_32ND('\uE1DB', Offset(0.08f, 0.45f)),
-        N_64TH('\uE1DD', Offset(0.08f, 0.5f)),
-        N_128TH('\uE1DF', Offset(0.08f, 0.6f)),
-        N_256TH('\uE1E1', Offset(0.08f, 0.67f)),
-        N_512TH('\uE1E3', Offset(0.08f, 0.75f)),
-        N_1024TH('\uE1E5', Offset(0.08f, 0.83f)),
+        N_HALF('\uE1D3', Offset(0f, 0.4f), Offset(0f, -0.15f)),
+        N_QUARTER('\uE1D5', Offset(0f, 0.4f), Offset(0f, -0.15f)),
+        N_EIGHTH('\uE1D7', Offset(0.08f, 0.4f), Offset(0.02f, -0.15f)),
+        N_16TH('\uE1D9', Offset(0.08f, 0.4f), Offset(0.02f, -0.15f)),
+        N_32ND('\uE1DB', Offset(0.08f, 0.45f), Offset(0.02f, -0.2f)),
+        N_64TH('\uE1DD', Offset(0.08f, 0.55f), Offset(0.02f, -0.3f)),
+        N_128TH('\uE1DF', Offset(0.08f, 0.6f), Offset(0.02f, -0.4f)),
+        N_256TH('\uE1E1', Offset(0.08f, 0.65f), Offset(0.02f, -0.45f)),
+        N_512TH('\uE1E3', Offset(0.08f, 0.7f), Offset(0.02f, -0.5f)),
+        N_1024TH('\uE1E5', Offset(0.08f, 0.75f), Offset(0.02f, -0.55f)),
 
         I_WHOLE('\uE1D2', Offset(0f, 0.1f)),
-        I_HALF('\uE1D4', Offset(0f, -0.2f)),
-        I_QUARTER('\uE1D6', Offset(0f, -0.2f)),
-        I_EIGHTH('\uE1D8', Offset(0f, -0.2f)),
-        I_16TH('\uE1DA', Offset(0f, -0.2f)),
-        I_32ND('\uE1DC', Offset(0f, -0.225f)),
-        I_64TH('\uE1DE', Offset(0f, -0.25f)),
-        I_128TH('\uE1E0', Offset(0f, -0.3f)),
-        I_256TH('\uE1E2', Offset(0f, -0.33f)),
-        I_512TH('\uE1E4', Offset(0f, -0.375f)),
-        I_1024TH('\uE1E6', Offset(0f, -0.42f)),
+        I_HALF('\uE1D4', Offset(0f, -0.2f), Offset(0f, 0.05f)),
+        I_QUARTER('\uE1D6', Offset(0f, -0.2f), Offset(0f, 0.05f)),
+        I_EIGHTH('\uE1D8', Offset(0f, -0.2f), Offset(0f, 0.05f)),
+        I_16TH('\uE1DA', Offset(0f, -0.2f), Offset(0f, 0.05f)),
+        I_32ND('\uE1DC', Offset(0f, -0.225f), Offset(0f, 0.1f)),
+        I_64TH('\uE1DE', Offset(0f, -0.275f), Offset(0f, 0.2f)),
+        I_128TH('\uE1E0', Offset(0f, -0.3f), Offset(0f, 0.3f)),
+        I_256TH('\uE1E2', Offset(0f, -0.33f), Offset(0f, 0.35f)),
+        I_512TH('\uE1E4', Offset(0f, -0.375f), Offset(0f, 0.4f)),
+        I_1024TH('\uE1E6', Offset(0f, -0.42f), Offset(0f, 0.45f)),
 
         R_WHOLE('\uE4E3', Offset(0f, 0.1f)),
         R_HALF('\uE4E4', Offset(0f, 0.1f)),
@@ -222,6 +224,35 @@ class MusicFont {
                     R_256TH.char -> -1/256.0;    R_512TH.char -> -1/512.0
                     R_1024TH.char -> -1/1024.0
                     else -> 0.0
+                }
+            }
+            fun fromLength(length: Double): Notation? {
+                return when (length) {
+                    1/1.0 -> N_WHOLE
+                    1/2.0 -> N_HALF
+                    1/4.0 -> N_QUARTER
+                    1/8.0 -> N_EIGHTH
+                    1/16.0 -> N_16TH
+                    1/32.0 -> N_32ND
+                    1/64.0 -> N_64TH
+                    1/128.0 -> N_128TH
+                    1/256.0 -> N_256TH
+                    1/512.0 -> N_512TH
+                    1/1024.0 -> N_1024TH
+
+                    -1/1.0 -> R_WHOLE
+                    -1/2.0 -> R_HALF
+                    -1/4.0 -> R_QUARTER
+                    -1/8.0 -> R_EIGHTH
+                    -1/16.0 -> R_16TH
+                    -1/32.0 -> R_32ND
+                    -1/64.0 -> R_64TH
+                    -1/128.0 -> R_128TH
+                    -1/256.0 -> R_256TH
+                    -1/512.0 -> R_512TH
+                    -1/1024.0 -> R_1024TH
+
+                    else -> null
                 }
             }
 
@@ -340,6 +371,62 @@ class MusicFont {
                         char
                     }
                 }.joinToString("")
+            }
+            fun setEmphasis(note: Notation, emphasized: Boolean): Notation {
+                return if(!emphasized) {
+                    Notation.entries.find { it.char == noteMap[note.char] } ?: note
+                } else {
+                    Notation.entries.find { it.char == noteMap.entries.find { it.value == note.char }?.key } ?: note
+                }
+            }
+
+            @Composable
+            fun NoteCentered(
+                note: Notation,
+                dots: Int = 0,
+                color: Color = Color.White,
+                size: Dp = 64.dp,
+                modifier: Modifier = Modifier
+            ) {
+                val offset = note.offset + if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Offset(0f, 0f) else note.displayOffset
+                Text(
+                    text = note.char.toString() + (" ${DOT.char}").repeat(dots),
+                    style = TextStyle(
+                        fontFamily = FontFamily(Font(R.font.bravuratext)),
+                        fontSize = size.toSp(),
+                    ),
+                    color = color,
+                    modifier = modifier
+                        .absoluteOffset(size * offset.x, size * offset.y),
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    overflow = TextOverflow.Visible
+                )
+            }
+
+            @Composable
+            fun Note(
+                note: Notation?,
+                dots: Int = 0,
+                color: Color = Color.White,
+                size: Dp = 64.dp,
+                modifier: Modifier = Modifier
+            ) {
+                val offset = Offset(0f, 0.1f) + if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Offset(0f, 0f)
+                    else note?.displayOffset ?: Offset(0f, 0f)
+                Text(
+                    text = (note?.char ?: '?').toString() + (" ${DOT.char}").repeat(dots),
+                    style = TextStyle(
+                        fontFamily = FontFamily(Font(R.font.bravuratext)),
+                        fontSize = size.toSp(),
+                    ),
+                    color = color,
+                    modifier = modifier
+                        .absoluteOffset(size * offset.x, size * offset.y),
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    overflow = TextOverflow.Visible
+                )
             }
         }
     }
