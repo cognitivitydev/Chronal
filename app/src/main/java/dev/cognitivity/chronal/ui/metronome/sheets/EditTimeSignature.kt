@@ -25,9 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.graphics.shapes.CornerRounding
 import androidx.graphics.shapes.RoundedPolygon
@@ -36,7 +33,6 @@ import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.MusicFont
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.SimpleRhythm
-import dev.cognitivity.chronal.toSp
 import dev.cognitivity.chronal.ui.WavyHorizontalLine
 import dev.cognitivity.chronal.ui.WavyVerticalLine
 import kotlin.math.pow
@@ -218,15 +214,12 @@ fun ColumnScope.EditBeatType(primary: Boolean, value: SimpleRhythm, onUpdate: (I
                         onUpdate(2.0.pow(i.toDouble()).toInt())
                     }
             ) {
-                Text(
-                    text = MusicFont.Notation.convert(2.0.pow(i.toDouble()).toInt()).toString(),
+                MusicFont.Notation.NoteCentered(
+                    note = MusicFont.Notation.entries.find { it.char == MusicFont.Notation.convert(2.0.pow(i.toDouble()).toInt()) }
+                        ?: MusicFont.Notation.N_QUARTER,
                     color = textColor,
-                    style = TextStyle(
-                        fontFamily = FontFamily(Font(R.font.bravuratext)),
-                        fontSize = 64.dp.toSp()
-                    ),
-                    modifier = Modifier.offset((-6).dp, 24.dp)
-                        .align(Alignment.Center)
+                    size = 64.dp,
+                    modifier = Modifier.align(Alignment.Center)
                 )
             }
         }
@@ -253,15 +246,12 @@ fun ColumnScope.EditBeatType(primary: Boolean, value: SimpleRhythm, onUpdate: (I
                         onUpdate(2.0.pow(i.toDouble()).toInt())
                     }
             ) {
-                Text(
-                    text = MusicFont.Notation.convert(2.0.pow(i.toDouble()).toInt()).toString(),
+                MusicFont.Notation.NoteCentered(
+                    note = MusicFont.Notation.entries.find { it.char == MusicFont.Notation.convert(2.0.pow(i.toDouble()).toInt()) }
+                        ?: MusicFont.Notation.N_QUARTER,
                     color = textColor,
-                    style = TextStyle(
-                        fontFamily = FontFamily(Font(R.font.bravuratext)),
-                        fontSize = 64.dp.toSp()
-                    ),
-                    modifier = Modifier.offset((-6).dp, 24.dp)
-                        .align(Alignment.Center)
+                    size = 64.dp,
+                    modifier = Modifier.align(Alignment.Center)
                 )
             }
         }

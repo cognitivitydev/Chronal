@@ -36,13 +36,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -54,7 +50,6 @@ import dev.cognitivity.chronal.MetronomeState
 import dev.cognitivity.chronal.MusicFont
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.glance.ClockWidgetReceiver
-import dev.cognitivity.chronal.toSp
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -594,7 +589,6 @@ class PresetActivity : ComponentActivity() {
         isPrimary: Boolean,
         enabled: Boolean = true
     ) {
-        val ltr = LocalLayoutDirection.current == LayoutDirection.Ltr
         val textColor = if(enabled) {
             if(isPrimary) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onTertiaryContainer
         } else MaterialTheme.colorScheme.onSurface
@@ -638,20 +632,13 @@ class PresetActivity : ComponentActivity() {
                 val isTuplet = (subdivision and (subdivision - 1)) != 0
                 val noteValue = if(!isTuplet) subdivision else (subdivision / (3f / 2f)).toInt()
                 val char = MusicFont.Notation.convert(noteValue, false)
-                val offset = MusicFont.Notation.entries.find { it.char == char }?.offset ?: Offset(0f, 0f)
 
-                Text(
-                    text = char.toString(),
+                MusicFont.Notation.NoteCentered(
+                    note = MusicFont.Notation.entries.find { it.char == char } ?: MusicFont.Notation.N_QUARTER,
                     color = textColor,
-                    style = TextStyle(
-                        fontFamily = FontFamily(Font(R.font.bravuratext)),
-                        fontSize = 64.dp.toSp()
-                    ),
+                    size = 64.dp,
                     modifier = Modifier.align(Alignment.Center)
-                        .offset(64.dp * offset.x * (if(ltr) 1 else -1), 64.dp * offset.y)
-                        .offset(0.dp, if(isTuplet) 8.dp else 0.dp)
                 )
-
                 if(isTuplet) {
                     Row(
                         modifier = Modifier.fillMaxWidth()

@@ -44,9 +44,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -64,7 +61,6 @@ import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmElement
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
-import dev.cognitivity.chronal.toSp
 import dev.cognitivity.chronal.ui.WavyVerticalLine
 import dev.cognitivity.chronal.ui.metronome.PlayPauseIcon
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
@@ -785,18 +781,12 @@ class RhythmEditorActivity : ComponentActivity() {
                             }
                             .padding(24.dp, 8.dp)
                     ) {
-                        val xOffset = (32 * MusicFont.Notation.N_QUARTER.offset.x * (if(ltr) 1 else -1)).dp
-                        val yOffset = (32 * MusicFont.Notation.N_QUARTER.offset.y).dp
-
-                        Text(
-                            text = getBeatValueString(metronome.beatValue),
+                        MusicFont.Notation.NoteCentered(
+                            note = getBeatValue(metronome.beatValue).first,
+                            dots = if(getBeatValue(metronome.beatValue).second) 1 else 0,
+                            modifier = Modifier.align(Alignment.CenterVertically),
                             color = MaterialTheme.colorScheme.onSurface,
-                            style = TextStyle(
-                                fontFamily = FontFamily(Font(R.font.bravuratext)),
-                                fontSize = 32.dp.toSp()
-                            ),
-                            modifier = Modifier.align(Alignment.CenterVertically)
-                                .offset(xOffset, yOffset)
+                            size = 32.dp,
                         )
                         Spacer(
                             modifier = Modifier.width(8.dp)
@@ -1001,6 +991,21 @@ class RhythmEditorActivity : ComponentActivity() {
         }
     }
 
+    fun getBeatValue(value: Float): Pair<MusicFont.Notation, Boolean> {
+        return when (value) {
+            16f -> MusicFont.Notation.N_16TH to false
+            8f ->  MusicFont.Notation.N_EIGHTH to false
+            4f ->  MusicFont.Notation.N_QUARTER to false
+            2f ->  MusicFont.Notation.N_HALF to false
+            1f ->  MusicFont.Notation.N_WHOLE to false
+            16f / 1.5f -> MusicFont.Notation.N_16TH to true
+            8f / 1.5f ->  MusicFont.Notation.N_EIGHTH to true
+            4f / 1.5f ->  MusicFont.Notation.N_QUARTER to true
+            2f / 1.5f ->  MusicFont.Notation.N_HALF to true
+            1f / 1.5f ->  MusicFont.Notation.N_WHOLE to true
+            else -> MusicFont.Notation.N_QUARTER to false
+        }
+    }
     fun getBeatValueString(value: Float): String {
         return when (value) {
             16f -> MusicFont.Notation.N_16TH.char.toString()
@@ -1019,7 +1024,6 @@ class RhythmEditorActivity : ComponentActivity() {
 
     @Composable
     fun EditBpmDialog() {
-        val ltr = LocalLayoutDirection.current == LayoutDirection.Ltr
         var beatValue by remember { mutableFloatStateOf(metronome.beatValue) }
         var selectedNote by remember { mutableStateOf("") }
         var bpm by remember { mutableIntStateOf(metronome.bpm) }
@@ -1084,18 +1088,12 @@ class RhythmEditorActivity : ComponentActivity() {
                                         },
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    val xOffset = (48 * char.offset.x * (if(ltr) 1 else -1)).dp
-                                    val yOffset = (48 * char.offset.y).dp
-
-                                    Text(
-                                        text = string,
-                                        style = TextStyle(
-                                            fontFamily = FontFamily(Font(R.font.bravuratext)),
-                                            fontSize = 48.dp.toSp()
-                                        ),
-                                        modifier = Modifier.offset(xOffset, yOffset),
+                                    MusicFont.Notation.NoteCentered(
+                                        note = char,
+                                        dots = if(dotted) 1 else 0,
                                         color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
-                                        else MaterialTheme.colorScheme.onSurface
+                                            else MaterialTheme.colorScheme.onSurface,
+                                        size = 48.dp,
                                     )
                                 }
                             }
@@ -1116,19 +1114,12 @@ class RhythmEditorActivity : ComponentActivity() {
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        val xOffset = (64 * MusicFont.Notation.N_QUARTER.offset.x * (if(ltr) 1 else -1)).dp
-                        val yOffset = (64 * MusicFont.Notation.N_QUARTER.offset.y).dp
-
-                        Text(
-                            text = selectedNote,
+                        MusicFont.Notation.NoteCentered(
+                            note = getBeatValue(beatValue).first,
+                            dots = if(getBeatValue(beatValue).second) 1 else 0,
+                            modifier = Modifier.align(Alignment.CenterVertically),
                             color = MaterialTheme.colorScheme.onSurface,
-                            style = TextStyle(
-                                fontFamily = FontFamily(Font(R.font.bravuratext)),
-                                fontSize = 64.dp.toSp()
-                            ),
-                            modifier = Modifier.align(Alignment.CenterVertically)
-                                .offset(xOffset, yOffset)
-                                .padding(horizontal = 8.dp)
+                            size = 64.dp,
                         )
                         Text(
                             "=",
@@ -1578,7 +1569,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                 horizontalArrangement = Arrangement.Center
                             ) {
                                 for (element in tuplet.notes) {
-                                    item { NoteText(element.display, 0, errored = false, editable = false) }
+                                    item { NoteText(element, 0, errored = false, editable = false) }
                                 }
                             }
                             // tuplet header
@@ -1809,7 +1800,6 @@ class RhythmEditorActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
     fun ColumnScope.NoteButton(value: Int, rest: Boolean, emphasized: Boolean, enabled: Boolean) {
-        val ltr = LocalLayoutDirection.current == LayoutDirection.Ltr
         if(value > 1024) {
             Box(
                 modifier = Modifier.weight(1f)
@@ -1873,33 +1863,28 @@ class RhythmEditorActivity : ComponentActivity() {
                     fontWeight = FontWeight(animatedFontWeight),
                 )
             } else {
-                val text =
-                    MusicFont.Notation.setEmphasis(MusicFont.Notation.convert(value, rest).toString(), emphasized)[0]
+                val text = MusicFont.Notation.setEmphasis(MusicFont.Notation.convert(value, rest).toString(), emphasized)[0]
                 var note: MusicFont.Notation? = null
                 for (character in MusicFont.Notation.entries) {
                     if (character.char == text) {
                         note = character
                     }
                 }
-                val xOffset = if (note == null) 0.dp else ((40 * note.offset.x * (if(ltr) 1 else -1)).dp)
-                val yOffset = if (note == null) 0.dp else ((40 * note.offset.y).dp)
+                MusicFont.Notation.NoteCentered(
+                    note = note ?: MusicFont.Notation.N_QUARTER,
+                    color = animatedOnColor.value,
+                    size = 40.dp,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+
+                // staff line
+                val yOffset = 40.dp * (note ?: MusicFont.Notation.N_QUARTER).offset.y
                 Box(
                     modifier = Modifier.fillMaxWidth(0.25f)
                         .height(1.dp)
-                        .offset(0.dp, (if (!rest) yOffset - 4.dp else 0.dp))
-                        .background(MaterialTheme.colorScheme.onSurface)
+                        .offset(y = (if (!rest) yOffset - 4.dp else 0.dp))
+                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
                         .align(Alignment.Center)
-                )
-
-                Text(
-                    text.toString(),
-                    modifier = Modifier.align(Alignment.Center)
-                        .offset(xOffset, yOffset),
-                    color = animatedOnColor.value,
-                    style = TextStyle(
-                        fontFamily = FontFamily(Font(R.font.bravuratext)),
-                        fontSize = 40.dp.toSp()
-                    ),
                 )
             }
         }
@@ -2004,7 +1989,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                     anyError = true
                                     errored = true
                                 }
-                                NoteText(element.display, globalIndex++, errored, editable)
+                                NoteText(element, globalIndex++, errored, editable)
                             }
 
                             is RhythmTuplet -> {
@@ -2086,7 +2071,7 @@ class RhythmEditorActivity : ComponentActivity() {
 
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
-    fun NoteText(note: String, noteIndex: Int, errored: Boolean = false, editable: Boolean = true) {
+    fun NoteText(note: RhythmNote, noteIndex: Int, errored: Boolean = false, editable: Boolean = true) {
         val isNoteSelected = noteIndex == noteSelected
         val isMusicSelected = noteIndex == musicSelected
 
@@ -2116,15 +2101,16 @@ class RhythmEditorActivity : ComponentActivity() {
                     noteSelected = if (isNoteSelected) -1 else noteIndex
                 }
         ) {
-            Text(
+            val baseDuration = note.duration / (1 + (1..note.dots).sumOf { 1.0 / (2.0.pow(it)) })
+            val durationChar = MusicFont.Notation.fromLength(baseDuration)
+            val char = MusicFont.Notation.setEmphasis(durationChar ?: MusicFont.Notation.N_QUARTER, !note.isInverted)
+
+            MusicFont.Notation.Note(
+                note = char,
+                dots = note.dots,
+                color = if (errored) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onSurface,
+                size = 40.dp,
                 modifier = Modifier.align(Alignment.Center)
-                    .offset(0.dp, 5.dp),
-                text = note,
-                color = MaterialTheme.colorScheme.onSurface,
-                style = TextStyle(
-                    fontFamily = FontFamily(Font(R.font.bravuratext)),
-                    fontSize = 50.dp.toSp()
-                )
             )
         }
     }

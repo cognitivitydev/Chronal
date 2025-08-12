@@ -23,13 +23,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
@@ -45,7 +40,6 @@ import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmElement
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.toPx
-import dev.cognitivity.chronal.toSp
 import dev.cognitivity.chronal.ui.WavyVerticalLine
 import dev.cognitivity.chronal.ui.metronome.windows.*
 import kotlinx.coroutines.CoroutineScope
@@ -55,7 +49,6 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} ) {
-    val ltr = LocalLayoutDirection.current == LayoutDirection.Ltr
     var showSimpleWarning by remember { mutableStateOf(false) }
 
     var hidden by remember { mutableStateOf(false) }
@@ -310,23 +303,12 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
                         val isTuplet = (subdivision and (subdivision - 1)) != 0
                         val noteValue = if(!isTuplet) subdivision else (subdivision / (3f / 2f)).toInt()
                         val char = MusicFont.Notation.convert(noteValue)
-                        val offset = MusicFont.Notation.entries.find { it.char == char }?.offset ?: Offset(0f, 0f)
-                        Box(
-                            modifier = Modifier.size(96.dp)
-                                .align(Alignment.Center)
-                        ) {
-                            Text(
-                                text = char.toString(),
-                                color = MaterialTheme.colorScheme.onSurface,
-                                style = TextStyle(
-                                    fontFamily = FontFamily(Font(R.font.bravuratext)),
-                                    fontSize = 96.dp.toSp()
-                                ),
-                                modifier = Modifier.align(Alignment.Center)
-                                    .offset(96.dp * offset.x * (if(ltr) 1 else -1), 96.dp * offset.y)
-                                    .offset(0.dp, if(isTuplet) 8.dp else 0.dp)
-                            )
-                        }
+                        MusicFont.Notation.NoteCentered(
+                            note = MusicFont.Notation.entries.find { it.char == char } ?: MusicFont.Notation.N_QUARTER,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            size = 96.dp,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
                         if(isTuplet) {
                             Row(
                                 modifier = Modifier.align(Alignment.TopCenter)
