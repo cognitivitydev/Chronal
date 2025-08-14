@@ -11,6 +11,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.FilledIconToggleButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +32,8 @@ import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.copy
 import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
@@ -46,14 +51,22 @@ import kotlin.math.abs
 
 @Composable
 fun ConductorDisplay() {
-
     val coroutineScope = rememberCoroutineScope()
     var loopIndex by remember { mutableIntStateOf(0) }
     var currentTimeSignature by remember { mutableStateOf(metronome.getRhythm().measures[0].timeSig) }
-    val (path, segments) = getConductorPath(currentTimeSignature.first)
+    var (path, segments) = getConductorPath(currentTimeSignature.first)
     val currentBeat = remember { Animatable(0f) }
 
+    var flipped by remember { mutableStateOf(false) }
+
     var lastBeatId: Pair<Int, Int>? = null // measure index and beat index
+
+    metronome.setEditListener(4) {
+        currentTimeSignature = metronome.getRhythm().measures[0].timeSig
+        val newPath = getConductorPath(currentTimeSignature.first)
+        path = newPath.first
+        segments = newPath.second
+    }
 
     metronome.setUpdateListener(4) { beat ->
         val rhythm = metronome.getRhythm()
@@ -129,17 +142,39 @@ fun ConductorDisplay() {
                 .weight(1f)
         ) {
             if(segments.isEmpty()) {
-                Text(
-                    text = context.getString(R.string.metronome_conductor_not_supported),
+                Column(
                     modifier = Modifier.align(Alignment.Center)
-                        .padding(8.dp),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    textAlign = TextAlign.Center
-                )
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.outline_person_off_24),
+                        contentDescription = context.getString(R.string.generic_error),
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                            .size(32.dp),
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = context.getString(R.string.metronome_conductor_not_supported),
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                            .padding(8.dp),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                }
             } else {
+                FilledIconToggleButton(
+                    checked = flipped,
+                    onCheckedChange = { flipped = it },
+                    modifier = Modifier.align(Alignment.TopStart)
+                        .padding(horizontal = 8.dp),
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.outline_flip_24),
+                        contentDescription = context.getString(R.string.metronome_conductor_flip)
+                    )
+                }
 
-                DrawPath(path.copy(), 0f, 0f, color = MaterialTheme.colorScheme.secondaryContainer, style = Stroke(width = 3.dp.toPx()))
+                DrawPath(flipped, path.copy(), 0f, 0f, color = MaterialTheme.colorScheme.secondaryContainer, style = Stroke(width = 3.dp.toPx()))
                 if(!metronome.playing && currentBeat.value == 0f) {
                     return@Box
                 }
@@ -162,10 +197,10 @@ fun ConductorDisplay() {
                     val selectedStart = selectedEnd - remaining
 
                     if (selectedStart <= 0f) {
-                        DrawPath(path.copy(), 0f, selectedEnd, color = MaterialTheme.colorScheme.primary)
+                        DrawPath(flipped, path.copy(), 0f, selectedEnd, color = MaterialTheme.colorScheme.primary)
                         remaining -= abs(selectedEnd)
                     } else {
-                        DrawPath(path.copy(), selectedStart, selectedEnd, color = MaterialTheme.colorScheme.primary)
+                        DrawPath(flipped, path.copy(), selectedStart, selectedEnd, color = MaterialTheme.colorScheme.primary)
                         remaining = 0f
                     }
                 }
@@ -187,10 +222,10 @@ fun ConductorDisplay() {
                         val selectedStart = selectedEnd - remaining
 
                         if (selectedStart <= 0) {
-                            DrawPath(path.copy(), 0f, selectedEnd, color = MaterialTheme.colorScheme.primary)
+                            DrawPath(flipped, path.copy(), 0f, selectedEnd, color = MaterialTheme.colorScheme.primary)
                             remaining -= abs(selectedEnd)
                         } else {
-                            DrawPath(path.copy(), selectedStart, selectedEnd, color = MaterialTheme.colorScheme.primary)
+                            DrawPath(flipped, path.copy(), selectedStart, selectedEnd, color = MaterialTheme.colorScheme.primary)
                             remaining = 0f
                         }
                     }
@@ -203,12 +238,17 @@ fun ConductorDisplay() {
         }
     }
 }
+
 @Composable
-fun BoxScope.DrawPath(path: Path, start: Float, end: Float, color: Color, style: DrawStyle = Stroke(width = 4.dp.toPx())) {
+fun BoxScope.DrawPath(flipped: Boolean, path: Path, start: Float, end: Float, color: Color, style: DrawStyle = Stroke(width = 4.dp.toPx())) {
     Canvas(
         modifier = Modifier.aspectRatio(1f)
             .fillMaxSize()
             .align(Alignment.Center)
+            .graphicsLayer(
+                scaleX = if (flipped) -1f else 1f,
+                scaleY = 1f,
+            )
     ) {
         val matrix = Matrix()
         val pathSize = path.getBounds().size

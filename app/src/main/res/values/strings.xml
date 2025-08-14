@@ -55,7 +55,8 @@
     <string name="metronome_bpm">bpm</string>
     <string name="metronome_tempo_unknown">Unknown</string>
 
-    <string name="metronome_conductor_not_supported">Current time signature is not supported.</string>
+    <string name="metronome_conductor_not_supported">Current time signature is not yet supported.</string>
+    <string name="metronome_conductor_flip">Flip horizontally</string>
     <string name="metronome_development_build_title">Development Build</string>
     <string name="metronome_development_build_text">This version of the app was installed from GitHub. Please create an issue on GitHub for bug reports or feature requests.</string>
     <string name="metronome_development_build_hide">Do not show again</string>
