@@ -1,6 +1,11 @@
 package dev.cognitivity.chronal.ui.metronome
 
+import android.content.Context
 import android.graphics.Matrix
+import android.os.Build
+import android.os.CombinedVibration
+import android.os.VibrationEffect
+import android.os.Vibrator
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
@@ -39,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.activity.vibratorManager
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.round
@@ -71,6 +77,22 @@ fun ConductorDisplay() {
     metronome.setUpdateListener(4) { beat ->
         val rhythm = metronome.getRhythm()
         val timestamp = metronome.timestamp
+
+
+        coroutineScope.launch {
+            delay(ChronalApp.getInstance().settings.visualLatency.value.toLong())
+            if(!metronome.playing || timestamp != metronome.timestamp) return@launch
+            if(!ChronalApp.getInstance().settings.metronomeVibrations.value) return@launch
+            if(beat.duration >= 0f) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null) {
+                    val vibration = if(beat.isHigh) VibrationEffect.createOneShot(10, 255) else VibrationEffect.createOneShot(3, 255)
+                    vibratorManager!!.vibrate(CombinedVibration.createParallel(vibration))
+                } else {
+                    val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                    vibrator.vibrate(if(beat.isHigh) 10 else 3)
+                }
+            }
+        }
 
         coroutineScope.launch {
             delay(ChronalApp.getInstance().settings.visualLatency.value.toLong())
