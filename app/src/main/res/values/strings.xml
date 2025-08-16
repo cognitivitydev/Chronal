@@ -57,9 +57,6 @@
 
     <string name="metronome_conductor_not_supported">Current time signature is not yet supported.</string>
     <string name="metronome_conductor_flip">Flip horizontally</string>
-    <string name="metronome_development_build_title">Development Build</string>
-    <string name="metronome_development_build_text">This version of the app was installed from GitHub. Please create an issue on GitHub for bug reports or feature requests.</string>
-    <string name="metronome_development_build_hide">Do not show again</string>
     <string name="metronome_edit_beats">Edit beats</string>
     <string name="metronome_edit_rhythm_beat">Beat</string>
     <string name="metronome_edit_rhythm_beat_count">Beat count</string>
@@ -361,11 +358,16 @@
     <string name="presets_disabled">Secondary disabled</string>
     <string name="presets_use">Use preset</string>
     <string name="presets_set_current">Set to current rhythm</string>
+    <string name="presets_share">Share</string>
     <string name="presets_rename">Rename</string>
     <string name="presets_rename_hint">New name</string>
     <string name="presets_rhythm_primary">Primary rhythm</string>
     <string name="presets_rhythm_secondary">Secondary rhythm</string>
     <string name="presets_widget_create">Create widget</string>
+
+    <string name="import_preset_title">Import preset</string>
+    <string name="import_preset_button">Import</string>
+    <string name="import_preset_malformed">The preset you are trying to import is malformed.</string>
 
     <string name="tempo_markings_title">Set tempo markers</string>
     <string name="tempo_marking_range">"%d–%d BPM"</string>
@@ -381,6 +383,7 @@
     <string name="tempo_markings_add_error_high">Value must be at most 500 BPM.</string>
     <string name="tempo_markings_reset_title">Reset to default</string>
     <string name="tempo_markings_reset_text">Are you sure you want to reset all tempo markings to their default values? This cannot be undone.</string>
+
 
     <string name="sound_click">Click</string>
     <string name="sound_sine">Sine</string>
