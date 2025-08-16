@@ -6,6 +6,7 @@ import android.content.ComponentName
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Base64
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -25,6 +26,7 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,12 +39,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.content.FileProvider
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.MetronomePreset
@@ -52,7 +53,9 @@ import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.glance.ClockWidgetReceiver
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
+import java.util.zip.GZIPOutputStream
 
 class PresetActivity : ComponentActivity() {
 
@@ -509,6 +512,37 @@ class PresetActivity : ComponentActivity() {
 
                                     widgetManager.requestPinAppWidget(widgetProvider, null, successCallback)
                                 }
+                            }
+                        )
+                        DropdownMenuItem(
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.Share,
+                                    contentDescription = getString(R.string.presets_share),
+                                )
+                            },
+                            text = { Text(getString(R.string.presets_share)) },
+                            onClick = {
+                                checked = false
+                                val file = ChronalApp.getInstance().filesDir.resolve("${preset.name}.chp")
+                                val content = preset.toJson().toString()
+                                val compressed = ByteArrayOutputStream().use {
+                                    GZIPOutputStream(it).use { gzip ->
+                                        gzip.write(content.toByteArray(Charsets.UTF_8))
+                                    }
+                                    it.toByteArray()
+                                }
+                                val base64 = Base64.encode(compressed, Base64.DEFAULT)
+                                file.writeBytes(base64)
+
+
+                                val uri = FileProvider.getUriForFile(this@PresetActivity, "${packageName}.fileprovider", file)
+                                val intent = Intent(Intent.ACTION_SEND).apply {
+                                    type = "application/octet-stream"
+                                    putExtra(Intent.EXTRA_STREAM, uri)
+                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                }
+                                startActivity(Intent.createChooser(intent, "getString(R.string.presets_share_title)"))
                             }
                         )
                         DropdownMenuItem(
