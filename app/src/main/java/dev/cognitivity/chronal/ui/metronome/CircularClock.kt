@@ -77,13 +77,14 @@ fun BoxScope.CircularClock(primary: Boolean, trackSize: Float, trackOff: Color, 
             if(!metronome.playing || timestamp != metronome.timestamp) return@launch
             if((!ChronalApp.getInstance().settings.metronomeVibrations.value && primary)
                 || (!ChronalApp.getInstance().settings.metronomeVibrationsSecondary.value && !primary)) return@launch
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null) {
-                val vibration = if(beat.isHigh) VibrationEffect.createOneShot(10, 255) else VibrationEffect.createOneShot(3, 255)
-                vibratorManager!!.vibrate(CombinedVibration.createParallel(vibration))
-            } else {
-                val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                vibrator.vibrate(if(beat.isHigh) 10 else 3)
+            if(beat.duration >= 0f) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null) {
+                    val vibration = if(beat.isHigh) VibrationEffect.createOneShot(10, 255) else VibrationEffect.createOneShot(3, 255)
+                    vibratorManager!!.vibrate(CombinedVibration.createParallel(vibration))
+                } else {
+                    val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                    vibrator.vibrate(if(beat.isHigh) 10 else 3)
+                }
             }
         }
         coroutineScope.launch {
