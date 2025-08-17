@@ -68,10 +68,14 @@ class AudioPlayerActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val uri = intent.getStringExtra("file")?.toUri()
+        var uri = intent.getStringExtra("file")?.toUri() // opening from within app
         if (uri == null) {
-            finish()
-            return
+            val data = intent.data // for opening audio files
+            if (data == null) {
+                finish()
+                return
+            }
+            uri = data
         }
         mediaUri = uri
 

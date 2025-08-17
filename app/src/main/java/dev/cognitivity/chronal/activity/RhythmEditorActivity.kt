@@ -45,6 +45,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -165,7 +166,6 @@ class RhythmEditorActivity : ComponentActivity() {
         super.onDestroy()
         metronome.stop()
     }
-
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
@@ -1025,7 +1025,6 @@ class RhythmEditorActivity : ComponentActivity() {
     @Composable
     fun EditBpmDialog() {
         var beatValue by remember { mutableFloatStateOf(metronome.beatValue) }
-        var selectedNote by remember { mutableStateOf("") }
         var bpm by remember { mutableIntStateOf(metronome.bpm) }
         val scope = rememberCoroutineScope()
         var change = 0
@@ -1072,7 +1071,6 @@ class RhythmEditorActivity : ComponentActivity() {
                                 val char = MusicFont.Notation.entries.find { it.char == string[0] }
                                     ?: MusicFont.Notation.N_QUARTER
                                 val isSelected = beatValue == value
-                                if (isSelected) selectedNote = string
 
                                 Box(
                                     modifier = Modifier.padding(4.dp)
@@ -1083,7 +1081,6 @@ class RhythmEditorActivity : ComponentActivity() {
                                             else MaterialTheme.colorScheme.surfaceContainer
                                         )
                                         .clickable {
-                                            selectedNote = string
                                             beatValue = value
                                         },
                                     contentAlignment = Alignment.Center
@@ -1964,7 +1961,7 @@ class RhythmEditorActivity : ComponentActivity() {
                         )
                 ) {
                     if (measureIndex != 0) {
-                        MeasureBreak(measure.timeSig != previousTimeSig)
+                        MeasureBreak(measureIndex, measure.timeSig != previousTimeSig)
                     }
                     if ((measureIndex == 0 || measure.timeSig != previousTimeSig) && measure.timeSig != 0 to 0) {
                         TimeSignatureDisplay(measureIndex)
@@ -2116,35 +2113,56 @@ class RhythmEditorActivity : ComponentActivity() {
     }
 
     @Composable
-    fun MeasureBreak(hasTimeSignature: Boolean) {
+    fun MeasureBreak(index: Int, hasTimeSignature: Boolean) {
         Box(
             modifier = Modifier.padding(0.dp, 0.dp, if (hasTimeSignature) 0.dp else 32.dp, 0.dp)
-                .width(1.dp)
                 .fillMaxHeight()
         ) {
             Box(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.width(1.dp)
                     .fillMaxHeight(0.75f)
                     .align(Alignment.Center)
                     .background(MaterialTheme.colorScheme.outline)
+            )
+            Text(
+                text = (index + 1).toString(),
+                modifier = Modifier.width(1.dp)
+                    .align(Alignment.TopStart)
+                    .offset(x = 8.dp),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                overflow = TextOverflow.Visible,
+                maxLines = 1,
+                softWrap = false
             )
         }
     }
 
     @Composable
-    fun TimeSignatureDisplay(measureIndex: Int) {
+    fun RowScope.TimeSignatureDisplay(measureIndex: Int) {
         val measure = parsedRhythm.measures[measureIndex]
         val (numerator, denominator) = measure.timeSig
 
         Box(
             modifier = Modifier.padding(end = 16.dp)
                 .fillMaxHeight()
+                .align(Alignment.CenterVertically)
                 .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                 .clickable {
                     showTimeSignature = measureIndex
                 }
                 .padding(10.dp, 0.dp)
         ) {
+            Text(
+                text = (measureIndex + 1).toString(),
+                modifier = Modifier.width(1.dp)
+                    .align(Alignment.TopStart),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                overflow = TextOverflow.Visible,
+                maxLines = 1,
+                softWrap = false
+            )
             Box(
                 modifier = Modifier.fillMaxHeight(0.45f)
                     .align(Alignment.Center)
