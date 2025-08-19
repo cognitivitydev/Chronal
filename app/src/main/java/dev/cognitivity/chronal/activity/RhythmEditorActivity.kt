@@ -1,6 +1,5 @@
 package dev.cognitivity.chronal.activity
 
-import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
 import android.os.Build
 import android.os.Bundle
@@ -181,7 +180,6 @@ class RhythmEditorActivity : ComponentActivity() {
         }
     }
 
-    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
     fun MainContent() {
@@ -199,12 +197,18 @@ class RhythmEditorActivity : ComponentActivity() {
         Scaffold(
             modifier = Modifier.fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface),
-        ) {
+        ) { innerPadding ->
             Column {
                 Box(
                     modifier = Modifier.fillMaxSize()
                         .weight(4f)
                         .background(MaterialTheme.colorScheme.surfaceContainer)
+                        .padding(
+                            top = innerPadding.calculateTopPadding(),
+                            start = innerPadding.calculateStartPadding(LocalLayoutDirection.current),
+                            end = innerPadding.calculateEndPadding(LocalLayoutDirection.current),
+                            bottom = 0.dp
+                        )
                         .padding(32.dp, 0.dp)
                 ) {
                     LazyRow(
@@ -511,7 +515,10 @@ class RhythmEditorActivity : ComponentActivity() {
                     LazyRow(
                         modifier = Modifier.fillMaxHeight()
                             .align(Alignment.Center),
-                        contentPadding = PaddingValues(horizontal = 8.dp),
+                        contentPadding = PaddingValues(
+                            start = maxOf(8.dp, innerPadding.calculateStartPadding(LocalLayoutDirection.current)),
+                            end = maxOf(8.dp, innerPadding.calculateEndPadding(LocalLayoutDirection.current)),
+                        ),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
@@ -633,6 +640,12 @@ class RhythmEditorActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxWidth()
                         .weight(2f)
                         .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                        .padding(
+                            top = 0.dp,
+                            start = innerPadding.calculateStartPadding(LocalLayoutDirection.current),
+                            end = innerPadding.calculateEndPadding(LocalLayoutDirection.current),
+                            bottom = innerPadding.calculateBottomPadding()
+                        )
                         .padding(16.dp, 0.dp)
                 ) {
                     val scope = rememberCoroutineScope()

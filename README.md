@@ -1,4 +1,4 @@
-<img src="assets/logo-header.png" alt="Chronal logo">
+<img src="metadata/en-US/images/featureGraphic.png" alt="Chronal logo">
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/M4M41JEDWA)
 
@@ -26,8 +26,11 @@ Chronal is a metronome and tuner app for Android made for beginner and advanced 
 
 ## Screenshots
 
-<img src="assets/app-main.png" alt="Main metronome page" height=384>
-<img src="assets/app-conductor.png" alt="Conductor page" height=384>
-<img src="assets/app-fullscreen.png" alt="Fullscreen mode" height=384>
-<img src="assets/app-tuner.png" alt="Tuner page" height=384>
-<img src="assets/app-editor.png" alt="Notation editor" height="384">
+<img src="metadata/en-US/images/phoneScreenshots/1.png" alt="Visual metronomes with customizable polyrhythms" height="288px">
+<img src="metadata/en-US/images/phoneScreenshots/2.png" alt="Conductor path visualization" height="288px">
+<img src="metadata/en-US/images/phoneScreenshots/3.png" alt="Tune any instrument with reference tones" height="288px">
+<br />
+<img src="metadata/en-US/images/phoneScreenshots/4.png" alt="Create your own custom rhythms" height="288px"><img src="metadata/en-US/images/phoneScreenshots/5.png" alt="with a familiar interface" height="288px">
+<br />
+<img src="metadata/en-US/images/phoneScreenshots/6.png" alt="...or stick to a simpler layout" height="288px">
+<img src="metadata/en-US/images/phoneScreenshots/7.png" alt="Detect the tempo of your rhythm" height="288px">
