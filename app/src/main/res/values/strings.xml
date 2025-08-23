@@ -192,6 +192,7 @@
     <string name="settings_feedback_translate_text">Help translate the app into your language</string>
     <string name="settings_footer_version">Version %s</string>
     <string name="settings_footer_development_build">Development build</string>
+    <string name="settings_footer_privacy_policy">Privacy Policy</string>
 
     <string name="settings_menu_help">Help</string>
     <string name="settings_menu_open_source_credits">Open source credits</string>
