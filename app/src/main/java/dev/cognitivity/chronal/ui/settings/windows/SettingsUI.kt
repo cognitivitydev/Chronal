@@ -830,7 +830,9 @@ fun SettingsFooter() {
             modifier = Modifier.size(80.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Column {
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
             Text(
                 text = context.getString(R.string.app_name),
                 style = MaterialTheme.typography.bodyMedium,
@@ -846,6 +848,24 @@ fun SettingsFooter() {
                     text = context.getString(R.string.settings_footer_development_build),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            TextButton(
+                onClick = {
+                    context.startActivity(
+                        Intent(Intent.ACTION_VIEW, "https://chronal.cognitivity.dev/privacy".toUri())
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    )
+                }
+            ) {
+                Text(
+                    text = context.getString(R.string.settings_footer_privacy_policy),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
                 )
             }
         }
