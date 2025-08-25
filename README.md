@@ -1,5 +1,7 @@
 <img src="metadata/en-US/images/featureGraphic.png" alt="Chronal logo">
 
+[<img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="80">](https://f-droid.org/packages/dev.cognitivity.chronal)
+
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/M4M41JEDWA)
 
 # Chronal
