@@ -4,12 +4,18 @@ import android.content.Intent
 import android.view.Window
 import android.widget.Toast
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Animatable
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -21,8 +27,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
@@ -39,8 +43,6 @@ import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmElement
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
-import dev.cognitivity.chronal.toPx
-import dev.cognitivity.chronal.ui.metronome.windows.ClockBeats
 import dev.cognitivity.chronal.ui.metronome.windows.metronome
 import dev.cognitivity.chronal.ui.metronome.windows.metronomeSecondary
 import dev.cognitivity.chronal.ui.metronome.windows.paused
@@ -406,60 +408,6 @@ fun Vibration(primary: Boolean, enabled: Boolean) {
                 else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
             modifier = Modifier.align(Alignment.CenterVertically)
         )
-    }
-}
-
-@Composable
-fun BoxScope.ClockPreview(primary: Boolean, value: SimpleRhythm) {
-    val timeSignature = value.timeSignature
-    val metronome = if(primary) ChronalApp.getInstance().metronome else ChronalApp.getInstance().metronomeSecondary
-    val trackColor = MaterialTheme.colorScheme.secondaryContainer
-
-    Box(
-        modifier = Modifier.size(180.dp)
-            .align(Alignment.Center)
-    ) {
-        Canvas(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            val trackSize = 4.dp.toPx()
-            val radius = (size.minDimension / 2) - trackSize / 2
-            val center = Offset(size.width / 2, size.height / 2)
-
-            drawCircle(
-                color = trackColor,
-                radius = radius,
-                center = center,
-                style = Stroke(width = trackSize)
-            )
-        }
-        if(primary) {
-            ClockBeats(remember { Animatable(-1f) }, 4.dp.toPx(),
-                metronome.getIntervals().filter { it.measure == 0 },
-                majorOffColor = MaterialTheme.colorScheme.primaryContainer,
-                minorOffColor = MaterialTheme.colorScheme.onPrimary,
-                majorPrimaryColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                minorPrimaryColor = MaterialTheme.colorScheme.primary,
-                surface = MaterialTheme.colorScheme.surfaceContainerHigh
-            )
-        } else {
-            ClockBeats(remember { Animatable(-1f) }, 4.dp.toPx(),
-                metronome.getIntervals().filter { it.measure == 0 },
-                majorOffColor = MaterialTheme.colorScheme.tertiaryContainer,
-                minorOffColor = MaterialTheme.colorScheme.onTertiary,
-                majorPrimaryColor = MaterialTheme.colorScheme.onTertiaryContainer,
-                minorPrimaryColor = MaterialTheme.colorScheme.tertiary,
-                surface = MaterialTheme.colorScheme.surfaceContainerHigh
-            )
-        }
-        Box(
-            modifier = Modifier.fillMaxHeight(0.5f)
-                .align(Alignment.Center)
-        ) {
-            MusicFont.Number.TimeSignature(timeSignature.first, timeSignature.second,
-                color = if(primary) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
-            )
-        }
     }
 }
 
