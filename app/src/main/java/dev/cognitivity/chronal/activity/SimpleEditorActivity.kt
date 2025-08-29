@@ -640,7 +640,7 @@ class SimpleEditorActivity : ComponentActivity() {
                                             shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
                                             contentPadding = ButtonDefaults.ContentPadding
                                         ) {
-                                            Text(getString(R.string.simple_editor_beat_auto))
+                                            Text(getString(R.string.simple_editor_beat_custom))
                                         }
                                     }
                                 }
