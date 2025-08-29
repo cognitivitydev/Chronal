@@ -1,1 +1,1 @@
-A metronome and tuner app designed for beginner and advanced musicians.
+Metronome and tuner app designed for beginner and advanced musicians.
