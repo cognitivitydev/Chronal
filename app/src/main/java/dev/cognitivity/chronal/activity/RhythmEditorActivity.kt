@@ -754,7 +754,7 @@ class RhythmEditorActivity : ComponentActivity() {
                             else MaterialTheme.colorScheme.onTertiaryContainer
                         )
                     ) {
-                        Text(getString(R.string.metronome_edit_rhythm_switch_simple))
+                        Text(getString(R.string.simple_editor_switch_simple))
                     }
                     Box(
                         modifier = Modifier.weight(1f)
@@ -931,9 +931,9 @@ class RhythmEditorActivity : ComponentActivity() {
                         contentDescription = getString(R.string.generic_warning)
                     )
                 },
-                title = { Text(getString(R.string.metronome_edit_rhythm_simple_warning_title)) },
+                title = { Text(getString(R.string.simple_editor_simple_warning_title)) },
                 text = {
-                    Text(getString(R.string.metronome_edit_rhythm_simple_warning_text))
+                    Text(getString(R.string.simple_editor_simple_warning_text))
                 },
                 confirmButton = {
                     TextButton(onClick = {

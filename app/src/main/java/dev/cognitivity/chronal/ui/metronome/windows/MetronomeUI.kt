@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -24,7 +23,15 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.Tab
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,7 +46,6 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.rotate
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -57,8 +63,6 @@ import dev.cognitivity.chronal.activity.NavigationItem
 import dev.cognitivity.chronal.activity.vibratorManager
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.ui.metronome.sheets.EditRhythm
-import dev.cognitivity.chronal.ui.metronome.sheets.EditSubdivision
-import dev.cognitivity.chronal.ui.metronome.sheets.EditTimeSignature
 import dev.cognitivity.chronal.ui.metronome.sheets.TapTempo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -75,11 +79,7 @@ lateinit var metronomeSecondary: Metronome
 var dropdownExpanded by mutableStateOf(false)
 var showTempoTapper by mutableStateOf(false)
 var showRhythmPrimary by mutableStateOf(false)
-var showTimeSignaturePrimary by mutableStateOf(false)
-var showSubdivisionPrimary by mutableStateOf(false)
 var showRhythmSecondary by mutableStateOf(false)
-var showTimeSignatureSecondary by mutableStateOf(false)
-var showSubdivisionSecondary by mutableStateOf(false)
 
 var secondaryEnabled by mutableStateOf(ChronalApp.getInstance().settings.metronomeState.value.secondaryEnabled)
 
@@ -163,41 +163,6 @@ fun MetronomePageMain(window: Window, expanded: Boolean, mainActivity: MainActiv
                 showRhythmSecondary = false
             }
         }
-    }
-    if(showTimeSignaturePrimary || showTimeSignatureSecondary) {
-        Dialog(
-            onDismissRequest = { },
-            title = { Text(context.getString(R.string.metronome_edit_time_signature)) },
-            text = {
-                EditTimeSignature(window, showTimeSignaturePrimary, expanded)
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    showTimeSignaturePrimary = false
-                    showTimeSignatureSecondary = false
-                }) {
-                    Text(context.getString(R.string.generic_save))
-                }
-            }
-        )
-    }
-
-    if(showSubdivisionPrimary || showSubdivisionSecondary) {
-        Dialog(
-            onDismissRequest = { },
-            title = { Text(context.getString(R.string.metronome_edit_beats)) },
-            text = {
-                EditSubdivision(window, showSubdivisionPrimary, expanded)
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    showSubdivisionPrimary = false
-                    showSubdivisionSecondary = false
-                }) {
-                    Text(context.getString(R.string.generic_save))
-                }
-            }
-        )
     }
 }
 
@@ -413,16 +378,4 @@ fun BottomSheet(
     ) {
         content()
     }
-}
-
-@Composable
-fun Dialog(onDismissRequest: () -> Unit, title: @Composable () -> Unit, text: @Composable () -> Unit, confirmButton: @Composable () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        modifier = Modifier.fillMaxWidth(0.9f),
-        title = title,
-        properties = DialogProperties(usePlatformDefaultWidth = false),
-        text = text,
-        confirmButton = confirmButton
-    )
 }
