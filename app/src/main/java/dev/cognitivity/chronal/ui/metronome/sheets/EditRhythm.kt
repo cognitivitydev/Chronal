@@ -24,7 +24,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
@@ -34,14 +33,21 @@ import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.SimpleRhythm
 import dev.cognitivity.chronal.activity.PresetActivity
 import dev.cognitivity.chronal.activity.RhythmEditorActivity
+import dev.cognitivity.chronal.activity.SimpleEditorActivity
 import dev.cognitivity.chronal.rhythm.metronome.Measure
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmElement
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.toPx
-import dev.cognitivity.chronal.ui.WavyVerticalLine
-import dev.cognitivity.chronal.ui.metronome.windows.*
+import dev.cognitivity.chronal.ui.metronome.windows.ClockBeats
+import dev.cognitivity.chronal.ui.metronome.windows.metronome
+import dev.cognitivity.chronal.ui.metronome.windows.metronomeSecondary
+import dev.cognitivity.chronal.ui.metronome.windows.paused
+import dev.cognitivity.chronal.ui.metronome.windows.secondaryEnabled
+import dev.cognitivity.chronal.ui.metronome.windows.updateSleepMode
+import dev.cognitivity.chronal.ui.metronome.windows.vibratePrimary
+import dev.cognitivity.chronal.ui.metronome.windows.vibrateSecondary
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -60,7 +66,7 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
             .height(IntrinsicSize.Min)
     ) {
         Text(
-            text = context.getString(if(primary) R.string.metronome_edit_rhythm_primary else R.string.metronome_edit_rhythm_secondary),
+            text = context.getString(if(primary) R.string.simple_editor_primary else R.string.simple_editor_secondary),
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(start = 16.dp)
@@ -90,7 +96,7 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
                     .then(weight)
                     .clickable {
                         if (primary) {
-                            Toast.makeText(context, context.getString(R.string.metronome_edit_rhythm_primary_disable), Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, context.getString(R.string.simple_editor_primary_disable), Toast.LENGTH_SHORT).show()
                             return@clickable
                         }
                         secondaryEnabled = !secondaryEnabled
@@ -108,7 +114,7 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
                         }
                     }
             ) {
-                Text(context.getString(if(primary) R.string.metronome_edit_rhythm_primary_enabled else R.string.metronome_edit_rhythm_secondary_enable),
+                Text(context.getString(if(primary) R.string.simple_editor_primary_enabled else R.string.simple_editor_secondary_enable),
                     style = MaterialTheme.typography.titleLarge,
                     color = animatedText,
                     modifier = Modifier.padding(16.dp, 8.dp)
@@ -119,7 +125,7 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
                     checked = if(primary) true else secondaryEnabled,
                     onCheckedChange = { checked ->
                         if(primary) {
-                            Toast.makeText(context, context.getString(R.string.metronome_edit_rhythm_primary_disable), Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, context.getString(R.string.simple_editor_primary_disable), Toast.LENGTH_SHORT).show()
                             return@Switch
                         }
                         secondaryEnabled = checked
@@ -166,7 +172,7 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
             FilledTonalButton(
                 modifier = Modifier.heightIn(ButtonDefaults.MediumContainerHeight)
                     .align(Alignment.CenterHorizontally)
-                    .padding(vertical = 64.dp),
+                    .padding(vertical = 48.dp),
                 contentPadding = ButtonDefaults.contentPaddingFor(ButtonDefaults.MediumContainerHeight),
                 onClick = {
                     onDismiss()
@@ -178,7 +184,7 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
                 },
                 enabled = enabled
             ) {
-                Text(context.getString(R.string.metronome_edit_rhythm_open_advanced),
+                Text(context.getString(R.string.simple_editor_open_advanced),
                     style = ButtonDefaults.textStyleFor(ButtonDefaults.MediumContainerHeight)
                 )
             }
@@ -205,7 +211,7 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
                     },
                     enabled = enabled
                 ) {
-                    Text(context.getString(R.string.metronome_edit_rhythm_view_presets))
+                    Text(context.getString(R.string.simple_editor_view_presets))
                 }
                 Button(
                     modifier = Modifier.align(Alignment.CenterVertically),
@@ -220,125 +226,34 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
                     ),
                     enabled = enabled
                 ) {
-                    Text(context.getString(R.string.metronome_edit_rhythm_switch_simple))
+                    Text(context.getString(R.string.simple_editor_switch_simple))
                 }
             }
         } else {
-            Row(
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-                .padding(top = 8.dp)
+            Button(
+                modifier = Modifier.heightIn(ButtonDefaults.MediumContainerHeight)
+                    .align(Alignment.CenterHorizontally)
+                    .padding(vertical = 48.dp),
+                contentPadding = ButtonDefaults.contentPaddingFor(ButtonDefaults.MediumContainerHeight),
+                onClick = {
+                    onDismiss()
+                    ChronalApp.getInstance().startActivity(
+                        Intent(context, SimpleEditorActivity::class.java)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            .putExtra("isPrimary", primary)
+                    )
+                },
+                enabled = enabled,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (primary) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.tertiary,
+                    contentColor = if (primary) MaterialTheme.colorScheme.onPrimary
+                        else MaterialTheme.colorScheme.onTertiary
+                )
             ) {
-                Text(context.getString(R.string.metronome_edit_rhythm_time_signature),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.align(Alignment.CenterVertically)
-                        .weight(1f)
+                Text(context.getString(R.string.simple_editor_open_simple),
+                    style = ButtonDefaults.textStyleFor(ButtonDefaults.MediumContainerHeight)
                 )
-                Spacer(modifier = Modifier.padding(24.dp, 0.dp))
-                Text(context.getString(R.string.metronome_edit_rhythm_beat),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.align(Alignment.CenterVertically)
-                        .weight(1f)
-                )
-            }
-
-            Row(
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-                    .weight(1f)
-            ) {
-                Box(
-                    modifier = Modifier.padding(16.dp)
-                        .weight(1f)
-                        .align(Alignment.CenterVertically)
-                ) {
-                    Box(
-                        modifier = Modifier.aspectRatio(1f, matchHeightConstraintsFirst = true)
-                            .align(Alignment.Center)
-                            .clip(MaterialShapes.Bun.toShape(0))
-                            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                            .clickable {
-                                if (primary) {
-                                    showTimeSignaturePrimary = true
-                                } else {
-                                    showTimeSignatureSecondary = true
-                                }
-                            }
-                    ) {
-                        Box(
-                            modifier = Modifier.fillMaxHeight(0.75f)
-                                .align(Alignment.Center)
-                        ) {
-                            MusicFont.Number.TimeSignature(simpleRhythm.timeSignature.first, simpleRhythm.timeSignature.second,
-                                MaterialTheme.colorScheme.onSurface, lineSpacing = 16.dp)
-                        }
-
-                    }
-                }
-                WavyVerticalLine(
-                    modifier = Modifier.padding(24.dp, 0.dp)
-                        .height(128.dp)
-                        .align(Alignment.CenterVertically)
-                )
-                Box(
-                    modifier = Modifier.padding(16.dp)
-                        .weight(1f)
-                ) {
-                    Box(
-                        modifier = Modifier.aspectRatio(1f, matchHeightConstraintsFirst = true)
-                            .align(Alignment.Center)
-                            .clip(MaterialShapes.Cookie4Sided.toShape(0))
-                            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                            .clickable {
-                                if (primary) {
-                                    showSubdivisionPrimary = true
-                                } else {
-                                    showSubdivisionSecondary = true
-                                }
-                            }
-                    ) {
-                        val subdivision = simpleRhythm.subdivision
-                        val isTuplet = (subdivision and (subdivision - 1)) != 0
-                        val noteValue = if(!isTuplet) subdivision else (subdivision / (3f / 2f)).toInt()
-                        val char = MusicFont.Notation.convert(noteValue)
-                        MusicFont.Notation.NoteCentered(
-                            note = MusicFont.Notation.entries.find { it.char == char } ?: MusicFont.Notation.N_QUARTER,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            size = 96.dp,
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                        if(isTuplet) {
-                            Row(
-                                modifier = Modifier.align(Alignment.TopCenter)
-                                    .padding(24.dp)
-                            ) {
-                                Box(
-                                    modifier = Modifier.height(1.dp)
-                                        .padding(horizontal = 8.dp)
-                                        .weight(1f)
-                                        .align(Alignment.CenterVertically)
-                                        .background(MaterialTheme.colorScheme.onSurface)
-                                )
-                                Text(
-                                    text = "3",
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    modifier = Modifier.align(Alignment.CenterVertically)
-                                        .padding(4.dp)
-                                )
-                                Box(
-                                    modifier = Modifier.height(1.dp)
-                                        .padding(horizontal = 8.dp)
-                                        .weight(1f)
-                                        .align(Alignment.CenterVertically)
-                                        .background(MaterialTheme.colorScheme.onSurface)
-                                )
-                            }
-                        }
-                    }
-                }
             }
             Row(
                 modifier = Modifier.fillMaxWidth()
@@ -362,7 +277,7 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
                     },
                     enabled = enabled
                 ) {
-                    Text(context.getString(R.string.metronome_edit_rhythm_view_presets))
+                    Text(context.getString(R.string.simple_editor_view_presets))
                 }
                 FilledTonalButton(
                     modifier = Modifier.align(Alignment.CenterVertically),
@@ -376,7 +291,7 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
                     },
                     enabled = enabled
                 ) {
-                    Text(context.getString(R.string.metronome_edit_rhythm_switch_advanced))
+                    Text(context.getString(R.string.simple_editor_switch_advanced))
                 }
             }
         }
@@ -389,9 +304,9 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
         AlertDialog(
             onDismissRequest = { showSimpleWarning = false },
             icon = { Icon(painter = painterResource(R.drawable.outline_warning_24), contentDescription = context.getString(R.string.generic_warning)) },
-            title = { Text(context.getString(R.string.metronome_edit_rhythm_simple_warning_title)) },
+            title = { Text(context.getString(R.string.simple_editor_simple_warning_title)) },
             text = {
-                Text(context.getString(R.string.metronome_edit_rhythm_simple_warning_text))
+                Text(context.getString(R.string.simple_editor_simple_warning_text))
             },
             confirmButton = {
                 TextButton(onClick = {
@@ -485,7 +400,7 @@ fun Vibration(primary: Boolean, enabled: Boolean) {
             modifier = Modifier.align(Alignment.CenterVertically)
         )
         Text(
-            text = context.getString(R.string.metronome_edit_rhythm_vibration),
+            text = context.getString(R.string.simple_editor_vibration),
             style = MaterialTheme.typography.titleLarge,
             color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant
                 else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
@@ -606,12 +521,12 @@ fun setRhythm(window: Window, value: SimpleRhythm, primary: Boolean, retry: Bool
     })
     if(remaining < -1e-6) {
         if(!retry) {
-            Toast.makeText(context, context.getString(R.string.metronome_edit_rhythm_error_other), Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.simple_editor_error_other), Toast.LENGTH_SHORT).show()
             return false
         } else {
             val result = setRhythm(window, value, primary, retry = false)
             if(result) {
-                Toast.makeText(context, context.getString(R.string.metronome_edit_rhythm_error_adjusted), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.simple_editor_error_adjusted), Toast.LENGTH_SHORT).show()
             }
             return result
         }
