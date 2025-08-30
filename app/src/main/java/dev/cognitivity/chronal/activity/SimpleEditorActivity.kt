@@ -19,6 +19,7 @@
 package dev.cognitivity.chronal.activity
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -52,6 +53,7 @@ import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSiz
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,12 +62,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.graphics.shapes.CornerRounding
 import androidx.graphics.shapes.RoundedPolygon
 import androidx.navigation.NavController
@@ -94,6 +96,7 @@ class SimpleEditorActivity : ComponentActivity() {
     private var isPrimary by mutableStateOf(true)
     private var error by mutableStateOf(false)
     private var previewRhythm by mutableStateOf<Rhythm?>(null)
+    private lateinit var rhythm: MutableState<SimpleRhythm>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -124,11 +127,7 @@ class SimpleEditorActivity : ComponentActivity() {
         val setting = if (isPrimary) ChronalApp.getInstance().settings.metronomeSimpleRhythm else ChronalApp.getInstance().settings.metronomeSimpleRhythmSecondary
         val initialValue = setting.value
         val startPage = if(initialValue.timeSignature.first != 0 && initialValue.timeSignature.second == 0) "beat" else "time_signature"
-        var value by remember {
-            mutableStateOf(
-                setting.value
-            )
-        }
+        rhythm = remember { mutableStateOf(setting.value) }
         val sizeClass = calculateWindowSizeClass(this)
         var expanded = false
         when(sizeClass.widthSizeClass) {
@@ -137,7 +136,7 @@ class SimpleEditorActivity : ComponentActivity() {
             }
         }
 
-        previewRhythm = getRhythm(value)
+        previewRhythm = getRhythm(rhythm.value)
 
         Scaffold(
             topBar = {
@@ -170,22 +169,22 @@ class SimpleEditorActivity : ComponentActivity() {
                                     onClick = {
                                         backDropdown = false
                                         if(!error) {
-                                            val rhythm = getRhythm(value)
-                                            if(rhythm == null) {
+                                            val parsedRhythm = getRhythm(rhythm.value)
+                                            if(parsedRhythm == null) {
                                                 error = true
                                                 return@DropdownMenuItem
                                             }
                                             val metronome = if(isPrimary) ChronalApp.getInstance().metronome else ChronalApp.getInstance().metronomeSecondary
                                             if(isPrimary) {
-                                                ChronalApp.getInstance().settings.metronomeRhythm.value = rhythm.serialize()
-                                                ChronalApp.getInstance().settings.metronomeSimpleRhythm.value = value
+                                                ChronalApp.getInstance().settings.metronomeRhythm.value = parsedRhythm.serialize()
+                                                ChronalApp.getInstance().settings.metronomeSimpleRhythm.value = rhythm.value
                                             } else {
-                                                ChronalApp.getInstance().settings.metronomeRhythmSecondary.value = rhythm.serialize()
-                                                ChronalApp.getInstance().settings.metronomeSimpleRhythmSecondary.value = value
+                                                ChronalApp.getInstance().settings.metronomeRhythmSecondary.value = parsedRhythm.serialize()
+                                                ChronalApp.getInstance().settings.metronomeSimpleRhythmSecondary.value = rhythm.value
                                             }
                                             scope.launch {
                                                 ChronalApp.getInstance().settings.save()
-                                                metronome.setRhythm(rhythm)
+                                                metronome.setRhythm(parsedRhythm)
                                                 finish()
                                             }
                                         }
@@ -202,8 +201,8 @@ class SimpleEditorActivity : ComponentActivity() {
                                     text = { Text(getString(R.string.generic_exit_discard)) },
                                     onClick = {
                                         backDropdown = false
-                                        value = initialValue
-                                        val rhythm = getRhythm(value)
+                                        rhythm.value = initialValue
+                                        val rhythm = getRhythm(rhythm.value)
                                         if(rhythm == null) {
                                             error = true
                                             return@DropdownMenuItem
@@ -240,7 +239,7 @@ class SimpleEditorActivity : ComponentActivity() {
                         }
                         IconButton(
                             onClick = {
-                                if(value == initialValue) {
+                                if(rhythm == initialValue) {
                                     finish()
                                 } else {
                                     backDropdown = true
@@ -264,9 +263,7 @@ class SimpleEditorActivity : ComponentActivity() {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
 
-                TabRow(navController, value) {
-                    value = it
-                }
+                TabRow(navController)
                 if(expanded) {
                     Row {
                         Row(
@@ -284,30 +281,24 @@ class SimpleEditorActivity : ComponentActivity() {
                                             .align(Alignment.Center)
                                     ) {
                                         if (currentRoute == "beat") {
-                                            MusicFont.Number.TimeSignatureLine(value.timeSignature.first,
+                                            MusicFont.Number.TimeSignatureLine(rhythm.value.timeSignature.first,
                                                 color = if (isPrimary) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
                                             )
                                         } else {
-                                            MusicFont.Number.TimeSignature(value.timeSignature.first, value.timeSignature.second,
+                                            MusicFont.Number.TimeSignature(rhythm.value.timeSignature.first, rhythm.value.timeSignature.second,
                                                 color = if (isPrimary) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
                                             )
                                         }
                                     }
                                 }
                             }
-                            EmphasisSwitcher(value) {
-                                value = it
-                            }
+                            EmphasisSwitcher()
                         }
                         NavigationHost(navController,
                             modifier = Modifier.fillMaxHeight()
                                 .weight(1f),
-                            expanded = true, startPage, value
-                        ) {
-                            value = it
-                            val result = checkRhythm(value)
-                            error = !result
-                        }
+                            expanded = true, startPage
+                        )
                     }
                 } else {
                     Column {
@@ -328,30 +319,24 @@ class SimpleEditorActivity : ComponentActivity() {
                                             .align(Alignment.Center)
                                     ) {
                                         if (currentRoute == "beat") {
-                                            MusicFont.Number.TimeSignatureLine(value.timeSignature.first,
+                                            MusicFont.Number.TimeSignatureLine(rhythm.value.timeSignature.first,
                                                 color = if (isPrimary) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
                                             )
                                         } else {
-                                            MusicFont.Number.TimeSignature(value.timeSignature.first, value.timeSignature.second,
+                                            MusicFont.Number.TimeSignature(rhythm.value.timeSignature.first, rhythm.value.timeSignature.second,
                                                 color = if (isPrimary) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
                                             )
                                         }
                                     }
                                 }
                             }
-                            EmphasisSwitcher(value) {
-                                value = it
-                            }
+                            EmphasisSwitcher()
                         }
                         NavigationHost(navController,
                             modifier = Modifier.fillMaxWidth()
                                 .weight(1f),
-                            expanded = false, startPage, value
-                        ) {
-                            value = it
-                            val result = checkRhythm(value)
-                            error = !result
-                        }
+                            expanded = false, startPage
+                        )
                     }
                 }
             }
@@ -359,7 +344,7 @@ class SimpleEditorActivity : ComponentActivity() {
     }
 
     @Composable
-    fun TabRow(navController: NavController, value: SimpleRhythm, onValueChange: (SimpleRhythm) -> Unit) {
+    fun TabRow(navController: NavController) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
 
@@ -369,14 +354,13 @@ class SimpleEditorActivity : ComponentActivity() {
                 "time_signature" -> 1
                 else -> 0
             },
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-            modifier = Modifier.zIndex(1f)
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         ) {
             Tab(
                 selected = currentRoute == "beat",
                 onClick = {
                     navController.navigate("beat")
-                    onValueChange(value.copy(timeSignature = value.timeSignature.first to 0, subdivision = 0))
+                    rhythm.value = rhythm.value.copy(timeSignature = rhythm.value.timeSignature.first to 0, subdivision = 0)
                 },
                 text = { Text(getString(R.string.simple_editor_beat_count)) }
             )
@@ -384,9 +368,9 @@ class SimpleEditorActivity : ComponentActivity() {
                 selected = currentRoute == "time_signature",
                 onClick = {
                     navController.navigate("time_signature")
-                    val second = if(value.timeSignature.second == 0) 4 else value.timeSignature.second
-                    val subdivision = if(value.subdivision == 0) 4 else value.subdivision
-                    onValueChange(value.copy(timeSignature = value.timeSignature.first to second, subdivision = subdivision))
+                    val second = if(rhythm.value.timeSignature.second == 0) 4 else rhythm.value.timeSignature.second
+                    val subdivision = if(rhythm.value.subdivision == 0) 4 else rhythm.value.subdivision
+                    rhythm.value = rhythm.value.copy(timeSignature = rhythm.value.timeSignature.first to second, subdivision = subdivision)
                 },
                 text = { Text(getString(R.string.simple_editor_time_signature)) }
             )
@@ -467,7 +451,7 @@ class SimpleEditorActivity : ComponentActivity() {
     }
 
     @Composable
-    fun EmphasisSwitcher(value: SimpleRhythm, onValueChange: (SimpleRhythm) -> Unit) {
+    fun EmphasisSwitcher() {
         Column(
             modifier = Modifier.width(IntrinsicSize.Min)
                 .padding(end = 32.dp),
@@ -506,24 +490,24 @@ class SimpleEditorActivity : ComponentActivity() {
                 }
             }
 
-            EmphasisButton(R.string.simple_editor_emphasis_all, value.emphasis == 0) {
-                onValueChange(value.copy(emphasis = 0))
-                val result = checkRhythm(value)
+            EmphasisButton(R.string.simple_editor_emphasis_all, rhythm.value.emphasis == 0) {
+                rhythm.value = rhythm.value.copy(emphasis = 0)
+                val result = checkRhythm(rhythm.value)
                 error = !result
             }
-            EmphasisButton(R.string.simple_editor_emphasis_none, value.emphasis == 1) {
-                onValueChange(value.copy(emphasis = 1))
-                val result = checkRhythm(value)
+            EmphasisButton(R.string.simple_editor_emphasis_none, rhythm.value.emphasis == 1) {
+                rhythm.value = rhythm.value.copy(emphasis = 1)
+                val result = checkRhythm(rhythm.value)
                 error = !result
             }
-            EmphasisButton(R.string.simple_editor_emphasis_first, value.emphasis == 2) {
-                onValueChange(value.copy(emphasis = 2))
-                val result = checkRhythm(value)
+            EmphasisButton(R.string.simple_editor_emphasis_first, rhythm.value.emphasis == 2) {
+                rhythm.value = rhythm.value.copy(emphasis = 2)
+                val result = checkRhythm(rhythm.value)
                 error = !result
             }
-            EmphasisButton(R.string.simple_editor_emphasis_alternate, value.emphasis == 3) {
-                onValueChange(value.copy(emphasis = 3))
-                val result = checkRhythm(value)
+            EmphasisButton(R.string.simple_editor_emphasis_alternate, rhythm.value.emphasis == 3) {
+                rhythm.value = rhythm.value.copy(emphasis = 3)
+                val result = checkRhythm(rhythm.value)
                 error = !result
             }
         }
@@ -531,7 +515,7 @@ class SimpleEditorActivity : ComponentActivity() {
 
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
-    fun NavigationHost(navController: NavHostController, modifier: Modifier = Modifier, expanded: Boolean, startPage: String, value: SimpleRhythm, onValueChange: (SimpleRhythm) -> Unit) {
+    fun NavigationHost(navController: NavHostController, modifier: Modifier = Modifier, expanded: Boolean, startPage: String) {
         val enterTransition: (Boolean) -> EnterTransition = { forward ->
             if (expanded) {
                 slideInVertically(MotionScheme.expressive().slowSpatialSpec(), initialOffsetY = { if(forward) it else -it })
@@ -550,7 +534,7 @@ class SimpleEditorActivity : ComponentActivity() {
         NavHost(
             navController = navController,
             startDestination = startPage,
-            modifier = modifier
+            modifier = modifier.clipToBounds()
         ) {
             composable("beat",
                 enterTransition = {
@@ -572,13 +556,15 @@ class SimpleEditorActivity : ComponentActivity() {
                     ) {
                         FilledTonalIconButton(
                             onClick = {
-                                if (value.timeSignature.first > 1) {
-                                    onValueChange(value.copy(timeSignature = value.timeSignature.copy(first = value.timeSignature.first - 1)))
+                                if (rhythm.value.timeSignature.first > 1) {
+                                    rhythm.value = rhythm.value.copy(timeSignature = rhythm.value.timeSignature.copy(first = rhythm.value.timeSignature.first - 1))
+                                    val result = checkRhythm(rhythm.value)
+                                    error = !result
                                 }
                             },
                             modifier = Modifier.minimumInteractiveComponentSize()
                                 .size(IconButtonDefaults.mediumContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide)),
-                            enabled = value.timeSignature.first > 1,
+                            enabled = rhythm.value.timeSignature.first > 1,
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.baseline_remove_24),
@@ -594,7 +580,7 @@ class SimpleEditorActivity : ComponentActivity() {
                                 .background(MaterialTheme.colorScheme.tertiaryContainer, RoundedCornerShape(16.dp))
                                 .padding(horizontal = 24.dp, vertical = 12.dp)
                         ) {
-                            Text("${value.timeSignature.first}",
+                            Text("${rhythm.value.timeSignature.first}",
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onTertiaryContainer,
                                 modifier = Modifier.align(Alignment.Center)
@@ -604,7 +590,9 @@ class SimpleEditorActivity : ComponentActivity() {
                         Spacer(modifier = Modifier.width(12.dp))
                         FilledIconButton(
                             onClick = {
-                                onValueChange(value.copy(timeSignature = value.timeSignature.copy(first = value.timeSignature.first + 1)))
+                                rhythm.value = rhythm.value.copy(timeSignature = rhythm.value.timeSignature.copy(first = rhythm.value.timeSignature.first + 1))
+                                val result = checkRhythm(rhythm.value)
+                                error = !result
                             },
                             modifier = Modifier.minimumInteractiveComponentSize()
                                 .size(IconButtonDefaults.mediumContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide)),
@@ -627,7 +615,7 @@ class SimpleEditorActivity : ComponentActivity() {
                             horizontalArrangement = Arrangement.Center,
                             maxItemsInEachRow = 4
                         ) {
-                            repeat(value.timeSignature.first) { i ->
+                            repeat(rhythm.value.timeSignature.first) { i ->
                                 BeatShape(i+1)
                             }
                         }
@@ -649,20 +637,14 @@ class SimpleEditorActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxHeight()
                                 .weight(0.75f)
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
-                                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp)),
-                            value = value
-                        ) {
-                            onValueChange(it)
-                        }
+                                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
+                        )
                         BeatChanger(
                             modifier = Modifier.fillMaxHeight()
                                 .weight(1f)
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
-                                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp)),
-                            value = value,
-                        ) {
-                            onValueChange(it)
-                        }
+                                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
+                        )
                     }
                 } else {
                     Column {
@@ -670,20 +652,14 @@ class SimpleEditorActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxWidth()
                                 .weight(0.75f)
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
-                                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp)),
-                            value = value
-                        ) {
-                            onValueChange(it)
-                        }
+                                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
+                        )
                         BeatChanger(
                             modifier = Modifier.fillMaxWidth()
                                 .weight(1f)
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
-                                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp)),
-                            value = value,
-                        ) {
-                            onValueChange(it)
-                        }
+                                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
+                        )
                     }
                 }
             }
@@ -692,7 +668,7 @@ class SimpleEditorActivity : ComponentActivity() {
 
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
-    fun TimeSignature(modifier: Modifier, value: SimpleRhythm, onValueChange: (SimpleRhythm) -> Unit) {
+    fun TimeSignature(modifier: Modifier) {
         Box(
             modifier = modifier,
         ) {
@@ -712,7 +688,11 @@ class SimpleEditorActivity : ComponentActivity() {
                 ) {
                     IconButton(
                         onClick = {
-                            onValueChange(value.copy(timeSignature = Pair((value.timeSignature.first - 1).coerceIn(1..32), value.timeSignature.second)))
+                            rhythm.value = rhythm.value.copy(timeSignature = Pair((rhythm.value.timeSignature.first - 1).coerceIn(1..32),
+                                rhythm.value.timeSignature.second))
+                            val result = checkRhythm(rhythm.value)
+                            error = !result
+                            Log.d("a", "${rhythm.value.timeSignature.first} - ${rhythm.value.timeSignature.second}, ${rhythm.value.subdivision}")
                         }
                     ) {
                         Icon(
@@ -728,13 +708,16 @@ class SimpleEditorActivity : ComponentActivity() {
                         contentAlignment = Alignment.Center
                     ) {
                         MusicFont.Number.TimeSignatureLine(
-                            value.timeSignature.first,
+                            rhythm.value.timeSignature.first,
                             MaterialTheme.colorScheme.onSurface
                         )
                     }
                     IconButton(
                         onClick = {
-                            onValueChange(value.copy(timeSignature = Pair((value.timeSignature.first + 1).coerceIn(1..32), value.timeSignature.second)))
+                            rhythm.value = rhythm.value.copy(timeSignature = Pair((rhythm.value.timeSignature.first + 1).coerceIn(1..32),
+                                rhythm.value.timeSignature.second))
+                            val result = checkRhythm(rhythm.value)
+                            error = !result
                         }
                     ) {
                         Icon(
@@ -751,7 +734,10 @@ class SimpleEditorActivity : ComponentActivity() {
                 ) {
                     IconButton(
                         onClick = {
-                            onValueChange(value.copy(timeSignature = Pair(value.timeSignature.first, (value.timeSignature.second / 2).coerceIn(1..32))))
+                            rhythm.value = rhythm.value.copy(timeSignature = Pair(rhythm.value.timeSignature.first, (rhythm.value.timeSignature.second / 2)
+                                .coerceIn(1..32)))
+                            val result = checkRhythm(rhythm.value)
+                            error = !result
                         }
                     ) {
                         Icon(
@@ -767,13 +753,16 @@ class SimpleEditorActivity : ComponentActivity() {
                         contentAlignment = Alignment.Center
                     ) {
                         MusicFont.Number.TimeSignatureLine(
-                            value.timeSignature.second,
+                            rhythm.value.timeSignature.second,
                             MaterialTheme.colorScheme.onSurface
                         )
                     }
                     IconButton(
                         onClick = {
-                            onValueChange(value.copy(timeSignature = Pair(value.timeSignature.first, (value.timeSignature.second * 2).coerceIn(1..32))))
+                            rhythm.value = rhythm.value.copy(timeSignature = Pair(rhythm.value.timeSignature.first, (rhythm.value.timeSignature.second * 2)
+                                .coerceIn(1..32)))
+                            val result = checkRhythm(rhythm.value)
+                            error = !result
                         }
                     ) {
                         Icon(
@@ -789,8 +778,8 @@ class SimpleEditorActivity : ComponentActivity() {
 
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
-    fun BeatChanger(modifier: Modifier, value: SimpleRhythm, onValueChange: (SimpleRhythm) -> Unit) {
-        var custom by remember { mutableStateOf(value.subdivision != 0) }
+    fun BeatChanger(modifier: Modifier) {
+        var custom = rhythm.value.subdivision != 0
 
         Column(
             modifier = modifier,
@@ -813,7 +802,9 @@ class SimpleEditorActivity : ComponentActivity() {
                         checked = !custom,
                         onCheckedChange = {
                             custom = false
-                            onValueChange(value.copy(subdivision = 0))
+                            rhythm.value = rhythm.value.copy(subdivision = 0)
+                            val result = checkRhythm(rhythm.value)
+                            error = !result
                         },
                         shapes = ButtonGroupDefaults.connectedLeadingButtonShapes(),
                         contentPadding = ButtonDefaults.ContentPadding
@@ -825,7 +816,9 @@ class SimpleEditorActivity : ComponentActivity() {
                         checked = custom,
                         onCheckedChange = {
                             custom = true
-                            onValueChange(value.copy(subdivision = value.timeSignature.second))
+                            rhythm.value = rhythm.value.copy(subdivision = rhythm.value.timeSignature.second)
+                            val result = checkRhythm(rhythm.value)
+                            error = !result
                         },
                         shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
                         contentPadding = ButtonDefaults.ContentPadding
@@ -844,28 +837,32 @@ class SimpleEditorActivity : ComponentActivity() {
             ) {
                 for(i in 0..5) { // 1 - 32
                     val duration = 1f / 1.shl(i)
-                    val measureDuration = value.timeSignature.first / value.timeSignature.second.toFloat()
+                    val measureDuration = rhythm.value.timeSignature.first / rhythm.value.timeSignature.second.toFloat()
 
-                    val checked = value.subdivision == 1.shl(i)
+                    val checked = rhythm.value.subdivision == 1.shl(i)
                     val enabled = measureDuration % duration < 1e-6f || abs(duration - (measureDuration % duration)) < 1e-6f
                     if(checked && !enabled) {
-                        onValueChange(value.copy(subdivision = 0))
+                        rhythm.value = rhythm.value.copy(subdivision = 0)
                     }
                     NoteButton(1.shl(i), false, custom, checked, enabled) {
-                        onValueChange(value.copy(subdivision = 1.shl(i)))
+                        rhythm.value = rhythm.value.copy(subdivision = 1.shl(i))
+                        val result = checkRhythm(rhythm.value)
+                        error = !result
                     }
                 }
                 for(i in 2..5) { // 4 - 32, triplets
                     val duration = 1f / 1.shl(i) * 2 / 3f
-                    val measureDuration = value.timeSignature.first / value.timeSignature.second.toFloat()
+                    val measureDuration = rhythm.value.timeSignature.first / rhythm.value.timeSignature.second.toFloat()
 
-                    val checked = value.subdivision == (1.shl(i) * 3 / 2f).toInt()
+                    val checked = rhythm.value.subdivision == (1.shl(i) * 3 / 2f).toInt()
                     val enabled = measureDuration % duration < 1e-6f || abs(duration - (measureDuration % duration)) < 1e-6f
                     if(checked && !enabled) {
-                        onValueChange(value.copy(subdivision = 0))
+                        rhythm.value = rhythm.value.copy(subdivision = 0)
                     }
                     NoteButton(1.shl(i), true, custom, checked, enabled) {
-                        onValueChange(value.copy(subdivision = (1.shl(i) * 3 / 2f).toInt()))
+                        rhythm.value = rhythm.value.copy(subdivision = (1.shl(i) * 3 / 2f).toInt())
+                        val result = checkRhythm(rhythm.value)
+                        error = !result
                     }
                 }
             }
