@@ -29,7 +29,7 @@ import java.util.Arrays;
 
 Dynamic Wavelet Algorithm Pitch Tracking library
 Released under the MIT open source licence
- 
+
 Copyright (c) 2010 Antoine Schmitt
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
