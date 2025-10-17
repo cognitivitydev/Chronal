@@ -279,7 +279,7 @@ fun NoteDisplay(tuner: Tuner?, hz: Float, instrument: Instrument) {
                 ) {
                     DrawName(context.getString(R.string.tuner_concert_pitch), context.getString(R.string.tuner_concert_pitch_short))
                     Spacer(modifier = Modifier.height(8.dp))
-                    DrawNote(transposeFrequency(hz, -instrument.transposition))
+                    DrawNote(hz)
                 }
 
                 if(showTransposition) {
@@ -293,7 +293,7 @@ fun NoteDisplay(tuner: Tuner?, hz: Float, instrument: Instrument) {
                     ) {
                         DrawName(instrument.name, instrument.shortened)
                         Spacer(modifier = Modifier.height(8.dp))
-                        DrawNote(hz)
+                        DrawNote(transposeFrequency(hz, -instrument.transposition))
                     }
                 }
             }
