@@ -23,5 +23,6 @@ data class RhythmNote(
     val isRest: Boolean,
     val isInverted: Boolean,
     val duration: Double,
+    val rawDuration: Double = duration,
     val dots: Int
 ) : RhythmElement()
