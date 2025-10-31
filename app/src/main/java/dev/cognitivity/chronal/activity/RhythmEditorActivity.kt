@@ -1511,6 +1511,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                         .toString(),
                                     isRest = selectedTuplet.notes.first().isRest,
                                     isInverted = selectedTuplet.notes.first().isInverted,
+                                    rawDuration = 1.0 / intValue,
                                     duration = dottedDuration,
                                     dots = i
                                 )
@@ -1793,6 +1794,7 @@ class RhythmEditorActivity : ComponentActivity() {
                         ) + " ${MusicFont.Notation.DOT.char}".repeat(dots),
                         isRest = oldElement.isRest,
                         isInverted = oldElement.isInverted,
+                        rawDuration = oldElement.rawDuration,
                         duration = newDuration,
                         dots = dots
                     )
@@ -1867,6 +1869,7 @@ class RhythmEditorActivity : ComponentActivity() {
                             ),
                             isRest = rest,
                             isInverted = !emphasized,
+                            rawDuration = 1.0 / value,
                             duration = 1.0 / value * restModifier,
                             dots = 0
                         ),
@@ -2129,8 +2132,7 @@ class RhythmEditorActivity : ComponentActivity() {
                     noteSelected = if (isNoteSelected) -1 else noteIndex
                 }
         ) {
-            val baseDuration = note.duration / (1 + (1..note.dots).sumOf { 1.0 / (2.0.pow(it)) })
-            val durationChar = MusicFont.Notation.fromLength(baseDuration)
+            val durationChar = MusicFont.Notation.fromLength(note.rawDuration)
             val char = MusicFont.Notation.setEmphasis(durationChar ?: MusicFont.Notation.N_QUARTER, !note.isInverted)
 
             MusicFont.Notation.Note(
@@ -2482,6 +2484,7 @@ class RhythmEditorActivity : ComponentActivity() {
             display = MusicFont.Notation.convert(value, false).toString(),
             isRest = false,
             isInverted = false,
+            rawDuration = 1.0 / value,
             duration = (1.0 / value) * dottedModifier * (ratio.second.toDouble() / ratio.first),
             dots = 0
         )
@@ -2687,6 +2690,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                                     display = MusicFont.Notation.convert(restValue, true).toString(),
                                                     isRest = true,
                                                     isInverted = false,
+                                                    rawDuration = -duration,
                                                     duration = -duration * scale,
                                                     dots = 0
                                                 ))
@@ -2722,6 +2726,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                                         display = MusicFont.Notation.convert(restValue, true).toString(),
                                                         isRest = true,
                                                         isInverted = false,
+                                                        rawDuration = -1.0 / restValue,
                                                         duration = (-1.0 / restValue) * scale,
                                                         dots = 0
                                                     ))

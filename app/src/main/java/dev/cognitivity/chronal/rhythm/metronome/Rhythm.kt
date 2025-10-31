@@ -96,6 +96,7 @@ data class Rhythm(
                                     display = display,
                                     isRest = isRest,
                                     isInverted = isInverted,
+                                    rawDuration = length,
                                     duration = length * dotModifier * (tupletValue.toDouble() / tupletCount),
                                     dots = dots
                                 )
@@ -121,6 +122,7 @@ data class Rhythm(
                             display = display,
                             isRest = isRest,
                             isInverted = isInverted,
+                            rawDuration = length,
                             duration = length * dotModifier,
                             dots = dots
                         )
