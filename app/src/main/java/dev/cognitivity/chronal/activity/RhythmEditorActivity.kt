@@ -542,7 +542,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                     .padding(8.dp, 0.dp)
                             ) {
                                 TimeSignature(noteSelected != -1)
-                                ChangeEmphasis(noteSelected != -1)
+                                ChangeEmphasis(selectedNote is RhythmNote)
                             }
                         }
                         item {
@@ -808,8 +808,8 @@ class RhythmEditorActivity : ComponentActivity() {
                             .padding(24.dp, 8.dp)
                     ) {
                         MusicFont.Notation.NoteCentered(
-                            note = getBeatValue(metronome.beatValue).first,
-                            dots = if(getBeatValue(metronome.beatValue).second) 1 else 0,
+                            note = MusicFont.Notation.getBeatValue(metronome.beatValue).first,
+                            dots = if(MusicFont.Notation.getBeatValue(metronome.beatValue).second) 1 else 0,
                             modifier = Modifier.align(Alignment.CenterVertically),
                             color = MaterialTheme.colorScheme.onSurface,
                             size = 32.dp,
@@ -1013,37 +1013,6 @@ class RhythmEditorActivity : ComponentActivity() {
         }
     }
 
-    fun getBeatValue(value: Float): Pair<MusicFont.Notation, Boolean> {
-        return when (value) {
-            16f -> MusicFont.Notation.N_16TH to false
-            8f ->  MusicFont.Notation.N_EIGHTH to false
-            4f ->  MusicFont.Notation.N_QUARTER to false
-            2f ->  MusicFont.Notation.N_HALF to false
-            1f ->  MusicFont.Notation.N_WHOLE to false
-            16f / 1.5f -> MusicFont.Notation.N_16TH to true
-            8f / 1.5f ->  MusicFont.Notation.N_EIGHTH to true
-            4f / 1.5f ->  MusicFont.Notation.N_QUARTER to true
-            2f / 1.5f ->  MusicFont.Notation.N_HALF to true
-            1f / 1.5f ->  MusicFont.Notation.N_WHOLE to true
-            else -> MusicFont.Notation.N_QUARTER to false
-        }
-    }
-    fun getBeatValueString(value: Float): String {
-        return when (value) {
-            16f -> MusicFont.Notation.N_16TH.char.toString()
-            8f ->  MusicFont.Notation.N_EIGHTH.char.toString()
-            4f ->  MusicFont.Notation.N_QUARTER.char.toString()
-            2f ->  MusicFont.Notation.N_HALF.char.toString()
-            1f ->  MusicFont.Notation.N_WHOLE.char.toString()
-            16f / 1.5f -> MusicFont.Notation.N_16TH.char + " " + MusicFont.Notation.DOT.char
-            8f / 1.5f ->  MusicFont.Notation.N_EIGHTH.char + " " + MusicFont.Notation.DOT.char
-            4f / 1.5f ->  MusicFont.Notation.N_QUARTER.char + " " + MusicFont.Notation.DOT.char
-            2f / 1.5f ->  MusicFont.Notation.N_HALF.char + " " + MusicFont.Notation.DOT.char
-            1f / 1.5f ->  MusicFont.Notation.N_WHOLE.char + " " + MusicFont.Notation.DOT.char
-            else -> ""
-        }
-    }
-
     @Composable
     fun EditBpmDialog() {
         var beatValue by remember { mutableFloatStateOf(metronome.beatValue) }
@@ -1089,7 +1058,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                 val baseValue = (2.0).pow(4 - noteOption).toFloat()
                                 val dotted = index % 2 == 1
                                 val value = if (dotted) baseValue / 1.5f else baseValue
-                                val string = getBeatValueString(value)
+                                val string = MusicFont.Notation.getBeatValueString(value)
                                 val char = MusicFont.Notation.entries.find { it.char == string[0] }
                                     ?: MusicFont.Notation.N_QUARTER
                                 val isSelected = beatValue == value
@@ -1134,8 +1103,8 @@ class RhythmEditorActivity : ComponentActivity() {
                         horizontalArrangement = Arrangement.Center
                     ) {
                         MusicFont.Notation.NoteCentered(
-                            note = getBeatValue(beatValue).first,
-                            dots = if(getBeatValue(beatValue).second) 1 else 0,
+                            note = MusicFont.Notation.getBeatValue(beatValue).first,
+                            dots = if(MusicFont.Notation.getBeatValue(beatValue).second) 1 else 0,
                             modifier = Modifier.align(Alignment.CenterVertically),
                             color = MaterialTheme.colorScheme.onSurface,
                             size = 64.dp,
@@ -1400,14 +1369,13 @@ class RhythmEditorActivity : ComponentActivity() {
                 },
                 confirmButton = {
                     TextButton(onClick = {
-                        val selectedNote = getNote(noteSelected) ?: return@TextButton
+                        val selectedNote = parsedRhythm.getNoteAt(noteSelected) ?: return@TextButton
                         if(selectedNote !is RhythmNote) return@TextButton
                         val newNote = selectedNote.copy(
                             stemDirection = if(emphasis) StemDirection.UP else StemDirection.DOWN
                         )
-                        val newRhythm = setNote(noteSelected, newNote, isScaled = true)
-                        parsedRhythm = newRhythm
-                        rhythm = newRhythm.serialize()
+                        parsedRhythm = parsedRhythm.replaceNote(noteSelected, newNote, isScaled = true)
+                        rhythm = parsedRhythm.serialize()
                         metronome.setRhythm(parsedRhythm)
 
                         showDialog = false
@@ -1553,7 +1521,7 @@ class RhythmEditorActivity : ComponentActivity() {
         }
 
         if(showDialog) {
-            val tuplet = getNewTuplet(ratio) ?: return
+            val tuplet = parsedRhythm.createTupletAt(noteSelected, ratio) ?: return
             ratio = tuplet.ratio
 
             Dialog(
@@ -1596,49 +1564,10 @@ class RhythmEditorActivity : ComponentActivity() {
                                     item { NoteText(element, 0, errored = false, editable = false) }
                                 }
                             }
-                            // tuplet header
-                            Box(
+                            TupletHeader(tuplet,
                                 modifier = Modifier.padding(horizontal = 8.dp)
                                     .matchParentSize()
-                            ) {
-                                Row(
-                                    modifier = Modifier.align(Alignment.TopCenter)
-                                ) {
-                                    Box(
-                                        modifier = Modifier.width(1.dp)
-                                            .height(8.dp)
-                                            .align(Alignment.CenterVertically)
-                                            .offset(0.dp, 4.dp)
-                                            .background(MaterialTheme.colorScheme.onSurface)
-                                    )
-                                    Box(
-                                        modifier = Modifier.weight(1f)
-                                            .height(1.dp)
-                                            .align(Alignment.CenterVertically)
-                                            .background(MaterialTheme.colorScheme.onSurface)
-                                    )
-                                    Text(
-                                        "${tuplet.ratio.first}:${tuplet.ratio.second}",
-                                        modifier = Modifier.align(Alignment.CenterVertically)
-                                            .padding(horizontal = 16.dp),
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        style = MaterialTheme.typography.labelLarge,
-                                    )
-                                    Box(
-                                        modifier = Modifier.weight(1f)
-                                            .height(1.dp)
-                                            .align(Alignment.CenterVertically)
-                                            .background(MaterialTheme.colorScheme.onSurface)
-                                    )
-                                    Box(
-                                        modifier = Modifier.width(1.dp)
-                                            .height(8.dp)
-                                            .align(Alignment.CenterVertically)
-                                            .offset(0.dp, 4.dp)
-                                            .background(MaterialTheme.colorScheme.onSurface)
-                                    )
-                                }
-                            }
+                            )
                         }
 
                         Spacer(Modifier.height(16.dp))
@@ -1669,52 +1598,7 @@ class RhythmEditorActivity : ComponentActivity() {
                             Spacer(modifier = Modifier.weight(1f))
                             Button(onClick = {
                                 showDialog = false
-
-                                var globalIndex = 0
-                                var foundElement: RhythmElement? = null
-                                var foundMeasureIndex = 0
-                                var foundElementIndex = 0
-                                for ((measureIndex, measure) in parsedRhythm.measures.withIndex()) {
-                                    for ((elementIndex, element) in measure.elements.withIndex()) {
-                                        when (element) {
-                                            is RhythmAtom -> {
-                                                if (globalIndex + 1 > noteSelected) {
-                                                    foundElement = element
-                                                    foundMeasureIndex = measureIndex
-                                                    foundElementIndex = elementIndex
-                                                    break
-                                                }
-                                                globalIndex += 1
-                                            }
-
-                                            is RhythmTuplet -> {
-                                                if (globalIndex + element.notes.size > noteSelected) {
-                                                    foundElement = element
-                                                    foundMeasureIndex = measureIndex
-                                                    foundElementIndex = elementIndex
-                                                    break
-                                                }
-                                                globalIndex += element.notes.size
-                                            }
-                                        }
-                                    }
-                                    if (foundElement != null) break
-                                }
-
-                                val newMeasure = Measure(
-                                    timeSig = parsedRhythm.measures[foundMeasureIndex].timeSig,
-                                    elements = parsedRhythm.measures[foundMeasureIndex].elements.toMutableList().apply {
-                                        if (foundElement is RhythmNote) {
-                                            this[foundElementIndex] = tuplet
-                                        } else if (foundElement is RhythmTuplet) {
-                                            this[foundElementIndex] = tuplet
-                                        }
-                                    }
-                                )
-                                val newMeasures = parsedRhythm.measures.toMutableList().apply {
-                                    this[foundMeasureIndex] = newMeasure
-                                }
-                                parsedRhythm = Rhythm(newMeasures)
+                                parsedRhythm = parsedRhythm.replaceNote(noteSelected, tuplet, isScaled = false)
                                 metronome.setRhythm(parsedRhythm)
                             }) {
                                 Text(getString(R.string.generic_confirm))
@@ -1776,15 +1660,11 @@ class RhythmEditorActivity : ComponentActivity() {
                 .clip(RoundedCornerShape(16.dp))
                 .background(backgroundColor)
                 .clickable(enabled && oldElement != null) {
-                    val newNote = if (oldElement is RhythmRest) {
-                        oldElement.copy(dots = dots)
-                    } else {
-                        (oldElement as RhythmNote).copy(dots = dots)
-                    }
+                    val newNote = if(oldElement is RhythmRest) oldElement.copy(dots = dots)
+                        else (oldElement as RhythmNote).copy(dots = dots)
 
-                    val newRhythm = setNote(noteSelected, newNote, isScaled = true)
-                    parsedRhythm = newRhythm
-                    rhythm = newRhythm.serialize()
+                    parsedRhythm = parsedRhythm.replaceNote(noteSelected, newNote, isScaled = true)
+                    rhythm = parsedRhythm.serialize()
                     metronome.setRhythm(parsedRhythm)
                 }
                 .padding(horizontal = 16.dp),
@@ -1854,13 +1734,8 @@ class RhythmEditorActivity : ComponentActivity() {
                             dots = 0
                         )
                     }
-                    val newRhythm = setNote(
-                        noteSelected,
-                        newNote,
-                        isScaled = false
-                    )
-                    parsedRhythm = newRhythm
-                    rhythm = newRhythm.serialize()
+                    parsedRhythm = parsedRhythm.replaceNote(noteSelected, newNote, isScaled = false)
+                    rhythm = parsedRhythm.serialize()
                     metronome.setRhythm(parsedRhythm)
                 }
         ) {
@@ -1905,9 +1780,12 @@ class RhythmEditorActivity : ComponentActivity() {
         }
     }
 
+    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
-    fun DrawRhythm(rhythm: Rhythm, indexOffset: Int = 0, measureOffset: Int = 0,
-                   allErrored: Boolean = false, updateBackup: Boolean = false, editable: Boolean = true, complete: Boolean = true) {
+    fun DrawRhythm(
+        rhythm: Rhythm, indexOffset: Int = 0, measureOffset: Int = 0,
+        allErrored: Boolean = false, updateBackup: Boolean = false, editable: Boolean = true, complete: Boolean = true
+    ) {
         var anyError = false
         var globalIndex = indexOffset
         var previousTimeSig = 0 to 0
@@ -1918,7 +1796,8 @@ class RhythmEditorActivity : ComponentActivity() {
                 if ((measure.timeSig.first <= 0 || measure.timeSig.second <= 0) && editable) {
                     val error = getString(
                         R.string.editor_error_invalid_time_signature, measureIndex + measureOffset + 1,
-                        "${measure.timeSig.first}/${measure.timeSig.second}")
+                        "${measure.timeSig.first}/${measure.timeSig.second}"
+                    )
                     if (!errors.contains(error)) {
                         Log.e("RhythmEditorActivity", error)
                         errors.add(error)
@@ -1929,7 +1808,8 @@ class RhythmEditorActivity : ComponentActivity() {
                 if ((measure.timeSig.second and (measure.timeSig.second - 1) != 0) && editable) {
                     val error = getString(
                         R.string.editor_error_invalid_denominator, measureIndex + measureOffset + 1,
-                        "${measure.timeSig.first}/${measure.timeSig.second}")
+                        "${measure.timeSig.first}/${measure.timeSig.second}"
+                    )
                     if (!errors.contains(error)) {
                         Log.e("RhythmEditorActivity", error)
                         errors.add(error)
@@ -1948,8 +1828,11 @@ class RhythmEditorActivity : ComponentActivity() {
                 if(measureDuration != measureLength && editable) {
                     val comparison = if(measureLength > measureDuration) ">" else "<"
                     val error = getString(
-                        R.string.editor_error_invalid_length, measureIndex + measureOffset + 1,
-                        "${measure.timeSig.first}/${measure.timeSig.second}", "$measureLength $comparison $measureDuration")
+                        R.string.editor_error_invalid_length,
+                        measureIndex + measureOffset + 1,
+                        "${measure.timeSig.first}/${measure.timeSig.second}",
+                        "$measureLength $comparison $measureDuration"
+                    )
                     if(!errors.contains(error)) {
                         Log.e("RhythmEditorActivity", error)
                         errors.add(error)
@@ -1960,7 +1843,8 @@ class RhythmEditorActivity : ComponentActivity() {
             } else if(complete && editable) {
                 val error = getString(
                     R.string.editor_error_invalid_time_signature, measureIndex + measureOffset + 1,
-                    "${measure.timeSig.first}/${measure.timeSig.second}")
+                    "${measure.timeSig.first}/${measure.timeSig.second}"
+                )
                 if(!errors.contains(error)) {
                     Log.e("RhythmEditorActivity", error)
                     errors.add(error)
@@ -2026,50 +1910,10 @@ class RhythmEditorActivity : ComponentActivity() {
                                         )
                                         globalIndex += element.notes.size
                                     }
-                                    // tuplet header
-                                    Box(
+                                    TupletHeader(element,
                                         modifier = Modifier.padding(8.dp, 0.dp)
                                             .matchParentSize()
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth()
-                                                .align(Alignment.TopCenter)
-                                        ) {
-                                            Box(
-                                                modifier = Modifier.width(1.dp)
-                                                    .height(8.dp)
-                                                    .align(Alignment.CenterVertically)
-                                                    .offset(0.dp, 4.dp)
-                                                    .background(MaterialTheme.colorScheme.onSurface)
-                                            )
-                                            Box(
-                                                modifier = Modifier.weight(1f)
-                                                    .height(1.dp)
-                                                    .align(Alignment.CenterVertically)
-                                                    .background(MaterialTheme.colorScheme.onSurface)
-                                            )
-                                            Text(
-                                                "${element.ratio.first}:${element.ratio.second}",
-                                                modifier = Modifier.align(Alignment.CenterVertically)
-                                                    .padding(16.dp, 0.dp),
-                                                color = MaterialTheme.colorScheme.onSurface,
-                                                style = MaterialTheme.typography.labelLarge,
-                                            )
-                                            Box(
-                                                modifier = Modifier.weight(1f)
-                                                    .height(1.dp)
-                                                    .align(Alignment.CenterVertically)
-                                                    .background(MaterialTheme.colorScheme.onSurface)
-                                            )
-                                            Box(
-                                                modifier = Modifier.width(1.dp)
-                                                    .height(8.dp)
-                                                    .align(Alignment.CenterVertically)
-                                                    .offset(0.dp, 4.dp)
-                                                    .background(MaterialTheme.colorScheme.onSurface)
-                                            )
-                                        }
-                                    }
+                                    )
                                 }
                             }
                         }
@@ -2080,6 +1924,52 @@ class RhythmEditorActivity : ComponentActivity() {
         }
         if(updateBackup && !anyError) {
             backupRhythm = rhythm
+        }
+    }
+
+    @Composable
+    fun TupletHeader(tuplet: RhythmTuplet, modifier: Modifier = Modifier) {
+        Box(
+            modifier = modifier
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth()
+                    .align(Alignment.TopCenter)
+            ) {
+                Box(
+                    modifier = Modifier.width(1.dp)
+                        .height(8.dp)
+                        .align(Alignment.CenterVertically)
+                        .offset(0.dp, 4.dp)
+                        .background(MaterialTheme.colorScheme.onSurface)
+                )
+                Box(
+                    modifier = Modifier.weight(1f)
+                        .height(1.dp)
+                        .align(Alignment.CenterVertically)
+                        .background(MaterialTheme.colorScheme.onSurface)
+                )
+                Text(
+                    "${tuplet.ratio.first}:${tuplet.ratio.second}",
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                        .padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.labelLarge,
+                )
+                Box(
+                    modifier = Modifier.weight(1f)
+                        .height(1.dp)
+                        .align(Alignment.CenterVertically)
+                        .background(MaterialTheme.colorScheme.onSurface)
+                )
+                Box(
+                    modifier = Modifier.width(1.dp)
+                        .height(8.dp)
+                        .align(Alignment.CenterVertically)
+                        .offset(0.dp, 4.dp)
+                        .background(MaterialTheme.colorScheme.onSurface)
+                )
+            }
         }
     }
 
@@ -2117,7 +2007,10 @@ class RhythmEditorActivity : ComponentActivity() {
         ) {
             val durationChar = MusicFont.Notation.fromLength(note.baseDuration, note.isRest())
             val stemDirection = if(note is RhythmNote) note.stemDirection else StemDirection.UP
-            val char = MusicFont.Notation.setEmphasis(durationChar ?: MusicFont.Notation.N_QUARTER, stemDirection == StemDirection.UP)
+            val char = MusicFont.Notation.setEmphasis(
+                durationChar ?: MusicFont.Notation.N_QUARTER,
+                stemDirection == StemDirection.UP
+            )
 
             MusicFont.Notation.Note(
                 note = char,
@@ -2217,7 +2110,8 @@ class RhythmEditorActivity : ComponentActivity() {
                         ) {
                             IconButton(
                                 onClick = {
-                                    timeSignature = Pair((timeSignature.first - 1).coerceIn(1..32), timeSignature.second)
+                                    timeSignature =
+                                        Pair((timeSignature.first - 1).coerceIn(1..32), timeSignature.second)
                                 }
                             ) {
                                 Icon(
@@ -2239,7 +2133,8 @@ class RhythmEditorActivity : ComponentActivity() {
                             }
                             IconButton(
                                 onClick = {
-                                    timeSignature = Pair((timeSignature.first + 1).coerceIn(1..32), timeSignature.second)
+                                    timeSignature =
+                                        Pair((timeSignature.first + 1).coerceIn(1..32), timeSignature.second)
                                 }
                             ) {
                                 Icon(
@@ -2256,7 +2151,8 @@ class RhythmEditorActivity : ComponentActivity() {
                         ) {
                             IconButton(
                                 onClick = {
-                                    timeSignature = Pair(timeSignature.first, (timeSignature.second / 2).coerceIn(1..32))
+                                    timeSignature =
+                                        Pair(timeSignature.first, (timeSignature.second / 2).coerceIn(1..32))
                                 }
                             ) {
                                 Icon(
@@ -2278,7 +2174,8 @@ class RhythmEditorActivity : ComponentActivity() {
                             }
                             IconButton(
                                 onClick = {
-                                    timeSignature = Pair(timeSignature.first, (timeSignature.second * 2).coerceIn(1..32))
+                                    timeSignature =
+                                        Pair(timeSignature.first, (timeSignature.second * 2).coerceIn(1..32))
                                 }
                             ) {
                                 Icon(
@@ -2293,7 +2190,8 @@ class RhythmEditorActivity : ComponentActivity() {
             },
             confirmButton = {
                 TextButton(onClick = {
-                    setTimeSignature(measureIndex, measure.timeSig, timeSignature)
+                    parsedRhythm = parsedRhythm.setTimeSignature(measureIndex, timeSignature)
+                    metronome.setRhythm(parsedRhythm)
                     showTimeSignature = -1
                 }) {
                     Text(getString(R.string.generic_confirm))
@@ -2305,491 +2203,5 @@ class RhythmEditorActivity : ComponentActivity() {
                 }
             }
         )
-    }
-
-    fun setTimeSignature(measureIndex: Int, old: Pair<Int, Int>, new: Pair<Int, Int>) {
-        val measure = parsedRhythm.measures[measureIndex]
-        val newElements = mutableListOf<RhythmElement>()
-        val oldDuration = old.first / old.second.toDouble()
-        val newDuration = new.first / new.second.toDouble()
-        if(newDuration > oldDuration) { // extend measure
-            newElements.addAll(measure.elements)
-            var remaining = newDuration - oldDuration
-            var restValue = 1
-            while (1.0 / restValue > remaining + 1e-6) {
-                restValue *= 2
-            }
-            val newRests = arrayListOf<RhythmRest>()
-
-            while (remaining > 1e-6) {
-                val duration = 1.0 / restValue
-                if (remaining >= duration - 1e-6) {
-                    newRests.add(
-                        RhythmRest(
-                            baseDuration = duration,
-                            dots = 0
-                        )
-                    )
-                    remaining -= duration
-                } else {
-                    restValue *= 2
-                }
-            }
-            newElements.addAll(newRests.reversed())
-        } else if(newDuration < oldDuration) { // shorten measure
-            var remaining = newDuration
-            for(element in measure.elements) {
-                when(element) {
-                    is RhythmAtom -> {
-                        if(remaining - element.getDuration() >= 0) { // keep
-                            newElements.add(element)
-                            remaining -= element.getDuration()
-                        } else { // remove
-                            break
-                        }
-                    }
-                    is RhythmTuplet -> {
-                        if(remaining - element.getDuration() >= 0) { // keep
-                            newElements.add(element)
-                            remaining -= element.getDuration()
-                        } else { // remove
-                            break
-                        }
-                    }
-                }
-            }
-
-            if(remaining >= 0) { // add rests to fill measure
-                var restValue = 1
-                while (1.0 / restValue > remaining + 1e-6) {
-                    restValue *= 2
-                }
-                val newRests = arrayListOf<RhythmRest>()
-
-                while(restValue < 1024 && remaining > 0) {
-                    if (1.0 / restValue <= remaining) {
-                        newRests.add(
-                            RhythmRest(
-                                baseDuration = 1.0 / restValue,
-                                dots = 0
-                            )
-                        )
-                        remaining -= 1.0 / restValue
-                    } else {
-                        restValue *= 2
-                    }
-                }
-                newElements.addAll(newRests.reversed())
-            } else {
-                return
-            }
-        } else { // same length
-            newElements.addAll(measure.elements)
-        }
-
-        val newMeasure = Measure(
-            timeSig = new,
-            elements = newElements
-        )
-        val measures = parsedRhythm.measures.toMutableList()
-        measures[measureIndex] = newMeasure
-        parsedRhythm = Rhythm(measures)
-        metronome.setRhythm(parsedRhythm)
-    }
-
-    fun getNewTuplet(defaultRatio: Pair<Int, Int>? = null): RhythmTuplet? {
-        var globalIndex = 0
-        var measureIndex = 0
-        var foundElement: RhythmElement? = null
-        for(measure in parsedRhythm.measures) {
-            for(element in measure.elements) {
-                if(element is RhythmNote) {
-                    if (globalIndex == noteSelected) {
-                        foundElement = element
-                        break
-                    }
-                    globalIndex++
-                } else if(element is RhythmTuplet) {
-                    for(note in element.notes) {
-                        if (globalIndex == noteSelected) {
-                            foundElement = element
-                            break
-                        }
-                        globalIndex++
-                        if (foundElement != null) break
-                    }
-                }
-            }
-            if (foundElement != null) break
-            measureIndex++
-        }
-        if(foundElement == null) {
-            Log.e("RhythmEditorActivity", "No note found at index $noteSelected")
-            return null
-        }
-        val elementDuration = when (foundElement) {
-            is RhythmTuplet -> {
-                foundElement.getDuration()
-            }
-            is RhythmAtom -> {
-                foundElement.getDuration()
-            }
-        }
-        val dottedModifier = if(foundElement is RhythmNote) {
-            1 + (1..foundElement.dots).sumOf { 1.0 / (2.0.pow(it)) }
-        } else {
-            1.0
-        }
-
-        val ratio = defaultRatio ?: if(foundElement is RhythmTuplet) {
-            foundElement.ratio
-        } else {
-            3 to 2
-        }
-
-        //convert duration to note
-        var value = 1
-        while(value < 1024) {
-            val noteDuration = 1.0 / value
-            if(noteDuration * dottedModifier * ratio.second.toDouble() <= elementDuration) {
-                break
-            }
-            value *= 2
-        }
-
-        val tupleElement = RhythmNote(
-            stemDirection = if(foundElement is RhythmNote) foundElement.stemDirection else StemDirection.UP,
-            baseDuration = 1.0 / value,
-            tupletRatio = ratio,
-            dots = 0
-        )
-//        val tupleElement = RhythmNote(
-//            display = MusicFont.Notation.convert(value, false).toString(),
-//            isRest = false,
-//            isInverted = false,
-//            rawDuration = 1.0 / value,
-//            baseDuration = (1.0 / value) * dottedModifier * (ratio.second.toDouble() / ratio.first),
-//            dots = 0
-//        )
-        return RhythmTuplet(
-            ratio = ratio,
-            notes = arrayListOf<RhythmNote>().apply {
-                repeat(ratio.first) {
-                    add(tupleElement)
-                }
-            }
-        )
-    }
-
-    private fun getNote(index: Int): RhythmAtom? {
-        var globalIndex = 0
-        for (measure in parsedRhythm.measures) {
-            for (element in measure.elements) {
-                when(element) {
-                    is RhythmAtom -> {
-                        if (globalIndex == index) {
-                            return element
-                        }
-                        globalIndex++
-                    }
-                    is RhythmTuplet -> {
-                        for (note in element.notes) {
-                            if (globalIndex == index) {
-                                return note
-                            }
-                            globalIndex++
-                        }
-                    }
-                }
-            }
-        }
-        return null
-    }
-
-    private fun setNote(noteIndex: Int, newNote: RhythmElement, isScaled: Boolean): Rhythm {
-        var valueDuration = when(newNote) {
-            is RhythmAtom -> newNote.getDuration()
-            is RhythmTuplet -> newNote.getDuration()
-        }
-
-        var newMeasure: Measure? = null
-        var newMeasureIndex = -1
-
-        var globalIndex = 0
-        for((measureIndex, measure) in parsedRhythm.measures.withIndex()) {
-            if(newMeasure != null) break
-
-            val timeSig = measure.timeSig
-            var currentBeat = 0.0
-
-            val newElements = mutableListOf<RhythmElement>()
-
-            for ((index, element) in measure.elements.withIndex()) {
-                when (element) {
-                    is RhythmAtom -> {
-                        if (globalIndex == noteIndex) {
-                            newElements.add(newNote)
-
-                            Log.d("a", "atom ${element.getDuration()} vs $valueDuration")
-                            if(element.getDuration() > valueDuration) { // add rests
-                                var remaining = element.getDuration() - valueDuration
-                                var restValue = 1
-                                while (1.0 / restValue > remaining + 1e-6) {
-                                    restValue *= 2
-                                }
-                                val newRests = arrayListOf<RhythmRest>()
-
-                                while (remaining > 1e-6) {
-                                    val duration = 1.0 / restValue
-                                    if (remaining >= duration - 1e-6) {
-                                        newRests.add(RhythmRest(
-                                            baseDuration = duration,
-                                            dots = 0
-                                        ))
-                                        remaining -= duration
-                                    } else {
-                                        restValue *= 2
-                                    }
-                                }
-
-                                newElements.addAll(newRests.reversed())
-
-                                // add rest of measure
-                                for(extraElement in measure.elements.subList(index + 1, measure.elements.size)) {
-                                    newElements.add(extraElement)
-                                }
-
-                                newMeasure = Measure(
-                                    timeSig = timeSig,
-                                    elements = newElements
-                                )
-                                newMeasureIndex = measureIndex
-                                break
-                            } else if(element.getDuration() < valueDuration) { // remove extra notes
-                                var remainingDuration = valueDuration
-                                var offset = 0
-                                for(extraElement in measure.elements.subList(index, measure.elements.size)) {
-                                    when(extraElement) {
-                                        is RhythmAtom -> {
-                                            if(remainingDuration <= 0) { // keep
-                                                break
-                                            } else { // remove
-                                                remainingDuration -= extraElement.getDuration()
-                                                offset++
-                                            }
-                                        }
-                                        is RhythmTuplet -> {
-                                            if(remainingDuration <= 0) { // keep
-                                                break
-                                            } else { // remove
-                                                remainingDuration -= extraElement.getDuration()
-                                                offset++
-                                            }
-                                        }
-                                    }
-                                }
-                                if(remainingDuration <= 0) { // add rests to fill measure
-                                    remainingDuration *= -1
-                                    var restValue = 1
-                                    while(restValue < 1024 && remainingDuration > 0) {
-                                        if(1.0 / restValue <= remainingDuration) {
-                                            newElements.add(RhythmRest(
-                                                baseDuration = 1.0 / restValue,
-                                                dots = 0
-                                            ))
-                                            remainingDuration -= 1.0 / restValue
-                                        }
-                                        restValue *= 2
-                                    }
-                                } else {
-                                    return parsedRhythm
-                                }
-
-                                // add rest of measure
-                                for(extraElement in measure.elements.subList(index + offset, measure.elements.size)) {
-                                    newElements.add(extraElement)
-                                }
-
-                                newMeasure = Measure(
-                                    timeSig = timeSig,
-                                    elements = newElements
-                                )
-                                newMeasureIndex = measureIndex
-                                break
-                            } else { // same note duration
-                                for(extraElement in measure.elements.subList(index + 1, measure.elements.size)) {
-                                    newElements.add(extraElement)
-                                }
-
-                                newMeasure = Measure(
-                                    timeSig = timeSig,
-                                    elements = newElements
-                                )
-                                newMeasureIndex = measureIndex
-                                break
-                            }
-                        } else {
-                            newElements.add(element)
-                        }
-                        currentBeat += element.getDuration()
-                        globalIndex++
-                    }
-
-                    is RhythmTuplet -> {
-                        val scale = element.ratio.second.toDouble() / element.ratio.first
-                        var isFound = false
-                        val newTupletElements = mutableListOf<RhythmAtom>()
-                        var currentTupleBeat = 0.0
-                        for ((tupleIndex, tuple) in element.notes.withIndex()) {
-                            if(globalIndex == noteIndex) {
-                                isFound = true
-                                if(newNote is RhythmAtom) {
-                                    if(isScaled) {
-                                        newTupletElements.add(newNote)
-                                    } else {
-                                        valueDuration *= scale
-                                        if(newNote is RhythmNote) {
-                                            newTupletElements.add(newNote.copy(
-                                                baseDuration = newNote.baseDuration,
-                                                tupletRatio = element.ratio
-                                            ))
-                                        } else if(newNote is RhythmRest) {
-                                            newTupletElements.add(newNote.copy(
-                                                baseDuration = newNote.baseDuration,
-                                                tupletRatio = element.ratio
-                                            ))
-                                        }
-                                    }
-                                    Log.d("a", "tuplet atom ${tuple.getDuration()} vs $valueDuration")
-                                    if (tuple.getDuration() > valueDuration) { // add rests
-                                        var remaining = (tuple.getDuration() - valueDuration) / scale
-                                        var restValue = 1
-                                        while (1.0 / restValue > remaining + 1e-6) {
-                                            restValue *= 2
-                                        }
-
-                                        val newRests = arrayListOf<RhythmRest>()
-
-                                        while (remaining > 1e-6) {
-                                            val duration = 1.0 / restValue
-                                            Log.d("a", "duration $duration vs $remaining")
-                                            if (duration <= remaining + 1e-6) {
-                                                newRests.add(RhythmRest(
-                                                    baseDuration = duration,
-                                                    tupletRatio = element.ratio,
-                                                    dots = 0
-                                                ))
-                                                remaining -= duration
-                                            } else {
-                                                restValue *= 2
-                                            }
-                                        }
-                                        newTupletElements.addAll(newRests.reversed())
-
-                                        // add rest of measure
-                                        for(extraElement in element.notes.subList(tupleIndex + 1, element.notes.size)) {
-                                            newTupletElements.add(extraElement)
-                                        }
-                                        break
-                                    } else if(tuple.getDuration() < valueDuration) { // remove extra notes
-                                        Log.d("a", "removing extra")
-                                        var remainingDuration = valueDuration
-                                        var offset = 0
-                                        for(extraElement in element.notes.subList(tupleIndex, element.notes.size)) {
-                                            if(remainingDuration <= 0) { // keep
-                                                Log.d("a", "keeping "+extraElement.getDuration())
-                                                break
-                                            } else { // remove
-                                                Log.d("a", "removing "+extraElement.getDuration()+" - "+remainingDuration)
-                                                remainingDuration -= extraElement.getDuration()
-                                                offset++
-                                            }
-                                        }
-                                        if(remainingDuration <= 1e-10) {
-                                            remainingDuration *= -1
-                                            var restValue = 1
-                                            while(restValue < 1024 && remainingDuration > 0) {
-                                                if((1.0 / restValue) * scale <= remainingDuration + 1e-10) {
-                                                    newTupletElements.add(RhythmRest(
-                                                        baseDuration = 1.0 / restValue,
-                                                        tupletRatio = element.ratio,
-                                                        dots = 0
-                                                    ))
-                                                    remainingDuration -= (1.0 / restValue) * scale
-                                                }
-                                                restValue *= 2
-                                            }
-                                        } else {
-                                            return parsedRhythm
-                                        }
-
-                                        for(extraElement in element.notes.subList(tupleIndex + offset, element.notes.size)) {
-                                            newTupletElements.add(extraElement)
-                                        }
-                                        break
-                                    } else { // same note duration
-                                        for(extraElement in element.notes.subList(tupleIndex + 1, element.notes.size)) {
-                                            newTupletElements.add(extraElement)
-                                        }
-                                        break
-                                    }
-                                }
-                            } else {
-                                newTupletElements.add(tuple)
-                            }
-                            currentTupleBeat += tuple.getDuration()
-                            currentBeat += tuple.getDuration()
-                            globalIndex++
-                        }
-
-                        if(isFound) {
-
-                            if(newNote is RhythmTuplet) {
-                                newElements.add(newNote)
-                            } else {
-                                newElements.add(
-                                    RhythmTuplet(
-                                        ratio = element.ratio,
-                                        notes = newTupletElements.toList()
-                                    )
-                                )
-                            }
-
-                            // add rest of measure
-                            for(extraElement in measure.elements.subList(index + 1, measure.elements.size)) {
-                                newElements.add(extraElement)
-                            }
-
-                            newMeasure = Measure(
-                                timeSig = timeSig,
-                                elements = newElements
-                            )
-                            newMeasureIndex = measureIndex
-                            break
-                        } else {
-                            newElements.add(
-                                RhythmTuplet(
-                                    ratio = element.ratio,
-                                    notes = element.notes
-                                )
-                            )
-                        }
-                    }
-                }
-            }
-        }
-        if(newMeasure == null) return parsedRhythm
-
-        val newRhythm = Rhythm(
-            parsedRhythm.measures.mapIndexed { index, measure ->
-                if (index == newMeasureIndex) {
-                    newMeasure
-                } else {
-                    measure
-                }
-            }
-        )
-
-        return newRhythm
     }
 }
