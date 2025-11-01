@@ -16,23 +16,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package dev.cognitivity.chronal.rhythm.metronome
+package dev.cognitivity.chronal.rhythm.metronome.elements
 
-import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmAtom
-import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
-import dev.cognitivity.chronal.rhythm.metronome.elements.StemDirection
+import dev.cognitivity.chronal.MusicFont
 
-data class Beat(
-    val duration: Double,
-    val isHigh: Boolean,
-    val measure: Int,
-    val index: Int
-) {
-    constructor(atom: RhythmAtom, measure: Int, index: Int) : this(
-        duration = atom.getDuration() * (if(atom.isRest()) -1 else 1),
-        isHigh = if(atom is RhythmNote) atom.stemDirection == StemDirection.UP
-            else false,
-        measure = measure,
-        index = index
-    )
+data class RhythmRest(
+    override val baseDuration: Double,
+    override val tupletRatio: Pair<Int, Int>? = null,
+    override val dots: Int = 0
+) : RhythmAtom() {
+    init {
+        require(baseDuration > 0) { "Base duration must be positive - ${baseDuration}" }
+    }
+    override fun getDisplay(): String {
+        val char = MusicFont.Notation.fromLength(baseDuration, true)?.char ?: '?'
+        return char + " ${MusicFont.Notation.DOT.char}".repeat(dots)
+    }
 }

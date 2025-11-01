@@ -61,6 +61,7 @@ import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmElement
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
+import dev.cognitivity.chronal.rhythm.metronome.elements.StemDirection
 import dev.cognitivity.chronal.ui.metronome.windows.metronome
 import dev.cognitivity.chronal.ui.metronome.windows.metronomeSecondary
 import dev.cognitivity.chronal.ui.metronome.windows.paused
@@ -336,15 +337,11 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
                         Measure(rhythm.measures[0].timeSig,
                             arrayListOf<RhythmElement>().apply {
                                 repeat(rhythm.measures[0].timeSig.first) {
-                                    add(
-                                        RhythmNote(
-                                            display = MusicFont.Notation.convert(rhythm.measures[0].timeSig.second, false).toString(),
-                                            isRest = false,
-                                            isInverted = false,
-                                            duration = 1.0 / rhythm.measures[0].timeSig.second,
-                                            dots = 0
-                                        )
-                                    )
+                                    add(RhythmNote(
+                                        stemDirection = StemDirection.UP,
+                                        baseDuration = 1.0 / rhythm.measures[0].timeSig.second,
+                                        dots = 0
+                                    ))
                                 }
                             }
                         )
@@ -450,12 +447,9 @@ fun setRhythm(window: Window, value: SimpleRhythm, primary: Boolean, retry: Bool
                     notes = ArrayList<RhythmNote>().apply {
                         for(i in 0 until 3) {
                             if(remaining <= 0) break
-                            val note = MusicFont.Notation.convert(noteValue, false).toString()
                             add(RhythmNote(
-                                display = MusicFont.Notation.setEmphasis(note, emphasizeNext),
-                                isRest = false,
-                                isInverted = !emphasizeNext,
-                                duration = duration,
+                                stemDirection = if(emphasizeNext) StemDirection.UP else StemDirection.DOWN,
+                                baseDuration = duration,
                                 dots = 0
                             ))
                             remaining -= duration
@@ -470,10 +464,8 @@ fun setRhythm(window: Window, value: SimpleRhythm, primary: Boolean, retry: Bool
             } else {
                 val note = MusicFont.Notation.convert(noteValue, false).toString()
                 add(RhythmNote(
-                    display = MusicFont.Notation.setEmphasis(note, emphasizeNext),
-                    isRest = false,
-                    isInverted = !emphasizeNext,
-                    duration = duration,
+                    stemDirection = if(emphasizeNext) StemDirection.UP else StemDirection.DOWN,
+                    baseDuration = duration,
                     dots = 0
                 ))
                 remaining -= duration

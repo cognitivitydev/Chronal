@@ -223,52 +223,49 @@ class MusicFont {
 
             fun toLength(char: Char): Double {
                 return when(char) {
-                    N_WHOLE.char -> 1/1.0;       I_WHOLE.char -> 1/1.0
-                    N_HALF.char -> 1/2.0;        I_HALF.char -> 1/2.0
-                    N_QUARTER.char -> 1/4.0;     I_QUARTER.char -> 1/4.0
-                    N_EIGHTH.char -> 1/8.0;      I_EIGHTH.char -> 1/8.0
-                    N_16TH.char -> 1/16.0;       I_16TH.char -> 1/16.0
-                    N_32ND.char -> 1/32.0;       I_32ND.char -> 1/32.0
-                    N_64TH.char -> 1/64.0;       I_64TH.char -> 1/64.0
-                    N_128TH.char -> 1/128.0;     I_128TH.char -> 1/128.0
-                    N_256TH.char -> 1/256.0;     I_256TH.char -> 1/256.0
-                    N_512TH.char -> 1/512.0;     I_512TH.char -> 1/512.0
-                    N_1024TH.char -> 1/1024.0;   I_1024TH.char -> 1/1024.0
-
-                    R_WHOLE.char -> -1/1.0;      R_HALF.char -> -1/2.0
-                    R_QUARTER.char -> -1/4.0;    R_EIGHTH.char -> -1/8.0
-                    R_16TH.char -> -1/16.0;      R_32ND.char -> -1/32.0
-                    R_64TH.char -> -1/64.0;      R_128TH.char -> -1/128.0
-                    R_256TH.char -> -1/256.0;    R_512TH.char -> -1/512.0
-                    R_1024TH.char -> -1/1024.0
+                    N_WHOLE.char, I_WHOLE.char, R_WHOLE.char -> 1/1.0
+                    N_HALF.char, I_HALF.char, R_HALF.char -> 1/2.0
+                    N_QUARTER.char, I_QUARTER.char, R_QUARTER.char -> 1/4.0
+                    N_EIGHTH.char, I_EIGHTH.char, R_EIGHTH.char -> 1/8.0
+                    N_16TH.char, I_16TH.char, R_16TH.char -> 1/16.0
+                    N_32ND.char, I_32ND.char, R_32ND.char -> 1/32.0
+                    N_64TH.char, I_64TH.char, R_64TH.char -> 1/64.0
+                    N_128TH.char, I_128TH.char, R_128TH.char -> 1/128.0
+                    N_256TH.char, I_256TH.char, R_256TH.char -> 1/256.0
+                    N_512TH.char, I_512TH.char, R_512TH.char -> 1/512.0
+                    N_1024TH.char, I_1024TH.char, R_1024TH.char -> 1/1024.0
                     else -> 0.0
                 }
             }
-            fun fromLength(length: Double): Notation? {
+            fun fromLength(length: Double, rest: Boolean): Notation? {
+                if(!rest) {
+                    return when (length) {
+                        1/1.0 -> N_WHOLE
+                        1/2.0 -> N_HALF
+                        1/4.0 -> N_QUARTER
+                        1/8.0 -> N_EIGHTH
+                        1/16.0 -> N_16TH
+                        1/32.0 -> N_32ND
+                        1/64.0 -> N_64TH
+                        1/128.0 -> N_128TH
+                        1/256.0 -> N_256TH
+                        1/512.0 -> N_512TH
+                        1/1024.0 -> N_1024TH
+                        else -> null
+                    }
+                }
                 return when (length) {
-                    1/1.0 -> N_WHOLE
-                    1/2.0 -> N_HALF
-                    1/4.0 -> N_QUARTER
-                    1/8.0 -> N_EIGHTH
-                    1/16.0 -> N_16TH
-                    1/32.0 -> N_32ND
-                    1/64.0 -> N_64TH
-                    1/128.0 -> N_128TH
-                    1/256.0 -> N_256TH
-                    1/512.0 -> N_512TH
-                    1/1024.0 -> N_1024TH
-
-                    -1/1.0 -> R_WHOLE
-                    -1/2.0 -> R_HALF
-                    -1/4.0 -> R_QUARTER
-                    -1/8.0 -> R_EIGHTH
-                    -1/16.0 -> R_16TH
-                    -1/32.0 -> R_32ND
-                    -1/64.0 -> R_64TH
-                    -1/128.0 -> R_128TH
-                    -1/256.0 -> R_256TH
-                    -1/512.0 -> R_512TH
-                    -1/1024.0 -> R_1024TH
+                    1/1.0 -> R_WHOLE
+                    1/2.0 -> R_HALF
+                    1/4.0 -> R_QUARTER
+                    1/8.0 -> R_EIGHTH
+                    1/16.0 -> R_16TH
+                    1/32.0 -> R_32ND
+                    1/64.0 -> R_64TH
+                    1/128.0 -> R_128TH
+                    1/256.0 -> R_256TH
+                    1/512.0 -> R_512TH
+                    1/1024.0 -> R_1024TH
 
                     else -> null
                 }

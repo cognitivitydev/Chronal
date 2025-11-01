@@ -18,11 +18,14 @@
 
 package dev.cognitivity.chronal.rhythm.metronome
 
+import android.util.Log
 import dev.cognitivity.chronal.MusicFont
+import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmAtom
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmElement
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
+import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmRest
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
-import kotlin.math.pow
+import dev.cognitivity.chronal.rhythm.metronome.elements.StemDirection
 
 /**
  * Format:
@@ -46,6 +49,7 @@ data class Rhythm(
 
     companion object {
         fun deserialize(rhythm: String): Rhythm {
+            Log.d("a", "Deserializing $rhythm")
             val measures = arrayListOf<Measure>()
             val rawMeasures = rhythm.split("|").filter { it.isNotBlank() }
 
@@ -74,7 +78,7 @@ data class Rhythm(
                         val tupletCount = tupletMatch.groupValues[1].toInt()
                         val tupletValue = tupletMatch.groupValues[2].toInt()
                         val tupletNotesString = tupletMatch.groupValues[3]
-                        val parsedTupletNotes = mutableListOf<RhythmNote>()
+                        val parsedTupletNotes = mutableListOf<RhythmAtom>()
 
                         val innerTokens = tupletNotesString.split(":")
 
@@ -82,25 +86,29 @@ data class Rhythm(
                             if(innerNote.isEmpty()) continue
 
                             val isRest = innerNote.startsWith("!")
-                            val isInverted = innerNote[if (isRest) 1 else 0].isLowerCase()
                             val noteChar = MusicFont.Notation.convert(innerNote[if (isRest) 1 else 0], isRest)
                             val length = MusicFont.Notation.toLength(noteChar)
                             val dots = if(innerNote.endsWith(",")) 2 else if(innerNote.endsWith(".")) 1 else 0
-                            val dotModifier = 1 + (1..dots).sumOf { 1.0 / (2.0.pow(it)) }
-                            val dottedString = (" " + MusicFont.Notation.DOT.char).repeat(dots)
 
-                            val display = noteChar.toString() + dottedString
-
-                            parsedTupletNotes.add(
-                                RhythmNote(
-                                    display = display,
-                                    isRest = isRest,
-                                    isInverted = isInverted,
-                                    rawDuration = length,
-                                    duration = length * dotModifier * (tupletValue.toDouble() / tupletCount),
-                                    dots = dots
+                            if(isRest) {
+                                parsedTupletNotes.add(
+                                    RhythmRest(
+                                        baseDuration = length,
+                                        dots = dots
+                                    )
                                 )
-                            )
+                            } else {
+                                val stemDirection = if(innerNote[0].isLowerCase()) StemDirection.DOWN else StemDirection.UP
+
+                                parsedTupletNotes.add(
+                                    RhythmNote(
+                                        stemDirection = stemDirection,
+                                        baseDuration = length,
+                                        dots = dots,
+                                        tupletRatio = tupletValue to tupletCount
+                                    )
+                                )
+                            }
                         }
 
                         elements.add(RhythmTuplet(tupletCount to tupletValue, parsedTupletNotes))
@@ -112,21 +120,25 @@ data class Rhythm(
                     val noteChar = MusicFont.Notation.convert(token[if (isRest) 1 else 0], isRest)
                     val length = MusicFont.Notation.toLength(noteChar)
                     val dots = if(token.endsWith(",")) 2 else if(token.endsWith(".")) 1 else 0
-                    val dotModifier = 1 + (1..dots).sumOf { 1.0 / (2.0.pow(it)) }
-                    val dottedString = (" " + MusicFont.Notation.DOT.char).repeat(dots)
 
-                    val display = noteChar.toString() + dottedString
-
-                    elements.add(
-                        RhythmNote(
-                            display = display,
-                            isRest = isRest,
-                            isInverted = isInverted,
-                            rawDuration = length,
-                            duration = length * dotModifier,
-                            dots = dots
+                    if(isRest) {
+                        elements.add(
+                            RhythmRest(
+                                baseDuration = length,
+                                dots = dots
+                            )
                         )
-                    )
+                    } else {
+                        val stemDirection = if(isInverted) StemDirection.DOWN else StemDirection.UP
+
+                        elements.add(
+                            RhythmNote(
+                                stemDirection = stemDirection,
+                                baseDuration = length,
+                                dots = dots
+                            )
+                        )
+                    }
                 }
 
                 measures.add(Measure(timeSig, elements))
@@ -143,25 +155,31 @@ data class Rhythm(
 
             for (element in measure.elements) {
                 when (element) {
-                    is RhythmNote -> {
-                        val symbol = MusicFont.Notation.toLetter(element.display.first())
+                    is RhythmAtom -> {
+                        val symbol = MusicFont.Notation.toLetter(element.getDisplay().first())
                         val dot = when(element.dots) {
                             1 -> "."
                             2 -> ","
                             else -> ""
                         }
-                        builder.append(if (element.isRest) ("!$symbol$dot;") else "$symbol$dot;")
+                        when(element) {
+                            is RhythmNote -> builder.append("$symbol$dot;")
+                            is RhythmRest -> builder.append("!$symbol$dot;")
+                        }
                     }
 
                     is RhythmTuplet -> {
                         val content = element.notes.joinToString(":") { note ->
-                            val symbol = MusicFont.Notation.toLetter(note.display.first())
+                            val symbol = MusicFont.Notation.toLetter(note.getDisplay().first())
                             val dot = when(note.dots) {
                                 1 -> "."
                                 2 -> ","
                                 else -> ""
                             }
-                            if (note.isRest) "!$symbol$dot" else "$symbol$dot"
+                            when (note) {
+                                is RhythmNote -> "$symbol$dot;"
+                                is RhythmRest -> "!$symbol$dot;"
+                            }
                         }
                         builder.append("${element.ratio.first}:${element.ratio.second}[$content];")
                     }

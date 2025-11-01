@@ -44,7 +44,7 @@ import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
-import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
+import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmAtom
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.ui.metronome.windows.paused
 import kotlinx.coroutines.CoroutineScope
@@ -159,13 +159,13 @@ class Metronome(private var rhythm: Rhythm, private val sendNotifications: Boole
             var index = 0
             for(element in measure.elements) {
                 when(element) {
-                    is RhythmNote -> {
-                        intervals.add(Beat(element.duration, !element.isInverted, measureIndex, index))
+                    is RhythmAtom -> {
+                        intervals.add(Beat(element, measureIndex, index))
                         index++
                     }
                     is RhythmTuplet -> {
                         for(note in element.notes) {
-                            intervals.add(Beat(note.duration, !note.isInverted, measureIndex, index))
+                            intervals.add(Beat(note, measureIndex, index))
                             index++
                         }
                     }
