@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 
-class MusicFont {
+object MusicFont {
     enum class Number(val char: Char) {
         ZERO('\uE080'),
         ONE('\uE081'),
@@ -392,6 +392,38 @@ class MusicFont {
                     Notation.entries.find { it.char == noteMap[note.char] } ?: note
                 } else {
                     Notation.entries.find { it.char == noteMap.entries.find { it.value == note.char }?.key } ?: note
+                }
+            }
+
+            fun getBeatValue(value: Float): Pair<Notation, Boolean> {
+                return when (value) {
+                    16f -> N_16TH to false
+                    8f ->  N_EIGHTH to false
+                    4f ->  N_QUARTER to false
+                    2f ->  N_HALF to false
+                    1f ->  N_WHOLE to false
+                    16f / 1.5f -> N_16TH to true
+                    8f / 1.5f ->  N_EIGHTH to true
+                    4f / 1.5f ->  N_QUARTER to true
+                    2f / 1.5f ->  N_HALF to true
+                    1f / 1.5f ->  N_WHOLE to true
+                    else -> N_QUARTER to false
+                }
+            }
+
+            fun getBeatValueString(value: Float): String {
+                return when (value) {
+                    16f -> N_16TH.char.toString()
+                    8f ->  N_EIGHTH.char.toString()
+                    4f ->  N_QUARTER.char.toString()
+                    2f ->  N_HALF.char.toString()
+                    1f ->  N_WHOLE.char.toString()
+                    16f / 1.5f -> N_16TH.char + " " + DOT.char
+                    8f / 1.5f ->  N_EIGHTH.char + " " + DOT.char
+                    4f / 1.5f ->  N_QUARTER.char + " " + DOT.char
+                    2f / 1.5f ->  N_HALF.char + " " + DOT.char
+                    1f / 1.5f ->  N_WHOLE.char + " " + DOT.char
+                    else -> ""
                 }
             }
 
