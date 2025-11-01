@@ -86,6 +86,7 @@ import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmElement
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
+import dev.cognitivity.chronal.rhythm.metronome.elements.StemDirection
 import dev.cognitivity.chronal.toPx
 import dev.cognitivity.chronal.ui.metronome.windows.ClockBeats
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
@@ -954,12 +955,9 @@ class SimpleEditorActivity : ComponentActivity() {
                         notes = ArrayList<RhythmNote>().apply {
                             for(i in 0 until 3) {
                                 if(remaining <= 0) break
-                                val note = MusicFont.Notation.convert(noteValue, false).toString()
                                 add(RhythmNote(
-                                    display = MusicFont.Notation.setEmphasis(note, emphasizeNext),
-                                    isRest = false,
-                                    isInverted = !emphasizeNext,
-                                    duration = duration,
+                                    stemDirection = if(emphasizeNext) StemDirection.UP else StemDirection.DOWN,
+                                    baseDuration = duration,
                                     dots = 0
                                 ))
                                 remaining -= duration
@@ -972,12 +970,9 @@ class SimpleEditorActivity : ComponentActivity() {
                         }
                     ))
                 } else {
-                    val note = MusicFont.Notation.convert(noteValue, false).toString()
                     add(RhythmNote(
-                        display = MusicFont.Notation.setEmphasis(note, emphasizeNext),
-                        isRest = false,
-                        isInverted = !emphasizeNext,
-                        duration = duration,
+                        stemDirection = if(emphasizeNext) StemDirection.UP else StemDirection.DOWN,
+                        baseDuration = duration,
                         dots = 0
                     ))
                     remaining -= duration

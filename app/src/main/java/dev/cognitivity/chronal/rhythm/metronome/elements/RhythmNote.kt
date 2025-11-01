@@ -18,11 +18,21 @@
 
 package dev.cognitivity.chronal.rhythm.metronome.elements
 
+import dev.cognitivity.chronal.MusicFont
+
 data class RhythmNote(
-    val display: String,
-    val isRest: Boolean,
-    val isInverted: Boolean,
-    val duration: Double,
-    val rawDuration: Double = duration,
-    val dots: Int
-) : RhythmElement()
+    val stemDirection: StemDirection,
+    override val baseDuration: Double,
+    override val tupletRatio: Pair<Int, Int>? = null,
+    override val dots: Int = 0
+) : RhythmAtom() {
+    override fun getDisplay(): String {
+        var string = MusicFont.Notation.fromLength(baseDuration, false)?.char?.toString() ?: "?"
+        if (stemDirection == StemDirection.DOWN) {
+            string = MusicFont.Notation.setEmphasis(string, false)
+        }
+        return string + " ${MusicFont.Notation.DOT.char}".repeat(dots)
+    }
+}
+
+enum class StemDirection { UP, DOWN }

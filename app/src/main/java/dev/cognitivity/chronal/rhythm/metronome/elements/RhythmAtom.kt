@@ -16,23 +16,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package dev.cognitivity.chronal.rhythm.metronome
+package dev.cognitivity.chronal.rhythm.metronome.elements
 
-import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmAtom
-import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
-import dev.cognitivity.chronal.rhythm.metronome.elements.StemDirection
+import kotlin.math.pow
 
-data class Beat(
-    val duration: Double,
-    val isHigh: Boolean,
-    val measure: Int,
-    val index: Int
-) {
-    constructor(atom: RhythmAtom, measure: Int, index: Int) : this(
-        duration = atom.getDuration() * (if(atom.isRest()) -1 else 1),
-        isHigh = if(atom is RhythmNote) atom.stemDirection == StemDirection.UP
-            else false,
-        measure = measure,
-        index = index
-    )
+sealed class RhythmAtom : RhythmElement() {
+    abstract val baseDuration: Double
+    abstract val tupletRatio: Pair<Int, Int>?
+    abstract val dots: Int
+
+    fun isRest(): Boolean = this is RhythmRest
+    fun getDuration(): Double {
+        val tupleModifier = tupletRatio?.let { it.second.toDouble() / it.first.toDouble() } ?: 1.0
+        val dotModifier = 1 + (1..dots).sumOf { 1.0 / (2.0.pow(it)) }
+        return baseDuration * tupleModifier * dotModifier
+    }
+    abstract fun getDisplay(): String
 }

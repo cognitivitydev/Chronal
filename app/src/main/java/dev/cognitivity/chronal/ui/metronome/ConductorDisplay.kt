@@ -63,7 +63,7 @@ import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.vibratorManager
-import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
+import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmAtom
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.round
 import dev.cognitivity.chronal.toPx
@@ -132,15 +132,15 @@ fun ConductorDisplay() {
                 for(element in measure.elements) {
                     if(globalIndex >= beat.index) break
                     when(element) {
-                        is RhythmNote -> {
+                        is RhythmAtom -> {
                             globalIndex++
-                            currentDuration += abs(element.duration)
+                            currentDuration += abs(element.baseDuration)
                         }
                         is RhythmTuplet -> {
                             for(tuple in element.notes) {
                                 if(globalIndex >= beat.index) break
                                 globalIndex++
-                                currentDuration += abs(tuple.duration)
+                                currentDuration += abs(tuple.baseDuration)
                             }
                         }
                     }
