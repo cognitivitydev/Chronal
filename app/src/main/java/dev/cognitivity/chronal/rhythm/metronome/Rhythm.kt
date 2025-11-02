@@ -26,7 +26,11 @@ import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmRest
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.rhythm.metronome.elements.StemDirection
+import kotlin.math.abs
+import kotlin.math.floor
+import kotlin.math.log2
 import kotlin.math.pow
+import kotlin.math.roundToInt
 
 /**
  * Format:
@@ -195,24 +199,7 @@ data class Rhythm(
     }
 
     fun getNoteAt(index: Int): RhythmAtom? {
-        var globalIndex = 0
-        for (measure in measures) {
-            for (element in measure.elements) {
-                when (element) {
-                    is RhythmAtom -> {
-                        if (globalIndex == index) return element
-                        globalIndex++
-                    }
-                    is RhythmTuplet -> {
-                        for (note in element.notes) {
-                            if (globalIndex == index) return note
-                            globalIndex++
-                        }
-                    }
-                }
-            }
-        }
-        return null
+        return this.atoms().firstOrNull { it.index == index }?.value
     }
 
     private fun fillRests(
@@ -250,235 +237,214 @@ data class Rhythm(
     }
 
     fun replaceNote(noteIndex: Int, newElement: RhythmElement, isScaled: Boolean): Rhythm {
+        val targetAtom = getNoteAt(noteIndex) ?: return this
+
+        var foundMeasureIndex = -1
+        var foundElementIndex = -1
+        var foundTupletInnerIndex: Int? = null
+
+        loop@ for ((mIndex, measure) in measures.withIndex()) {
+            for ((eIndex, element) in measure.elements.withIndex()) {
+                when (element) {
+                    is RhythmTuplet -> {
+                        for ((nIndex, note) in element.notes.withIndex()) {
+                            if (note === targetAtom) {
+                                foundMeasureIndex = mIndex
+                                foundElementIndex = eIndex
+                                foundTupletInnerIndex = nIndex
+                                break@loop
+                            }
+                        }
+                    }
+                    is RhythmAtom -> {
+                        if (element === targetAtom) {
+                            foundMeasureIndex = mIndex
+                            foundElementIndex = eIndex
+                            break@loop
+                        }
+                    }
+                }
+            }
+        }
+
+        if (foundMeasureIndex == -1 || foundElementIndex == -1) return this
+
+        val measure = measures[foundMeasureIndex]
+        val timeSig = measure.timeSig
+
         var valueDuration = when (newElement) {
             is RhythmAtom -> newElement.getDuration()
             is RhythmTuplet -> newElement.getDuration()
         }
 
-        var newMeasure: Measure? = null
-        var newMeasureIndex = -1
+        val newElements = mutableListOf<RhythmElement>()
 
-        var globalIndex = 0
-        for ((measureIndex, measure) in measures.withIndex()) {
-            if (newMeasure != null) break
+        // copy elements before the target element
+        for (i in 0 until foundElementIndex) {
+            newElements.add(measure.elements[i])
+        }
 
-            val timeSig = measure.timeSig
-            var currentBeat = 0.0
+        val targetElement = measure.elements[foundElementIndex]
 
-            val newElements = mutableListOf<RhythmElement>()
+        if (targetElement is RhythmAtom && foundTupletInnerIndex == null) {
+            val element = targetElement
+            newElements.add(newElement)
 
-            for ((index, element) in measure.elements.withIndex()) {
-                when (element) {
-                    is RhythmAtom -> {
-                        if (globalIndex == noteIndex) {
-                            newElements.add(newElement)
+            if (element.getDuration() > valueDuration) { // add rests
+                val remaining = element.getDuration() - valueDuration
+                val newRests = fillRests(remaining)
+                newElements.addAll(newRests)
 
-                            if (element.getDuration() > valueDuration) { // add rests
-                                val remaining = element.getDuration() - valueDuration
+                // add rest of measure
+                for (extraElement in measure.elements.subList(foundElementIndex + 1, measure.elements.size)) {
+                    newElements.add(extraElement)
+                }
 
-                                val newRests = fillRests(remaining)
-                                newElements.addAll(newRests)
-
-                                // add rest of measure
-                                for (extraElement in measure.elements.subList(index + 1, measure.elements.size)) {
-                                    newElements.add(extraElement)
-                                }
-
-                                newMeasure = Measure(
-                                    timeSig = timeSig,
-                                    elements = newElements
-                                )
-                                newMeasureIndex = measureIndex
-                                break
-                            } else if (element.getDuration() < valueDuration) { // remove extra notes
-                                var remainingDuration = valueDuration
-                                var offset = 0
-                                for (extraElement in measure.elements.subList(index, measure.elements.size)) {
-                                    when (extraElement) {
-                                        is RhythmAtom -> {
-                                            if (remainingDuration <= 0) { // keep
-                                                break
-                                            } else { // remove
-                                                remainingDuration -= extraElement.getDuration()
-                                                offset++
-                                            }
-                                        }
-                                        is RhythmTuplet -> {
-                                            if (remainingDuration <= 0) { // keep
-                                                break
-                                            } else { // remove
-                                                remainingDuration -= extraElement.getDuration()
-                                                offset++
-                                            }
-                                        }
-                                    }
-                                }
-                                if (remainingDuration <= 0) { // add rests to fill measure
-                                    remainingDuration *= -1
-
-                                    val newRests = fillRests(remainingDuration)
-                                    newElements.addAll(newRests)
-
-                                } else {
-                                    return this
-                                }
-
-                                // add rest of measure
-                                for (extraElement in measure.elements.subList(index + offset, measure.elements.size)) {
-                                    newElements.add(extraElement)
-                                }
-
-                                newMeasure = Measure(
-                                    timeSig = timeSig,
-                                    elements = newElements
-                                )
-                                newMeasureIndex = measureIndex
-                                break
-                            } else { // same note duration
-                                for (extraElement in measure.elements.subList(index + 1, measure.elements.size)) {
-                                    newElements.add(extraElement)
-                                }
-
-                                newMeasure = Measure(
-                                    timeSig = timeSig,
-                                    elements = newElements
-                                )
-                                newMeasureIndex = measureIndex
-                                break
+                val newMeasure = Measure(timeSig = timeSig, elements = newElements)
+                val newMeasures = measures.toMutableList().apply {
+                    this[foundMeasureIndex] = newMeasure
+                }
+                return Rhythm(newMeasures)
+            } else if (element.getDuration() < valueDuration) { // remove extra notes
+                var remainingDuration = valueDuration
+                var offset = 0
+                for (extraElement in measure.elements.subList(foundElementIndex, measure.elements.size)) {
+                    when (extraElement) {
+                        is RhythmAtom -> {
+                            if (remainingDuration <= 0) break else {
+                                remainingDuration -= extraElement.getDuration()
+                                offset++
                             }
-                        } else {
-                            newElements.add(element)
                         }
-                        currentBeat += element.getDuration()
-                        globalIndex++
-                    }
-
-                    is RhythmTuplet -> {
-                        val scale = element.ratio.second.toDouble() / element.ratio.first
-                        var isFound = false
-                        val newTupletElements = mutableListOf<RhythmAtom>()
-                        var currentTupleBeat = 0.0
-                        for ((tupleIndex, tuple) in element.notes.withIndex()) {
-                            if (globalIndex == noteIndex) {
-                                isFound = true
-                                if (newElement is RhythmAtom) {
-                                    if (isScaled) {
-                                        newTupletElements.add(newElement)
-                                    } else {
-                                        valueDuration *= scale
-                                        if (newElement is RhythmNote) {
-                                            newTupletElements.add(newElement.copy(
-                                                baseDuration = newElement.baseDuration,
-                                                tupletRatio = element.ratio
-                                            ))
-                                        } else if (newElement is RhythmRest) {
-                                            newTupletElements.add(newElement.copy(
-                                                baseDuration = newElement.baseDuration,
-                                                tupletRatio = element.ratio
-                                            ))
-                                        }
-                                    }
-
-                                    if (tuple.getDuration() > valueDuration) { // add rests
-                                        val remaining = (tuple.getDuration() - valueDuration) / scale
-
-                                        val newRests = fillRests(remaining, element.ratio)
-                                        newTupletElements.addAll(newRests)
-
-                                        // add rest of measure
-                                        for (extraElement in element.notes.subList(tupleIndex + 1, element.notes.size)) {
-                                            newTupletElements.add(extraElement)
-                                        }
-                                        break
-                                    } else if (tuple.getDuration() < valueDuration) { // remove extra notes
-                                        var remainingDuration = valueDuration
-                                        var offset = 0
-                                        for (extraElement in element.notes.subList(tupleIndex, element.notes.size)) {
-                                            if (remainingDuration <= 0) { // keep
-                                                break
-                                            } else { // remove
-                                                remainingDuration -= extraElement.getDuration()
-                                                offset++
-                                            }
-                                        }
-                                        if (remainingDuration <= 1e-10) {
-                                            remainingDuration *= -1
-
-                                            val newRests = fillRests(remainingDuration, element.ratio, scale)
-                                            newTupletElements.addAll(newRests)
-
-                                        } else {
-                                            return this
-                                        }
-
-                                        for (extraElement in element.notes.subList(tupleIndex + offset, element.notes.size)) {
-                                            newTupletElements.add(extraElement)
-                                        }
-                                        break
-                                    } else { // same note duration
-                                        for (extraElement in element.notes.subList(tupleIndex + 1, element.notes.size)) {
-                                            newTupletElements.add(extraElement)
-                                        }
-                                        break
-                                    }
-                                }
-                            } else {
-                                newTupletElements.add(tuple)
+                        is RhythmTuplet -> {
+                            if (remainingDuration <= 0) break else {
+                                remainingDuration -= extraElement.getDuration()
+                                offset++
                             }
-                            currentTupleBeat += tuple.getDuration()
-                            currentBeat += tuple.getDuration()
-                            globalIndex++
-                        }
-
-                        if (isFound) {
-
-                            if (newElement is RhythmTuplet) {
-                                newElements.add(newElement)
-                            } else {
-                                newElements.add(
-                                    RhythmTuplet(
-                                        ratio = element.ratio,
-                                        notes = newTupletElements.toList()
-                                    )
-                                )
-                            }
-
-                            // add rest of measure
-                            for (extraElement in measure.elements.subList(index + 1, measure.elements.size)) {
-                                newElements.add(extraElement)
-                            }
-
-                            newMeasure = Measure(
-                                timeSig = timeSig,
-                                elements = newElements
-                            )
-                            newMeasureIndex = measureIndex
-                            break
-                        } else {
-                            newElements.add(
-                                RhythmTuplet(
-                                    ratio = element.ratio,
-                                    notes = element.notes
-                                )
-                            )
                         }
                     }
                 }
+                if (remainingDuration <= 0) {
+                    remainingDuration *= -1
+                    val newRests = fillRests(remainingDuration)
+                    newElements.addAll(newRests)
+                } else {
+                    return this
+                }
+
+                // add rest of measure
+                for (extraElement in measure.elements.subList(foundElementIndex + offset, measure.elements.size)) {
+                    newElements.add(extraElement)
+                }
+
+                val newMeasure = Measure(timeSig = timeSig, elements = newElements)
+                val newMeasures = measures.toMutableList().apply { this[foundMeasureIndex] = newMeasure }
+                return Rhythm(newMeasures)
+            } else { // same note duration
+                for (extraElement in measure.elements.subList(foundElementIndex + 1, measure.elements.size)) {
+                    newElements.add(extraElement)
+                }
+
+                val newMeasure = Measure(timeSig = timeSig, elements = newElements)
+                val newMeasures = measures.toMutableList().apply { this[foundMeasureIndex] = newMeasure }
+                return Rhythm(newMeasures)
             }
         }
-        if (newMeasure == null) return this
 
-        val newRhythm = Rhythm(
-            measures.mapIndexed { index, measure ->
-                if (index == newMeasureIndex) {
-                    newMeasure
+        if (targetElement is RhythmTuplet && foundTupletInnerIndex != null) {
+            val element = targetElement
+            val scale = element.ratio.second.toDouble() / element.ratio.first
+            var isFound = false
+            val newTupletElements = mutableListOf<RhythmAtom>()
+
+            for ((tupleIndex, tuple) in element.notes.withIndex()) {
+                if (tupleIndex == foundTupletInnerIndex) {
+                    isFound = true
+                    if (newElement is RhythmAtom) {
+                        if (isScaled) {
+                            newTupletElements.add(newElement)
+                        } else {
+                            valueDuration *= scale
+                            when (newElement) {
+                                is RhythmNote -> newTupletElements.add(newElement.copy(
+                                    baseDuration = newElement.baseDuration,
+                                    tupletRatio = element.ratio
+                                ))
+                                is RhythmRest -> newTupletElements.add(newElement.copy(
+                                    baseDuration = newElement.baseDuration,
+                                    tupletRatio = element.ratio
+                                ))
+                            }
+                        }
+
+                        if (tuple.getDuration() > valueDuration) { // add rests
+                            val remaining = (tuple.getDuration() - valueDuration) / scale
+                            val newRests = fillRests(remaining, element.ratio)
+                            newTupletElements.addAll(newRests)
+
+                            // add rest of tuplet
+                            for (extraElement in element.notes.subList(tupleIndex + 1, element.notes.size)) {
+                                newTupletElements.add(extraElement)
+                            }
+                            break
+                        } else if (tuple.getDuration() < valueDuration) { // remove extra notes
+                            var remainingDuration = valueDuration
+                            var offset = 0
+                            for (extraElement in element.notes.subList(tupleIndex, element.notes.size)) {
+                                if (remainingDuration <= 0) { // keep
+                                    break
+                                } else { // remove
+                                    remainingDuration -= extraElement.getDuration()
+                                    offset++
+                                }
+                            }
+                            if (remainingDuration <= 1e-10) {
+                                remainingDuration *= -1
+                                val newRests = fillRests(remainingDuration, element.ratio, scale)
+                                newTupletElements.addAll(newRests)
+                            } else {
+                                return this
+                            }
+
+                            for (extraElement in element.notes.subList(tupleIndex + offset, element.notes.size)) {
+                                newTupletElements.add(extraElement)
+                            }
+                            break
+                        } else { // same note duration
+                            for (extraElement in element.notes.subList(tupleIndex + 1, element.notes.size)) {
+                                newTupletElements.add(extraElement)
+                            }
+                            break
+                        }
+                    }
                 } else {
-                    measure
+                    newTupletElements.add(tuple)
                 }
             }
-        )
 
-        return newRhythm
+            if (isFound) {
+                if (newElement is RhythmTuplet) {
+                    newElements.add(newElement)
+                } else {
+                    newElements.add(RhythmTuplet(ratio = element.ratio, notes = newTupletElements.toList()))
+                }
+
+                // add rest of measure
+                for (extraElement in measure.elements.subList(foundElementIndex + 1, measure.elements.size)) {
+                    newElements.add(extraElement)
+                }
+
+                val newMeasure = Measure(timeSig = timeSig, elements = newElements)
+                val newMeasures = measures.toMutableList().apply {
+                    this[foundMeasureIndex] = newMeasure
+                }
+                return Rhythm(newMeasures)
+            } else {
+                return this
+            }
+        }
+
+        return this
     }
 
     fun setTimeSignature(measureIndex: Int, new: Pair<Int, Int>): Rhythm {
@@ -535,71 +501,42 @@ data class Rhythm(
         return Rhythm(newMeasures)
     }
 
-    fun createTupletAt(index: Int, defaultRatio: Pair<Int, Int>? = null): RhythmTuplet? {
-        var globalIndex = 0
-        var foundElement: RhythmElement? = null
-        for (measure in measures) {
-            for (element in measure.elements) {
-                if (element is RhythmNote) {
-                    if (globalIndex == index) {
-                        foundElement = element
-                        break
-                    }
-                    globalIndex++
-                } else if (element is RhythmTuplet) {
-                    for (note in element.notes) {
-                        if (globalIndex == index) {
-                            foundElement = element
-                            break
-                        }
-                        globalIndex++
-                    }
-                }
-                if (foundElement != null) break
-            }
-            if (foundElement != null) break
-        }
-        if (foundElement == null) {
-            Log.e("Rhythm", "No note found at index $index")
-            return null
-        }
-        val elementDuration = when (foundElement) {
-            is RhythmTuplet -> foundElement.getDuration()
-            is RhythmAtom -> foundElement.getDuration()
-        }
-        val dottedModifier = if (foundElement is RhythmNote) {
-            1 + (1..foundElement.dots).sumOf { 1.0 / (2.0.pow(it)) }
-        } else {
-            1.0
-        }
 
-        val ratio = defaultRatio ?: if (foundElement is RhythmTuplet) {
-            foundElement.ratio
-        } else {
-            3 to 2
+    private fun getTupletInfo(baseNote: Double, tupleCount: Int): Pair<Int, Double> {
+        // find base numerator
+        var scaled = baseNote
+        var power = 0
+        while (abs(scaled - scaled.roundToInt()) > 1e-9 && power < 40) {
+            scaled *= 2.0
+            power++
         }
+        val numerator = scaled.roundToInt()
 
-        // convert duration to note
-        var value = 1
-        while (value < 1024) {
-            val noteDuration = 1.0 / value
-            if (noteDuration * dottedModifier * ratio.second.toDouble() <= elementDuration) {
-                break
-            }
-            value *= 2
-        }
+        // calc how many times numerator fits into tupleCount
+        val ratio = tupleCount.toDouble() / numerator.toDouble()
+        val powerSteps = if (ratio >= 1) floor(log2(ratio)) else 0.0
+        val denominator = (numerator * 2.0.pow(powerSteps)).roundToInt()
+
+        val noteValue = baseNote / denominator.toDouble()
+
+        return denominator to noteValue
+    }
+
+    fun createTupletAt(index: Int, numerator: Int): RhythmTuplet? {
+        val note = getNoteAt(index) ?: return null
+
+        val (denominator, noteValue) = getTupletInfo(note.getDuration(), numerator)
 
         val tupleElement = RhythmNote(
-            stemDirection = if (foundElement is RhythmNote) foundElement.stemDirection else StemDirection.UP,
-            baseDuration = 1.0 / value,
-            tupletRatio = ratio,
+            stemDirection = if (note is RhythmNote) note.stemDirection else StemDirection.UP,
+            baseDuration = noteValue,
+            tupletRatio = numerator to denominator,
             dots = 0
         )
-
         return RhythmTuplet(
-            ratio = ratio,
+            ratio = numerator to denominator,
             notes = arrayListOf<RhythmNote>().apply {
-                repeat(ratio.first) {
+                repeat(numerator) {
                     add(tupleElement)
                 }
             }
