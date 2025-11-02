@@ -115,6 +115,8 @@
     <string name="editor_toggle_dot">Toggle dot</string>
     <string name="editor_tuplet_add">Add tuplet</string>
     <string name="editor_tuplet_remove">Remove tuplet</string>
+    <string name="editor_undo">Undo</string>
+    <string name="editor_redo">Redo</string>
 
     <string name="tuner_concert_pitch">Concert</string>
     <string name="tuner_concert_pitch_short">Con.</string>
