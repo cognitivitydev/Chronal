@@ -76,6 +76,7 @@ import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.SimpleRhythm
 import dev.cognitivity.chronal.rhythm.metronome.Measure
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
+import dev.cognitivity.chronal.rhythm.metronome.atoms
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmAtom
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmElement
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
@@ -551,7 +552,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                     .fillMaxHeight()
                                     .padding(8.dp, 0.dp)
                             ) {
-                                AddTuplet(noteSelected != -1 && (selectedNote?.dots == 0 || isTuplet), isTuplet)
+                                AddTuplet(noteSelected != -1, isTuplet)
                                 ToggleDot(noteSelected != -1 && selectedNote?.dots != nextDots, selectedNote, nextDots)
                             }
                         }
@@ -1395,7 +1396,7 @@ class RhythmEditorActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
     fun ColumnScope.AddTuplet(enabled: Boolean, tupletSelected: Boolean) {
-        var ratio: Pair<Int, Int>? by remember { mutableStateOf(null) }
+        var numerator by remember { mutableIntStateOf(3) }
         var showDialog by remember { mutableStateOf(false) }
 
         val backgroundColor by animateColorAsState(
@@ -1424,43 +1425,51 @@ class RhythmEditorActivity : ComponentActivity() {
                         showDialog = true
                     } else {
                         // remove tuplet
-                        var globalIndex = 0
-                        var measureIndex = 0
-                        var measureElement = 0
-                        var selectedTuplet: RhythmTuplet? = null
+                        val foundAtom = parsedRhythm.atoms().firstOrNull { it.index == noteSelected }?.value
+                        if (foundAtom == null) return@clickable
 
-                        for (measure in parsedRhythm.measures) {
-                            for (element in measure.elements) {
+                        var foundMeasureIndex = -1
+                        var foundElementIndex = -1
+                        var foundTupletInnerIndex: Int? = null
+
+                        loop@ for ((measureIndex, measure) in parsedRhythm.measures.withIndex()) {
+                            for ((elementIndex, element) in measure.elements.withIndex()) {
                                 when (element) {
-                                    is RhythmAtom -> {
-                                        globalIndex++
-                                    }
-
                                     is RhythmTuplet -> {
-                                        for (i in element.notes.indices) {
-                                            if (globalIndex == noteSelected) {
-                                                selectedTuplet = element
-                                                noteSelected -= i // move selection to first note in tuplet
-                                                break
+                                        for ((nIndex, note) in element.notes.withIndex()) {
+                                            if (note === foundAtom) {
+                                                foundMeasureIndex = measureIndex
+                                                foundElementIndex = elementIndex
+                                                foundTupletInnerIndex = nIndex
+
+                                                // move selection to first note in tuplet
+                                                noteSelected -= foundTupletInnerIndex
+
+                                                break@loop
                                             }
-                                            globalIndex++
                                         }
-                                        if (selectedTuplet != null) break
+                                    }
+                                    is RhythmAtom -> {
+                                        if (element === foundAtom) {
+                                            foundMeasureIndex = measureIndex
+                                            foundElementIndex = elementIndex
+                                            break@loop
+                                        }
                                     }
                                 }
-                                measureElement++
                             }
-                            if (selectedTuplet != null) break
-                            measureIndex++
-                            measureElement = 0
                         }
-                        if (selectedTuplet == null) return@clickable
+
+                        if (foundMeasureIndex == -1 || foundElementIndex == -1 || foundTupletInnerIndex == null) return@clickable
+
+                        val selectedTuplet = parsedRhythm.measures[foundMeasureIndex].elements[foundElementIndex] as? RhythmTuplet
+                            ?: return@clickable
 
                         val duration = selectedTuplet.getDuration()
                         // get dots
                         for (i in 0..2) {
                             val dotModifier = 1 + (1..i).sumOf { 1.0 / (2.0.pow(it)) }
-                            val dottedDuration = duration * dotModifier
+                            val dottedDuration = duration / dotModifier
 
                             val intValue = (1.0 / dottedDuration).toInt()
                             if (intValue.toDouble() == 1.0 / dottedDuration) {
@@ -1468,25 +1477,25 @@ class RhythmEditorActivity : ComponentActivity() {
                                 val note = selectedTuplet.notes.first()
                                 val newNote = if(note.isRest()) {
                                     RhythmRest(
-                                        baseDuration = duration,
+                                        baseDuration = duration / dotModifier,
                                         dots = i
                                     )
                                 } else {
                                     RhythmNote(
                                         stemDirection = (note as RhythmNote).stemDirection,
-                                        baseDuration = duration,
+                                        baseDuration = duration / dotModifier,
                                         dots = i
                                     )
                                 }
-                                val measure = parsedRhythm.measures[measureIndex]
+                                val measure = parsedRhythm.measures[foundMeasureIndex]
                                 val newElements = measure.elements.toMutableList()
-                                newElements[measureElement] = newNote
+                                newElements[foundElementIndex] = newNote
                                 val newMeasure = Measure(
                                     timeSig = measure.timeSig,
                                     elements = newElements
                                 )
                                 val newRhythm = Rhythm(parsedRhythm.measures.toMutableList().apply {
-                                    this[measureIndex] = newMeasure
+                                    this[foundMeasureIndex] = newMeasure
                                 })
                                 parsedRhythm = newRhythm
                                 rhythm = newRhythm.serialize()
@@ -1521,8 +1530,7 @@ class RhythmEditorActivity : ComponentActivity() {
         }
 
         if(showDialog) {
-            val tuplet = parsedRhythm.createTupletAt(noteSelected, ratio) ?: return
-            ratio = tuplet.ratio
+            var tuplet by remember { mutableStateOf(parsedRhythm.createTupletAt(noteSelected, numerator)!!) }
 
             Dialog(
                 onDismissRequest = { showDialog = false },
@@ -1577,18 +1585,10 @@ class RhythmEditorActivity : ComponentActivity() {
                                 .padding(horizontal = 16.dp)
                         ) {
                             FilledTonalIconButton(onClick = {
-                                val first = ratio!!.first - 1
-                                if (first < 1) return@FilledTonalIconButton
-                                var second = 1
-                                while (second < 1024) {
-                                    second *= 2
-                                    if (first < second) {
-                                        second /= 2
-                                        break
-                                    }
+                                if(numerator > 1) {
+                                    numerator--
+                                    tuplet = parsedRhythm.createTupletAt(noteSelected, numerator) ?: return@FilledTonalIconButton
                                 }
-
-                                ratio = first to second
                             }) {
                                 Icon(
                                     painter = painterResource(R.drawable.baseline_remove_24),
@@ -1605,17 +1605,8 @@ class RhythmEditorActivity : ComponentActivity() {
                             }
                             Spacer(modifier = Modifier.weight(1f))
                             FilledTonalIconButton(onClick = {
-                                val first = ratio!!.first + 1
-                                var second = 1
-                                while (second < 1024) {
-                                    second *= 2
-                                    if (first < second) {
-                                        second /= 2
-                                        break
-                                    }
-                                }
-
-                                ratio = first to second
+                                numerator++
+                                tuplet = parsedRhythm.createTupletAt(noteSelected, numerator) ?: return@FilledTonalIconButton
                             }) {
                                 Icon(
                                     imageVector = Icons.Default.Add,
@@ -2085,7 +2076,6 @@ class RhythmEditorActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
     fun TimeSignatureDialog(measureIndex: Int) {
-        val measure = parsedRhythm.measures[measureIndex]
         var timeSignature by remember { mutableStateOf(parsedRhythm.measures[measureIndex].timeSig) }
         AlertDialog(
             onDismissRequest = { showTimeSignature = -1 },
