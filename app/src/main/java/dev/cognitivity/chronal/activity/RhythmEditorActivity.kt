@@ -34,13 +34,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -83,22 +84,32 @@ import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmRest
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.rhythm.metronome.elements.StemDirection
-import dev.cognitivity.chronal.ui.WavyVerticalLine
 import dev.cognitivity.chronal.ui.metronome.PlayPauseIcon
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
-import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.pow
+import kotlin.math.roundToInt
 
 class RhythmEditorActivity : ComponentActivity() {
+
+    enum class NoteInputState {
+        UP, DOWN, REST
+    }
+
     private var errors = mutableStateListOf<String>()
     private var shownError by mutableStateOf(false)
 
-    private var noteSelected by mutableIntStateOf(-1)
+    private var selectedNote by mutableIntStateOf(0)
+    private var isSelected by mutableStateOf(false)
     private var musicSelected by mutableIntStateOf(-1)
+
+    private var noteInputTuplet by mutableStateOf(false)
+    private var noteInputDots by mutableIntStateOf(0)
+    private var noteInputState by mutableStateOf(NoteInputState.UP)
+    private var noteInputDuration by mutableStateOf(4)
 
     private var rhythm by mutableStateOf("{4/4}Q;q;q;q;")
     private var parsedRhythm by mutableStateOf(Rhythm.deserialize(rhythm))
@@ -207,8 +218,6 @@ class RhythmEditorActivity : ComponentActivity() {
     fun MainContent() {
         val ltr = LocalLayoutDirection.current == LayoutDirection.Ltr
         var backDropdown by remember { mutableStateOf(false) }
-        var notesEnabled by remember { mutableStateOf(true) }
-        var showSimpleWarning by remember { mutableStateOf(false) }
 
         val animatedRatio by animateFloatAsState(
             targetValue = if (isPlaying) 1.5f else 1f,
@@ -217,14 +226,21 @@ class RhythmEditorActivity : ComponentActivity() {
         )
 
         Scaffold(
-            modifier = Modifier.fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface),
+            modifier = Modifier.fillMaxSize(),
         ) { innerPadding ->
-            Column {
+            Column(
+                modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerLowest)
+            ) {
+                // top row
                 Box(
                     modifier = Modifier.fillMaxSize()
                         .weight(4f)
-                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                        .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(
+                            topStart = 0.dp,
+                            topEnd = 0.dp,
+                            bottomStart = 16.dp,
+                            bottomEnd = 16.dp
+                        ))
                         .padding(
                             top = innerPadding.calculateTopPadding(),
                             start = innerPadding.calculateStartPadding(LocalLayoutDirection.current),
@@ -455,23 +471,22 @@ class RhythmEditorActivity : ComponentActivity() {
                     }
                 }
 
-                var selectedNote: RhythmAtom? = null
+                var atom: RhythmAtom? = null
                 var isTuplet = false
-                var nextDots = 0
-                var largestNote = 0
+                var maxDots = 0
+                var remainingDuration = 0.0
 
                 var globalIndex = 0
                 for (measure in parsedRhythm.measures) {
                     val measureDuration = measure.timeSig.first / measure.timeSig.second.toDouble()
-                    var remainingDuration = measureDuration
+                    remainingDuration = measureDuration
 
                     for (element in measure.elements) {
                         when (element) {
                             is RhythmAtom -> {
-                                if (globalIndex == noteSelected) {
-                                    selectedNote = element
+                                if (globalIndex == selectedNote) {
+                                    atom = element
                                     isTuplet = false
-                                    largestNote = ceil(1.0 / remainingDuration).toInt()
                                     globalIndex++
                                     break
                                 }
@@ -483,11 +498,10 @@ class RhythmEditorActivity : ComponentActivity() {
                                 val tupletDuration = element.getDuration()
                                 var remainingTupletDuration = tupletDuration
                                 for (i in 0 until element.notes.size) {
-                                    if (globalIndex == noteSelected) {
-                                        selectedNote = element.notes[i]
+                                    if (globalIndex == selectedNote) {
+                                        atom = element.notes[i]
                                         isTuplet = true
                                         globalIndex++
-                                        largestNote = ceil((1.0 / remainingTupletDuration) * element.ratio.second / element.ratio.first).toInt()
                                         remainingDuration = remainingTupletDuration
                                         break
                                     }
@@ -499,161 +513,46 @@ class RhythmEditorActivity : ComponentActivity() {
                             }
                         }
                     }
-                    if (selectedNote != null) {
-                        val oldDotModifier = 1 + (1..selectedNote.dots).sumOf { 1.0 / (2.0.pow(it)) }
-                        val oldTupletModifier = selectedNote.tupletRatio?.let { it.second.toDouble() / it.first.toDouble() } ?: 1.0
-                        val oldDuration = selectedNote.getDuration() / oldDotModifier / oldTupletModifier
-                        if (selectedNote.dots == 2) {
-                            nextDots = 0
-                        } else {
-                            for (i in selectedNote.dots + 1..2) {
-                                val newDotModifier = 1 + (1..i).sumOf { 1.0 / (2.0.pow(it)) }
-                                val newDuration = oldDuration * newDotModifier * oldTupletModifier
+                }
+                noteInputDuration = if(atom == null) 0 else (1 / atom.baseDuration).roundToInt()
+                noteInputTuplet = isTuplet
+                noteInputDots = atom?.dots ?: 0
 
-                                if (remainingDuration >= newDuration) {
-                                    nextDots = i
-                                    break
-                                }
-                            }
+                if(atom != null) {
+                    // calculate max dots
+                    for(i in 0..2) {
+                        val dotDuration = atom.baseDuration * (1 + (1..i).sumOf { 1.0 / (2.0.pow(it)) })
+                        Log.d("a", "$dotDuration <= ${remainingDuration - atom.getDuration()} (${remainingDuration} - ${atom.getDuration()})")
+                        if(dotDuration <= remainingDuration) {
+                            maxDots = i
                         }
                     }
                 }
-                var emphasis by remember { mutableStateOf(true) }
 
+                // input row
                 Box(
                     modifier = Modifier.fillMaxWidth()
                         .weight(4f)
-                        .background(MaterialTheme.colorScheme.surface)
                         .padding(vertical = 4.dp)
                 ) {
-                    LazyRow(
+                    InputRow(maxDots, remainingDuration,
                         modifier = Modifier.fillMaxHeight()
-                            .align(Alignment.Center),
-                        contentPadding = PaddingValues(
-                            start = maxOf(8.dp, innerPadding.calculateStartPadding(LocalLayoutDirection.current)),
-                            end = maxOf(8.dp, innerPadding.calculateEndPadding(LocalLayoutDirection.current)),
-                        ),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        item {
-                            Column(
-                                modifier = Modifier.width(IntrinsicSize.Max)
-                                    .fillMaxHeight()
-                                    .padding(8.dp, 0.dp)
-                            ) {
-                                TimeSignature(noteSelected != -1)
-                                ChangeEmphasis(selectedNote is RhythmNote)
-                            }
-                        }
-                        item {
-                            Column(
-                                modifier = Modifier.width(IntrinsicSize.Max)
-                                    .fillMaxHeight()
-                                    .padding(8.dp, 0.dp)
-                            ) {
-                                AddTuplet(noteSelected != -1, isTuplet)
-                                ToggleDot(noteSelected != -1 && selectedNote?.dots != nextDots, selectedNote, nextDots)
-                            }
-                        }
-                        item {
-                            Box(
-                                modifier = Modifier.width(IntrinsicSize.Max)
-                                    .padding(24.dp, 0.dp)
-                                    .fillMaxHeight()
-                            ) {
-                                WavyVerticalLine(
-                                    modifier = Modifier.fillMaxHeight(0.75f)
-                                        .align(Alignment.Center),
-                                    MaterialTheme.colorScheme.outlineVariant
-                                )
-                            }
-                        }
-                        for (i in 0..4) {
-                            item {
-                                Column(
-                                    modifier = Modifier.width(IntrinsicSize.Max)
-                                        .fillMaxHeight()
-                                        .padding(8.dp, 0.dp)
-                                ) {
-                                    val topValue = (2.0).pow(i * 2).toInt()
-                                    NoteButton(
-                                        topValue,
-                                        !notesEnabled,
-                                        emphasis,
-                                        largestNote <= topValue && noteSelected != -1
-                                    )
-
-                                    val bottomValue = (2.0).pow(i * 2 + 1).toInt()
-                                    NoteButton(
-                                        bottomValue,
-                                        !notesEnabled,
-                                        emphasis,
-                                        largestNote <= bottomValue && noteSelected != -1
-                                    )
-                                }
-                            }
-                        }
-                        item {
-                            Column(
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                                    .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(8.dp))
-                                    .padding(8.dp, 16.dp, 16.dp, 16.dp)
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    val interactionSource = remember { MutableInteractionSource() }
-                                    RadioButton(
-                                        selected = emphasis,
-                                        onClick = { emphasis = true },
-                                        enabled = notesEnabled,
-                                        interactionSource = interactionSource
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = getString(R.string.editor_emphasis_high),
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = if (emphasis && notesEnabled) MaterialTheme.colorScheme.onSurface
-                                        else MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.clickable(
-                                            enabled = notesEnabled,
-                                            interactionSource = interactionSource,
-                                            indication = null
-                                        ) { emphasis = true }
-                                    )
-                                }
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    val interactionSource = remember { MutableInteractionSource() }
-                                    RadioButton(
-                                        selected = !emphasis,
-                                        onClick = { emphasis = false },
-                                        enabled = notesEnabled,
-                                        interactionSource = interactionSource
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = getString(R.string.editor_emphasis_low),
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = if (!emphasis && notesEnabled) MaterialTheme.colorScheme.onSurface
-                                        else MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.clickable(
-                                            enabled = notesEnabled,
-                                            interactionSource = interactionSource,
-                                            indication = null
-                                        ) { emphasis = false }
-                                    )
-                                }
-                            }
-                        }
-                    }
+                            .align(Alignment.Center)
+                            .horizontalScroll(rememberScrollState())
+                            .padding(4.dp)
+                    )
                 }
+
+                // bottom row
                 Row(
                     modifier = Modifier.fillMaxWidth()
                         .weight(2f)
-                        .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                        .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(
+                            topStart = 16.dp,
+                            topEnd = 16.dp,
+                            bottomStart = 0.dp,
+                            bottomEnd = 0.dp
+                        ))
                         .padding(
                             top = 0.dp,
                             start = innerPadding.calculateStartPadding(LocalLayoutDirection.current),
@@ -756,48 +655,35 @@ class RhythmEditorActivity : ComponentActivity() {
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
-                    Button(
-                        modifier = Modifier.align(Alignment.CenterVertically),
-                        onClick = {
-                            showSimpleWarning = true
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isPrimary) MaterialTheme.colorScheme.primaryContainer
-                            else MaterialTheme.colorScheme.tertiaryContainer,
-                            contentColor = if (isPrimary) MaterialTheme.colorScheme.onPrimaryContainer
-                            else MaterialTheme.colorScheme.onTertiaryContainer
-                        )
+                    Row(
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                            .weight(1f),
+                        horizontalArrangement = Arrangement.Center
                     ) {
-                        Text(getString(R.string.simple_editor_switch_simple))
-                    }
-                    Box(
-                        modifier = Modifier.weight(1f)
-                            .align(Alignment.CenterVertically)
-                    ) {
-
-                        Row(
-                            Modifier.align(Alignment.Center),
-                            horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)
+                        IconButton(
+                            enabled = false,
+                            onClick = {
+                                // TODO undo
+                            }
                         ) {
-                            ToggleButton(
-                                checked = notesEnabled,
-                                onCheckedChange = { notesEnabled = true },
-                                shapes = ButtonGroupDefaults.connectedLeadingButtonShapes(),
-                                contentPadding = ButtonDefaults.ContentPadding
-                            ) {
-                                Text(getString(R.string.editor_input_notes))
-                            }
-
-                            ToggleButton(
-                                checked = !notesEnabled,
-                                onCheckedChange = { notesEnabled = false },
-                                shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
-                                contentPadding = ButtonDefaults.ContentPadding
-                            ) {
-                                Text(getString(R.string.editor_input_rests))
-                            }
+                            Icon(
+                                painter = painterResource(R.drawable.outline_undo_24),
+                                contentDescription = getString(R.string.editor_undo),
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
                         }
-
+                        IconButton(
+                            enabled = false,
+                            onClick = {
+                                // TODO redo
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.outline_redo_24),
+                                contentDescription = getString(R.string.editor_redo),
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
                     }
                     Row(
                         modifier = Modifier.align(Alignment.CenterVertically)
@@ -935,77 +821,6 @@ class RhythmEditorActivity : ComponentActivity() {
                 )
             }
         }
-        if(showSimpleWarning) {
-            val scope = rememberCoroutineScope()
-            AlertDialog(
-                onDismissRequest = { showSimpleWarning = false },
-                icon = {
-                    Icon(
-                        painter = painterResource(R.drawable.outline_warning_24),
-                        contentDescription = getString(R.string.generic_warning)
-                    )
-                },
-                title = { Text(getString(R.string.simple_editor_simple_warning_title)) },
-                text = {
-                    Text(getString(R.string.simple_editor_simple_warning_text))
-                },
-                confirmButton = {
-                    TextButton(onClick = {
-                        showSimpleWarning = false
-                        val elements = arrayListOf<RhythmElement>().apply {
-                            repeat(parsedRhythm.measures[0].timeSig.first) {
-                                add(RhythmNote(
-                                    stemDirection = StemDirection.UP,
-                                    baseDuration = 1.0 / parsedRhythm.measures[0].timeSig.second,
-                                    dots = 0
-                                ))
-                            }
-                        }
-                        appMetronome.setRhythm(
-                            Rhythm(listOf(Measure(parsedRhythm.measures[0].timeSig, elements)))
-                        )
-
-                        appMetronome.beatValue = 4f
-                        val primaryMetronome = ChronalApp.getInstance().metronome
-                        val secondaryMetronome = ChronalApp.getInstance().metronomeSecondary
-                        ChronalApp.getInstance().settings.metronomeState.value = MetronomeState(
-                            bpm = metronome.bpm,
-                            beatValuePrimary = primaryMetronome.beatValue,
-                            beatValueSecondary = secondaryMetronome.beatValue,
-                            secondaryEnabled = secondaryMetronome.active
-                        )
-
-                        if (isPrimary) {
-                            ChronalApp.getInstance().settings.metronomeRhythm.value =
-                                metronome.getRhythm().serialize()
-                            ChronalApp.getInstance().settings.metronomeSimpleRhythm.value = SimpleRhythm(
-                                parsedRhythm.measures[0].timeSig,
-                                parsedRhythm.measures[0].timeSig.second, 0
-                            )
-                        } else {
-                            ChronalApp.getInstance().settings.metronomeRhythmSecondary.value =
-                                metronome.getRhythm().serialize()
-                            ChronalApp.getInstance().settings.metronomeSimpleRhythmSecondary.value =
-                                SimpleRhythm(
-                                    parsedRhythm.measures[0].timeSig,
-                                    parsedRhythm.measures[0].timeSig.second, 0
-                                )
-                        }
-                        scope.launch {
-                            ChronalApp.getInstance().settings.save()
-                        }
-                        finish()
-                    }) {
-                        Text(getString(R.string.generic_switch))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showSimpleWarning = false }) {
-                        Text(getString(R.string.generic_cancel))
-                    }
-                }
-            )
-        }
         if(showBpm) {
             EditBpmDialog()
         }
@@ -1013,6 +828,715 @@ class RhythmEditorActivity : ComponentActivity() {
             TimeSignatureDialog(showTimeSignature)
         }
     }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun InputRow(maxDots: Int, largestDuration: Double, modifier: Modifier = Modifier) {
+        Row(
+            modifier = modifier,
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            // editor buttons
+            Row(
+                modifier = Modifier.fillMaxHeight()
+                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    TimeSignatureInput(
+                        modifier = Modifier.width(64.dp)
+                            .weight(1f)
+                    )
+                    TupletInput(
+                        modifier = Modifier.width(64.dp)
+                            .weight(1f)
+                    )
+                }
+                DotInput(maxDots,
+                    modifier = Modifier.width(64.dp) // TODO
+                        .fillMaxHeight()
+                        .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(16.dp))
+                        .padding(4.dp)
+                )
+                StateInput(
+                    modifier = Modifier.width(64.dp) // TODO
+                        .fillMaxHeight()
+                        .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(16.dp))
+                        .padding(4.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // input buttons
+            Row(
+                modifier = Modifier.fillMaxHeight()
+                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                for (i in 0..4) {
+                    Column(
+                        modifier = Modifier.width(IntrinsicSize.Max)
+                            .fillMaxHeight(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        val dotModifier = 1 + (1..noteInputDots).sumOf { 1.0 / (2.0.pow(it)) }
+                        val topValue = (2.0).pow(i * 2).toInt()
+                        val topDuration = (1.0 / topValue) * dotModifier
+                        NoteButton(topValue, largestDuration >= topDuration)
+
+                        val bottomValue = (2.0).pow(i * 2 + 1).toInt()
+                        val bottomDuration = (1.0 / bottomValue) * dotModifier
+                        NoteButton(bottomValue, largestDuration >= bottomDuration)
+                    }
+                }
+            }
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
+    @Composable
+    fun TimeSignatureInput(modifier: Modifier = Modifier) {
+        var globalIndex = 0
+        var measureIndex = -1
+        for ((index, measure) in parsedRhythm.measures.withIndex()) {
+            for (element in measure.elements) {
+                globalIndex += when (element) {
+                    is RhythmAtom -> 1
+                    is RhythmTuplet -> element.notes.size
+                }
+            }
+            if (globalIndex > selectedNote) {
+                measureIndex = index
+                break
+            }
+        }
+        val timeSig = parsedRhythm.measures.getOrNull(measureIndex)?.timeSig ?: (4 to 4)
+
+        val selected = showTimeSignature == measureIndex
+
+        val animatedColor = animateColorAsState(
+            targetValue = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
+            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
+            label = "animatedColor"
+        )
+        val animatedOnColor = animateColorAsState(
+            targetValue = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
+            label = "animatedOnColor"
+        )
+
+        Box(
+            modifier = modifier
+                .clip(RoundedCornerShape(16.dp))
+                .background(animatedColor.value)
+                .clickable {
+                    showTimeSignature = if(showTimeSignature == -1) measureIndex else -1
+                }
+        ) {
+            Box(
+                modifier = Modifier.align(Alignment.Center)
+                    .fillMaxHeight(0.8f)
+            ) {
+                MusicFont.Number.TimeSignature(timeSig.first, timeSig.second, animatedOnColor.value)
+            }
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
+    @Composable
+    fun TupletInput(modifier: Modifier = Modifier) {
+        val selected = noteInputTuplet
+        var showDialog by remember { mutableStateOf(false) }
+
+        val animatedColor = animateColorAsState(
+            targetValue = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
+            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
+            label = "animatedColor"
+        )
+        val animatedOnColor = animateColorAsState(
+            targetValue = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
+            label = "animatedOnColor"
+        )
+
+        Box(
+            modifier = modifier
+                .clip(RoundedCornerShape(16.dp))
+                .background(animatedColor.value)
+                .clickable {
+                    if(!noteInputTuplet) {
+                        noteInputTuplet = true
+                        showDialog = true
+                    } else {
+                        noteInputTuplet = false
+                        removeTuplet()
+                    }
+                }
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.tuplet),
+                contentDescription = getString(R.string.editor_tuplet_add),
+                tint = animatedOnColor.value,
+                modifier = Modifier.align(Alignment.Center)
+                    .aspectRatio(1f)
+                    .padding(4.dp)
+            )
+        }
+
+        if(showDialog) {
+            TupletDialog { showDialog = false }
+        }
+    }
+
+    private fun removeTuplet() {
+        val foundAtom = parsedRhythm.atoms().firstOrNull { it.index == selectedNote }?.value
+        if (foundAtom == null) return
+
+        var foundMeasureIndex = -1
+        var foundElementIndex = -1
+        var foundTupletInnerIndex: Int? = null
+
+        loop@ for ((measureIndex, measure) in parsedRhythm.measures.withIndex()) {
+            for ((elementIndex, element) in measure.elements.withIndex()) {
+                when (element) {
+                    is RhythmTuplet -> {
+                        for ((nIndex, note) in element.notes.withIndex()) {
+                            if (note === foundAtom) {
+                                foundMeasureIndex = measureIndex
+                                foundElementIndex = elementIndex
+                                foundTupletInnerIndex = nIndex
+
+                                // move selection to first note in tuplet
+                                selectedNote -= foundTupletInnerIndex
+
+                                break@loop
+                            }
+                        }
+                    }
+                    is RhythmAtom -> {
+                        if (element === foundAtom) {
+                            foundMeasureIndex = measureIndex
+                            foundElementIndex = elementIndex
+                            break@loop
+                        }
+                    }
+                }
+            }
+        }
+
+        if (foundMeasureIndex == -1 || foundElementIndex == -1 || foundTupletInnerIndex == null) return
+
+        val selectedTuplet = parsedRhythm.measures[foundMeasureIndex].elements[foundElementIndex] as? RhythmTuplet
+            ?: return
+
+        val duration = selectedTuplet.getDuration()
+        // get dots
+        for (i in 0..2) {
+            val dotModifier = 1 + (1..i).sumOf { 1.0 / (2.0.pow(it)) }
+            val dottedDuration = duration / dotModifier
+
+            val intValue = (1.0 / dottedDuration).toInt()
+            if (intValue.toDouble() == 1.0 / dottedDuration) {
+                // found a valid dot
+                val note = selectedTuplet.notes.first()
+                val newNote = if(note.isRest()) {
+                    RhythmRest(
+                        baseDuration = duration / dotModifier,
+                        dots = i
+                    )
+                } else {
+                    RhythmNote(
+                        stemDirection = (note as RhythmNote).stemDirection,
+                        baseDuration = duration / dotModifier,
+                        dots = i
+                    )
+                }
+                val measure = parsedRhythm.measures[foundMeasureIndex]
+                val newElements = measure.elements.toMutableList()
+                newElements[foundElementIndex] = newNote
+                val newMeasure = Measure(
+                    timeSig = measure.timeSig,
+                    elements = newElements
+                )
+                val newRhythm = Rhythm(parsedRhythm.measures.toMutableList().apply {
+                    this[foundMeasureIndex] = newMeasure
+                })
+                parsedRhythm = newRhythm
+                rhythm = newRhythm.serialize()
+                metronome.setRhythm(parsedRhythm)
+                return
+            }
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
+    @Composable
+    fun DotInput(maxDots: Int, modifier: Modifier = Modifier) {
+
+        @Composable
+        fun DotInputButton(dots: Int, enabled: Boolean, modifier: Modifier = Modifier) {
+            val selected = noteInputDots == dots
+
+            val animatedColor = animateColorAsState(
+                targetValue = if (selected) MaterialTheme.colorScheme.primaryContainer
+                    else if (enabled) MaterialTheme.colorScheme.surfaceContainerLow
+                    else MaterialTheme.colorScheme.surface,
+                animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
+                label = "animatedColor"
+            )
+            val animatedOnColor = animateColorAsState(
+                targetValue = if (selected) MaterialTheme.colorScheme.onPrimaryContainer
+                    else if(enabled) MaterialTheme.colorScheme.onSurface
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
+                label = "animatedOnColor"
+            )
+
+            Box(
+                modifier = modifier
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(animatedColor.value)
+                    .clickable(enabled || selected) {
+                        noteInputDots = if(noteInputDots != dots) dots else 0
+
+                        val oldElement = parsedRhythm.getNoteAt(selectedNote)
+                        val newElement = if(oldElement is RhythmRest) oldElement.copy(dots = noteInputDots)
+                            else (oldElement as RhythmNote).copy(dots = noteInputDots)
+
+                        parsedRhythm = parsedRhythm.replaceNote(selectedNote, newElement, isScaled = true)
+                        rhythm = parsedRhythm.serialize()
+                        metronome.setRhythm(parsedRhythm)
+                        isSelected = true
+                    }
+            ) {
+                MusicFont.Notation.NoteCentered(MusicFont.Notation.N_QUARTER, dots,
+                    modifier = Modifier.align(Alignment.Center),
+                    color = animatedOnColor.value,
+                    size = 48.dp
+                )
+            }
+        }
+
+        Column(
+            modifier = modifier,
+        ) {
+            DotInputButton(1, maxDots >= 1,
+                modifier = Modifier.weight(1f)
+                    .fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            DotInputButton(2, maxDots >= 2,
+                modifier = Modifier.weight(1f)
+                    .fillMaxWidth()
+            )
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
+    @Composable
+    fun StateInput(modifier: Modifier = Modifier) {
+
+        @Composable
+        fun StateInputButton(state: NoteInputState, modifier: Modifier = Modifier) {
+            val display = when(state) {
+                NoteInputState.UP ->   MusicFont.Notation.N_QUARTER
+                NoteInputState.DOWN -> MusicFont.Notation.I_QUARTER
+                NoteInputState.REST -> MusicFont.Notation.R_QUARTER
+            }
+            val selected = noteInputState == state
+
+            val animatedColor = animateColorAsState(
+                targetValue = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
+                animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
+                label = "animatedColor"
+            )
+            val animatedOnColor = animateColorAsState(
+                targetValue = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
+                label = "animatedOnColor"
+            )
+
+            Box(
+                modifier = modifier
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(animatedColor.value)
+                    .clickable {
+                        noteInputState = if(noteInputState == state) {
+                            if(state == NoteInputState.REST) NoteInputState.UP
+                                else NoteInputState.REST
+                        } else {
+                            state
+                        }
+                        // set selected note to type
+                        val oldElement = parsedRhythm.getNoteAt(selectedNote)
+                        val newElement = if(noteInputState == NoteInputState.REST) {
+                            RhythmRest(
+                                baseDuration = oldElement!!.baseDuration,
+                                dots = oldElement.dots,
+                                tupletRatio = oldElement.tupletRatio
+                            )
+                        } else {
+                            val stemDirection = if(noteInputState == NoteInputState.UP) StemDirection.UP else StemDirection.DOWN
+                            if(oldElement is RhythmRest) {
+                                RhythmNote(
+                                    stemDirection = stemDirection,
+                                    baseDuration = oldElement.baseDuration,
+                                    dots = oldElement.dots,
+                                    tupletRatio = oldElement.tupletRatio
+                                )
+                            } else {
+                                (oldElement as RhythmNote).copy(stemDirection = stemDirection)
+                            }
+                        }
+
+                        parsedRhythm = parsedRhythm.replaceNote(selectedNote, newElement, isScaled = true)
+                        rhythm = parsedRhythm.serialize()
+                        metronome.setRhythm(parsedRhythm)
+                        isSelected = true
+                    }
+            ) {
+                MusicFont.Notation.NoteCentered(display,
+                    modifier = Modifier.align(Alignment.Center),
+                    color = animatedOnColor.value,
+                    size = 32.dp
+                )
+            }
+        }
+
+        Column(
+            modifier = modifier,
+        ) {
+            StateInputButton(NoteInputState.UP,
+                modifier = Modifier.weight(1f)
+                    .fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            StateInputButton(NoteInputState.DOWN,
+                modifier = Modifier.weight(1f)
+                    .fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            StateInputButton(NoteInputState.REST,
+                modifier = Modifier.weight(1f)
+                    .fillMaxWidth()
+            )
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
+    @Composable
+    fun ColumnScope.NoteButton(value: Int, enabled: Boolean) {
+        val rest = noteInputState == NoteInputState.REST
+        val emphasized = noteInputState == NoteInputState.UP
+        val selected = noteInputDuration == value && isSelected
+
+        val animatedColor = animateColorAsState(
+            targetValue = if(selected) MaterialTheme.colorScheme.primaryContainer
+                else if(enabled) MaterialTheme.colorScheme.surfaceContainer
+                else MaterialTheme.colorScheme.surface,
+            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
+            label = "animatedColor"
+        )
+        val animatedOnColor = animateColorAsState(
+            targetValue = if(selected) MaterialTheme.colorScheme.onPrimaryContainer
+                else if(enabled) MaterialTheme.colorScheme.onSurface
+                else MaterialTheme.colorScheme.onSurfaceVariant,
+            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
+            label = "animatedOnColor"
+        )
+
+        Box(
+            modifier = Modifier.weight(1f)
+                .aspectRatio(1f)
+                .clip(RoundedCornerShape(16.dp))
+                .background(animatedColor.value)
+                .clickable(enabled) {
+                    val newNote = if(rest) {
+                        RhythmRest(
+                            baseDuration = 1.0 / value,
+                            dots = noteInputDots
+                        )
+                    } else {
+                        RhythmNote(
+                            stemDirection = if (emphasized) StemDirection.UP else StemDirection.DOWN,
+                            baseDuration = 1.0 / value,
+                            dots = noteInputDots
+                        )
+                    }
+                    parsedRhythm = parsedRhythm.replaceNote(selectedNote, newNote, isScaled = false)
+                    rhythm = parsedRhythm.serialize()
+                    metronome.setRhythm(parsedRhythm)
+                    isSelected = true
+                    if(parsedRhythm.getNoteAt(selectedNote + 1) != null) {
+                        selectedNote += 1
+                    }
+                }
+        ) {
+            // show text for large icons
+            if (value >= 256) {
+                val animatedFontWeight by animateIntAsState(
+                    targetValue = if (rest) 300 else 900,
+                    animationSpec = MotionScheme.expressive().fastEffectsSpec(),
+                    label = "animatedFontWeight"
+                )
+                Text(
+                    "$value",
+                    modifier = Modifier.align(Alignment.Center),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight(animatedFontWeight),
+                )
+            } else {
+                val text = MusicFont.Notation.setEmphasis(MusicFont.Notation.convert(value, rest).toString(), emphasized)[0]
+                var note: MusicFont.Notation? = null
+                for (character in MusicFont.Notation.entries) {
+                    if (character.char == text) {
+                        note = character
+                    }
+                }
+                MusicFont.Notation.NoteCentered(
+                    note = note ?: MusicFont.Notation.N_QUARTER,
+                    color = animatedOnColor.value,
+                    size = 40.dp,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+
+                // staff line
+                val yOffset = 40.dp * (note ?: MusicFont.Notation.N_QUARTER).offset.y
+                Box(
+                    modifier = Modifier.fillMaxWidth(0.25f)
+                        .height(1.dp)
+                        .offset(y = (if (!rest) yOffset - 4.dp else 0.dp))
+                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
+                        .align(Alignment.Center)
+                )
+            }
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
+    @Composable
+    fun TimeSignatureDialog(measureIndex: Int) {
+        var timeSignature by remember { mutableStateOf(parsedRhythm.measures[measureIndex].timeSig) }
+        AlertDialog(
+            onDismissRequest = { showTimeSignature = -1 },
+            title = { Text(getString(R.string.editor_set_time_signature_dialog)) },
+            text = {
+                Box(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxHeight(0.75f)
+                            .aspectRatio(1f)
+                            .align(Alignment.Center)
+                            .background(
+                                MaterialTheme.colorScheme.surfaceContainer,
+                                MaterialShapes.Bun.toShape(0)
+                            )
+                    ) {
+                        Row(
+                            modifier = Modifier.weight(1f)
+                                .padding(horizontal = 32.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            IconButton(
+                                onClick = {
+                                    timeSignature =
+                                        Pair((timeSignature.first - 1).coerceIn(1..32), timeSignature.second)
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft,
+                                    contentDescription = getString(R.string.generic_subtract),
+                                    tint = MaterialTheme.colorScheme.tertiary
+                                )
+                            }
+                            Box(
+                                modifier = Modifier.weight(1f)
+                                    .fillMaxHeight(0.8f)
+                                    .align(Alignment.CenterVertically),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                MusicFont.Number.TimeSignatureLine(
+                                    timeSignature.first,
+                                    MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                            IconButton(
+                                onClick = {
+                                    timeSignature =
+                                        Pair((timeSignature.first + 1).coerceIn(1..32), timeSignature.second)
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
+                                    contentDescription = getString(R.string.generic_add),
+                                    tint = MaterialTheme.colorScheme.tertiary
+                                )
+                            }
+                        }
+                        Row(
+                            modifier = Modifier.weight(1f)
+                                .padding(horizontal = 32.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            IconButton(
+                                onClick = {
+                                    timeSignature =
+                                        Pair(timeSignature.first, (timeSignature.second / 2).coerceIn(1..32))
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft,
+                                    contentDescription = getString(R.string.generic_subtract),
+                                    tint = MaterialTheme.colorScheme.tertiary
+                                )
+                            }
+                            Box(
+                                modifier = Modifier.weight(1f)
+                                    .fillMaxHeight(0.8f)
+                                    .align(Alignment.CenterVertically),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                MusicFont.Number.TimeSignatureLine(
+                                    timeSignature.second,
+                                    MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                            IconButton(
+                                onClick = {
+                                    timeSignature =
+                                        Pair(timeSignature.first, (timeSignature.second * 2).coerceIn(1..32))
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
+                                    contentDescription = getString(R.string.generic_add),
+                                    tint = MaterialTheme.colorScheme.tertiary
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    parsedRhythm = parsedRhythm.setTimeSignature(measureIndex, timeSignature)
+                    metronome.setRhythm(parsedRhythm)
+                    showTimeSignature = -1
+                }) {
+                    Text(getString(R.string.generic_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimeSignature = -1 }) {
+                    Text(getString(R.string.generic_cancel))
+                }
+            }
+        )
+    }
+
+    @Composable
+    fun TupletDialog(onDismiss: () -> Unit = {}) {
+        var numerator by remember { mutableIntStateOf(3) }
+        var tuplet by remember { mutableStateOf(parsedRhythm.createTupletAt(selectedNote, numerator)!!) }
+
+        Dialog(
+            onDismissRequest = {
+                onDismiss()
+                noteInputTuplet = false
+            },
+            properties = DialogProperties(
+                usePlatformDefaultWidth = false
+            )
+        ) {
+            Surface(
+                shape = RoundedCornerShape(32.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.width(IntrinsicSize.Max)
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        getString(R.string.editor_tuplet_add),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(Modifier.height(16.dp))
+
+                    Box(
+                        modifier = Modifier.width(400.dp)
+                            .height(128.dp)
+                            .padding(horizontal = 32.dp)
+                            .background(
+                                MaterialTheme.colorScheme.surfaceContainer,
+                                RoundedCornerShape(16.dp)
+                            )
+                            .offset(y = 16.dp)
+                    ) {
+                        LazyRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            for (element in tuplet.notes) {
+                                item { NoteText(element, 0, errored = false, editable = false) }
+                            }
+                        }
+                        TupletHeader(tuplet,
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                                .matchParentSize()
+                        )
+                    }
+
+                    Spacer(Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        FilledTonalIconButton(onClick = {
+                            if(numerator > 1) {
+                                numerator--
+                                tuplet = parsedRhythm.createTupletAt(selectedNote, numerator) ?: return@FilledTonalIconButton
+                            }
+                        }) {
+                            Icon(
+                                painter = painterResource(R.drawable.baseline_remove_24),
+                                contentDescription = getString(R.string.generic_subtract)
+                            )
+                        }
+                        Spacer(modifier = Modifier.weight(1f))
+                        Button(onClick = {
+                            onDismiss()
+                            parsedRhythm = parsedRhythm.replaceNote(selectedNote, tuplet, isScaled = false)
+                            metronome.setRhythm(parsedRhythm)
+                        }) {
+                            Text(getString(R.string.generic_confirm))
+                        }
+                        Spacer(modifier = Modifier.weight(1f))
+                        FilledTonalIconButton(onClick = {
+                            numerator++
+                            tuplet = parsedRhythm.createTupletAt(selectedNote, numerator) ?: return@FilledTonalIconButton
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = getString(R.string.generic_add)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 
     @Composable
     fun EditBpmDialog() {
@@ -1198,575 +1722,6 @@ class RhythmEditorActivity : ComponentActivity() {
                         }
                     }
                 }
-            }
-        }
-    }
-
-    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
-    @Composable
-    fun ColumnScope.TimeSignature(enabled: Boolean) {
-        val backgroundColor by animateColorAsState(
-            targetValue = if (!enabled) MaterialTheme.colorScheme.surfaceContainer
-            else MaterialTheme.colorScheme.primaryContainer,
-            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
-            label = "backgroundColor"
-        )
-        val textColor by animateColorAsState(
-            targetValue = if (!enabled) MaterialTheme.colorScheme.onSurfaceVariant
-            else MaterialTheme.colorScheme.onPrimaryContainer,
-            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
-            label = "textColor"
-        )
-
-        var globalIndex = 0
-        var measureIndex = -1
-        for ((index, measure) in parsedRhythm.measures.withIndex()) {
-            for (element in measure.elements) {
-                globalIndex += when (element) {
-                    is RhythmAtom -> 1
-                    is RhythmTuplet -> element.notes.size
-                }
-            }
-            if (globalIndex > noteSelected) {
-                measureIndex = index
-                break
-            }
-        }
-
-        Row(
-            modifier = Modifier.weight(1f)
-                .fillMaxWidth()
-                .padding(vertical = 4.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(backgroundColor)
-                .clickable(enabled) {
-                    showTimeSignature = measureIndex
-                }
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Box(
-                modifier = Modifier.fillMaxHeight(0.5f)
-                    .align(Alignment.CenterVertically)
-            ) {
-                val timeSig = parsedRhythm.measures.getOrNull(measureIndex)?.timeSig ?: (4 to 4)
-                MusicFont.Number.TimeSignature(timeSig.first, timeSig.second, textColor)
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Text(
-                text = getString(R.string.editor_set_time_signature),
-                modifier = Modifier.align(Alignment.CenterVertically),
-                style = MaterialTheme.typography.bodyLarge,
-                color = textColor,
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-        }
-    }
-
-    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
-    @Composable
-    fun ColumnScope.ChangeEmphasis(enabled: Boolean) {
-        var showDialog by remember { mutableStateOf(false) }
-
-        val backgroundColor by animateColorAsState(
-            targetValue = if (!enabled) MaterialTheme.colorScheme.surfaceContainer
-            else MaterialTheme.colorScheme.primaryContainer,
-            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
-            label = "backgroundColor"
-        )
-        val textColor by animateColorAsState(
-            targetValue = if (!enabled) MaterialTheme.colorScheme.onSurfaceVariant
-            else MaterialTheme.colorScheme.onPrimaryContainer,
-            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
-            label = "textColor"
-        )
-
-        Row(
-            modifier = Modifier.weight(1f)
-                .fillMaxWidth()
-                .padding(vertical = 4.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(backgroundColor)
-                .clickable(enabled) {
-                    showDialog = true
-                }
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.outline_volume_up_24),
-                contentDescription = getString(R.string.editor_change_emphasis),
-                modifier = Modifier.align(Alignment.CenterVertically),
-                tint = textColor
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Text(
-                text = getString(R.string.editor_change_emphasis),
-                modifier = Modifier.align(Alignment.CenterVertically),
-                style = MaterialTheme.typography.bodyLarge,
-                color = textColor,
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-        }
-
-        if(showDialog) {
-            var emphasis by remember { mutableStateOf(true) }
-            AlertDialog(
-                onDismissRequest = { showDialog = false },
-                title = { Text(getString(R.string.editor_change_emphasis)) },
-                text = {
-                    Column {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            val interactionSource = remember { MutableInteractionSource() }
-                            RadioButton(
-                                selected = emphasis,
-                                onClick = { emphasis = true },
-                                enabled = enabled,
-                                interactionSource = interactionSource
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = getString(R.string.editor_emphasis_high),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = if (emphasis) MaterialTheme.colorScheme.onSurface
-                                else MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null
-                                ) { emphasis = true }
-                            )
-                        }
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            val interactionSource = remember { MutableInteractionSource() }
-                            RadioButton(
-                                selected = !emphasis,
-                                onClick = { emphasis = false },
-                                enabled = enabled,
-                                interactionSource = interactionSource
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = getString(R.string.editor_emphasis_low),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = if (!emphasis) MaterialTheme.colorScheme.onSurface
-                                else MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null
-                                ) { emphasis = false }
-                            )
-                        }
-                    }
-                },
-                confirmButton = {
-                    TextButton(onClick = {
-                        val selectedNote = parsedRhythm.getNoteAt(noteSelected) ?: return@TextButton
-                        if(selectedNote !is RhythmNote) return@TextButton
-                        val newNote = selectedNote.copy(
-                            stemDirection = if(emphasis) StemDirection.UP else StemDirection.DOWN
-                        )
-                        parsedRhythm = parsedRhythm.replaceNote(noteSelected, newNote, isScaled = true)
-                        rhythm = parsedRhythm.serialize()
-                        metronome.setRhythm(parsedRhythm)
-
-                        showDialog = false
-                    }) {
-                        Text(getString(R.string.generic_confirm))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showDialog = false }) {
-                        Text(getString(R.string.generic_cancel))
-                    }
-                }
-            )
-        }
-    }
-
-    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
-    @Composable
-    fun ColumnScope.AddTuplet(enabled: Boolean, tupletSelected: Boolean) {
-        var numerator by remember { mutableIntStateOf(3) }
-        var showDialog by remember { mutableStateOf(false) }
-
-        val backgroundColor by animateColorAsState(
-            targetValue = if (!enabled) MaterialTheme.colorScheme.surfaceContainer
-                else if (tupletSelected) MaterialTheme.colorScheme.secondaryContainer
-                else MaterialTheme.colorScheme.primaryContainer,
-            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
-            label = "backgroundColor"
-        )
-        val textColor by animateColorAsState(
-            targetValue = if (!enabled) MaterialTheme.colorScheme.onSurfaceVariant
-                else if (tupletSelected) MaterialTheme.colorScheme.onSecondaryContainer
-                else MaterialTheme.colorScheme.onPrimaryContainer,
-            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
-            label = "textColor"
-        )
-
-        Row(
-            modifier = Modifier.weight(1f)
-                .fillMaxWidth()
-                .padding(vertical = 4.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(backgroundColor)
-                .clickable(enabled) {
-                    if (!tupletSelected) {
-                        showDialog = true
-                    } else {
-                        // remove tuplet
-                        val foundAtom = parsedRhythm.atoms().firstOrNull { it.index == noteSelected }?.value
-                        if (foundAtom == null) return@clickable
-
-                        var foundMeasureIndex = -1
-                        var foundElementIndex = -1
-                        var foundTupletInnerIndex: Int? = null
-
-                        loop@ for ((measureIndex, measure) in parsedRhythm.measures.withIndex()) {
-                            for ((elementIndex, element) in measure.elements.withIndex()) {
-                                when (element) {
-                                    is RhythmTuplet -> {
-                                        for ((nIndex, note) in element.notes.withIndex()) {
-                                            if (note === foundAtom) {
-                                                foundMeasureIndex = measureIndex
-                                                foundElementIndex = elementIndex
-                                                foundTupletInnerIndex = nIndex
-
-                                                // move selection to first note in tuplet
-                                                noteSelected -= foundTupletInnerIndex
-
-                                                break@loop
-                                            }
-                                        }
-                                    }
-                                    is RhythmAtom -> {
-                                        if (element === foundAtom) {
-                                            foundMeasureIndex = measureIndex
-                                            foundElementIndex = elementIndex
-                                            break@loop
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        if (foundMeasureIndex == -1 || foundElementIndex == -1 || foundTupletInnerIndex == null) return@clickable
-
-                        val selectedTuplet = parsedRhythm.measures[foundMeasureIndex].elements[foundElementIndex] as? RhythmTuplet
-                            ?: return@clickable
-
-                        val duration = selectedTuplet.getDuration()
-                        // get dots
-                        for (i in 0..2) {
-                            val dotModifier = 1 + (1..i).sumOf { 1.0 / (2.0.pow(it)) }
-                            val dottedDuration = duration / dotModifier
-
-                            val intValue = (1.0 / dottedDuration).toInt()
-                            if (intValue.toDouble() == 1.0 / dottedDuration) {
-                                // found a valid dot
-                                val note = selectedTuplet.notes.first()
-                                val newNote = if(note.isRest()) {
-                                    RhythmRest(
-                                        baseDuration = duration / dotModifier,
-                                        dots = i
-                                    )
-                                } else {
-                                    RhythmNote(
-                                        stemDirection = (note as RhythmNote).stemDirection,
-                                        baseDuration = duration / dotModifier,
-                                        dots = i
-                                    )
-                                }
-                                val measure = parsedRhythm.measures[foundMeasureIndex]
-                                val newElements = measure.elements.toMutableList()
-                                newElements[foundElementIndex] = newNote
-                                val newMeasure = Measure(
-                                    timeSig = measure.timeSig,
-                                    elements = newElements
-                                )
-                                val newRhythm = Rhythm(parsedRhythm.measures.toMutableList().apply {
-                                    this[foundMeasureIndex] = newMeasure
-                                })
-                                parsedRhythm = newRhythm
-                                rhythm = newRhythm.serialize()
-                                metronome.setRhythm(parsedRhythm)
-                                return@clickable
-                            }
-                        }
-                    }
-                }
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            val text = if (tupletSelected) getString(R.string.editor_tuplet_remove)
-                else getString(R.string.editor_tuplet_add)
-            Icon(
-                painter = painterResource(R.drawable.outline_avg_pace_24),
-                contentDescription = text,
-                modifier = Modifier.align(Alignment.CenterVertically),
-                tint = textColor
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Text(
-                text = text,
-                modifier = Modifier.align(Alignment.CenterVertically),
-                style = MaterialTheme.typography.bodyLarge,
-                color = textColor,
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-        }
-
-        if(showDialog) {
-            var tuplet by remember { mutableStateOf(parsedRhythm.createTupletAt(noteSelected, numerator)!!) }
-
-            Dialog(
-                onDismissRequest = { showDialog = false },
-                properties = DialogProperties(
-                    usePlatformDefaultWidth = false
-                )
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(32.dp),
-                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.width(IntrinsicSize.Max)
-                            .padding(16.dp)
-                    ) {
-                        Text(
-                            getString(R.string.editor_tuplet_add),
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Spacer(Modifier.height(16.dp))
-
-                        Box(
-                            modifier = Modifier.width(400.dp)
-                                .height(128.dp)
-                                .padding(horizontal = 32.dp)
-                                .background(
-                                    MaterialTheme.colorScheme.surfaceContainer,
-                                    RoundedCornerShape(16.dp)
-                                )
-                                .offset(y = 16.dp)
-                        ) {
-                            LazyRow(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                for (element in tuplet.notes) {
-                                    item { NoteText(element, 0, errored = false, editable = false) }
-                                }
-                            }
-                            TupletHeader(tuplet,
-                                modifier = Modifier.padding(horizontal = 8.dp)
-                                    .matchParentSize()
-                            )
-                        }
-
-                        Spacer(Modifier.height(16.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth()
-                                .padding(horizontal = 16.dp)
-                        ) {
-                            FilledTonalIconButton(onClick = {
-                                if(numerator > 1) {
-                                    numerator--
-                                    tuplet = parsedRhythm.createTupletAt(noteSelected, numerator) ?: return@FilledTonalIconButton
-                                }
-                            }) {
-                                Icon(
-                                    painter = painterResource(R.drawable.baseline_remove_24),
-                                    contentDescription = getString(R.string.generic_subtract)
-                                )
-                            }
-                            Spacer(modifier = Modifier.weight(1f))
-                            Button(onClick = {
-                                showDialog = false
-                                parsedRhythm = parsedRhythm.replaceNote(noteSelected, tuplet, isScaled = false)
-                                metronome.setRhythm(parsedRhythm)
-                            }) {
-                                Text(getString(R.string.generic_confirm))
-                            }
-                            Spacer(modifier = Modifier.weight(1f))
-                            FilledTonalIconButton(onClick = {
-                                numerator++
-                                tuplet = parsedRhythm.createTupletAt(noteSelected, numerator) ?: return@FilledTonalIconButton
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Default.Add,
-                                    contentDescription = getString(R.string.generic_add)
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
-    @Composable
-    fun ColumnScope.ToggleDot(enabled: Boolean, oldElement: RhythmAtom?, dots: Int) {
-        val backgroundColor by animateColorAsState(
-            targetValue = if (!enabled) MaterialTheme.colorScheme.surfaceContainer
-            else when (dots) {
-                1 -> MaterialTheme.colorScheme.primaryContainer
-                2 -> MaterialTheme.colorScheme.tertiaryContainer
-                else -> MaterialTheme.colorScheme.secondaryContainer
-            },
-            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
-            label = "backgroundColor"
-        )
-        val textColor by animateColorAsState(
-            targetValue = if (!enabled) MaterialTheme.colorScheme.onSurfaceVariant
-            else when (dots) {
-                1 -> MaterialTheme.colorScheme.onPrimaryContainer
-                2 -> MaterialTheme.colorScheme.onTertiaryContainer
-                else -> MaterialTheme.colorScheme.onSecondaryContainer
-            },
-            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
-            label = "textColor"
-        )
-
-        Row(
-            modifier = Modifier.weight(1f)
-                .fillMaxWidth()
-                .padding(vertical = 4.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(backgroundColor)
-                .clickable(enabled && oldElement != null) {
-                    val newNote = if(oldElement is RhythmRest) oldElement.copy(dots = dots)
-                        else (oldElement as RhythmNote).copy(dots = dots)
-
-                    parsedRhythm = parsedRhythm.replaceNote(noteSelected, newNote, isScaled = true)
-                    rhythm = parsedRhythm.serialize()
-                    metronome.setRhythm(parsedRhythm)
-                }
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.baseline_music_note_24),
-                contentDescription = getString(R.string.editor_toggle_dot),
-                modifier = Modifier.align(Alignment.CenterVertically),
-                tint = textColor
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Text(
-                text = getString(R.string.editor_toggle_dot),
-                modifier = Modifier.align(Alignment.CenterVertically),
-                style = MaterialTheme.typography.bodyLarge,
-                color = textColor,
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-        }
-    }
-
-    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
-    @Composable
-    fun ColumnScope.NoteButton(value: Int, rest: Boolean, emphasized: Boolean, enabled: Boolean) {
-        if(value > 1024) {
-            Box(
-                modifier = Modifier.weight(1f)
-                    .padding(0.dp, 4.dp, 0.dp, 8.dp)
-                    .aspectRatio(1f)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(MaterialTheme.colorScheme.surfaceContainer)
-            )
-            return
-        }
-
-        val animatedColor = animateColorAsState(
-            targetValue = if (!enabled) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
-            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
-            label = "animatedColor"
-        )
-        val animatedOnColor = animateColorAsState(
-            targetValue = if (!enabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
-            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
-            label = "animatedOnColor"
-        )
-
-        Box(
-            modifier = Modifier.weight(1f)
-                .padding(0.dp, 8.dp, 0.dp, 4.dp)
-                .aspectRatio(1f)
-                .clip(RoundedCornerShape(16.dp))
-                .background(animatedColor.value)
-                .clickable(enabled) {
-                    val newNote = if(rest) {
-                        RhythmRest(
-                            baseDuration = 1.0 / value,
-                            dots = 0
-                        )
-                    } else {
-                        RhythmNote(
-                            stemDirection = if (emphasized) StemDirection.UP else StemDirection.DOWN,
-                            baseDuration = 1.0 / value,
-                            dots = 0
-                        )
-                    }
-                    parsedRhythm = parsedRhythm.replaceNote(noteSelected, newNote, isScaled = false)
-                    rhythm = parsedRhythm.serialize()
-                    metronome.setRhythm(parsedRhythm)
-                }
-        ) {
-            if (value >= 256) {
-                val animatedFontWeight by animateIntAsState(
-                    targetValue = if (rest) 300 else 900,
-                    animationSpec = MotionScheme.expressive().fastEffectsSpec(),
-                    label = "animatedFontWeight"
-                )
-                Text(
-                    "$value",
-                    modifier = Modifier.align(Alignment.Center),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight(animatedFontWeight),
-                )
-            } else {
-                val text = MusicFont.Notation.setEmphasis(MusicFont.Notation.convert(value, rest).toString(), emphasized)[0]
-                var note: MusicFont.Notation? = null
-                for (character in MusicFont.Notation.entries) {
-                    if (character.char == text) {
-                        note = character
-                    }
-                }
-                MusicFont.Notation.NoteCentered(
-                    note = note ?: MusicFont.Notation.N_QUARTER,
-                    color = animatedOnColor.value,
-                    size = 40.dp,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-
-                // staff line
-                val yOffset = 40.dp * (note ?: MusicFont.Notation.N_QUARTER).offset.y
-                Box(
-                    modifier = Modifier.fillMaxWidth(0.25f)
-                        .height(1.dp)
-                        .offset(y = (if (!rest) yOffset - 4.dp else 0.dp))
-                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
-                        .align(Alignment.Center)
-                )
             }
         }
     }
@@ -1967,7 +1922,7 @@ class RhythmEditorActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
     fun NoteText(note: RhythmAtom, noteIndex: Int, errored: Boolean = false, editable: Boolean = true) {
-        val isNoteSelected = noteIndex == noteSelected
+        val isNoteSelected = noteIndex == selectedNote && isSelected
         val isMusicSelected = noteIndex == musicSelected
 
         val color = animateColorAsState(
@@ -1993,7 +1948,12 @@ class RhythmEditorActivity : ComponentActivity() {
                 .clip(RoundedCornerShape(corner.value.toInt().coerceIn(0, 100)))
                 .background(color.value)
                 .clickable(editable) {
-                    noteSelected = if (isNoteSelected) -1 else noteIndex
+                    if(isNoteSelected) {
+                        isSelected = false
+                    } else {
+                        selectedNote = noteIndex
+                        isSelected = true
+                    }
                 }
         ) {
             val durationChar = MusicFont.Notation.fromLength(note.baseDuration, note.isRest())
@@ -2071,127 +2031,5 @@ class RhythmEditorActivity : ComponentActivity() {
                 MusicFont.Number.TimeSignature(numerator, denominator, MaterialTheme.colorScheme.onSurface)
             }
         }
-    }
-
-    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
-    @Composable
-    fun TimeSignatureDialog(measureIndex: Int) {
-        var timeSignature by remember { mutableStateOf(parsedRhythm.measures[measureIndex].timeSig) }
-        AlertDialog(
-            onDismissRequest = { showTimeSignature = -1 },
-            title = { Text(getString(R.string.editor_set_time_signature_dialog)) },
-            text = {
-                Box(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxHeight(0.75f)
-                            .aspectRatio(1f)
-                            .align(Alignment.Center)
-                            .background(
-                                MaterialTheme.colorScheme.surfaceContainer,
-                                MaterialShapes.Bun.toShape(0)
-                            )
-                    ) {
-                        Row(
-                            modifier = Modifier.weight(1f)
-                                .padding(horizontal = 32.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            IconButton(
-                                onClick = {
-                                    timeSignature =
-                                        Pair((timeSignature.first - 1).coerceIn(1..32), timeSignature.second)
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft,
-                                    contentDescription = getString(R.string.generic_subtract),
-                                    tint = MaterialTheme.colorScheme.tertiary
-                                )
-                            }
-                            Box(
-                                modifier = Modifier.weight(1f)
-                                    .fillMaxHeight(0.8f)
-                                    .align(Alignment.CenterVertically),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                MusicFont.Number.TimeSignatureLine(
-                                    timeSignature.first,
-                                    MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                            IconButton(
-                                onClick = {
-                                    timeSignature =
-                                        Pair((timeSignature.first + 1).coerceIn(1..32), timeSignature.second)
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
-                                    contentDescription = getString(R.string.generic_add),
-                                    tint = MaterialTheme.colorScheme.tertiary
-                                )
-                            }
-                        }
-                        Row(
-                            modifier = Modifier.weight(1f)
-                                .padding(horizontal = 32.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            IconButton(
-                                onClick = {
-                                    timeSignature =
-                                        Pair(timeSignature.first, (timeSignature.second / 2).coerceIn(1..32))
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft,
-                                    contentDescription = getString(R.string.generic_subtract),
-                                    tint = MaterialTheme.colorScheme.tertiary
-                                )
-                            }
-                            Box(
-                                modifier = Modifier.weight(1f)
-                                    .fillMaxHeight(0.8f)
-                                    .align(Alignment.CenterVertically),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                MusicFont.Number.TimeSignatureLine(
-                                    timeSignature.second,
-                                    MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                            IconButton(
-                                onClick = {
-                                    timeSignature =
-                                        Pair(timeSignature.first, (timeSignature.second * 2).coerceIn(1..32))
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
-                                    contentDescription = getString(R.string.generic_add),
-                                    tint = MaterialTheme.colorScheme.tertiary
-                                )
-                            }
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    parsedRhythm = parsedRhythm.setTimeSignature(measureIndex, timeSignature)
-                    metronome.setRhythm(parsedRhythm)
-                    showTimeSignature = -1
-                }) {
-                    Text(getString(R.string.generic_confirm))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showTimeSignature = -1 }) {
-                    Text(getString(R.string.generic_cancel))
-                }
-            }
-        )
     }
 }
