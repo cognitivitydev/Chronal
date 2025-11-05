@@ -226,11 +226,10 @@ class RhythmEditorActivity : ComponentActivity() {
         )
 
         Scaffold(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface),
         ) { innerPadding ->
-            Column(
-                modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerLowest)
-            ) {
+            Column {
                 // top row
                 Box(
                     modifier = Modifier.fillMaxSize()
@@ -840,7 +839,7 @@ class RhythmEditorActivity : ComponentActivity() {
             // editor buttons
             Row(
                 modifier = Modifier.fillMaxHeight()
-                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(16.dp))
                     .padding(8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -857,15 +856,15 @@ class RhythmEditorActivity : ComponentActivity() {
                     )
                 }
                 DotInput(maxDots,
-                    modifier = Modifier.width(64.dp) // TODO
+                    modifier = Modifier.width(64.dp)
                         .fillMaxHeight()
-                        .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(16.dp))
+                        .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(16.dp))
                         .padding(4.dp)
                 )
                 StateInput(
-                    modifier = Modifier.width(64.dp) // TODO
+                    modifier = Modifier.width(64.dp)
                         .fillMaxHeight()
-                        .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(16.dp))
+                        .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(16.dp))
                         .padding(4.dp)
                 )
             }
@@ -875,7 +874,7 @@ class RhythmEditorActivity : ComponentActivity() {
             // input buttons
             Row(
                 modifier = Modifier.fillMaxHeight()
-                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(16.dp))
                     .padding(8.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -921,12 +920,12 @@ class RhythmEditorActivity : ComponentActivity() {
         val selected = showTimeSignature == measureIndex
 
         val animatedColor = animateColorAsState(
-            targetValue = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
+            targetValue = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
             animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
             label = "animatedColor"
         )
         val animatedOnColor = animateColorAsState(
-            targetValue = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+            targetValue = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
             animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
             label = "animatedOnColor"
         )
@@ -955,12 +954,12 @@ class RhythmEditorActivity : ComponentActivity() {
         var showDialog by remember { mutableStateOf(false) }
 
         val animatedColor = animateColorAsState(
-            targetValue = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
+            targetValue = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
             animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
             label = "animatedColor"
         )
         val animatedOnColor = animateColorAsState(
-            targetValue = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+            targetValue = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
             animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
             label = "animatedOnColor"
         )
@@ -1085,7 +1084,7 @@ class RhythmEditorActivity : ComponentActivity() {
 
             val animatedColor = animateColorAsState(
                 targetValue = if (selected) MaterialTheme.colorScheme.primaryContainer
-                    else if (enabled) MaterialTheme.colorScheme.surfaceContainerLow
+                    else if (enabled) MaterialTheme.colorScheme.surfaceContainerHigh
                     else MaterialTheme.colorScheme.surface,
                 animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
                 label = "animatedColor"
@@ -1152,12 +1151,12 @@ class RhythmEditorActivity : ComponentActivity() {
             val selected = noteInputState == state
 
             val animatedColor = animateColorAsState(
-                targetValue = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
+                targetValue = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
                 animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
                 label = "animatedColor"
             )
             val animatedOnColor = animateColorAsState(
-                targetValue = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                targetValue = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
                 animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
                 label = "animatedOnColor"
             )
@@ -1238,8 +1237,8 @@ class RhythmEditorActivity : ComponentActivity() {
 
         val animatedColor = animateColorAsState(
             targetValue = if(selected) MaterialTheme.colorScheme.primaryContainer
-                else if(enabled) MaterialTheme.colorScheme.surfaceContainer
-                else MaterialTheme.colorScheme.surface,
+                else if(enabled) MaterialTheme.colorScheme.surfaceContainerHigh
+                else MaterialTheme.colorScheme.surfaceContainerLow,
             animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
             label = "animatedColor"
         )
@@ -1313,7 +1312,7 @@ class RhythmEditorActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxWidth(0.25f)
                         .height(1.dp)
                         .offset(y = (if (!rest) yOffset - 4.dp else 0.dp))
-                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
+                        .background(animatedOnColor.value.copy(alpha = 0.8f))
                         .align(Alignment.Center)
                 )
             }
@@ -1928,7 +1927,6 @@ class RhythmEditorActivity : ComponentActivity() {
         val color = animateColorAsState(
             targetValue = if (!editable) Color.Transparent
             else if (isNoteSelected) MaterialTheme.colorScheme.secondaryContainer
-            else if (isMusicSelected) MaterialTheme.colorScheme.tertiaryContainer
             else if (errored) MaterialTheme.colorScheme.errorContainer
             else MaterialTheme.colorScheme.surfaceContainer,
             animationSpec = MotionScheme.expressive().fastEffectsSpec(),
@@ -1946,7 +1944,7 @@ class RhythmEditorActivity : ComponentActivity() {
                 .width(48.dp)
                 .fillMaxHeight()
                 .clip(RoundedCornerShape(corner.value.toInt().coerceIn(0, 100)))
-                .background(color.value)
+                .background(if(isMusicSelected) MaterialTheme.colorScheme.tertiaryContainer else color.value)
                 .clickable(editable) {
                     if(isNoteSelected) {
                         isSelected = false
