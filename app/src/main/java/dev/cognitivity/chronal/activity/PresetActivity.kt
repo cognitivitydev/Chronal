@@ -612,7 +612,7 @@ class PresetActivity : ComponentActivity() {
                 Text(
                     text = getString(R.string.presets_rhythm_primary),
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
                 RhythmInfo(preset, true)
             }
@@ -628,7 +628,7 @@ class PresetActivity : ComponentActivity() {
                 Text(
                     text = getString(R.string.presets_rhythm_secondary),
                     style = MaterialTheme.typography.titleMedium,
-                    color = if(enabled) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = if(enabled) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 RhythmInfo(preset, false, preset.state.secondaryEnabled)
             }
