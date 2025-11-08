@@ -53,7 +53,6 @@ import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.activity.vibratorManager
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.ui.metronome.windows.ClockBeats
-import dev.cognitivity.chronal.ui.metronome.windows.secondaryEnabled
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -66,15 +65,14 @@ fun BoxScope.CircularClock(primary: Boolean, trackSize: Float, trackOff: Color, 
                            majorOffColor: Color, minorOffColor: Color, majorPrimaryColor: Color, minorPrimaryColor: Color,
                            majorSecondaryColor: Color, minorSecondaryColor: Color
 ) {
-    val metronome = if(primary) ChronalApp.getInstance().metronome else ChronalApp.getInstance().metronomeSecondary
-    var rhythm by remember { mutableStateOf(metronome.getRhythm()) }
-    var intervals by remember { mutableStateOf(metronome.getIntervals()) }
-    metronome.setEditListener(1) {
+    val metronome = ChronalApp.getInstance().metronome
+    val track = metronome.getTrack(if(primary) 0 else 1)
+
+    var rhythm by remember { mutableStateOf(track.getRhythm()) }
+    var intervals by remember { mutableStateOf(track.getIntervals()) }
+    track.setEditListener(1) {
         rhythm = it
-        intervals = metronome.getIntervals()
-        if(!primary) {
-            secondaryEnabled = metronome.active
-        }
+        intervals = track.getIntervals()
     }
 
     val progress = remember { Animatable(0f) }
@@ -152,13 +150,13 @@ fun BoxScope.CircularClock(primary: Boolean, trackSize: Float, trackOff: Color, 
             progress.animateTo(
                 targetValue = next / measureDuration,
                 animationSpec = tween(
-                    durationMillis = (abs(beat.duration) * 60000 / metronome.bpm * metronome.beatValue).toInt(),
+                    durationMillis = (abs(beat.duration) * 60000 / track.bpm * track.beatValue).toInt(),
                     easing = LinearEasing
                 )
             )
         }
     }
-    metronome.setUpdateListener(0) { updateListener(it) }
+    track.setUpdateListener(0) { updateListener(it) }
 
     val pauseListener = { paused: Boolean ->
         loopIndex = 0
@@ -179,7 +177,7 @@ fun BoxScope.CircularClock(primary: Boolean, trackSize: Float, trackOff: Color, 
             }
         }
     }
-    metronome.setPauseListener(0) { pauseListener(it) }
+    track.setPauseListener(0) { pauseListener(it) }
 
     Box(
         modifier = Modifier.aspectRatio(1f)

@@ -80,7 +80,8 @@ class ClockWidget : GlanceAppWidget() {
                 ActionParameters.Key<String>("preset") to (preset?.toJson()?.toString() ?: ""),
             )
         )
-        val bpm = preset?.state?.bpm ?: (if(ChronalApp.getInstance().isInitialized()) ChronalApp.getInstance().metronome.bpm else 120)
+        val metronome = if(ChronalApp.getInstance().isInitialized()) ChronalApp.getInstance().metronome else null
+        val bpm = preset?.state?.bpm ?: metronome?.getTrack(0)?.bpm ?: 120
 
         val size = LocalSize.current
         val squareSize = minOf(size.width, size.height)

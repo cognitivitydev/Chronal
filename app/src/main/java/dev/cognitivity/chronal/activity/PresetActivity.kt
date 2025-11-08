@@ -325,17 +325,20 @@ class PresetActivity : ComponentActivity() {
                         TextButton(
                             onClick = {
                                 val metronome = ChronalApp.getInstance().metronome
-                                val metronomeSecondary = ChronalApp.getInstance().metronomeSecondary
+
+                                val primaryTrack = metronome.getTrack(0)
+                                val secondaryTrack = metronome.getTrack(1)
+
                                 val newPreset = MetronomePreset(
                                     name = newName.trim().ifBlank { getString(R.string.presets_new_name) },
                                     state = MetronomeState(
-                                        bpm = metronome.bpm,
-                                        beatValuePrimary = metronome.beatValue,
-                                        beatValueSecondary = metronomeSecondary.beatValue,
-                                        secondaryEnabled = metronomeSecondary.active
+                                        bpm = primaryTrack.bpm,
+                                        beatValuePrimary = primaryTrack.beatValue,
+                                        beatValueSecondary = secondaryTrack.beatValue,
+                                        secondaryEnabled = secondaryTrack.enabled
                                     ),
-                                    primaryRhythm = metronome.getRhythm(),
-                                    secondaryRhythm = metronomeSecondary.getRhythm(),
+                                    primaryRhythm = primaryTrack.getRhythm(),
+                                    secondaryRhythm = secondaryTrack.getRhythm(),
                                     primarySimpleRhythm = settings.metronomeSimpleRhythm.value,
                                     secondarySimpleRhythm = settings.metronomeSimpleRhythmSecondary.value
                                 )
@@ -409,21 +412,24 @@ class PresetActivity : ComponentActivity() {
                             onDismiss()
 
                             val metronome = ChronalApp.getInstance().metronome
-                            val metronomeSecondary = ChronalApp.getInstance().metronomeSecondary
-                            metronome.bpm = preset.state.bpm
-                            metronome.beatValue = preset.state.beatValuePrimary
-                            metronomeSecondary.bpm = preset.state.bpm
-                            metronomeSecondary.active = true
-                            metronomeSecondary.beatValue = preset.state.beatValueSecondary
-                            metronomeSecondary.active = preset.state.secondaryEnabled
+
+                            val primaryTrack = metronome.getTrack(0)
+                            val secondaryTrack = metronome.getTrack(1)
+
+                            primaryTrack.bpm = preset.state.bpm
+                            primaryTrack.beatValue = preset.state.beatValuePrimary
+                            if(secondaryTrack != null) {
+                                secondaryTrack.bpm = preset.state.bpm
+                                secondaryTrack.beatValue = preset.state.beatValueSecondary
+                            }
 
                             settings.metronomeState.value = preset.state
                             settings.metronomeRhythm.value = preset.primaryRhythm.serialize()
                             settings.metronomeRhythmSecondary.value = preset.secondaryRhythm.serialize()
                             settings.metronomeSimpleRhythm.value = preset.primarySimpleRhythm
                             settings.metronomeSimpleRhythmSecondary.value = preset.secondarySimpleRhythm
-                            metronome.setRhythm(preset.primaryRhythm)
-                            metronomeSecondary.setRhythm(preset.secondaryRhythm)
+                            primaryTrack.setRhythm(preset.primaryRhythm)
+                            secondaryTrack.setRhythm(preset.secondaryRhythm)
 
                             scope.launch {
                                 settings.save()
@@ -484,17 +490,19 @@ class PresetActivity : ComponentActivity() {
                             onClick = {
                                 checked = false
                                 val metronome = ChronalApp.getInstance().metronome
-                                val metronomeSecondary = ChronalApp.getInstance().metronomeSecondary
+
+                                val primaryTrack = metronome.getTrack(0)
+                                val secondaryTrack = metronome.getTrack(1)
 
                                 val newPreset = preset.copy(
                                     state = MetronomeState(
-                                        bpm = metronome.bpm,
-                                        beatValuePrimary = metronome.beatValue,
-                                        beatValueSecondary = metronomeSecondary.beatValue,
-                                        secondaryEnabled = metronomeSecondary.active
+                                        bpm = primaryTrack.bpm,
+                                        beatValuePrimary = primaryTrack.beatValue,
+                                        beatValueSecondary = secondaryTrack.beatValue,
+                                        secondaryEnabled = secondaryTrack.enabled,
                                     ),
-                                    primaryRhythm = metronome.getRhythm(),
-                                    secondaryRhythm = metronomeSecondary.getRhythm(),
+                                    primaryRhythm = primaryTrack.getRhythm(),
+                                    secondaryRhythm = secondaryTrack.getRhythm(),
                                     primarySimpleRhythm = settings.metronomeSimpleRhythm.value,
                                     secondarySimpleRhythm = settings.metronomeSimpleRhythmSecondary.value,
                                 )

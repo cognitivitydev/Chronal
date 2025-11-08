@@ -67,17 +67,21 @@ import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmAtom
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.round
 import dev.cognitivity.chronal.toPx
-import dev.cognitivity.chronal.ui.metronome.windows.metronome
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
-
+// TODO
+//   - pick display track
+//   - separate versions for different time signatures (5/4, 6/8...)
 @Composable
 fun ConductorDisplay() {
+    val metronome = ChronalApp.getInstance().metronome
+    val displayTrack = metronome.getTrack(0)
+
     val coroutineScope = rememberCoroutineScope()
     var loopIndex by remember { mutableIntStateOf(0) }
-    var currentTimeSignature by remember { mutableStateOf(metronome.getRhythm().measures[0].timeSig) }
+    var currentTimeSignature by remember { mutableStateOf(displayTrack.getRhythm().measures[0].timeSig) }
     var (path, segments) = getConductorPath(currentTimeSignature.first)
     val currentBeat = remember { Animatable(0f) }
 
@@ -85,15 +89,15 @@ fun ConductorDisplay() {
 
     var lastBeatId: Pair<Int, Int>? = null // measure index and beat index
 
-    metronome.setEditListener(4) {
-        currentTimeSignature = metronome.getRhythm().measures[0].timeSig
+    displayTrack.setEditListener(4) {
+        currentTimeSignature = displayTrack.getRhythm().measures[0].timeSig
         val newPath = getConductorPath(currentTimeSignature.first)
         path = newPath.first
         segments = newPath.second
     }
 
-    metronome.setUpdateListener(4) { beat ->
-        val rhythm = metronome.getRhythm()
+    displayTrack.setUpdateListener(4) { beat ->
+        val rhythm = displayTrack.getRhythm()
         val timestamp = metronome.timestamp
 
 
@@ -159,7 +163,7 @@ fun ConductorDisplay() {
                     currentBeat.animateTo(
                         targetValue = endValue.toFloat(),
                         animationSpec = tween(
-                            durationMillis = (beatDuration * 60000 / metronome.bpm * metronome.beatValue).toInt(),
+                            durationMillis = (beatDuration * 60000 / displayTrack.bpm * displayTrack.beatValue).toInt(),
                             easing = CubicBezierEasing(0f, 0f, 0.5f, 0.75f)
                         )
                     )
@@ -168,7 +172,7 @@ fun ConductorDisplay() {
             }
         }
     }
-    metronome.setPauseListener(4) { playing ->
+    displayTrack.setPauseListener(4) { playing ->
         if(!playing) return@setPauseListener
         coroutineScope.launch {
             currentBeat.snapTo(0f)

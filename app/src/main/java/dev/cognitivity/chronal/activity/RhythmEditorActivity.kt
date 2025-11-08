@@ -72,6 +72,7 @@ import androidx.lifecycle.lifecycleScope
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.Metronome
 import dev.cognitivity.chronal.MetronomeState
+import dev.cognitivity.chronal.MetronomeTrack
 import dev.cognitivity.chronal.MusicFont
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.SimpleRhythm
@@ -115,8 +116,17 @@ class RhythmEditorActivity : ComponentActivity() {
     private var parsedRhythm by mutableStateOf(Rhythm.deserialize(rhythm))
     private var backupRhythm by mutableStateOf(parsedRhythm)
 
-    private val metronome = Metronome(parsedRhythm, sendNotifications = false)
+    private val metronome = Metronome(sendNotifications = false).apply {
+        addTrack(0, MetronomeTrack(
+            rhythm = parsedRhythm,
+            bpm = 120,
+            beatValue = 4f
+        ))
+    }
     private var appMetronome by mutableStateOf(ChronalApp.getInstance().metronome)
+    private var mainTrack = metronome.getTrack(0)
+    private var appTrack = appMetronome.getTrack(0)
+
     var isPlaying by mutableStateOf(false)
 
     private var showTimeSignature by mutableIntStateOf(-1)
@@ -133,6 +143,7 @@ class RhythmEditorActivity : ComponentActivity() {
             return
         }
         isPrimary = intent.getBooleanExtra("isPrimary", true)
+        appTrack = appMetronome.getTrack(if(isPrimary) 0 else 1)
 
         this.rhythm = if(isPrimary) ChronalApp.getInstance().settings.metronomeRhythm.value else ChronalApp.getInstance().settings.metronomeRhythmSecondary.value
         parsedRhythm = Rhythm.deserialize(rhythm)
@@ -154,12 +165,12 @@ class RhythmEditorActivity : ComponentActivity() {
             }
         }
 
-        appMetronome = if(isPrimary) ChronalApp.getInstance().metronome else ChronalApp.getInstance().metronomeSecondary
-        metronome.bpm = appMetronome.bpm
-        metronome.beatValue = appMetronome.beatValue
+        appMetronome = ChronalApp.getInstance().metronome
+        mainTrack.bpm = appTrack.bpm
+        mainTrack.beatValue = appTrack.beatValue
 
-        metronome.setRhythm(parsedRhythm)
-        metronome.setUpdateListener(2) { beat ->
+        mainTrack.setRhythm(parsedRhythm)
+        mainTrack.setUpdateListener(2) { beat ->
             val timestamp = metronome.timestamp
             lifecycleScope.launch {
                 delay(ChronalApp.getInstance().settings.visualLatency.value.toLong())
@@ -183,7 +194,7 @@ class RhythmEditorActivity : ComponentActivity() {
                 }
             }
         }
-        metronome.setPauseListener(2) { isPaused ->
+        mainTrack.setPauseListener(2) { isPaused ->
             val timestamp = metronome.timestamp
             isPlaying = !isPaused
             if(isPaused) musicSelected = -1
@@ -290,7 +301,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                                 measures.removeAt(parsedRhythm.measures.lastIndex)
                                             }
                                             parsedRhythm = Rhythm(measures)
-                                            metronome.setRhythm(parsedRhythm)
+                                            mainTrack.setRhythm(parsedRhythm)
                                         },
                                         enabled = parsedRhythm.measures.size > 1
                                     ) {
@@ -432,7 +443,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                                 elements = elements
                                             ))
                                             parsedRhythm = Rhythm(measures)
-                                            metronome.setRhythm(parsedRhythm)
+                                            mainTrack.setRhythm(parsedRhythm)
                                             showTimeSignature = false
                                         }) {
                                             Text(getString(R.string.editor_measure_add))
@@ -583,29 +594,23 @@ class RhythmEditorActivity : ComponentActivity() {
                                 text = { Text(getString(R.string.generic_save_exit)) },
                                 onClick = {
                                     backDropdown = false
-                                    appMetronome.setRhythm(parsedRhythm)
-                                    appMetronome.bpm = metronome.bpm
-                                    appMetronome.beatValue = metronome.beatValue
+                                    mainTrack.setRhythm(parsedRhythm)
+                                    mainTrack.bpm = appTrack.bpm
+                                    mainTrack.beatValue = appTrack.beatValue
 
-                                    val primaryMetronome = ChronalApp.getInstance().metronome
-                                    val secondaryMetronome = ChronalApp.getInstance().metronomeSecondary
                                     ChronalApp.getInstance().settings.metronomeState.value = MetronomeState(
-                                        bpm = metronome.bpm,
-                                        beatValuePrimary = primaryMetronome.beatValue,
-                                        beatValueSecondary = secondaryMetronome.beatValue,
-                                        secondaryEnabled = secondaryMetronome.active
+                                        bpm = mainTrack.bpm,
+                                        beatValuePrimary = if(isPrimary) mainTrack.beatValue else appMetronome.getTrack(0).beatValue,
+                                        beatValueSecondary = if(isPrimary) appMetronome.getTrack(1).beatValue else mainTrack.beatValue,
+                                        secondaryEnabled = !isPrimary && appMetronome.getTrack(1).enabled
                                     )
 
                                     if (isPrimary) {
-                                        ChronalApp.getInstance().settings.metronomeRhythm.value =
-                                            parsedRhythm.serialize()
-                                        ChronalApp.getInstance().settings.metronomeSimpleRhythm.value =
-                                            SimpleRhythm(0 to 0, 0, 0)
+                                        ChronalApp.getInstance().settings.metronomeRhythm.value = parsedRhythm.serialize()
+                                        ChronalApp.getInstance().settings.metronomeSimpleRhythm.value = SimpleRhythm(0 to 0, 0, 0)
                                     } else {
-                                        ChronalApp.getInstance().settings.metronomeRhythmSecondary.value =
-                                            parsedRhythm.serialize()
-                                        ChronalApp.getInstance().settings.metronomeSimpleRhythmSecondary.value =
-                                            SimpleRhythm(0 to 0, 0, 0)
+                                        ChronalApp.getInstance().settings.metronomeRhythmSecondary.value = parsedRhythm.serialize()
+                                        ChronalApp.getInstance().settings.metronomeSimpleRhythmSecondary.value = SimpleRhythm(0 to 0, 0, 0)
                                     }
                                     scope.launch {
                                         ChronalApp.getInstance().settings.save()
@@ -694,8 +699,8 @@ class RhythmEditorActivity : ComponentActivity() {
                             .padding(24.dp, 8.dp)
                     ) {
                         MusicFont.Notation.NoteCentered(
-                            note = MusicFont.Notation.getBeatValue(metronome.beatValue).first,
-                            dots = if(MusicFont.Notation.getBeatValue(metronome.beatValue).second) 1 else 0,
+                            note = MusicFont.Notation.getBeatValue(mainTrack.beatValue).first,
+                            dots = if(MusicFont.Notation.getBeatValue(mainTrack.beatValue).second) 1 else 0,
                             modifier = Modifier.align(Alignment.CenterVertically),
                             color = MaterialTheme.colorScheme.onSurface,
                             size = 32.dp,
@@ -704,7 +709,7 @@ class RhythmEditorActivity : ComponentActivity() {
                             modifier = Modifier.width(8.dp)
                         )
                         Text(
-                            "= ${metronome.bpm}",
+                            "= ${mainTrack.bpm}",
                             modifier = Modifier.align(Alignment.CenterVertically),
                             color = MaterialTheme.colorScheme.onSurface,
                             style = MaterialTheme.typography.bodyLarge
@@ -734,7 +739,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                         return@clickable
                                     }
                                     isPlaying = !isPlaying
-                                    metronome.setRhythm(parsedRhythm)
+                                    mainTrack.setRhythm(parsedRhythm)
                                     if (isPlaying) {
                                         metronome.start()
                                     } else {
@@ -805,7 +810,7 @@ class RhythmEditorActivity : ComponentActivity() {
                             errors.clear()
                             shownError = false
                             parsedRhythm = backupRhythm
-                            metronome.setRhythm(parsedRhythm)
+                            mainTrack.setRhythm(parsedRhythm)
                         }) {
                             Text(getString(R.string.generic_revert))
                         }
@@ -1068,7 +1073,7 @@ class RhythmEditorActivity : ComponentActivity() {
                 })
                 parsedRhythm = newRhythm
                 rhythm = newRhythm.serialize()
-                metronome.setRhythm(parsedRhythm)
+                mainTrack.setRhythm(parsedRhythm)
                 return
             }
         }
@@ -1110,7 +1115,7 @@ class RhythmEditorActivity : ComponentActivity() {
 
                         parsedRhythm = parsedRhythm.replaceNote(selectedNote, newElement, isScaled = true)
                         rhythm = parsedRhythm.serialize()
-                        metronome.setRhythm(parsedRhythm)
+                        mainTrack.setRhythm(parsedRhythm)
                         isSelected = true
                     }
             ) {
@@ -1196,7 +1201,7 @@ class RhythmEditorActivity : ComponentActivity() {
 
                         parsedRhythm = parsedRhythm.replaceNote(selectedNote, newElement, isScaled = true)
                         rhythm = parsedRhythm.serialize()
-                        metronome.setRhythm(parsedRhythm)
+                        mainTrack.setRhythm(parsedRhythm)
                         isSelected = true
                     }
             ) {
@@ -1270,7 +1275,7 @@ class RhythmEditorActivity : ComponentActivity() {
                     }
                     parsedRhythm = parsedRhythm.replaceNote(selectedNote, newNote, isScaled = false)
                     rhythm = parsedRhythm.serialize()
-                    metronome.setRhythm(parsedRhythm)
+                    mainTrack.setRhythm(parsedRhythm)
                     isSelected = true
                     if(parsedRhythm.getNoteAt(selectedNote + 1) != null) {
                         selectedNote += 1
@@ -1427,7 +1432,7 @@ class RhythmEditorActivity : ComponentActivity() {
             confirmButton = {
                 TextButton(onClick = {
                     parsedRhythm = parsedRhythm.setTimeSignature(measureIndex, timeSignature)
-                    metronome.setRhythm(parsedRhythm)
+                    mainTrack.setRhythm(parsedRhythm)
                     showTimeSignature = -1
                 }) {
                     Text(getString(R.string.generic_confirm))
@@ -1516,7 +1521,7 @@ class RhythmEditorActivity : ComponentActivity() {
                         Button(onClick = {
                             onDismiss()
                             parsedRhythm = parsedRhythm.replaceNote(selectedNote, tuplet, isScaled = false)
-                            metronome.setRhythm(parsedRhythm)
+                            mainTrack.setRhythm(parsedRhythm)
                         }) {
                             Text(getString(R.string.generic_confirm))
                         }
@@ -1539,8 +1544,8 @@ class RhythmEditorActivity : ComponentActivity() {
 
     @Composable
     fun EditBpmDialog() {
-        var beatValue by remember { mutableFloatStateOf(metronome.beatValue) }
-        var bpm by remember { mutableIntStateOf(metronome.bpm) }
+        var beatValue by remember { mutableFloatStateOf(mainTrack.beatValue) }
+        var bpm by remember { mutableIntStateOf(mainTrack.bpm) }
         val scope = rememberCoroutineScope()
         var change = 0
 
@@ -1713,8 +1718,8 @@ class RhythmEditorActivity : ComponentActivity() {
                         Spacer(Modifier.width(8.dp))
                         TextButton(onClick = {
                             metronome.stop()
-                            metronome.beatValue = beatValue
-                            metronome.bpm = bpm
+                            mainTrack.beatValue = beatValue
+                            mainTrack.bpm = bpm
                             showBpm = false
                         }) {
                             Text(getString(R.string.generic_confirm))

@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.toPx
 import dev.cognitivity.chronal.ui.metronome.CircularClock
 import dev.cognitivity.chronal.ui.metronome.ConductorDisplay
@@ -61,6 +62,7 @@ fun MetronomePageCompact(
     window: Window,
     padding: PaddingValues
 ) {
+    val metronome = ChronalApp.getInstance().metronome
     updateSleepMode(window)
 
     Scaffold(
@@ -84,7 +86,7 @@ fun MetronomePageCompact(
                         change += dragAmount.toInt()
                         if (abs(change) >= 8) {
                             val adjustment = (change / 8)
-                            setBPM(metronome.bpm - adjustment)
+                            setBPM((metronome.getTrack(0).bpm) - adjustment)
                             change %= 8
                         }
                     }
@@ -97,11 +99,9 @@ fun MetronomePageCompact(
 
                         if (paused) {
                             metronome.stop()
-                            metronomeSecondary.stop()
                         }
                         else {
                             metronome.start()
-                            metronomeSecondary.start()
                         }
 
                         updateSleepMode(window)
@@ -162,7 +162,7 @@ fun MetronomePageCompact(
                                         minorSecondaryColor = MaterialTheme.colorScheme.secondary,
                                     )
                                 }
-                                if (secondaryEnabled) {
+                                if (metronome.getTrack(1).enabled) {
                                     Box(
                                         modifier = Modifier.fillMaxHeight()
                                             .padding(24.dp)

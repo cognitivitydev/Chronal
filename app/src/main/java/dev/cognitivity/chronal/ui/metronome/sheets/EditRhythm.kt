@@ -62,10 +62,7 @@ import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmElement
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.rhythm.metronome.elements.StemDirection
-import dev.cognitivity.chronal.ui.metronome.windows.metronome
-import dev.cognitivity.chronal.ui.metronome.windows.metronomeSecondary
 import dev.cognitivity.chronal.ui.metronome.windows.paused
-import dev.cognitivity.chronal.ui.metronome.windows.secondaryEnabled
 import dev.cognitivity.chronal.ui.metronome.windows.updateSleepMode
 import dev.cognitivity.chronal.ui.metronome.windows.vibratePrimary
 import dev.cognitivity.chronal.ui.metronome.windows.vibrateSecondary
@@ -75,12 +72,14 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} ) {
+fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {}) {
+    val metronome = ChronalApp.getInstance().metronome
     var showSimpleWarning by remember { mutableStateOf(false) }
 
     var hidden by remember { mutableStateOf(false) }
     if(hidden) return
 
+    var secondaryEnabled by remember { mutableStateOf(metronome.getTrack(1).enabled) }
     val enabled = if(primary) true else secondaryEnabled
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -121,18 +120,7 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
                             return@clickable
                         }
                         secondaryEnabled = !secondaryEnabled
-                        metronomeSecondary.active = secondaryEnabled
-                        ChronalApp.getInstance().settings.metronomeState.value = MetronomeState(
-                            bpm = metronome.bpm, beatValuePrimary = metronome.beatValue,
-                            beatValueSecondary = metronomeSecondary.beatValue, secondaryEnabled = secondaryEnabled
-                        )
-
-                        CoroutineScope(Dispatchers.Main).launch {
-                            ChronalApp.getInstance().settings.save()
-                        }
-                        if (!secondaryEnabled) {
-                            metronomeSecondary.stop()
-                        }
+                        onSwitch(secondaryEnabled)
                     }
             ) {
                 Text(context.getString(if(primary) R.string.simple_editor_primary_enabled else R.string.simple_editor_secondary_enable),
@@ -145,15 +133,12 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
                 Switch(
                     checked = if(primary) true else secondaryEnabled,
                     onCheckedChange = { checked ->
-                        if(primary) {
+                        if (primary) {
                             Toast.makeText(context, context.getString(R.string.simple_editor_primary_disable), Toast.LENGTH_SHORT).show()
                             return@Switch
                         }
                         secondaryEnabled = checked
-                        metronomeSecondary.active = checked
-                        if(!checked) {
-                            metronomeSecondary.stop()
-                        }
+                        onSwitch(secondaryEnabled)
                     },
                     colors = SwitchDefaults.colors(
                         checkedTrackColor = if(primary) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary,
@@ -183,10 +168,12 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
         var simpleRhythm by remember {
             mutableStateOf(if(primary) ChronalApp.getInstance().settings.metronomeSimpleRhythm.value else ChronalApp.getInstance().settings.metronomeSimpleRhythmSecondary.value)
         }
-        val selectedMetronome = if(primary) ChronalApp.getInstance().metronome else ChronalApp.getInstance().metronomeSecondary
-        selectedMetronome.setEditListener(2) {
-            simpleRhythm = if(primary) ChronalApp.getInstance().settings.metronomeSimpleRhythm.value
-                else ChronalApp.getInstance().settings.metronomeSimpleRhythmSecondary.value
+        val metronome = ChronalApp.getInstance().metronome
+        metronome.getTracks().forEach {
+            it.setEditListener(2) {
+                simpleRhythm = if (primary) ChronalApp.getInstance().settings.metronomeSimpleRhythm.value
+                    else ChronalApp.getInstance().settings.metronomeSimpleRhythmSecondary.value
+            }
         }
         val isAdvanced = simpleRhythm == SimpleRhythm(0 to 0, 0, 0)
         if(isAdvanced) {
@@ -319,8 +306,14 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
     }
 
     if(showSimpleWarning) {
-        val metronome = if(primary) ChronalApp.getInstance().metronome else ChronalApp.getInstance().metronomeSecondary
-        val rhythm = metronome.getRhythm()
+        val metronome = ChronalApp.getInstance().metronome
+
+        val primaryTrack = metronome.getTrack(0)
+        val secondaryTrack = metronome.getTrack(1)
+
+        val selectedTrack = if(primary) primaryTrack else secondaryTrack
+
+        val rhythm = selectedTrack.getRhythm()
         val scope = rememberCoroutineScope()
         AlertDialog(
             onDismissRequest = { showSimpleWarning = false },
@@ -332,8 +325,8 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
             confirmButton = {
                 TextButton(onClick = {
                     showSimpleWarning = false
-                    metronome.beatValue = 4f
-                    metronome.setRhythm(Rhythm(listOf(
+                    selectedTrack.beatValue = 4f
+                    selectedTrack.setRhythm(Rhythm(listOf(
                         Measure(rhythm.measures[0].timeSig,
                             arrayListOf<RhythmElement>().apply {
                                 repeat(rhythm.measures[0].timeSig.first) {
@@ -348,16 +341,16 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {} )
                     )))
 
                     ChronalApp.getInstance().settings.metronomeState.value = MetronomeState(
-                        bpm = ChronalApp.getInstance().metronome.bpm, beatValuePrimary = ChronalApp.getInstance().metronome.beatValue,
-                        beatValueSecondary = metronomeSecondary.beatValue, secondaryEnabled = secondaryEnabled
+                        bpm = selectedTrack.bpm, beatValuePrimary = primaryTrack.beatValue,
+                        beatValueSecondary = secondaryTrack.beatValue, secondaryEnabled = secondaryEnabled
                     )
 
                     if(primary) {
-                        ChronalApp.getInstance().settings.metronomeRhythm.value = metronome.getRhythm().serialize()
+                        ChronalApp.getInstance().settings.metronomeRhythm.value = selectedTrack.getRhythm().serialize()
                         ChronalApp.getInstance().settings.metronomeSimpleRhythm.value = SimpleRhythm(rhythm.measures[0].timeSig,
                             rhythm.measures[0].timeSig.second, 0)
                     } else {
-                        ChronalApp.getInstance().settings.metronomeRhythmSecondary.value = metronome.getRhythm().serialize()
+                        ChronalApp.getInstance().settings.metronomeRhythmSecondary.value = selectedTrack.getRhythm().serialize()
                         ChronalApp.getInstance().settings.metronomeSimpleRhythmSecondary.value = SimpleRhythm(rhythm.measures[0].timeSig,
                             rhythm.measures[0].timeSig.second, 0)
                     }
@@ -428,7 +421,8 @@ fun Vibration(primary: Boolean, enabled: Boolean) {
 
 
 fun setRhythm(window: Window, value: SimpleRhythm, primary: Boolean, retry: Boolean = true): Boolean {
-    val metronome = if(primary) ChronalApp.getInstance().metronome else ChronalApp.getInstance().metronomeSecondary
+    val metronome = ChronalApp.getInstance().metronome
+    val selectedTrack = metronome.getTrack(if(primary) 0 else 1)
 
     val timeSignature = value.timeSignature
     val subdivision = value.subdivision
@@ -504,7 +498,24 @@ fun setRhythm(window: Window, value: SimpleRhythm, primary: Boolean, retry: Bool
     paused = true
     updateSleepMode(window)
     ChronalApp.getInstance().metronome.stop()
-    ChronalApp.getInstance().metronomeSecondary.stop()
-    metronome.setRhythm(newRhythm)
+    selectedTrack.setRhythm(newRhythm)
     return true
+}
+
+private fun onSwitch(enabled: Boolean) {
+    val metronome = ChronalApp.getInstance().metronome
+    val primaryTrack = metronome.getTrack(0)
+
+    metronome.getTrack(1).enabled = enabled
+
+    val secondaryTrack = metronome.getTrack(1)
+
+    ChronalApp.getInstance().settings.metronomeState.value = MetronomeState(
+        bpm = primaryTrack.bpm, beatValuePrimary = primaryTrack.beatValue,
+        beatValueSecondary = secondaryTrack.beatValue, secondaryEnabled = enabled,
+    )
+
+    CoroutineScope(Dispatchers.Main).launch {
+        ChronalApp.getInstance().settings.save()
+    }
 }

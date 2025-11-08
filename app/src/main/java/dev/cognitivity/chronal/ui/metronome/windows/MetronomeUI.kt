@@ -71,7 +71,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonObject
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
-import dev.cognitivity.chronal.Metronome
 import dev.cognitivity.chronal.MetronomePreset
 import dev.cognitivity.chronal.MetronomeState
 import dev.cognitivity.chronal.R
@@ -91,15 +90,10 @@ import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
 
-lateinit var metronome: Metronome
-lateinit var metronomeSecondary: Metronome
-
 var dropdownExpanded by mutableStateOf(false)
 var showTempoTapper by mutableStateOf(false)
 var showRhythmPrimary by mutableStateOf(false)
 var showRhythmSecondary by mutableStateOf(false)
-
-var secondaryEnabled by mutableStateOf(ChronalApp.getInstance().settings.metronomeState.value.secondaryEnabled)
 
 var vibratePrimary by mutableStateOf(ChronalApp.getInstance().settings.metronomeVibrations.value)
 var vibrateSecondary by mutableStateOf(ChronalApp.getInstance().settings.metronomeVibrationsSecondary.value)
@@ -114,8 +108,7 @@ var lastTapTime: Long? = null
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MetronomePageMain(window: Window, expanded: Boolean, mainActivity: MainActivity, padding: PaddingValues) {
-    metronome = ChronalApp.getInstance().metronome
-    metronomeSecondary = ChronalApp.getInstance().metronomeSecondary
+    val metronome = ChronalApp.getInstance().metronome
     val settings = ChronalApp.getInstance().settings
 
     activity = mainActivity
@@ -124,20 +117,22 @@ fun MetronomePageMain(window: Window, expanded: Boolean, mainActivity: MainActiv
     val presetJson = mainActivity.intent.getStringExtra("preset")
     if(presetJson != null && presetJson.isNotEmpty()) {
         val preset = MetronomePreset.fromJson(Gson().fromJson(presetJson, JsonObject::class.java))
-        metronome.bpm = preset.state.bpm
-        metronome.beatValue = preset.state.beatValuePrimary
-        metronomeSecondary.bpm = preset.state.bpm
-        metronomeSecondary.active = true
-        metronomeSecondary.beatValue = preset.state.beatValueSecondary
-        metronomeSecondary.active = preset.state.secondaryEnabled
+
+        val primaryTrack = metronome.getTrack(0)
+        primaryTrack.bpm = preset.state.bpm
+        primaryTrack.beatValue = preset.state.beatValuePrimary
+        val secondaryTrack = metronome.getTrack(1)
+        secondaryTrack.bpm = preset.state.bpm
+        secondaryTrack.beatValue = preset.state.beatValueSecondary
+        secondaryTrack.enabled = preset.state.secondaryEnabled
 
         settings.metronomeState.value = preset.state
         settings.metronomeRhythm.value = preset.primaryRhythm.serialize()
         settings.metronomeRhythmSecondary.value = preset.secondaryRhythm.serialize()
         settings.metronomeSimpleRhythm.value = preset.primarySimpleRhythm
         settings.metronomeSimpleRhythmSecondary.value = preset.secondarySimpleRhythm
-        metronome.setRhythm(preset.primaryRhythm)
-        metronomeSecondary.setRhythm(preset.secondaryRhythm)
+        metronome.getTrack(0).setRhythm(preset.primaryRhythm)
+        metronome.getTrack(1).setRhythm(preset.secondaryRhythm)
 
         mainActivity.intent.removeExtra("preset")
     }
@@ -324,23 +319,27 @@ fun ClockBeats(progress: Animatable<Float, AnimationVector1D>, trackSize: Float,
 
 var lastVibration = 0L
 
-fun setBPM(new: Int) {
+fun setBPM(bpm: Int) {
+    val metronome = ChronalApp.getInstance().metronome
+
+    val new = bpm.coerceIn(1, 500)
     paused = true
     metronome.stop()
-    metronomeSecondary.stop()
-    metronome.bpm = new.coerceIn(1, 500)
-    metronomeSecondary.bpm = metronome.bpm
+    metronome.getTracks().forEach { it.bpm = new }
+
+    val primaryTrack = metronome.getTrack(0)
+    val secondaryTrack = metronome.getTrack(1)
 
     ChronalApp.getInstance().settings.metronomeState.value = MetronomeState(
-        bpm = metronome.bpm, beatValuePrimary = metronome.beatValue,
-        beatValueSecondary = metronomeSecondary.beatValue, secondaryEnabled = secondaryEnabled,
+        bpm = new, beatValuePrimary = primaryTrack.beatValue,
+        beatValueSecondary = secondaryTrack.beatValue, secondaryEnabled = secondaryTrack.enabled,
     )
 
     CoroutineScope(Dispatchers.Main).launch {
         ChronalApp.getInstance().settings.save()
     }
 
-    if(metronome.bpm == 1 || metronome.bpm == 500) {
+    if(new == 1 || new == 500) {
         if(System.currentTimeMillis() - lastVibration < 100) return
         lastVibration = System.currentTimeMillis()
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null)
@@ -354,7 +353,7 @@ fun setBPM(new: Int) {
         }
     } else {
         val tickPattern = longArrayOf(5)
-        val tickAmplitude = intArrayOf((metronome.bpm / 2).coerceIn(1, 255))
+        val tickAmplitude = intArrayOf((bpm / 2).coerceIn(1, 255))
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null) {
             vibratorManager!!.vibrate(

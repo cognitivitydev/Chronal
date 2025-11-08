@@ -34,18 +34,11 @@ import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.rhythm.metronome.Beat
-import dev.cognitivity.chronal.rhythm.metronome.Rhythm
-import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmAtom
-import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.ui.metronome.windows.paused
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -57,26 +50,25 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.charset.StandardCharsets
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.min
 
-class Metronome(private var rhythm: Rhythm, private val sendNotifications: Boolean = true) : BroadcastReceiver() {
+class Metronome(private val sendNotifications: Boolean = true) : BroadcastReceiver() {
     private val sampleRate = 48000
 
     private var audioManager: AudioManager? = null
-    private var audioTrack = getTrack()
+    private var audioTrack = getAudioTrack()
     var playing = false
     var active = true
     var timestamp = 0L
     private var handlerThread: HandlerThread
     private var handler: Handler
 
-    var bpm by mutableIntStateOf(60)
-    var beatValue by mutableFloatStateOf(4f)
+    private val tracks = mutableMapOf<Int, MetronomeTrack>()
 
-    private var intervals = getIntervals(rhythm)
-    private var index = 0
-    private var scheduled = 0
-    private var nextScheduledTime = 0L
+    private val tickSoundCache = mutableMapOf<Int, FloatArray>()
+
+    private var scheduled = false
 
     init {
         audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -84,20 +76,22 @@ class Metronome(private var rhythm: Rhythm, private val sendNotifications: Boole
         handlerThread.start()
         handler = Handler(handlerThread.looper)
 
-        if(sendNotifications) {
+        if (sendNotifications) {
             ContextCompat.registerReceiver(context, this, IntentFilter("dev.cognitivity.chronal.PlayPause"), ContextCompat.RECEIVER_EXPORTED)
             ContextCompat.registerReceiver(context, this, IntentFilter("dev.cognitivity.chronal.Stop"), ContextCompat.RECEIVER_EXPORTED)
         }
     }
-    fun setRhythm(rhythm: Rhythm) {
-        if(playing) stop()
-        this.rhythm = rhythm
-        this.intervals = getIntervals(rhythm)
-        listenerEdit.forEach { it.value(rhythm) }
-    }
-    fun getRhythm(): Rhythm { return rhythm }
 
-    fun getIntervals(): List<Beat> { return intervals }
+    fun addTrack(id: Int, track: MetronomeTrack) {
+        tracks.put(id, track)
+    }
+
+    fun removeTrack(id: Int) {
+        tracks.remove(id)
+    }
+
+    fun getTrack(id: Int): MetronomeTrack = tracks[id]!! // TEMP - always returns non-null for 0 and 1 for now
+    fun getTracks(): List<MetronomeTrack> = tracks.values.toList()
 
     fun start() {
         if (playing || !active) return
@@ -105,31 +99,30 @@ class Metronome(private var rhythm: Rhythm, private val sendNotifications: Boole
         CoroutineScope(Dispatchers.IO).launch {
             timestamp = System.currentTimeMillis()
             playing = true
-            index = -1
-            scheduled = 0
-            nextScheduledTime = 0L
+
+            tracks.forEach { track ->
+                track.value.nextScheduledTime = 0L
+                track.value.index = -1
+            }
 
             scheduleTicks()
 
             audioTrack.play()
 
-            listenerPause.forEach { it.value(false) }
+            tracks.values.forEach { it.onPause(false) }
             if (sendNotifications) sendRunningNotification()
         }
     }
 
     fun stop() {
         playing = false
-        index = -1
-        scheduled = 0
-        nextScheduledTime = 0L
-        listenerPause.forEach { listener -> listener.value(true) }
+        tracks.values.forEach { it.onPause(true) }
         audioTrack.pause()
         audioTrack.flush()
-        if(sendNotifications) sendRunningNotification()
+        if (sendNotifications) sendRunningNotification()
     }
 
-    private fun getTrack(): AudioTrack {
+    private fun getAudioTrack(): AudioTrack {
         return AudioTrack.Builder()
             .setAudioAttributes(
                 AudioAttributes.Builder()
@@ -146,120 +139,150 @@ class Metronome(private var rhythm: Rhythm, private val sendNotifications: Boole
             )
             .setBufferSizeInBytes(AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_FLOAT))
             .setTransferMode(AudioTrack.MODE_STREAM).apply {
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     setPerformanceMode(AudioTrack.PERFORMANCE_MODE_LOW_LATENCY)
                 }
             }
             .build()
     }
 
-    fun getIntervals(rhythm: Rhythm): List<Beat> {
-        val intervals = mutableListOf<Beat>()
-        for((measureIndex, measure) in rhythm.measures.withIndex()) {
-            var index = 0
-            for(element in measure.elements) {
-                when(element) {
-                    is RhythmAtom -> {
-                        intervals.add(Beat(element, measureIndex, index))
-                        index++
-                    }
-                    is RhythmTuplet -> {
-                        for(note in element.notes) {
-                            intervals.add(Beat(note, measureIndex, index))
-                            index++
-                        }
-                    }
-                }
-            }
-        }
-        return intervals
-    }
-
     private fun scheduleTicks() {
         if (!playing) return
+        if (scheduled) return
 
-        repeat(4 - scheduled) {
-            val timestamp = this.timestamp
-            val newIndex = (index + 1).mod(intervals.size)
-            index = newIndex
-            val interval = intervals[index]
-            val delay = (abs(interval.duration * 1000000) * 60000 / bpm * beatValue).toLong()
+        val now = System.nanoTime()
+        var earliest = Long.MAX_VALUE
 
-            val now = System.nanoTime()
-            if (nextScheduledTime < now) nextScheduledTime = now
-
-            val scheduledDelay = nextScheduledTime - now
-            nextScheduledTime += delay
-
-            scheduled++
-
-            handler.postDelayed({
-                if (!playing || timestamp != this.timestamp) return@postDelayed
-
-                listenerUpdate.forEach { it.value(interval) }
-                writePeriod(delay, interval.isHigh, interval.duration < 0)
-
-                scheduled--
-                scheduleTicks()
-            }, scheduledDelay / 1000000L)
+        for (track in tracks.values) {
+            if(!track.enabled) continue
+            if (track.getIntervals().isEmpty()) continue
+            if (track.nextScheduledTime == 0L) {
+                track.nextScheduledTime = now
+                track.index = -1
+            }
+            if (track.nextScheduledTime < earliest) earliest = track.nextScheduledTime
         }
+
+        if (earliest == Long.MAX_VALUE) return
+
+        val scheduledDelayMs = max(0L, (earliest - now) / 1_000_000L)
+        scheduled = true
+
+        handler.postDelayed({
+            scheduled = false
+            if (!playing) return@postDelayed
+            val runNow = System.nanoTime()
+
+            val events = mutableListOf<Pair<MetronomeTrack, Beat>>()
+
+            for (track in tracks.values) {
+                if (!track.enabled) continue
+                if (track.getIntervals().isEmpty()) continue
+
+                if (track.nextScheduledTime <= runNow) {
+                    track.index = (track.index + 1).mod(track.getIntervals().size)
+                    val beat = track.getIntervals()[track.index]
+                    events.add(Pair(track, beat))
+
+                    val delay = getBeatDelay(track, beat)
+                    track.nextScheduledTime = runNow + delay
+
+                    track.onUpdate(beat)
+                }
+            }
+
+            var nextGlobal = Long.MAX_VALUE
+            for (track in tracks.values) {
+                if (!track.enabled) continue
+                if (track.getIntervals().isEmpty()) continue
+                if (track.nextScheduledTime < nextGlobal) nextGlobal = track.nextScheduledTime
+            }
+
+            if (nextGlobal == Long.MAX_VALUE) {
+                handler.postDelayed({ scheduleTicks() }, 50)
+                return@postDelayed
+            }
+
+            val periodNanos = max(1L, nextGlobal - runNow)
+            writePeriod(periodNanos, events.map { it.second })
+
+            scheduleTicks()
+        }, scheduledDelayMs)
     }
 
-    private fun writePeriod(nanos: Long, isHigh: Boolean, silent: Boolean) {
-        val periodSize = ((nanos / 1_000_000_000.0) * sampleRate).toInt()
+    private fun getBeatDelay(track: MetronomeTrack, interval: Beat): Long {
+        val trackBpm = track.bpm
+        val trackBeatValue = track.beatValue
+        val base = abs(interval.duration * 1_000_000.0)
+        val scaled = base * 60_000.0 / trackBpm * trackBeatValue
+        return scaled.toLong()
+    }
+
+    private fun writePeriod(nanos: Long, events: List<Beat>) {
+        val periodSize = ((nanos / 1_000_000_000.0) * sampleRate).toInt().coerceAtLeast(1)
 
         handler.post {
-            if (index == -1) return@post
-            val tickSound = if (!silent) getTickSound(isHigh) else floatArrayOf()
-            var sizeWritten = writeAudio(audioTrack, tickSound, periodSize = periodSize, 0)
-            Log.d("a", "wrote $isHigh after ${System.currentTimeMillis() - timestamp}ms")
-            while(sizeWritten < periodSize) {
-                sizeWritten += writeAudio(audioTrack, FloatArray(periodSize), periodSize = periodSize, sizeWritten)
-            }
-        }
-    }
+            val buffer = FloatArray(periodSize)
 
-    private fun writeAudio(track: AudioTrack, data: FloatArray, periodSize: Int, sizeWritten: Int): Int {
-        val size = min(data.size - sizeWritten, periodSize - sizeWritten)
-        if (playing) {
-            writeAudioWithOffset(track, data, sizeWritten, size)
-        }
-        return size
-    }
-
-    private fun writeAudioWithOffset(track: AudioTrack, data: FloatArray, offset: Int, size: Int) {
-        try {
-            val result = track.write(data, offset, size, AudioTrack.WRITE_BLOCKING)
-            if (result < 0) {
-                stop()
-                throw IllegalStateException("Failed to write audio data ($result)")
+            for (beat in events) {
+                if (beat.duration < 0) continue // silent
+                val tick = getTickSound(beat.isHigh)
+                if (tick.isEmpty()) continue
+                val len = min(tick.size, periodSize)
+                for (i in 0 until len) {
+                    buffer[i] = buffer[i] + tick[i]
+                }
             }
-        } catch (e: Exception) {
-            Log.e("Metronome", "Failed to write audio data", e)
+
+            var maxAbs = 0f
+            for (v in buffer) if (abs(v) > maxAbs) maxAbs = abs(v)
+            if (maxAbs > 1f) {
+                val norm = 1f / maxAbs
+                for (i in buffer.indices) buffer[i] = buffer[i] * norm
+            }
+
+            try {
+                var written = 0
+                while (written < buffer.size && playing) {
+                    val toWrite = buffer.size - written
+                    val res = audioTrack.write(buffer, written, toWrite, AudioTrack.WRITE_BLOCKING)
+                    if (res < 0) {
+                        stop()
+                        throw IllegalStateException("Failed to write audio data ($res)")
+                    }
+                    written += res
+                }
+            } catch (e: Exception) {
+                Log.e("Metronome", "Failed to write mixed audio data", e)
+            }
         }
     }
 
     private fun getTickSound(high: Boolean): FloatArray {
         val setting = ChronalApp.getInstance().settings.metronomeSounds.value
-        val id = if(high) setting.first else setting.second
-        val sound = when(id) {
-            0 -> if(high) R.raw.click_hi else R.raw.click_lo
-            1 -> if(high) R.raw.sine_hi else R.raw.sine_lo
-            2 -> if(high) R.raw.square_hi else R.raw.square_lo
-            3 -> if(high) R.raw.clap_hi else R.raw.clap_lo
-            4 -> if(high) R.raw.bell_hi else R.raw.bell_lo
-            5 -> if(high) R.raw.tambourine_hi else R.raw.tambourine_lo
-            6 -> if(high) R.raw.block_hi else R.raw.block_lo
+        val id = if (high) setting.first else setting.second
+        val soundRes = when (id) {
+            0 -> if (high) R.raw.click_hi else R.raw.click_lo
+            1 -> if (high) R.raw.sine_hi else R.raw.sine_lo
+            2 -> if (high) R.raw.square_hi else R.raw.square_lo
+            3 -> if (high) R.raw.clap_hi else R.raw.clap_lo
+            4 -> if (high) R.raw.bell_hi else R.raw.bell_lo
+            5 -> if (high) R.raw.tambourine_hi else R.raw.tambourine_lo
+            6 -> if (high) R.raw.block_hi else R.raw.block_lo
             else -> null
         }
-        if(sound == null) {
+        if (soundRes == null) {
             return FloatArray(0)
         }
 
+        tickSoundCache[soundRes]?.let { return it }
+
         try {
-            context.resources.openRawResource(sound).use { stream ->
-                return readWavStream(stream)
+            val data = context.resources.openRawResource(soundRes).use { stream ->
+                readWavStream(stream)
             }
+            tickSoundCache[soundRes] = data
+            return data
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
@@ -309,7 +332,7 @@ class Metronome(private var rhythm: Rhythm, private val sendNotifications: Boole
 
     private fun getDataIndex(array: ByteArray): Int {
         val data = "data".toByteArray(StandardCharsets.US_ASCII)
-        outer@ for (i in 0..<array.size - data.size + 1) {
+        outer@ for (i in 0 until array.size - data.size + 1) {
             for (j in data.indices) {
                 if (array[i + j] != data[j]) {
                     continue@outer
@@ -318,19 +341,6 @@ class Metronome(private var rhythm: Rhythm, private val sendNotifications: Boole
             return i
         }
         return -1
-    }
-    private var listenerUpdate = mutableMapOf<Int, (Beat) -> Unit>()
-    private val listenerPause = mutableMapOf<Int, (Boolean) -> Unit>()
-    private val listenerEdit = mutableMapOf<Int, (Rhythm) -> Unit>()
-
-    fun setUpdateListener(id: Int, listener: (Beat) -> Unit) {
-        this.listenerUpdate[id] = listener
-    }
-    fun setPauseListener(id: Int, listener: (Boolean) -> Unit) {
-        this.listenerPause[id] = listener
-    }
-    fun setEditListener(id: Int, listener: (Rhythm) -> Unit) {
-        this.listenerEdit[id] = listener
     }
 
     private fun createNotificationChannel() {
@@ -366,14 +376,14 @@ class Metronome(private var rhythm: Rhythm, private val sendNotifications: Boole
 
         val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.baseline_music_note_24)
-            .setContentTitle(context.getString(R.string.metronome_notification_title, bpm))
-            .setContentText(context.getString(if(this.playing) R.string.metronome_notification_playing else R.string.metronome_notification_paused))
+            .setContentTitle(context.getString(R.string.metronome_notification_title, tracks.values.firstOrNull()?.bpm ?: 120))
+            .setContentText(context.getString(if (this.playing) R.string.metronome_notification_playing else R.string.metronome_notification_paused))
             .setPriority(NotificationCompat.PRIORITY_MIN)
             .setSilent(true)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
-            .addAction(if(this.playing) Action.SEMANTIC_ACTION_MUTE else Action.SEMANTIC_ACTION_UNMUTE,
-                context.getString(if(this.playing) R.string.generic_pause else R.string.generic_resume), pausePendingIntent)
+            .addAction(if (this.playing) Action.SEMANTIC_ACTION_MUTE else Action.SEMANTIC_ACTION_UNMUTE,
+                context.getString(if (this.playing) R.string.generic_pause else R.string.generic_resume), pausePendingIntent)
             .addAction(Action.SEMANTIC_ACTION_DELETE, context.getString(R.string.generic_stop), stopPendingIntent)
             .setUsesChronometer(true)
 
@@ -382,7 +392,7 @@ class Metronome(private var rhythm: Rhythm, private val sendNotifications: Boole
 
     override fun onReceive(context: Context?, intent: Intent?) {
         if (intent?.action == "dev.cognitivity.chronal.PlayPause") {
-            if(playing) {
+            if (playing) {
                 stop()
                 paused = true
             } else {
@@ -391,7 +401,7 @@ class Metronome(private var rhythm: Rhythm, private val sendNotifications: Boole
             }
         }
         if (intent?.action == "dev.cognitivity.chronal.Stop") {
-            if(playing) stop()
+            if (playing) stop()
             paused = true
             val notificationManager = ChronalApp.context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.cancel(1)

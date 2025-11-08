@@ -61,8 +61,6 @@ import androidx.graphics.shapes.CornerRounding
 import androidx.graphics.shapes.RoundedPolygon
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.ui.metronome.windows.metronome
-import dev.cognitivity.chronal.ui.metronome.windows.metronomeSecondary
 import dev.cognitivity.chronal.ui.metronome.windows.paused
 import dev.cognitivity.chronal.ui.metronome.windows.setBPM
 import dev.cognitivity.chronal.ui.metronome.windows.updateSleepMode
@@ -114,13 +112,16 @@ class FullscreenActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
     fun MainContent() {
+        val metronome = ChronalApp.getInstance().metronome
+        val mainTrack = metronome.getTrack(0)
+
         var doNotShow by remember { mutableStateOf(!ChronalApp.getInstance().settings.fullscreenWarning.value) }
         var settingDialog by remember { mutableStateOf(false) }
 
         val coroutineScope = rememberCoroutineScope()
         val progress = remember { Animatable(0f) }
         var invert by remember { mutableStateOf(false) }
-        var i by remember { mutableIntStateOf(metronome.getRhythm().measures[0].timeSig.first) }
+        var i by remember { mutableIntStateOf(mainTrack.getRhythm().measures[0].timeSig.first) }
 
         var highContrast by remember { mutableStateOf(ChronalApp.getInstance().settings.highContrast.value) }
         var noAnimations by remember { mutableStateOf(ChronalApp.getInstance().settings.noAnimation.value) }
@@ -128,13 +129,13 @@ class FullscreenActivity : ComponentActivity() {
         val color = MaterialTheme.colorScheme.surface
         val invertColor = if(highContrast) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.surfaceVariant
 
-        metronome.setUpdateListener(3) { beat ->
+        mainTrack.setUpdateListener(3) { beat ->
             val timestamp = metronome.timestamp
-            val measure = metronome.getRhythm().measures[beat.measure]
+            val measure = mainTrack.getRhythm().measures[beat.measure]
             if (beat.index == 0) {
                 repeat(measure.timeSig.first) { index ->
                     coroutineScope.launch {
-                        val beatDelay = ((1f / measure.timeSig.second) * 60000 / metronome.bpm * metronome.beatValue).toInt() * index
+                        val beatDelay = ((1f / measure.timeSig.second) * 60000 / mainTrack.bpm * mainTrack.beatValue).toInt() * index
                         delay(ChronalApp.getInstance().settings.visualLatency.value.toLong() + beatDelay)
                         if(!metronome.playing || timestamp != metronome.timestamp) return@launch
 
@@ -145,7 +146,7 @@ class FullscreenActivity : ComponentActivity() {
                             progress.animateTo(
                                 targetValue = 1f,
                                 animationSpec = tween(
-                                    durationMillis = ((1f / measure.timeSig.second) * 60000 / metronome.bpm * metronome.beatValue).toInt(),
+                                    durationMillis = ((1f / measure.timeSig.second) * 60000 / mainTrack.bpm * mainTrack.beatValue).toInt(),
                                     easing = LinearEasing
                                 )
                             )
@@ -154,9 +155,9 @@ class FullscreenActivity : ComponentActivity() {
                 }
             }
         }
-        metronome.setPauseListener(5) { paused ->
+        mainTrack.setPauseListener(5) { paused ->
             if(paused) {
-                i = metronome.getRhythm().measures[0].timeSig.first
+                i = mainTrack.getRhythm().measures[0].timeSig.first
                 coroutineScope.launch {
                     progress.animateTo(
                         targetValue = if(invert) 1f else 0f,
@@ -177,7 +178,7 @@ class FullscreenActivity : ComponentActivity() {
                         change += dragAmount.toInt()
                         if (abs(change) >= 8) {
                             val adjustment = (change / 8)
-                            setBPM(metronome.bpm - adjustment)
+                            setBPM(mainTrack.bpm - adjustment)
                             change %= 8
                         }
                     }
@@ -190,11 +191,9 @@ class FullscreenActivity : ComponentActivity() {
 
                         if (paused) {
                             metronome.stop()
-                            metronomeSecondary.stop()
                         }
                         else {
                             metronome.start()
-                            metronomeSecondary.start()
                         }
 
                         updateSleepMode(window)
@@ -284,7 +283,7 @@ class FullscreenActivity : ComponentActivity() {
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
-                BeatShape(i)
+                BeatShape(i, mainTrack.bpm)
             }
 
             var photoDialog by remember { mutableStateOf(true) }
@@ -478,7 +477,7 @@ class FullscreenActivity : ComponentActivity() {
 
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
-    fun BeatShape(beat: Int) {
+    fun BeatShape(beat: Int, bpm: Int) {
         val color = MaterialTheme.colorScheme.primary
         val strokeWidth = 2.dp
 
@@ -517,7 +516,7 @@ class FullscreenActivity : ComponentActivity() {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = metronome.bpm.toString(),
+                        text = bpm.toString(),
                         fontSize = 96.sp,
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.offset(y = (8).dp)
