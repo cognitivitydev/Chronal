@@ -69,6 +69,7 @@ import androidx.graphics.shapes.circle
 import androidx.graphics.shapes.rectangle
 import androidx.graphics.shapes.star
 import androidx.graphics.shapes.toPath
+import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.BeatDetectorActivity
@@ -77,14 +78,14 @@ import dev.cognitivity.chronal.activity.FullscreenActivity
 import dev.cognitivity.chronal.ui.MorphedShape
 import dev.cognitivity.chronal.ui.metronome.windows.activity
 import dev.cognitivity.chronal.ui.metronome.windows.dropdownExpanded
-import dev.cognitivity.chronal.ui.metronome.windows.metronome
-import dev.cognitivity.chronal.ui.metronome.windows.metronomeSecondary
 import dev.cognitivity.chronal.ui.metronome.windows.paused
 import dev.cognitivity.chronal.ui.metronome.windows.showTempoTapper
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun PlayButton(modifier: Modifier = Modifier) {
+    val metronome = ChronalApp.getInstance().metronome
+
     val shapeA = remember {
         RoundedPolygon.star(9, rounding = CornerRounding(0.2f), radius = 1.8f)
     }
@@ -243,10 +244,8 @@ fun PlayButton(modifier: Modifier = Modifier) {
 
                         if (paused) {
                             metronome.stop()
-                            metronomeSecondary.stop()
                         } else {
                             metronome.start()
-                            metronomeSecondary.start()
                         }
                     }
                     .zIndex(2f)

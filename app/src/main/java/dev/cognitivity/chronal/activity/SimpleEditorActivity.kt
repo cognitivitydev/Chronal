@@ -175,7 +175,8 @@ class SimpleEditorActivity : ComponentActivity() {
                                                 error = true
                                                 return@DropdownMenuItem
                                             }
-                                            val metronome = if(isPrimary) ChronalApp.getInstance().metronome else ChronalApp.getInstance().metronomeSecondary
+                                            val metronome = ChronalApp.getInstance().metronome
+                                            val selectedTrack = metronome.getTrack(if(isPrimary) 0 else 1)
                                             if(isPrimary) {
                                                 ChronalApp.getInstance().settings.metronomeRhythm.value = parsedRhythm.serialize()
                                                 ChronalApp.getInstance().settings.metronomeSimpleRhythm.value = rhythm.value
@@ -185,7 +186,7 @@ class SimpleEditorActivity : ComponentActivity() {
                                             }
                                             scope.launch {
                                                 ChronalApp.getInstance().settings.save()
-                                                metronome.setRhythm(parsedRhythm)
+                                                selectedTrack.setRhythm(parsedRhythm)
                                                 finish()
                                             }
                                         }
@@ -208,7 +209,8 @@ class SimpleEditorActivity : ComponentActivity() {
                                             error = true
                                             return@DropdownMenuItem
                                         }
-                                        val metronome = if(isPrimary) ChronalApp.getInstance().metronome else ChronalApp.getInstance().metronomeSecondary
+                                        val metronome = ChronalApp.getInstance().metronome
+                                        val selectedTrack = metronome.getTrack(if(isPrimary) 0 else 1)
 
                                         if(isPrimary) {
                                             ChronalApp.getInstance().settings.metronomeRhythm.value = rhythm.serialize()
@@ -219,7 +221,7 @@ class SimpleEditorActivity : ComponentActivity() {
                                         }
                                         scope.launch {
                                             ChronalApp.getInstance().settings.save()
-                                            metronome.setRhythm(rhythm)
+                                            selectedTrack.setRhythm(rhythm)
                                             finish()
                                         }
                                     }
@@ -406,7 +408,8 @@ class SimpleEditorActivity : ComponentActivity() {
                 )
             }
         } else {
-            val metronome = if(isPrimary) ChronalApp.getInstance().metronome else ChronalApp.getInstance().metronomeSecondary
+            val metronome = ChronalApp.getInstance().metronome
+            val selectedTrack = metronome.getTrack(if(isPrimary) 0 else 1)
             val trackColor = if(isPrimary) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.tertiaryContainer
 
             Box(
@@ -429,7 +432,7 @@ class SimpleEditorActivity : ComponentActivity() {
                 }
                 if(isPrimary) {
                     ClockBeats(remember { Animatable(-1f) }, 4.dp.toPx(),
-                        metronome.getIntervals(previewRhythm!!).filter { it.measure == 0 },
+                        selectedTrack.calculateIntervals(previewRhythm!!).filter { it.measure == 0 },
                         majorOffColor = MaterialTheme.colorScheme.primaryContainer,
                         minorOffColor = MaterialTheme.colorScheme.onPrimary,
                         majorPrimaryColor = MaterialTheme.colorScheme.primary,
@@ -438,7 +441,7 @@ class SimpleEditorActivity : ComponentActivity() {
                     )
                 } else {
                     ClockBeats(remember { Animatable(-1f) }, 4.dp.toPx(),
-                        metronome.getIntervals(previewRhythm!!).filter { it.measure == 0 },
+                        selectedTrack.calculateIntervals(previewRhythm!!).filter { it.measure == 0 },
                         majorOffColor = MaterialTheme.colorScheme.tertiaryContainer,
                         minorOffColor = MaterialTheme.colorScheme.onTertiary,
                         majorPrimaryColor = MaterialTheme.colorScheme.tertiary,

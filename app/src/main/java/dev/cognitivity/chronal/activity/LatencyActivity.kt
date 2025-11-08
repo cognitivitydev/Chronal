@@ -56,22 +56,26 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.Metronome
-import dev.cognitivity.chronal.rhythm.metronome.Rhythm
-import dev.cognitivity.chronal.pxToDp
-import dev.cognitivity.chronal.ui.theme.MetronomeTheme
+import dev.cognitivity.chronal.MetronomeTrack
 import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.pxToDp
+import dev.cognitivity.chronal.rhythm.metronome.Rhythm
+import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class LatencyActivity : ComponentActivity() {
-    val metronome = Metronome(Rhythm.deserialize("{4/4}Q;Q;Q;Q;"))
+    val metronome = Metronome(sendNotifications = false).apply {
+        addTrack(0, MetronomeTrack(
+            Rhythm.deserialize("{4/4}Q;Q;Q;Q;"),
+            bpm = 120,
+            beatValue = 4f,
+        ))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
-        metronome.bpm = 120
-        metronome.beatValue = 4f
 
         setContent {
             MetronomeTheme {
@@ -101,7 +105,7 @@ class LatencyActivity : ComponentActivity() {
 
         val scope = rememberCoroutineScope()
 
-        metronome.setUpdateListener(0) {
+        metronome.getTrack(0).setUpdateListener(0) {
             lastTick = System.currentTimeMillis()
 
             scope.launch {

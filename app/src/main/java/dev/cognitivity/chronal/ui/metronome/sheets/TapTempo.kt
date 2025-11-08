@@ -55,8 +55,6 @@ import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.ceil
 import dev.cognitivity.chronal.ui.metronome.windows.intervals
 import dev.cognitivity.chronal.ui.metronome.windows.lastTapTime
-import dev.cognitivity.chronal.ui.metronome.windows.metronome
-import dev.cognitivity.chronal.ui.metronome.windows.metronomeSecondary
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -66,6 +64,7 @@ import kotlin.math.sqrt
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun TapTempo() {
+    val metronome = ChronalApp.getInstance().metronome
     var newBpm by remember { mutableIntStateOf(0) }
     val progress = remember { Animatable(0f) }
 
@@ -156,12 +155,14 @@ fun TapTempo() {
                                 val last = lastTapTime
                                 delay(60000L / newBpm * 5)
                                 if (last == lastTapTime) {
-                                    metronome.bpm = newBpm
-                                    metronomeSecondary.bpm = newBpm
+                                    metronome.getTracks().forEach { it.bpm = newBpm }
+
+                                    val primaryTrack = metronome.getTrack(0)
+                                    val secondaryTrack = metronome.getTrack(1)
 
                                     ChronalApp.getInstance().settings.metronomeState.value = MetronomeState(
-                                        bpm = newBpm, beatValuePrimary = metronome.beatValue,
-                                        beatValueSecondary = metronomeSecondary.beatValue, secondaryEnabled = metronomeSecondary.active
+                                        bpm = newBpm, beatValuePrimary = primaryTrack.beatValue,
+                                        beatValueSecondary = secondaryTrack.beatValue, secondaryEnabled = secondaryTrack.enabled,
                                     )
 
                                     scope.launch {

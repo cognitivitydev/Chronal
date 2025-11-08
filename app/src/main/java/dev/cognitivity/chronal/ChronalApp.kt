@@ -37,7 +37,6 @@ import kotlin.math.roundToInt
 
 class ChronalApp : Application() {
     lateinit var metronome: Metronome
-    lateinit var metronomeSecondary: Metronome
     lateinit var settings: SettingsManager
     var tuner: Tuner? = null
     val developmentBuild = true
@@ -52,13 +51,19 @@ class ChronalApp : Application() {
 
             val state = settings.metronomeState.value
 
-            metronome = Metronome(Rhythm.deserialize(settings.metronomeRhythm.value))
-            metronome.bpm = state.bpm
-            metronome.beatValue = state.beatValuePrimary
-            metronomeSecondary = Metronome(Rhythm.deserialize(settings.metronomeRhythmSecondary.value))
-            metronomeSecondary.bpm = state.bpm
-            metronomeSecondary.beatValue = state.beatValueSecondary
-            metronomeSecondary.active = state.secondaryEnabled
+            metronome = Metronome()
+            metronome.addTrack(0, MetronomeTrack(
+                rhythm = Rhythm.deserialize(settings.metronomeRhythm.value),
+                bpm = state.bpm,
+                beatValue = state.beatValuePrimary,
+            ))
+            val secondaryTrack = MetronomeTrack(
+                rhythm = Rhythm.deserialize(settings.metronomeRhythmSecondary.value),
+                bpm = state.bpm,
+                beatValue = state.beatValueSecondary,
+            )
+            secondaryTrack.enabled = false
+            metronome.addTrack(1, secondaryTrack)
         }
     }
 

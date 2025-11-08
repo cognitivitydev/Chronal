@@ -41,13 +41,13 @@ import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.ui.metronome.windows.metronome
 import dev.cognitivity.chronal.ui.metronome.windows.setBPM
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
 fun BoxScope.TempoChanger() {
+    val metronome = ChronalApp.getInstance().metronome
     Column(
         modifier = Modifier.align(Alignment.Center)
     ) {
@@ -66,10 +66,10 @@ fun BoxScope.TempoChanger() {
                                 onPress = {
                                     var isHeld = true
                                     scope.launch {
-                                        setBPM(metronome.bpm + 1)
+                                        setBPM(metronome.getTrack(0).bpm + 1)
                                         delay(500)
                                         while (isHeld) {
-                                            setBPM(metronome.bpm + 1)
+                                            setBPM(metronome.getTrack(0).bpm + 1)
                                             delay(50)
                                         }
                                     }
@@ -88,11 +88,11 @@ fun BoxScope.TempoChanger() {
                                 onPress = {
                                     var isHeld = true
                                     scope.launch {
-                                        setBPM(metronome.bpm - 1)
+                                        setBPM(metronome.getTrack(0).bpm - 1)
 
                                         delay(500)
                                         while (isHeld) {
-                                            setBPM(metronome.bpm - 1)
+                                            setBPM(metronome.getTrack(0).bpm - 1)
                                             delay(50)
                                         }
                                     }
@@ -106,7 +106,7 @@ fun BoxScope.TempoChanger() {
             }
             Text(
                 modifier = Modifier.align(Alignment.CenterVertically),
-                text = metronome.bpm.toString(),
+                text = metronome.getTrack(0).bpm.toString(),
                 style = MaterialTheme.typography.displayLarge,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
@@ -124,7 +124,7 @@ fun BoxScope.TempoChanger() {
         }
 
         val markings = ChronalApp.getInstance().settings.tempoMarkings.value.reversed()
-        val marking = markings.firstOrNull { it.range.contains(metronome.bpm) }
+        val marking = markings.firstOrNull { it.range.contains(metronome.getTrack(0).bpm) }
         val string = marking?.name ?: context.getString(R.string.metronome_tempo_unknown)
 
         Text(

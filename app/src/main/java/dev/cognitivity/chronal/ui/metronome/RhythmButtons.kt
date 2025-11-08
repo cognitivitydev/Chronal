@@ -40,13 +40,14 @@ import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.MusicFont
 import dev.cognitivity.chronal.SimpleRhythm
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
-import dev.cognitivity.chronal.ui.metronome.windows.secondaryEnabled
 import dev.cognitivity.chronal.ui.metronome.windows.showRhythmPrimary
 import dev.cognitivity.chronal.ui.metronome.windows.showRhythmSecondary
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun RhythmButtons(navController: NavController, modifier: Modifier = Modifier) {
+    val metronome = ChronalApp.getInstance().metronome
+    val secondaryEnabled = metronome.getTrack(1).enabled
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
