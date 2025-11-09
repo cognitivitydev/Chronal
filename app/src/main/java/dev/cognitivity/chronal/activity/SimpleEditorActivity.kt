@@ -903,7 +903,7 @@ class SimpleEditorActivity : ComponentActivity() {
                 note = MusicFont.Notation.entries.find { it.char == MusicFont.Notation.convert(value) }
                     ?: MusicFont.Notation.N_QUARTER,
                 color = noteColor,
-                size = if(triplet) 48.dp else 64.dp,
+                size = if(triplet) 40.dp else 56.dp,
                 modifier = Modifier.align(Alignment.Center)
                     .offset(y = if(triplet) 8.dp else 0.dp)
             )
@@ -944,7 +944,6 @@ class SimpleEditorActivity : ComponentActivity() {
         val timeSignature = if(value.timeSignature.second == 0) (value.timeSignature.first to 4) else value.timeSignature
         val subdivision = if(value.subdivision == 0) timeSignature.second else value.subdivision
         val isTuplet = (subdivision and (subdivision - 1)) != 0
-        val noteValue = if(!isTuplet) subdivision else (subdivision / (3f / 2f)).toInt()
         val duration = 1.0 / subdivision
         val measureDuration = timeSignature.first / timeSignature.second.toDouble()
 

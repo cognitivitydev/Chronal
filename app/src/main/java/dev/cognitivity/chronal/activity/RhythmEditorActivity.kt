@@ -487,7 +487,7 @@ class RhythmEditorActivity : ComponentActivity() {
                 var remainingDuration = 0.0
 
                 var globalIndex = 0
-                for (measure in parsedRhythm.measures) {
+                loop@ for (measure in parsedRhythm.measures) {
                     val measureDuration = measure.timeSig.first / measure.timeSig.second.toDouble()
                     remainingDuration = measureDuration
 
@@ -497,8 +497,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                 if (globalIndex == selectedNote) {
                                     atom = element
                                     isTuplet = false
-                                    globalIndex++
-                                    break
+                                    break@loop
                                 }
                                 globalIndex++
                                 remainingDuration -= element.getDuration()
@@ -511,15 +510,13 @@ class RhythmEditorActivity : ComponentActivity() {
                                     if (globalIndex == selectedNote) {
                                         atom = element.notes[i]
                                         isTuplet = true
-                                        globalIndex++
                                         remainingDuration = remainingTupletDuration
-                                        break
+                                        break@loop
                                     }
                                     globalIndex++
                                     remainingDuration -= element.notes[i].getDuration()
                                     remainingTupletDuration -= element.notes[i].getDuration()
                                 }
-                                if (isTuplet) break
                             }
                         }
                     }
@@ -532,7 +529,6 @@ class RhythmEditorActivity : ComponentActivity() {
                     // calculate max dots
                     for(i in 0..2) {
                         val dotDuration = atom.baseDuration * (1 + (1..i).sumOf { 1.0 / (2.0.pow(it)) })
-                        Log.d("a", "$dotDuration <= ${remainingDuration - atom.getDuration()} (${remainingDuration} - ${atom.getDuration()})")
                         if(dotDuration <= remainingDuration) {
                             maxDots = i
                         }
@@ -594,14 +590,13 @@ class RhythmEditorActivity : ComponentActivity() {
                                 text = { Text(getString(R.string.generic_save_exit)) },
                                 onClick = {
                                     backDropdown = false
-                                    mainTrack.setRhythm(parsedRhythm)
-                                    mainTrack.bpm = appTrack.bpm
-                                    mainTrack.beatValue = appTrack.beatValue
+                                    appTrack.bpm = mainTrack.bpm
+                                    appTrack.beatValue = mainTrack.beatValue
 
                                     ChronalApp.getInstance().settings.metronomeState.value = MetronomeState(
-                                        bpm = mainTrack.bpm,
-                                        beatValuePrimary = if(isPrimary) mainTrack.beatValue else appMetronome.getTrack(0).beatValue,
-                                        beatValueSecondary = if(isPrimary) appMetronome.getTrack(1).beatValue else mainTrack.beatValue,
+                                        bpm = appTrack.bpm,
+                                        beatValuePrimary = appTrack.beatValue,
+                                        beatValueSecondary = appTrack.beatValue,
                                         secondaryEnabled = !isPrimary && appMetronome.getTrack(1).enabled
                                     )
 
@@ -614,6 +609,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                     }
                                     scope.launch {
                                         ChronalApp.getInstance().settings.save()
+                                        appTrack.setRhythm(parsedRhythm)
                                         finish()
                                     }
                                 },
