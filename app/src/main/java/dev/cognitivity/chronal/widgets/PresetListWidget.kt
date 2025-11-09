@@ -146,7 +146,7 @@ class PresetListWidget : GlanceAppWidget() {
                                         maxLines = 1
                                     )
                                     Text(
-                                        text = context.getString(R.string.presets_bpm, preset.state.bpm),
+                                        text = context.getString(R.string.presets_bpm, preset.state.bpm.toInt()),
                                         style = TextStyle(
                                             fontSize = 12.sp,
                                             color = GlanceTheme.colors.onSecondaryContainer

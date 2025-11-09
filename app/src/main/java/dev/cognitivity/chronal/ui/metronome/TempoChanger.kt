@@ -106,7 +106,7 @@ fun BoxScope.TempoChanger() {
             }
             Text(
                 modifier = Modifier.align(Alignment.CenterVertically),
-                text = metronome.getTrack(0).bpm.toString(),
+                text = metronome.getTrack(0).bpm.toInt().toString(),
                 style = MaterialTheme.typography.displayLarge,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
@@ -124,7 +124,7 @@ fun BoxScope.TempoChanger() {
         }
 
         val markings = ChronalApp.getInstance().settings.tempoMarkings.value.reversed()
-        val marking = markings.firstOrNull { it.range.contains(metronome.getTrack(0).bpm) }
+        val marking = markings.firstOrNull { it.range.contains(metronome.getTrack(0).bpm.toInt()) }
         val string = marking?.name ?: context.getString(R.string.metronome_tempo_unknown)
 
         Text(

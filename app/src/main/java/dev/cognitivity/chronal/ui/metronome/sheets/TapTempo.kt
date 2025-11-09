@@ -155,13 +155,13 @@ fun TapTempo() {
                                 val last = lastTapTime
                                 delay(60000L / newBpm * 5)
                                 if (last == lastTapTime) {
-                                    metronome.getTracks().forEach { it.bpm = newBpm }
+                                    metronome.getTracks().forEach { it.bpm = newBpm.toFloat() }
 
                                     val primaryTrack = metronome.getTrack(0)
                                     val secondaryTrack = metronome.getTrack(1)
 
                                     ChronalApp.getInstance().settings.metronomeState.value = MetronomeState(
-                                        bpm = newBpm, beatValuePrimary = primaryTrack.beatValue,
+                                        bpm = newBpm.toFloat(), beatValuePrimary = primaryTrack.beatValue,
                                         beatValueSecondary = secondaryTrack.beatValue, secondaryEnabled = secondaryTrack.enabled,
                                     )
 

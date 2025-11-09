@@ -68,7 +68,7 @@ class LatencyActivity : ComponentActivity() {
     val metronome = Metronome(sendNotifications = false).apply {
         addTrack(0, MetronomeTrack(
             Rhythm.deserialize("{4/4}Q;Q;Q;Q;"),
-            bpm = 120,
+            bpm = 120f,
             beatValue = 4f,
         ))
     }

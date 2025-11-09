@@ -18,7 +18,6 @@
 
 package dev.cognitivity.chronal
 
-import android.app.Notification.Action
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -58,9 +57,12 @@ class Metronome(private val sendNotifications: Boolean = true) : BroadcastReceiv
 
     private var audioManager: AudioManager? = null
     private var audioTrack = getAudioTrack()
+
     var playing = false
     var active = true
     var timestamp = 0L
+    private var scheduled = false
+
     private var handlerThread: HandlerThread
     private var handler: Handler
 
@@ -68,7 +70,6 @@ class Metronome(private val sendNotifications: Boolean = true) : BroadcastReceiv
 
     private val tickSoundCache = mutableMapOf<Int, FloatArray>()
 
-    private var scheduled = false
 
     init {
         audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -376,15 +377,14 @@ class Metronome(private val sendNotifications: Boolean = true) : BroadcastReceiv
 
         val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.baseline_music_note_24)
-            .setContentTitle(context.getString(R.string.metronome_notification_title, tracks.values.firstOrNull()?.bpm ?: 120))
+            .setContentTitle(context.getString(R.string.metronome_notification_title, tracks.values.firstOrNull()?.bpm?.toInt() ?: 120))
             .setContentText(context.getString(if (this.playing) R.string.metronome_notification_playing else R.string.metronome_notification_paused))
             .setPriority(NotificationCompat.PRIORITY_MIN)
             .setSilent(true)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
-            .addAction(if (this.playing) Action.SEMANTIC_ACTION_MUTE else Action.SEMANTIC_ACTION_UNMUTE,
-                context.getString(if (this.playing) R.string.generic_pause else R.string.generic_resume), pausePendingIntent)
-            .addAction(Action.SEMANTIC_ACTION_DELETE, context.getString(R.string.generic_stop), stopPendingIntent)
+            .addAction(0, context.getString(if (this.playing) R.string.generic_pause else R.string.generic_resume), pausePendingIntent)
+            .addAction(0, context.getString(R.string.generic_stop), stopPendingIntent)
             .setUsesChronometer(true)
 
         notificationManager.notify(1, builder.build())

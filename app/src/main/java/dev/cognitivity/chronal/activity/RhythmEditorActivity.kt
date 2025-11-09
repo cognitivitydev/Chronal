@@ -119,7 +119,7 @@ class RhythmEditorActivity : ComponentActivity() {
     private val metronome = Metronome(sendNotifications = false).apply {
         addTrack(0, MetronomeTrack(
             rhythm = parsedRhythm,
-            bpm = 120,
+            bpm = 120f,
             beatValue = 4f
         ))
     }
@@ -709,7 +709,7 @@ class RhythmEditorActivity : ComponentActivity() {
                             modifier = Modifier.width(8.dp)
                         )
                         Text(
-                            "= ${mainTrack.bpm}",
+                            "= ${mainTrack.bpm.toInt()}",
                             modifier = Modifier.align(Alignment.CenterVertically),
                             color = MaterialTheme.colorScheme.onSurface,
                             style = MaterialTheme.typography.bodyLarge
@@ -1545,7 +1545,7 @@ class RhythmEditorActivity : ComponentActivity() {
     @Composable
     fun EditBpmDialog() {
         var beatValue by remember { mutableFloatStateOf(mainTrack.beatValue) }
-        var bpm by remember { mutableIntStateOf(mainTrack.bpm) }
+        var bpm by remember { mutableFloatStateOf(mainTrack.bpm) }
         val scope = rememberCoroutineScope()
         var change = 0
 
@@ -1623,7 +1623,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                     change += dragAmount.toInt()
                                     if (abs(change) >= 8) {
                                         val adjustment = (change / 8)
-                                        bpm = (bpm - adjustment).coerceIn(1, 500)
+                                        bpm = (bpm - adjustment).coerceIn(1f, 500f)
                                         change %= 8
                                     }
                                 }
@@ -1648,7 +1648,7 @@ class RhythmEditorActivity : ComponentActivity() {
                             modifier = Modifier.padding(horizontal = 8.dp)
                         ) {
                             Text(
-                                "$bpm",
+                                "${bpm.toInt()}",
                                 modifier = Modifier.align(Alignment.CenterVertically),
                                 color = MaterialTheme.colorScheme.onSurface,
                                 style = MaterialTheme.typography.displayLarge
@@ -1665,10 +1665,10 @@ class RhythmEditorActivity : ComponentActivity() {
                                             onPress = {
                                                 var isHeld = true
                                                 scope.launch {
-                                                    bpm = (bpm + 1).coerceIn(1, 500)
+                                                    bpm = (bpm + 1).coerceIn(1f, 500f)
                                                     delay(500)
                                                     while (isHeld) {
-                                                        bpm = (bpm + 1).coerceIn(1, 500)
+                                                        bpm = (bpm + 1).coerceIn(1f, 500f)
                                                         delay(50)
                                                     }
                                                 }
@@ -1687,10 +1687,10 @@ class RhythmEditorActivity : ComponentActivity() {
                                             onPress = {
                                                 var isHeld = true
                                                 scope.launch {
-                                                    bpm = (bpm - 1).coerceIn(1, 500)
+                                                    bpm = (bpm - 1).coerceIn(1f, 500f)
                                                     delay(500)
                                                     while (isHeld) {
-                                                        bpm = (bpm - 1).coerceIn(1, 500)
+                                                        bpm = (bpm - 1).coerceIn(1f, 500f)
                                                         delay(50)
                                                     }
                                                 }

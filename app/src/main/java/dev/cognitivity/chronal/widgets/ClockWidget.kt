@@ -118,7 +118,7 @@ class ClockWidget : GlanceAppWidget() {
                     verticalAlignment = Alignment.Bottom,
                 ) {
                     Text(
-                        text = "$bpm",
+                        text = "${bpm.toInt()}",
                         modifier = GlanceModifier.padding(end = 2.dp),
                         style = TextStyle(
                             fontSize = 28.sp,
