@@ -70,7 +70,7 @@ class MetronomeTrack(private var rhythm: Rhythm, bpm: Float = 60f, var beatValue
         return intervals
     }
 
-    private var listenerUpdate = mutableMapOf<Int, (Beat) -> Unit>()
+    private val listenerUpdate = mutableMapOf<Int, (Beat) -> Unit>()
     private val listenerPause = mutableMapOf<Int, (Boolean) -> Unit>()
     private val listenerEdit = mutableMapOf<Int, (Rhythm) -> Unit>()
 
