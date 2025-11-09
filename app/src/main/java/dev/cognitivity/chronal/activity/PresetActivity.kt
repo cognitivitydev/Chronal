@@ -163,7 +163,7 @@ class PresetActivity : ComponentActivity() {
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
                             Text(
-                                text = getString(R.string.presets_bpm, preset.state.bpm),
+                                text = getString(R.string.presets_bpm, preset.state.bpm.toInt()),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -595,12 +595,12 @@ class PresetActivity : ComponentActivity() {
         ) {
             Icon(
                 painter = painterResource(R.drawable.baseline_music_note_24),
-                contentDescription = getString(R.string.presets_bpm, preset.state.bpm),
+                contentDescription = getString(R.string.presets_bpm, preset.state.bpm.toInt()),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = getString(R.string.presets_bpm, preset.state.bpm),
+                text = getString(R.string.presets_bpm, preset.state.bpm.toInt()),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

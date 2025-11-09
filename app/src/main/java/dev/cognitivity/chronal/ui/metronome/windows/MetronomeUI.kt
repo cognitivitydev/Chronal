@@ -319,10 +319,10 @@ fun ClockBeats(progress: Animatable<Float, AnimationVector1D>, trackSize: Float,
 
 var lastVibration = 0L
 
-fun setBPM(bpm: Int) {
+fun setBPM(bpm: Float) {
     val metronome = ChronalApp.getInstance().metronome
 
-    val new = bpm.coerceIn(1, 500)
+    val new = bpm.coerceIn(1f, 500f)
     paused = true
     metronome.stop()
     metronome.getTracks().forEach { it.bpm = new }
@@ -339,7 +339,7 @@ fun setBPM(bpm: Int) {
         ChronalApp.getInstance().settings.save()
     }
 
-    if(new == 1 || new == 500) {
+    if(new == 1f || new == 500f) {
         if(System.currentTimeMillis() - lastVibration < 100) return
         lastVibration = System.currentTimeMillis()
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null)
@@ -353,7 +353,7 @@ fun setBPM(bpm: Int) {
         }
     } else {
         val tickPattern = longArrayOf(5)
-        val tickAmplitude = intArrayOf((bpm / 2).coerceIn(1, 255))
+        val tickAmplitude = intArrayOf((bpm / 2).toInt().coerceIn(1, 255))
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null) {
             vibratorManager!!.vibrate(

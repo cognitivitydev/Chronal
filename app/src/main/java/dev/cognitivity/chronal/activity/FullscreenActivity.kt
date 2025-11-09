@@ -477,7 +477,7 @@ class FullscreenActivity : ComponentActivity() {
 
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
-    fun BeatShape(beat: Int, bpm: Int) {
+    fun BeatShape(beat: Int, bpm: Float) {
         val color = MaterialTheme.colorScheme.primary
         val strokeWidth = 2.dp
 
@@ -516,7 +516,7 @@ class FullscreenActivity : ComponentActivity() {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = bpm.toString(),
+                        text = bpm.toInt().toString(),
                         fontSize = 96.sp,
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.offset(y = (8).dp)

@@ -18,12 +18,16 @@
 
 package dev.cognitivity.chronal
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.setValue
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmAtom
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 
-class MetronomeTrack(private var rhythm: Rhythm, var bpm: Int = 60, var beatValue: Float = 4f) {
+class MetronomeTrack(private var rhythm: Rhythm, bpm: Float = 60f, var beatValue: Float = 4f) {
+    var bpm by mutableFloatStateOf(bpm)
 
     var enabled: Boolean = true
 

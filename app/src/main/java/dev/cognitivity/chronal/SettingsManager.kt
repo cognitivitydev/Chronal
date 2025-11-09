@@ -228,7 +228,7 @@ class SettingsManager(val context: Context) {
     val metronomeState = Setting(
         SettingKey.METRONOME_STATE,
         hint = R.string.setting_description_metronome_state,
-        default = MetronomeState(bpm = 120, beatValuePrimary = 4f, beatValueSecondary = 4f, secondaryEnabled = false)
+        default = MetronomeState(bpm = 120f, beatValuePrimary = 4f, beatValueSecondary = 4f, secondaryEnabled = false)
     )
      val metronomePresets = Setting(
          SettingKey.METRONOME_PRESETS,
@@ -241,7 +241,7 @@ class SettingsManager(val context: Context) {
                  primarySimpleRhythm = SimpleRhythm(2 to 4, 4, 3),
                  secondaryRhythm = Rhythm.deserialize("{4/4}Q;q;q;q;"),
                  secondarySimpleRhythm = SimpleRhythm(4 to 4, 4, 1),
-                 state = MetronomeState(bpm = 120, beatValuePrimary = 4f, beatValueSecondary = 4f, secondaryEnabled = true)
+                 state = MetronomeState(bpm = 120f, beatValuePrimary = 4f, beatValueSecondary = 4f, secondaryEnabled = true)
              ),
              MetronomePreset(
                  name = context.getString(R.string.presets_example_3_2),
@@ -249,7 +249,7 @@ class SettingsManager(val context: Context) {
                  primarySimpleRhythm = SimpleRhythm(2 to 4, 4, 0),
                  secondaryRhythm = Rhythm.deserialize("{2/4}3:2[q:q:q];"),
                  secondarySimpleRhythm = SimpleRhythm(2 to 4, 6, 1),
-                 state = MetronomeState(bpm = 120, beatValuePrimary = 4f, beatValueSecondary = 4f, secondaryEnabled = true)
+                 state = MetronomeState(bpm = 120f, beatValuePrimary = 4f, beatValueSecondary = 4f, secondaryEnabled = true)
              ),
          )
      )
@@ -529,7 +529,7 @@ data class SimpleRhythm(
 }
 
 data class MetronomeState(
-    val bpm: Int,
+    val bpm: Float,
     val beatValuePrimary: Float,
     val beatValueSecondary: Float,
     val secondaryEnabled: Boolean
@@ -537,7 +537,7 @@ data class MetronomeState(
     companion object {
         fun fromJson(jsonObject: JsonObject): MetronomeState {
             return MetronomeState(
-                bpm = jsonObject.get("bpm").asInt,
+                bpm = jsonObject.get("bpm").asFloat,
                 beatValuePrimary = jsonObject.get("valuePrimary").asFloat,
                 beatValueSecondary = jsonObject.get("valueSecondary").asFloat,
                 secondaryEnabled = jsonObject.get("secondaryEnabled").asBoolean
