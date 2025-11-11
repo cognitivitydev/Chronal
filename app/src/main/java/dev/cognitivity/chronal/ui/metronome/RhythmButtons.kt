@@ -39,7 +39,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.MusicFont
 import dev.cognitivity.chronal.SimpleRhythm
-import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.ui.metronome.windows.showRhythmPrimary
 import dev.cognitivity.chronal.ui.metronome.windows.showRhythmSecondary
 
@@ -52,12 +51,35 @@ fun RhythmButtons(navController: NavController, modifier: Modifier = Modifier) {
     val currentRoute = navBackStackEntry?.destination?.route
 
     val simpleRhythmPrimary = ChronalApp.getInstance().settings.metronomeSimpleRhythm.value
-    val parsedRhythmPrimary = Rhythm.deserialize(ChronalApp.getInstance().settings.metronomeRhythm.value)
+    val parsedRhythmPrimary = metronome.getTrack(0).getRhythm()
     val isAdvancedPrimary = simpleRhythmPrimary == SimpleRhythm(0 to 0, 0, 0)
 
+    val primaryTimeSignature = if(isAdvancedPrimary) {
+        parsedRhythmPrimary.measures[0].timeSig
+    } else {
+        simpleRhythmPrimary.timeSignature
+    }
+    val primarySubdivision = if(isAdvancedPrimary || simpleRhythmPrimary.subdivision == 0) { // advanced or auto
+        primaryTimeSignature.second
+    } else {
+        simpleRhythmPrimary.subdivision
+    }
+
     val simpleRhythmSecondary = ChronalApp.getInstance().settings.metronomeSimpleRhythmSecondary.value
-    val parsedRhythmSecondary = Rhythm.deserialize(ChronalApp.getInstance().settings.metronomeRhythmSecondary.value)
+    val parsedRhythmSecondary = metronome.getTrack(1).getRhythm()
     val isAdvancedSecondary = simpleRhythmSecondary == SimpleRhythm(0 to 0, 0, 0)
+
+    val secondaryTimeSignature = if(isAdvancedSecondary) {
+        parsedRhythmSecondary.measures[0].timeSig
+    } else {
+        simpleRhythmSecondary.timeSignature
+    }
+    val secondarySubdivision = if(isAdvancedSecondary || simpleRhythmSecondary.subdivision == 0) {
+        secondaryTimeSignature.second
+    } else {
+        simpleRhythmSecondary.subdivision
+    }
+
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.SpaceEvenly
@@ -74,7 +96,7 @@ fun RhythmButtons(navController: NavController, modifier: Modifier = Modifier) {
                 showRhythmPrimary = true
             }
         ) {
-            DrawContent(parsedRhythmPrimary, simpleRhythmPrimary, isAdvancedPrimary, MaterialTheme.colorScheme.onPrimaryContainer)
+            DrawContent(primaryTimeSignature, primarySubdivision, MaterialTheme.colorScheme.onPrimaryContainer)
         }
         val secondaryBackground by animateColorAsState(
             targetValue = if(currentRoute == "conductor") MaterialTheme.colorScheme.surfaceContainerLow
@@ -102,19 +124,18 @@ fun RhythmButtons(navController: NavController, modifier: Modifier = Modifier) {
                     showRhythmSecondary = true
                 }
         ) {
-            DrawContent(parsedRhythmSecondary, simpleRhythmSecondary, isAdvancedSecondary, secondaryText)
+            DrawContent(secondaryTimeSignature, secondarySubdivision, secondaryText)
         }
     }
 }
 
 @Composable
-fun DrawContent(rhythm: Rhythm, simpleRhythm: SimpleRhythm, isAdvanced: Boolean, textColor: Color) {
+fun DrawContent(timeSignature: Pair<Int, Int>, subdivision: Int, textColor: Color) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        val timeSignature = rhythm.measures[0].timeSig
         Box(Modifier.fillMaxHeight(0.75f)) {
             MusicFont.Number.TimeSignature(timeSignature.first, timeSignature.second, textColor)
         }
@@ -123,7 +144,6 @@ fun DrawContent(rhythm: Rhythm, simpleRhythm: SimpleRhythm, isAdvanced: Boolean,
                 .width(IntrinsicSize.Min)
                 .align(Alignment.CenterVertically)
         ) {
-            val subdivision = if(isAdvanced) rhythm.measures[0].timeSig.second else simpleRhythm.subdivision
             val isTuplet = (subdivision and (subdivision - 1)) != 0
             val noteValue = if(!isTuplet) subdivision else (subdivision / (3f / 2f)).toInt()
             val char = MusicFont.Notation.convert(noteValue, false)
