@@ -18,7 +18,6 @@
 
 package dev.cognitivity.chronal.rhythm.metronome
 
-import android.util.Log
 import dev.cognitivity.chronal.MusicFont
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmAtom
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmElement
@@ -54,7 +53,6 @@ data class Rhythm(
 
     companion object {
         fun deserialize(rhythm: String): Rhythm {
-            Log.d("a", "Deserializing $rhythm")
             val measures = arrayListOf<Measure>()
             val rawMeasures = rhythm.split("|").filter { it.isNotBlank() }
 
