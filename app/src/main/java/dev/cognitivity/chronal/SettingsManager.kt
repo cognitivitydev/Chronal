@@ -60,7 +60,8 @@ enum class SettingKey(val category: Int, val settingName: Int) {
     METRONOME_STATE(R.string.setting_category_internal, R.string.setting_name_metronome_state),
     METRONOME_PRESETS(R.string.setting_category_internal, R.string.setting_name_metronome_presets),
     FULLSCREEN_WARNING(R.string.setting_category_internal, R.string.setting_name_fullscreen_warning),
-    TUNER_LAYOUT(R.string.setting_category_internal, R.string.setting_name_tuner_layout)
+    TUNER_LAYOUT(R.string.setting_category_internal, R.string.setting_name_tuner_layout),
+    RAW(R.string.setting_category_internal, R.string.setting_name_raw)
     ;
 
     override fun toString(): String {
@@ -264,6 +265,12 @@ class SettingsManager(val context: Context) {
         menu = SettingMenu.Expandable("Percentage"),
         default = 0.33f
     )
+    val raw = Setting( // view only, not written
+        SettingKey.RAW,
+        hint = R.string.setting_description_raw,
+        menu = SettingMenu.Expandable("Raw"),
+        default = null
+    )
 
 
     val keyMap: Map<SettingKey, Setting<*>> = mapOf(
@@ -295,7 +302,8 @@ class SettingsManager(val context: Context) {
         SettingKey.METRONOME_SIMPLE_RHYTHM_SECONDARY to metronomeSimpleRhythmSecondary,
         SettingKey.METRONOME_SOUNDS to metronomeSounds,
         SettingKey.FULLSCREEN_WARNING to fullscreenWarning,
-        SettingKey.TUNER_LAYOUT to tunerLayout
+        SettingKey.TUNER_LAYOUT to tunerLayout,
+        SettingKey.RAW to raw
     )
 
     suspend fun save() {
@@ -346,6 +354,9 @@ class SettingsManager(val context: Context) {
             settings[noteNamesKey] = noteNames.value
 
             /******* INTERNAL *******/
+            val showDeveloperOptionsKey = booleanPreferencesKey(showDeveloperOptions.key.toString())
+            settings[showDeveloperOptionsKey] = showDeveloperOptions.value
+
             val metronomeRhythmKey = stringPreferencesKey(metronomeRhythm.key.toString())
             settings[metronomeRhythmKey] = metronomeRhythm.value
 
@@ -428,6 +439,9 @@ class SettingsManager(val context: Context) {
 
 
         /******* INTERNAL *******/
+        showDeveloperOptions.value = prefs[booleanPreferencesKey(showDeveloperOptions.key.toString())]
+            ?: showDeveloperOptions.default
+
         metronomeRhythm.value = prefs[stringPreferencesKey(metronomeRhythm.key.toString())]
             ?: metronomeRhythm.default
 
@@ -458,6 +472,12 @@ class SettingsManager(val context: Context) {
 
         tunerLayout.value = prefs[floatPreferencesKey(tunerLayout.key.toString())]
             ?: tunerLayout.default
+    }
+
+    suspend fun toJson(): JsonObject {
+        val prefs = context.dataStore.data.first()
+        val jsonObject = Gson().toJsonTree(prefs).asJsonObject
+        return jsonObject
     }
 
     fun get(key: SettingKey): Setting<*> {

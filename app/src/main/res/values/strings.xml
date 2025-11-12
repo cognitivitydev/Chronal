@@ -6,6 +6,7 @@
     <string name="generic_cancel">Cancel</string>
     <string name="generic_close">Close</string>
     <string name="generic_confirm">Confirm</string>
+    <string name="generic_copy_clipboard">Copy to clipboard</string>
     <string name="generic_delete">Delete</string>
     <string name="generic_discard">Discard</string>
     <string name="generic_download">Download</string>
@@ -235,6 +236,7 @@
     <string name="setting_name_metronome_presets">Metronome presets</string>
     <string name="setting_name_fullscreen_warning">Fullscreen photosensitivity warning</string>
     <string name="setting_name_tuner_layout">Tuner layout</string>
+    <string name="setting_name_raw">Raw settings</string>
 
     <string name="setting_description_color_scheme">Changes the color scheme of the app.</string>
     <string name="setting_description_primary_instrument">Changes the primary instrument for transpositions and other features.</string>
@@ -250,7 +252,7 @@
     <string name="setting_description_audio_threshold">Edits the audio threshold for detecting notes. Decrease if notes are not being detected.</string>
     <string name="setting_description_accidentals">Changes which accidentals are displayed.</string>
     <string name="setting_description_note_names">Changes note names to their solfège name.</string>
-    <string name="setting_description_show_developer_options">Changes the visibility of developer options in settings. Only available in development builds.</string>
+    <string name="setting_description_show_developer_options">Changes the visibility of developer options in settings.</string>
     <string name="setting_description_metronome_rhythm">Encoded rhythm for the metronome.</string>
     <string name="setting_description_metronome_simple_rhythm">Simple rhythm for the metronome.</string>
     <string name="setting_description_metronome_vibrations">Enables vibrations for the metronome.</string>
@@ -262,6 +264,7 @@
     <string name="setting_description_metronome_presets">Presets for metronome rhythms and states.</string>
     <string name="setting_description_fullscreen_warning">Shows warning when first entering fullscreen mode.</string>
     <string name="setting_description_tuner_layout">Changes the size of the tuner for expanded screens.</string>
+    <string name="setting_description_raw">Shows all settings in its raw format.</string>
 
     <string name="setting_info_recommended_value">Recommended value:\ </string>
 

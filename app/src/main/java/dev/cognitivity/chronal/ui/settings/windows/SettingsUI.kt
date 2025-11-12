@@ -18,6 +18,8 @@
 
 package dev.cognitivity.chronal.ui.settings.windows
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.util.Log
@@ -26,12 +28,16 @@ import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MoreVert
@@ -39,6 +45,7 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -50,8 +57,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonObject
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.ColorScheme
@@ -71,6 +81,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.floor
 
+
 private var showFeedback by mutableStateOf(false)
 private var showDeveloperOptions by mutableStateOf(ChronalApp.getInstance().settings.showDeveloperOptions.value)
 
@@ -84,7 +95,9 @@ fun SettingsPageMain(expanded: Boolean, padding: PaddingValues) {
             val setting = entry.value
             if (!containsKey(category)) {
                 if(category == context.getString(R.string.setting_category_internal)) {
-                    if(showDeveloperOptions) put(category, arrayListOf())
+                    if(showDeveloperOptions) {
+                        put(category, arrayListOf())
+                    }
                 } else {
                     put(category, arrayListOf())
                 }
@@ -112,10 +125,12 @@ fun SettingsPageMain(expanded: Boolean, padding: PaddingValues) {
                 color = MaterialTheme.colorScheme.onSurface
             )
             Row(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .clickable {
-                        val intent = Intent(Intent.ACTION_VIEW, "https://github.com/cognitivitydev/Chronal/issues".toUri())
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        val intent =
+                            Intent(Intent.ACTION_VIEW, "https://github.com/cognitivitydev/Chronal/issues".toUri())
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         ChronalApp.getInstance().startActivity(intent)
                     }
                     .padding(horizontal = 16.dp, vertical = 8.dp),
@@ -141,7 +156,8 @@ fun SettingsPageMain(expanded: Boolean, padding: PaddingValues) {
                 }
             }
             Row(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .clickable {
                         val intent = Intent(Intent.ACTION_VIEW, "https://crowdin.com/project/chronal".toUri())
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -170,9 +186,13 @@ fun SettingsPageMain(expanded: Boolean, padding: PaddingValues) {
                 }
             }
             Row(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .clickable {
-                        val intent = Intent(Intent.ACTION_VIEW, "https://play.google.com/store/apps/details?id=dev.cognitivity.chronal".toUri())
+                        val intent = Intent(
+                            Intent.ACTION_VIEW,
+                            "https://play.google.com/store/apps/details?id=dev.cognitivity.chronal".toUri()
+                        )
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         ChronalApp.getInstance().startActivity(intent)
                     }
@@ -199,7 +219,8 @@ fun SettingsPageMain(expanded: Boolean, padding: PaddingValues) {
                 }
             }
             Row(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .clickable {
                         val intent = Intent(Intent.ACTION_VIEW, "mailto:cognitivitydev@gmail.com".toUri())
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -239,11 +260,12 @@ fun BoxScope.MoreSettingsDropdown() {
         expanded = expanded,
         onDismissRequest = { expanded = false },
     ) {
-        DropdownMenuItem(onClick = {
-            val intent = Intent(Intent.ACTION_VIEW, "https://github.com/cognitivitydev/Chronal".toUri())
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            ChronalApp.getInstance().startActivity(intent)
-        },
+        DropdownMenuItem(
+            onClick = {
+                val intent = Intent(Intent.ACTION_VIEW, "https://github.com/cognitivitydev/Chronal".toUri())
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                ChronalApp.getInstance().startActivity(intent)
+            },
             leadingIcon = {
                 Icon(
                     painter = painterResource(R.drawable.baseline_code_24),
@@ -252,12 +274,13 @@ fun BoxScope.MoreSettingsDropdown() {
             },
             text = { Text(context.getString(R.string.settings_menu_view_source)) },
         )
-        DropdownMenuItem(onClick = {
-            ChronalApp.getInstance().startActivity(
-                Intent(context, CreditsActivity::class.java)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            )
-        },
+        DropdownMenuItem(
+            onClick = {
+                ChronalApp.getInstance().startActivity(
+                    Intent(context, CreditsActivity::class.java)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                )
+            },
             leadingIcon = {
                 Icon(
                     painter = painterResource(R.drawable.outline_public_24),
@@ -424,7 +447,8 @@ fun DrawSetting(
                                 }
                             ) {
                                 Button(
-                                    modifier = Modifier.padding(8.dp)
+                                    modifier = Modifier
+                                        .padding(8.dp)
                                         .align(Alignment.CenterHorizontally),
                                     onClick = {
                                         context.startActivity(
@@ -451,6 +475,16 @@ fun DrawSetting(
                                     context.getString(R.string.tuner_hz, value.toInt())
                                 }
                             )
+                        }
+
+                        "Raw" -> {
+                            var debugJson by remember { mutableStateOf<JsonObject?>(null) }
+                            LaunchedEffect(Unit) {
+                                debugJson = ChronalApp.getInstance().settings.toJson()
+                            }
+                            if (debugJson != null) {
+                                DebugSetting(debugJson!!)
+                            }
                         }
 
                         else -> {
@@ -506,24 +540,30 @@ fun ColorSetting(setting: Setting<ColorScheme>) {
                 val selected = selection.color == color
                 MetronomeTheme(color) {
                     Box(
-                        modifier = Modifier.size(80.dp)
+                        modifier = Modifier
+                            .size(80.dp)
                             .clip(RoundedCornerShape(24.dp))
                             .background(MaterialTheme.colorScheme.primaryContainer)
                             .clickable {
                                 selection = selection.copy(
                                     color = color,
-                                    contrast = if(color == ColorScheme.Color.SYSTEM) ColorScheme.Contrast.SYSTEM
-                                    else if(selection.contrast == ColorScheme.Contrast.SYSTEM) ColorScheme.Contrast.LOW
+                                    contrast = if (color == ColorScheme.Color.SYSTEM) ColorScheme.Contrast.SYSTEM
+                                    else if (selection.contrast == ColorScheme.Contrast.SYSTEM) ColorScheme.Contrast.LOW
                                     else selection.contrast
                                 )
                             }
-                            .border(2.dp, if(selected) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(24.dp))
-                            .border(5.dp, if(selected) surfaceContainerLow
-                                else MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(24.dp))
+                            .border(
+                                2.dp, if (selected) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(24.dp)
+                            )
+                            .border(
+                                5.dp, if (selected) surfaceContainerLow
+                                else MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(24.dp)
+                            )
                     ) {
                         Box(
-                            modifier = Modifier.size(56.dp)
+                            modifier = Modifier
+                                .size(56.dp)
                                 .align(Alignment.Center)
                                 .clip(CircleShape)
                                 .background(MaterialTheme.colorScheme.primary)
@@ -722,12 +762,73 @@ fun NoteSetting(setting: Setting<Int>) {
 }
 
 @Composable
+fun DebugSetting(json: JsonObject) {
+    val gson = GsonBuilder().setPrettyPrinting().create()
+    val map = json["preferencesMap"].asJsonObject
+
+    // strip ids from keys and remove duplicates
+    val cleanedMap = JsonObject()
+    val keysSeen = mutableSetOf<String>()
+    val entries = map.entrySet().toList().asReversed()
+    for (entry in entries) {
+        val cleanedKey = entry.key.replace(Regex("^\\d+_"), "")
+        if (cleanedKey !in keysSeen) {
+            cleanedMap.add(cleanedKey, entry.value)
+            keysSeen.add(cleanedKey)
+        }
+    }
+    val finalMap = JsonObject()
+    val finalEntries = cleanedMap.entrySet().toList().asReversed()
+    for (entry in finalEntries) {
+        finalMap.add(entry.key, entry.value)
+    }
+
+    val string = gson.toJson(finalMap)
+
+    Column {
+        Box(
+            modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(16.dp))
+        ) {
+            Box(
+                modifier = Modifier.fillMaxWidth()
+                    .heightIn(max = 300.dp)
+                    .verticalScroll(rememberScrollState())
+                    .horizontalScroll(rememberScrollState())
+                    .padding(16.dp)
+            ) {
+                SelectionContainer {
+                    Text(
+                        text = string,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontFamily = FontFamily.Monospace
+                        ),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+
+        Button(
+            modifier = Modifier.padding(top = 8.dp, start = 8.dp),
+            onClick = {
+                val clipboard = ChronalApp.getInstance().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText("Debug Settings JSON", string)
+                clipboard.setPrimaryClip(clip)
+            }
+        ) {
+            Text(context.getString(R.string.generic_copy_clipboard))
+        }
+    }
+}
+
+@Composable
 fun CategoryHeader(title: String) {
     Text(
         text = title,
         style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
             .padding(20.dp, 8.dp)
     )
 }
@@ -735,7 +836,8 @@ fun CategoryHeader(title: String) {
 @Composable
 fun Divider() {
     Box(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
             .padding(12.dp, 4.dp)
             .height(1.dp)
             .background(MaterialTheme.colorScheme.outlineVariant)
@@ -749,18 +851,21 @@ fun SettingOption(
     indication: Indication? = LocalIndication.current,
     button: @Composable () -> Unit) {
     Column(
-        modifier = Modifier.clip(RoundedCornerShape(24.dp))
+        modifier = Modifier
+            .clip(RoundedCornerShape(24.dp))
             .clickable(interactionSource = interactionSource, indication = indication) {
                 onClick()
             }
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .padding(16.dp)
         ) {
             Column(
-                modifier = Modifier.align(Alignment.CenterVertically)
+                modifier = Modifier
+                    .align(Alignment.CenterVertically)
                     .weight(1f)
                     .padding(end = 8.dp)
             ) {
@@ -782,7 +887,8 @@ fun SettingOption(
             }
 
             Box(
-                modifier = Modifier.align(Alignment.CenterVertically)
+                modifier = Modifier
+                    .align(Alignment.CenterVertically)
                     .padding(end = 2.dp)
             ) {
                 button()
@@ -837,7 +943,8 @@ fun SettingsFooter() {
     val versionName = context.packageManager.getPackageInfo(context.packageName, 0).versionName
 
     Row(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
             .padding(start = 8.dp, end = 8.dp, bottom = 24.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
