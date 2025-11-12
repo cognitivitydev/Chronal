@@ -19,7 +19,6 @@
 package dev.cognitivity.chronal.ui.metronome.sheets
 
 import android.content.Intent
-import android.view.Window
 import android.widget.Toast
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
@@ -50,7 +49,6 @@ import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.MetronomeState
-import dev.cognitivity.chronal.MusicFont
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.SimpleRhythm
 import dev.cognitivity.chronal.activity.PresetActivity
@@ -60,10 +58,7 @@ import dev.cognitivity.chronal.rhythm.metronome.Measure
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmElement
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
-import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.rhythm.metronome.elements.StemDirection
-import dev.cognitivity.chronal.ui.metronome.windows.paused
-import dev.cognitivity.chronal.ui.metronome.windows.updateSleepMode
 import dev.cognitivity.chronal.ui.metronome.windows.vibratePrimary
 import dev.cognitivity.chronal.ui.metronome.windows.vibrateSecondary
 import kotlinx.coroutines.CoroutineScope
@@ -417,89 +412,6 @@ fun Vibration(primary: Boolean, enabled: Boolean) {
             modifier = Modifier.align(Alignment.CenterVertically)
         )
     }
-}
-
-
-fun setRhythm(window: Window, value: SimpleRhythm, primary: Boolean, retry: Boolean = true): Boolean {
-    val metronome = ChronalApp.getInstance().metronome
-    val selectedTrack = metronome.getTrack(if(primary) 0 else 1)
-
-    val timeSignature = value.timeSignature
-    val subdivision = value.subdivision
-    val isTuplet = (subdivision and (subdivision - 1)) != 0
-    val noteValue = if(!isTuplet) subdivision else (subdivision / (3f / 2f)).toInt()
-    val duration = 1.0 / subdivision
-    val measureDuration = timeSignature.first / timeSignature.second.toDouble()
-
-    var remaining = measureDuration
-    var emphasizeNext = value.emphasis != 1
-    val newMeasure = Measure(timeSignature, arrayListOf<RhythmElement>().apply {
-        while(remaining > 1e-6) {
-            if(isTuplet) {
-                add(RhythmTuplet(
-                    ratio = 3 to 2,
-                    notes = ArrayList<RhythmNote>().apply {
-                        for(i in 0 until 3) {
-                            if(remaining <= 0) break
-                            add(RhythmNote(
-                                stemDirection = if(emphasizeNext) StemDirection.UP else StemDirection.DOWN,
-                                baseDuration = duration,
-                                dots = 0
-                            ))
-                            remaining -= duration
-                            emphasizeNext = when (value.emphasis) {
-                                0 -> true
-                                3 -> !emphasizeNext
-                                else -> false
-                            }
-                        }
-                    }
-                ))
-            } else {
-                val note = MusicFont.Notation.convert(noteValue, false).toString()
-                add(RhythmNote(
-                    stemDirection = if(emphasizeNext) StemDirection.UP else StemDirection.DOWN,
-                    baseDuration = duration,
-                    dots = 0
-                ))
-                remaining -= duration
-                emphasizeNext = when (value.emphasis) {
-                    0 -> true
-                    3 -> !emphasizeNext
-                    else -> false
-                }
-            }
-        }
-    })
-    if(remaining < -1e-6) {
-        if(!retry) {
-            Toast.makeText(context, context.getString(R.string.simple_editor_error_other), Toast.LENGTH_SHORT).show()
-            return false
-        } else {
-            val result = setRhythm(window, value, primary, retry = false)
-            if(result) {
-                Toast.makeText(context, context.getString(R.string.simple_editor_error_adjusted), Toast.LENGTH_SHORT).show()
-            }
-            return result
-        }
-    }
-
-    val newRhythm = Rhythm(listOf(newMeasure))
-    if(primary) {
-        ChronalApp.getInstance().settings.metronomeRhythm.value = newRhythm.serialize()
-        ChronalApp.getInstance().settings.metronomeSimpleRhythm.value = value
-    } else {
-        ChronalApp.getInstance().settings.metronomeRhythmSecondary.value = newRhythm.serialize()
-        ChronalApp.getInstance().settings.metronomeSimpleRhythmSecondary.value = value
-    }
-    CoroutineScope(Dispatchers.IO).launch {
-        ChronalApp.getInstance().settings.save()
-    }
-    paused = true
-    updateSleepMode(window)
-    ChronalApp.getInstance().metronome.stop()
-    selectedTrack.setRhythm(newRhythm)
-    return true
 }
 
 private fun onSwitch(enabled: Boolean) {
