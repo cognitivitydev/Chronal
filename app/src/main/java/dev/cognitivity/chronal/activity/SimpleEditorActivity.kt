@@ -19,7 +19,6 @@
 package dev.cognitivity.chronal.activity
 
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -496,23 +495,18 @@ class SimpleEditorActivity : ComponentActivity() {
 
             EmphasisButton(R.string.simple_editor_emphasis_all, rhythm.value.emphasis == 0) {
                 rhythm.value = rhythm.value.copy(emphasis = 0)
-                val result = checkRhythm(rhythm.value)
-                error = !result
             }
             EmphasisButton(R.string.simple_editor_emphasis_none, rhythm.value.emphasis == 1) {
                 rhythm.value = rhythm.value.copy(emphasis = 1)
-                val result = checkRhythm(rhythm.value)
-                error = !result
+                checkRhythm(rhythm.value)
             }
             EmphasisButton(R.string.simple_editor_emphasis_first, rhythm.value.emphasis == 2) {
                 rhythm.value = rhythm.value.copy(emphasis = 2)
-                val result = checkRhythm(rhythm.value)
-                error = !result
+                checkRhythm(rhythm.value)
             }
             EmphasisButton(R.string.simple_editor_emphasis_alternate, rhythm.value.emphasis == 3) {
                 rhythm.value = rhythm.value.copy(emphasis = 3)
-                val result = checkRhythm(rhythm.value)
-                error = !result
+                checkRhythm(rhythm.value)
             }
         }
     }
@@ -562,8 +556,7 @@ class SimpleEditorActivity : ComponentActivity() {
                             onClick = {
                                 if (rhythm.value.timeSignature.first > 1) {
                                     rhythm.value = rhythm.value.copy(timeSignature = rhythm.value.timeSignature.copy(first = rhythm.value.timeSignature.first - 1))
-                                    val result = checkRhythm(rhythm.value)
-                                    error = !result
+                                    checkRhythm(rhythm.value)
                                 }
                             },
                             modifier = Modifier.minimumInteractiveComponentSize()
@@ -595,8 +588,7 @@ class SimpleEditorActivity : ComponentActivity() {
                         FilledIconButton(
                             onClick = {
                                 rhythm.value = rhythm.value.copy(timeSignature = rhythm.value.timeSignature.copy(first = rhythm.value.timeSignature.first + 1))
-                                val result = checkRhythm(rhythm.value)
-                                error = !result
+                                checkRhythm(rhythm.value)
                             },
                             modifier = Modifier.minimumInteractiveComponentSize()
                                 .size(IconButtonDefaults.mediumContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide)),
@@ -694,9 +686,7 @@ class SimpleEditorActivity : ComponentActivity() {
                         onClick = {
                             rhythm.value = rhythm.value.copy(timeSignature = Pair((rhythm.value.timeSignature.first - 1).coerceIn(1..32),
                                 rhythm.value.timeSignature.second))
-                            val result = checkRhythm(rhythm.value)
-                            error = !result
-                            Log.d("a", "${rhythm.value.timeSignature.first} - ${rhythm.value.timeSignature.second}, ${rhythm.value.subdivision}")
+                            checkRhythm(rhythm.value)
                         }
                     ) {
                         Icon(
@@ -720,8 +710,7 @@ class SimpleEditorActivity : ComponentActivity() {
                         onClick = {
                             rhythm.value = rhythm.value.copy(timeSignature = Pair((rhythm.value.timeSignature.first + 1).coerceIn(1..32),
                                 rhythm.value.timeSignature.second))
-                            val result = checkRhythm(rhythm.value)
-                            error = !result
+                            checkRhythm(rhythm.value)
                         }
                     ) {
                         Icon(
@@ -740,8 +729,7 @@ class SimpleEditorActivity : ComponentActivity() {
                         onClick = {
                             rhythm.value = rhythm.value.copy(timeSignature = Pair(rhythm.value.timeSignature.first, (rhythm.value.timeSignature.second / 2)
                                 .coerceIn(1..32)))
-                            val result = checkRhythm(rhythm.value)
-                            error = !result
+                            checkRhythm(rhythm.value)
                         }
                     ) {
                         Icon(
@@ -765,8 +753,7 @@ class SimpleEditorActivity : ComponentActivity() {
                         onClick = {
                             rhythm.value = rhythm.value.copy(timeSignature = Pair(rhythm.value.timeSignature.first, (rhythm.value.timeSignature.second * 2)
                                 .coerceIn(1..32)))
-                            val result = checkRhythm(rhythm.value)
-                            error = !result
+                            checkRhythm(rhythm.value)
                         }
                     ) {
                         Icon(
@@ -807,8 +794,7 @@ class SimpleEditorActivity : ComponentActivity() {
                         onCheckedChange = {
                             custom = false
                             rhythm.value = rhythm.value.copy(subdivision = 0)
-                            val result = checkRhythm(rhythm.value)
-                            error = !result
+                            checkRhythm(rhythm.value)
                         },
                         shapes = ButtonGroupDefaults.connectedLeadingButtonShapes(),
                         contentPadding = ButtonDefaults.ContentPadding
@@ -821,8 +807,7 @@ class SimpleEditorActivity : ComponentActivity() {
                         onCheckedChange = {
                             custom = true
                             rhythm.value = rhythm.value.copy(subdivision = rhythm.value.timeSignature.second)
-                            val result = checkRhythm(rhythm.value)
-                            error = !result
+                            checkRhythm(rhythm.value)
                         },
                         shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
                         contentPadding = ButtonDefaults.ContentPadding
@@ -850,8 +835,7 @@ class SimpleEditorActivity : ComponentActivity() {
                     }
                     NoteButton(1.shl(i), false, custom, checked, enabled) {
                         rhythm.value = rhythm.value.copy(subdivision = 1.shl(i))
-                        val result = checkRhythm(rhythm.value)
-                        error = !result
+                        checkRhythm(rhythm.value)
                     }
                 }
                 for(i in 2..5) { // 4 - 32, triplets
@@ -865,8 +849,7 @@ class SimpleEditorActivity : ComponentActivity() {
                     }
                     NoteButton(1.shl(i), true, custom, checked, enabled) {
                         rhythm.value = rhythm.value.copy(subdivision = (1.shl(i) * 3 / 2f).toInt())
-                        val result = checkRhythm(rhythm.value)
-                        error = !result
+                        checkRhythm(rhythm.value)
                     }
                 }
             }
@@ -937,7 +920,19 @@ class SimpleEditorActivity : ComponentActivity() {
         }
     }
     fun checkRhythm(value: SimpleRhythm): Boolean {
-        return getRhythm(value) != null
+        if (getRhythm(value) != null) return true
+
+        // fallback: switch to automatic beats and use denominator as subdivision
+        val autoFixed = value.copy(subdivision = 0)
+        if (getRhythm(autoFixed) == null) { // shouldn't happen
+            error = true
+            return false
+        }
+        error = false
+        rhythm.value = autoFixed
+        previewRhythm = getRhythm(autoFixed)
+        Toast.makeText(this, R.string.simple_editor_error_adjusted, Toast.LENGTH_SHORT).show()
+        return true
     }
 
     fun getRhythm(value: SimpleRhythm): Rhythm? {
@@ -955,8 +950,8 @@ class SimpleEditorActivity : ComponentActivity() {
                     add(RhythmTuplet(
                         ratio = 3 to 2,
                         notes = ArrayList<RhythmNote>().apply {
-                            for(i in 0 until 3) {
-                                if(remaining <= 0) break
+                            repeat(3) {
+                                if (remaining <= 0) return@repeat
                                 add(RhythmNote(
                                     stemDirection = if(emphasizeNext) StemDirection.UP else StemDirection.DOWN,
                                     baseDuration = duration,

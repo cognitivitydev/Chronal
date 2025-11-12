@@ -72,7 +72,7 @@
     <string name="simple_editor_beat_auto">Auto</string>
     <string name="simple_editor_beat_custom">Custom</string>
     <string name="simple_editor_invalid_beat">Selected beat does not fit with the current time signature.</string>
-    <string name="simple_editor_error_adjusted">Beats adjusted to fit time signature</string>
+    <string name="simple_editor_error_adjusted">Beats set to automatic to fit the time signature</string>
     <string name="simple_editor_error_other">Cannot create rhythm</string>
     <string name="simple_editor_open_advanced">Open in Advanced Editor</string>
     <string name="simple_editor_open_simple">Open in Simple Editor</string>
