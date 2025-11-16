@@ -28,6 +28,7 @@ import android.view.WindowManager
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.interaction.Interaction
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.ColumnScope
@@ -62,6 +63,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.rotate
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -394,5 +396,26 @@ fun BottomSheet(
         containerColor = MaterialTheme.colorScheme.surfaceContainer
     ) {
         content()
+    }
+}
+
+fun Modifier.verticalBPMGesture(): Modifier {
+    val metronome = ChronalApp.getInstance().metronome
+    var change = 0
+
+    return this.pointerInput(Unit) {
+        detectVerticalDragGestures(
+            onDragStart = {
+                change = 0
+            },
+            onVerticalDrag = { _, dragAmount ->
+                change += dragAmount.toInt()
+                if (abs(change) >= 64) {
+                    val adjustment = (change / 40)
+                    setBPM((metronome.getTrack(0).bpm) - adjustment)
+                    change %= 40
+                }
+            }
+        )
     }
 }

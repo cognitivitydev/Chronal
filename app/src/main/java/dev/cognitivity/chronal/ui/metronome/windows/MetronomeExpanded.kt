@@ -26,7 +26,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,7 +44,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -57,7 +55,6 @@ import dev.cognitivity.chronal.ui.metronome.CircularClock
 import dev.cognitivity.chronal.ui.metronome.ConductorDisplay
 import dev.cognitivity.chronal.ui.metronome.PlayButton
 import dev.cognitivity.chronal.ui.metronome.RhythmButtons
-import kotlin.math.abs
 
 @Composable
 fun MetronomePageExpanded(
@@ -83,19 +80,9 @@ fun MetronomePageExpanded(
                 .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(20.dp))
         ) {
             TopBar(navController, Color.Transparent, false, RoundedCornerShape(20.dp, 20.dp, 0.dp, 0.dp))
-            var change = 0
             Row(
                 modifier = Modifier.fillMaxSize()
-                    .pointerInput(Unit) {
-                        detectVerticalDragGestures { _, dragAmount ->
-                            change += dragAmount.toInt()
-                            if (abs(change) >= 8) {
-                                val adjustment = (change / 8)
-                                setBPM((metronome.getTrack(0).bpm) - adjustment)
-                                change %= 8
-                            }
-                        }
-                    }
+                    .verticalBPMGesture()
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
