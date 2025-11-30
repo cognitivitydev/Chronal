@@ -660,30 +660,30 @@ class RhythmEditorActivity : ComponentActivity() {
                             .weight(1f),
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        IconButton(
-                            enabled = false,
-                            onClick = {
-                                // TODO undo
-                            }
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.outline_undo_24),
-                                contentDescription = getString(R.string.editor_undo),
-                                tint = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                        IconButton(
-                            enabled = false,
-                            onClick = {
-                                // TODO redo
-                            }
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.outline_redo_24),
-                                contentDescription = getString(R.string.editor_redo),
-                                tint = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
+//                        IconButton(
+//                            enabled = false,
+//                            onClick = {
+//                                // TODO undo
+//                            }
+//                        ) {
+//                            Icon(
+//                                painter = painterResource(R.drawable.outline_undo_24),
+//                                contentDescription = getString(R.string.editor_undo),
+//                                tint = MaterialTheme.colorScheme.onSurface
+//                            )
+//                        }
+//                        IconButton(
+//                            enabled = false,
+//                            onClick = {
+//                                // TODO redo
+//                            }
+//                        ) {
+//                            Icon(
+//                                painter = painterResource(R.drawable.outline_redo_24),
+//                                contentDescription = getString(R.string.editor_redo),
+//                                tint = MaterialTheme.colorScheme.onSurface
+//                            )
+//                        }
                     }
                     Row(
                         modifier = Modifier.align(Alignment.CenterVertically)
