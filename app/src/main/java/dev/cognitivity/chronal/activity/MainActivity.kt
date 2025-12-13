@@ -164,13 +164,7 @@ class MainActivity : ComponentActivity() {
     fun MainContent() {
         val navController = rememberNavController()
         val sizeClass = calculateWindowSizeClass(this)
-        var expanded = false
-
-        when(sizeClass.widthSizeClass) {
-            WindowWidthSizeClass.Expanded -> {
-                expanded = true
-            }
-        }
+        val expanded = sizeClass.widthSizeClass >= WindowWidthSizeClass.Medium
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),
