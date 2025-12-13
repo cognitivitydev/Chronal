@@ -284,7 +284,7 @@ fun BoxScope.MoreSettingsDropdown() {
             leadingIcon = {
                 Icon(
                     painter = painterResource(R.drawable.outline_public_24),
-                    contentDescription = context.getString(R.string.settings_menu_open_source_credits),
+                    contentDescription = context.getString(R.string.settings_menu_open_source_credits)
                 )
             },
             text = { Text(context.getString(R.string.settings_menu_open_source_credits)) },
@@ -296,8 +296,7 @@ fun BoxScope.MoreSettingsDropdown() {
             leadingIcon = {
                 Icon(
                     painter = painterResource(R.drawable.outline_feedback_24),
-                    contentDescription = context.getString(R.string.settings_menu_send_feedback),
-                    tint = MaterialTheme.colorScheme.onSurface
+                    contentDescription = context.getString(R.string.settings_menu_send_feedback)
                 )
             },
             text = { Text(context.getString(R.string.settings_menu_send_feedback)) }
@@ -311,8 +310,7 @@ fun BoxScope.MoreSettingsDropdown() {
             leadingIcon = {
                 Icon(
                     painter = painterResource(R.drawable.baseline_help_outline_24),
-                    contentDescription = context.getString(R.string.settings_menu_help),
-                    tint = MaterialTheme.colorScheme.onSurface
+                    contentDescription = context.getString(R.string.settings_menu_help)
                 )
             },
             text = { Text(context.getString(R.string.settings_menu_help)) }
@@ -329,8 +327,7 @@ fun BoxScope.MoreSettingsDropdown() {
                 leadingIcon = {
                     Icon(
                         painter = painterResource(R.drawable.baseline_code_24),
-                        contentDescription = context.getString(R.string.settings_menu_reveal_developer),
-                        tint = MaterialTheme.colorScheme.onSurface
+                        contentDescription = context.getString(R.string.settings_menu_reveal_developer)
                     )
                 },
                 text = { Text(context.getString(R.string.settings_menu_reveal_developer)) }
