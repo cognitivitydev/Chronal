@@ -365,7 +365,7 @@ fun PitchPointer(cents: Float, tuner: Tuner?, modifier: Modifier = Modifier) {
         label = "animatedColor"
     )
 
-    val textColor1 = animateColorAsState(
+    val textColor = animateColorAsState(
         targetValue =
         if (cents.isNaN()) MaterialTheme.colorScheme.surface
         else if (abs(cents) >= 40) MaterialTheme.colorScheme.onSurface
@@ -375,17 +375,6 @@ fun PitchPointer(cents: Float, tuner: Tuner?, modifier: Modifier = Modifier) {
         else MaterialTheme.colorScheme.surface,
         animationSpec = MotionScheme.expressive().fastEffectsSpec(),
         label = "textColor1"
-    )
-
-    val textColor2 = animateColorAsState(
-        targetValue = if (cents.isNaN()) MaterialTheme.colorScheme.surface
-        else if (abs(cents) >= 40) MaterialTheme.colorScheme.onSurfaceVariant
-        else if (abs(cents) >= 30) MaterialTheme.colorScheme.secondary
-        else if (abs(cents) >= 20) MaterialTheme.colorScheme.tertiary
-        else if (abs(cents) >= 5) MaterialTheme.colorScheme.primary
-        else MaterialTheme.colorScheme.inverseOnSurface,
-        animationSpec = MotionScheme.expressive().fastEffectsSpec(),
-        label = "textColor2"
     )
 
     val morphProgress = remember { Animatable(1f) }
@@ -456,7 +445,8 @@ fun PitchPointer(cents: Float, tuner: Tuner?, modifier: Modifier = Modifier) {
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     text = (if(cents.toInt() < 0) "" else "+") + cents.toInt().toString(),
                     fontSize = 42.sp,
-                    color = textColor1.value
+                    fontWeight = FontWeight.Medium,
+                    color = textColor.value
                 )
                 val text: String = if(cents.isNaN()) ""
                     else if(cents.toInt() > 0) "\uEA66"
@@ -474,7 +464,7 @@ fun PitchPointer(cents: Float, tuner: Tuner?, modifier: Modifier = Modifier) {
                         fontSize = 48.dp.toSp(),
                         fontWeight = FontWeight.Medium,
                     ),
-                    color = textColor2.value
+                    color = textColor.value
                 )
             }
         }

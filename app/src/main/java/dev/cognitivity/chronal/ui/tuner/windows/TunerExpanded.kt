@@ -206,7 +206,6 @@ fun NoteDisplay(tuner: Tuner?, hz: Float, instrument: Instrument) {
     Column(
         modifier = Modifier.fillMaxSize()
             .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(18.dp))
-            .padding(horizontal = 8.dp)
     ) {
         FlowRow(
             modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -346,7 +345,7 @@ fun PitchPointerHorizontal(cents: Float, tuner: Tuner?) {
         label = "animatedColor"
     )
 
-    val textColor1 = animateColorAsState(
+    val textColor = animateColorAsState(
         targetValue =
             if (cents.isNaN()) MaterialTheme.colorScheme.surface
             else if (abs(cents) >= 40) MaterialTheme.colorScheme.onSurface
@@ -356,17 +355,6 @@ fun PitchPointerHorizontal(cents: Float, tuner: Tuner?) {
             else MaterialTheme.colorScheme.surface,
         animationSpec = MotionScheme.expressive().fastEffectsSpec(),
         label = "textColor1"
-    )
-
-    val textColor2 = animateColorAsState(
-        targetValue = if (cents.isNaN()) MaterialTheme.colorScheme.surface
-        else if (abs(cents) >= 40) MaterialTheme.colorScheme.onSurfaceVariant
-        else if (abs(cents) >= 30) MaterialTheme.colorScheme.secondary
-        else if (abs(cents) >= 20) MaterialTheme.colorScheme.tertiary
-        else if (abs(cents) >= 5) MaterialTheme.colorScheme.primary
-        else MaterialTheme.colorScheme.inverseOnSurface,
-        animationSpec = MotionScheme.expressive().fastEffectsSpec(),
-        label = "textColor2"
     )
 
     val morphProgress = remember { Animatable(1f) }
@@ -445,7 +433,7 @@ fun PitchPointerHorizontal(cents: Float, tuner: Tuner?) {
                         modifier = Modifier.align(Alignment.CenterHorizontally),
                         text = (if(cents.toInt() < 0) "" else "+") + cents.toInt().toString(),
                         fontSize = 42.sp,
-                        color = textColor1.value
+                        color = textColor.value
                     )
                     val text: String = if(cents.isNaN()) ""
                     else if(cents.toInt() > 0) "\uEA66"
@@ -463,7 +451,7 @@ fun PitchPointerHorizontal(cents: Float, tuner: Tuner?) {
                             fontSize = 48.dp.toSp(),
                             fontWeight = FontWeight.Medium,
                         ),
-                        color = textColor2.value
+                        color = textColor.value
                     )
                 }
             }
