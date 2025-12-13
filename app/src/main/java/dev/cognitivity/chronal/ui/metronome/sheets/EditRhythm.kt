@@ -24,15 +24,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -76,214 +68,111 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {}) 
 
     var secondaryEnabled by remember { mutableStateOf(metronome.getTrack(1).enabled) }
     val enabled = if(primary) true else secondaryEnabled
-    Column(
-        modifier = Modifier.fillMaxWidth()
-            .height(IntrinsicSize.Min)
-    ) {
-        Text(
-            text = context.getString(if(primary) R.string.simple_editor_primary else R.string.simple_editor_secondary),
-            style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(start = 16.dp)
-        )
 
-        val animatedBackground by animateColorAsState(
-            targetValue = if(primary) MaterialTheme.colorScheme.primaryContainer
-            else if(secondaryEnabled) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.inverseOnSurface,
-            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
-            label = "animatedBackground"
-        )
-        val animatedText by animateColorAsState(
-            targetValue = if(primary) MaterialTheme.colorScheme.onPrimaryContainer
-            else if(secondaryEnabled) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
-            label = "animatedText"
-        )
-        Row(
-            modifier = Modifier.padding(16.dp, 16.dp, 16.dp, 8.dp)
-                .fillMaxWidth(0.9f)
-                .align(Alignment.CenterHorizontally)
+    BoxWithConstraints {
+        val verticalPadding = if (this.maxHeight * 0.12f < 48.dp) maxHeight * 0.12f else 48.dp
+
+        Column(
+            modifier = Modifier.fillMaxWidth()
+                .height(IntrinsicSize.Min)
         ) {
-            val weight = if(expanded) Modifier else Modifier.weight(1f)
+            Text(
+                text = context.getString(if(primary) R.string.simple_editor_primary else R.string.simple_editor_secondary),
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(start = 16.dp)
+            )
+
+            val animatedBackground by animateColorAsState(
+                targetValue = if(primary) MaterialTheme.colorScheme.primaryContainer
+                else if(secondaryEnabled) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.inverseOnSurface,
+                animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
+                label = "animatedBackground"
+            )
+            val animatedText by animateColorAsState(
+                targetValue = if(primary) MaterialTheme.colorScheme.onPrimaryContainer
+                else if(secondaryEnabled) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
+                label = "animatedText"
+            )
             Row(
-                modifier = Modifier.clip(RoundedCornerShape(16.dp))
-                    .background(animatedBackground)
-                    .then(weight)
-                    .clickable {
-                        if (primary) {
-                            Toast.makeText(context, context.getString(R.string.simple_editor_primary_disable), Toast.LENGTH_SHORT).show()
-                            return@clickable
-                        }
-                        secondaryEnabled = !secondaryEnabled
-                        onSwitch(secondaryEnabled)
-                    }
+                modifier = Modifier.padding(16.dp, 16.dp, 16.dp, 8.dp)
+                    .fillMaxWidth(0.9f)
+                    .align(Alignment.CenterHorizontally)
             ) {
-                Text(context.getString(if(primary) R.string.simple_editor_primary_enabled else R.string.simple_editor_secondary_enable),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = animatedText,
-                    modifier = Modifier.padding(16.dp, 8.dp)
+                val weight = if(expanded) Modifier else Modifier.weight(1f)
+                Row(
+                    modifier = Modifier.clip(RoundedCornerShape(16.dp))
+                        .background(animatedBackground)
                         .then(weight)
-                        .align(Alignment.CenterVertically)
-                )
-                Switch(
-                    checked = if(primary) true else secondaryEnabled,
-                    onCheckedChange = { checked ->
-                        if (primary) {
-                            Toast.makeText(context, context.getString(R.string.simple_editor_primary_disable), Toast.LENGTH_SHORT).show()
-                            return@Switch
+                        .clickable {
+                            if (primary) {
+                                Toast.makeText(context, context.getString(R.string.simple_editor_primary_disable), Toast.LENGTH_SHORT).show()
+                                return@clickable
+                            }
+                            secondaryEnabled = !secondaryEnabled
+                            onSwitch(secondaryEnabled)
                         }
-                        secondaryEnabled = checked
-                        onSwitch(secondaryEnabled)
-                    },
-                    colors = SwitchDefaults.colors(
-                        checkedTrackColor = if(primary) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary,
-                        checkedThumbColor = if(primary) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onTertiary
-                    ),
-                    modifier = Modifier.padding(16.dp, 8.dp)
-                        .align(Alignment.CenterVertically)
-                )
+                ) {
+                    Text(context.getString(if(primary) R.string.simple_editor_primary_enabled else R.string.simple_editor_secondary_enable),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = animatedText,
+                        modifier = Modifier.padding(16.dp, 8.dp)
+                            .then(weight)
+                            .align(Alignment.CenterVertically)
+                    )
+                    Switch(
+                        checked = if(primary) true else secondaryEnabled,
+                        onCheckedChange = { checked ->
+                            if (primary) {
+                                Toast.makeText(context, context.getString(R.string.simple_editor_primary_disable), Toast.LENGTH_SHORT).show()
+                                return@Switch
+                            }
+                            secondaryEnabled = checked
+                            onSwitch(secondaryEnabled)
+                        },
+                        colors = SwitchDefaults.colors(
+                            checkedTrackColor = if(primary) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary,
+                            checkedThumbColor = if(primary) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onTertiary
+                        ),
+                        modifier = Modifier.padding(16.dp, 8.dp)
+                            .align(Alignment.CenterVertically)
+                    )
+                }
+                if(expanded) {
+                    Box(
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Vibration(primary, enabled)
+                    }
+                }
             }
-            if(expanded) {
+            if(!expanded) {
                 Box(
-                    modifier = Modifier.align(Alignment.CenterVertically)
-                        .weight(1f),
-                    contentAlignment = Alignment.Center
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
                     Vibration(primary, enabled)
                 }
             }
-        }
-        if(!expanded) {
-            Box(
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Vibration(primary, enabled)
+            var simpleRhythm by remember {
+                mutableStateOf(if(primary) ChronalApp.getInstance().settings.metronomeSimpleRhythm.value else ChronalApp.getInstance().settings.metronomeSimpleRhythmSecondary.value)
             }
-        }
-        var simpleRhythm by remember {
-            mutableStateOf(if(primary) ChronalApp.getInstance().settings.metronomeSimpleRhythm.value else ChronalApp.getInstance().settings.metronomeSimpleRhythmSecondary.value)
-        }
-        val metronome = ChronalApp.getInstance().metronome
-        metronome.getTracks().forEach {
-            it.setEditListener(2) {
-                simpleRhythm = if (primary) ChronalApp.getInstance().settings.metronomeSimpleRhythm.value
-                    else ChronalApp.getInstance().settings.metronomeSimpleRhythmSecondary.value
-            }
-        }
-        val isAdvanced = simpleRhythm == SimpleRhythm(0 to 0, 0, 0)
-        if(isAdvanced) {
-            FilledTonalButton(
-                modifier = Modifier.heightIn(ButtonDefaults.MediumContainerHeight)
-                    .align(Alignment.CenterHorizontally)
-                    .padding(vertical = 48.dp),
-                contentPadding = ButtonDefaults.contentPaddingFor(ButtonDefaults.MediumContainerHeight),
-                onClick = {
-                    onDismiss()
-                    ChronalApp.getInstance().startActivity(
-                        Intent(context, RhythmEditorActivity::class.java)
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            .putExtra("isPrimary", primary)
-                    )
-                },
-                enabled = enabled
-            ) {
-                Text(context.getString(R.string.simple_editor_open_advanced),
-                    style = ButtonDefaults.textStyleFor(ButtonDefaults.MediumContainerHeight)
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth()
-                    .align(Alignment.CenterHorizontally)
-                    .padding(bottom = 16.dp),
-                horizontalArrangement = Arrangement.SpaceAround
-            ) {
-                Button(
-                    modifier = Modifier.align(Alignment.CenterVertically),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (primary) MaterialTheme.colorScheme.primaryContainer
-                        else MaterialTheme.colorScheme.tertiaryContainer,
-                        contentColor = if (primary) MaterialTheme.colorScheme.onPrimaryContainer
-                        else MaterialTheme.colorScheme.onTertiaryContainer
-                    ),
-                    onClick = {
-                        onDismiss()
-                        ChronalApp.getInstance().startActivity(
-                            Intent(context, PresetActivity::class.java)
-                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        )
-                    },
-                    enabled = enabled
-                ) {
-                    Text(context.getString(R.string.simple_editor_view_presets))
-                }
-                Button(
-                    modifier = Modifier.align(Alignment.CenterVertically),
-                    onClick = {
-                        showSimpleWarning = true
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (primary) MaterialTheme.colorScheme.primaryContainer
-                            else MaterialTheme.colorScheme.tertiaryContainer,
-                        contentColor = if (primary) MaterialTheme.colorScheme.onPrimaryContainer
-                            else MaterialTheme.colorScheme.onTertiaryContainer
-                    ),
-                    enabled = enabled
-                ) {
-                    Text(context.getString(R.string.simple_editor_switch_simple))
+            val metronome = ChronalApp.getInstance().metronome
+            metronome.getTracks().forEach {
+                it.setEditListener(2) {
+                    simpleRhythm = if (primary) ChronalApp.getInstance().settings.metronomeSimpleRhythm.value
+                        else ChronalApp.getInstance().settings.metronomeSimpleRhythmSecondary.value
                 }
             }
-        } else {
-            Button(
-                modifier = Modifier.heightIn(ButtonDefaults.MediumContainerHeight)
-                    .align(Alignment.CenterHorizontally)
-                    .padding(vertical = 48.dp),
-                contentPadding = ButtonDefaults.contentPaddingFor(ButtonDefaults.MediumContainerHeight),
-                onClick = {
-                    onDismiss()
-                    ChronalApp.getInstance().startActivity(
-                        Intent(context, SimpleEditorActivity::class.java)
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            .putExtra("isPrimary", primary)
-                    )
-                },
-                enabled = enabled,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (primary) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.tertiary,
-                    contentColor = if (primary) MaterialTheme.colorScheme.onPrimary
-                        else MaterialTheme.colorScheme.onTertiary
-                )
-            ) {
-                Text(context.getString(R.string.simple_editor_open_simple),
-                    style = ButtonDefaults.textStyleFor(ButtonDefaults.MediumContainerHeight)
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth()
-                    .align(Alignment.CenterHorizontally),
-                horizontalArrangement = Arrangement.SpaceAround
-            ) {
-                Button(
-                    modifier = Modifier.align(Alignment.CenterVertically),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if(primary) MaterialTheme.colorScheme.primaryContainer
-                        else MaterialTheme.colorScheme.tertiaryContainer,
-                        contentColor = if(primary) MaterialTheme.colorScheme.onPrimaryContainer
-                        else MaterialTheme.colorScheme.onTertiaryContainer
-                    ),
-                    onClick = {
-                        onDismiss()
-                        ChronalApp.getInstance().startActivity(
-                            Intent(context, PresetActivity::class.java)
-                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        )
-                    },
-                    enabled = enabled
-                ) {
-                    Text(context.getString(R.string.simple_editor_view_presets))
-                }
+            val isAdvanced = simpleRhythm == SimpleRhythm(0 to 0, 0, 0)
+            if(isAdvanced) {
                 FilledTonalButton(
-                    modifier = Modifier.align(Alignment.CenterVertically),
+                    modifier = Modifier.heightIn(ButtonDefaults.MediumContainerHeight)
+                        .align(Alignment.CenterHorizontally)
+                        .padding(vertical = verticalPadding),
+                    contentPadding = ButtonDefaults.contentPaddingFor(ButtonDefaults.MediumContainerHeight),
                     onClick = {
                         onDismiss()
                         ChronalApp.getInstance().startActivity(
@@ -294,7 +183,93 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {}) 
                     },
                     enabled = enabled
                 ) {
-                    Text(context.getString(R.string.simple_editor_switch_advanced))
+                    Text(
+                        context.getString(R.string.simple_editor_open_advanced),
+                        style = ButtonDefaults.textStyleFor(ButtonDefaults.MediumContainerHeight)
+                    )
+                }
+            } else {
+                Button(
+                    modifier = Modifier.heightIn(ButtonDefaults.MediumContainerHeight)
+                        .align(Alignment.CenterHorizontally)
+                        .padding(vertical = verticalPadding),
+                    contentPadding = ButtonDefaults.contentPaddingFor(ButtonDefaults.MediumContainerHeight),
+                    onClick = {
+                        onDismiss()
+                        ChronalApp.getInstance().startActivity(
+                            Intent(context, SimpleEditorActivity::class.java)
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                .putExtra("isPrimary", primary)
+                        )
+                    },
+                    enabled = enabled,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (primary) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.tertiary,
+                        contentColor = if (primary) MaterialTheme.colorScheme.onPrimary
+                            else MaterialTheme.colorScheme.onTertiary
+                    )
+                ) {
+                    Text(context.getString(R.string.simple_editor_open_simple),
+                        style = ButtonDefaults.textStyleFor(ButtonDefaults.MediumContainerHeight)
+                    )
+                }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth()
+                    .align(Alignment.CenterHorizontally),
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                Button(
+                    modifier = Modifier.align(Alignment.CenterVertically),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if(primary) MaterialTheme.colorScheme.primaryContainer
+                            else MaterialTheme.colorScheme.tertiaryContainer,
+                        contentColor = if(primary) MaterialTheme.colorScheme.onPrimaryContainer
+                            else MaterialTheme.colorScheme.onTertiaryContainer
+                    ),
+                    onClick = {
+                        onDismiss()
+                        ChronalApp.getInstance().startActivity(
+                            Intent(context, PresetActivity::class.java)
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        )
+                    },
+                    enabled = enabled
+                ) {
+                    Text(context.getString(R.string.simple_editor_view_presets))
+                }
+                if(isAdvanced) {
+                    Button(
+                        modifier = Modifier.align(Alignment.CenterVertically),
+                        onClick = {
+                            showSimpleWarning = true
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (primary) MaterialTheme.colorScheme.primaryContainer
+                            else MaterialTheme.colorScheme.tertiaryContainer,
+                            contentColor = if (primary) MaterialTheme.colorScheme.onPrimaryContainer
+                            else MaterialTheme.colorScheme.onTertiaryContainer
+                        ),
+                        enabled = enabled
+                    ) {
+                        Text(context.getString(R.string.simple_editor_switch_simple))
+                    }
+                } else {
+                    FilledTonalButton(
+                        modifier = Modifier.align(Alignment.CenterVertically),
+                        onClick = {
+                            onDismiss()
+                            ChronalApp.getInstance().startActivity(
+                                Intent(context, RhythmEditorActivity::class.java)
+                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    .putExtra("isPrimary", primary)
+                            )
+                        },
+                        enabled = enabled
+                    ) {
+                        Text(context.getString(R.string.simple_editor_switch_advanced))
+                    }
                 }
             }
         }

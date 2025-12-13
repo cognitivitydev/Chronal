@@ -832,6 +832,7 @@ class RhythmEditorActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun InputRow(maxDots: Int, largestDuration: Double, modifier: Modifier = Modifier) {
+        val padding = 8.dp
         Row(
             modifier = modifier,
             verticalAlignment = Alignment.CenterVertically,
@@ -841,11 +842,11 @@ class RhythmEditorActivity : ComponentActivity() {
             Row(
                 modifier = Modifier.fillMaxHeight()
                     .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(16.dp))
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(padding / 2),
+                horizontalArrangement = Arrangement.spacedBy(padding)
             ) {
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(padding)
                 ) {
                     TimeSignatureInput(
                         modifier = Modifier.width(64.dp)
@@ -860,30 +861,30 @@ class RhythmEditorActivity : ComponentActivity() {
                     modifier = Modifier.width(64.dp)
                         .fillMaxHeight()
                         .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(16.dp))
-                        .padding(4.dp)
+                        .padding(padding / 2)
                 )
                 StateInput(
                     modifier = Modifier.width(64.dp)
                         .fillMaxHeight()
                         .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(16.dp))
-                        .padding(4.dp)
+                        .padding(padding / 2)
                 )
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(padding))
 
             // input buttons
             Row(
                 modifier = Modifier.fillMaxHeight()
                     .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(16.dp))
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(padding),
+                horizontalArrangement = Arrangement.spacedBy(padding)
             ) {
                 for (i in 0..4) {
                     Column(
                         modifier = Modifier.width(IntrinsicSize.Max)
                             .fillMaxHeight(),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        verticalArrangement = Arrangement.spacedBy(padding)
                     ) {
                         val dotModifier = 1 + (1..noteInputDots).sumOf { 1.0 / (2.0.pow(it)) }
                         val topValue = (2.0).pow(i * 2).toInt()
