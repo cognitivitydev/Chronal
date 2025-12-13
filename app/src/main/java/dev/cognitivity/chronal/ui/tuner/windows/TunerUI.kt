@@ -41,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -164,13 +165,13 @@ fun DrawLineOrElse(
 fun ColumnScope.DrawName(name: String, shortened: String) {
     DrawLineOrElse(
         text = name,
-        style = MaterialTheme.typography.headlineMedium,
+        style = MaterialTheme.typography.titleMedium,
         fullContent = {
             Text(
                 text = name,
                 modifier = Modifier.fillMaxWidth()
                     .align(Alignment.CenterHorizontally),
-                style = MaterialTheme.typography.headlineMedium,
+                style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
@@ -182,7 +183,7 @@ fun ColumnScope.DrawName(name: String, shortened: String) {
                 text = shortened,
                 modifier = Modifier.fillMaxWidth()
                     .align(Alignment.CenterHorizontally),
-                style = MaterialTheme.typography.headlineMedium,
+                style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
@@ -202,7 +203,7 @@ fun DrawNoteWithSize(
         text = text,
         modifier = Modifier.padding(horizontal = 4.dp),
         autoSize = TextAutoSize.StepBased(
-            minFontSize = 24.dp.toSp(),
+            minFontSize = 4.dp.toSp(),
             maxFontSize = 64.dp.toSp(),
             stepSize = 4.dp.toSp()
         ),
@@ -284,25 +285,13 @@ fun RowScope.DrawLines(mono: Boolean) {
 @Composable
 fun BoxScope.DrawVerticalLine(mono: Boolean, number: Int) {
     val textColor = animateColorAsState(
-        targetValue =
-            if(mono) MaterialTheme.colorScheme.outline
-            else if(abs(number) >= 40) MaterialTheme.colorScheme.outline
-            else if(abs(number) >= 30) MaterialTheme.colorScheme.secondary
-            else if(abs(number) >= 20) MaterialTheme.colorScheme.onTertiaryContainer
-            else if(abs(number) >= 5)  MaterialTheme.colorScheme.onPrimaryContainer
-            else MaterialTheme.colorScheme.onSurface,
+        targetValue = getColors(mono, number).first,
         animationSpec = MotionScheme.expressive().fastEffectsSpec(),
         label = "textColor"
     )
 
     val lineColor = animateColorAsState(
-        targetValue =
-            if(mono) MaterialTheme.colorScheme.outlineVariant
-            else if(abs(number) >= 40) MaterialTheme.colorScheme.outlineVariant
-            else if(abs(number) >= 30) MaterialTheme.colorScheme.secondaryContainer
-            else if(abs(number) >= 20) MaterialTheme.colorScheme.tertiary
-            else if(abs(number) >= 5)  MaterialTheme.colorScheme.primary
-            else MaterialTheme.colorScheme.onSurfaceVariant,
+        targetValue = getColors(mono, number).second,
         animationSpec = MotionScheme.expressive().fastEffectsSpec(),
         label = "lineColor"
     )
@@ -339,25 +328,13 @@ fun BoxScope.DrawVerticalLine(mono: Boolean, number: Int) {
 @Composable
 fun BoxScope.DrawHorizontalLine(mono: Boolean, number: Int) {
     val textColor = animateColorAsState(
-        targetValue =
-            if(mono) MaterialTheme.colorScheme.outline
-            else if(abs(number) >= 40) MaterialTheme.colorScheme.outline
-            else if(abs(number) >= 30) MaterialTheme.colorScheme.secondary
-            else if(abs(number) >= 20) MaterialTheme.colorScheme.onTertiaryContainer
-            else if(abs(number) >= 5)  MaterialTheme.colorScheme.onPrimaryContainer
-            else MaterialTheme.colorScheme.onSurface,
+        targetValue = getColors(mono, number).first,
         animationSpec = MotionScheme.expressive().fastEffectsSpec(),
         label = "textColor"
     )
 
     val lineColor = animateColorAsState(
-        targetValue =
-            if(mono) MaterialTheme.colorScheme.outlineVariant
-            else if(abs(number) >= 40) MaterialTheme.colorScheme.outlineVariant
-            else if(abs(number) >= 30) MaterialTheme.colorScheme.secondaryContainer
-            else if(abs(number) >= 20) MaterialTheme.colorScheme.tertiary
-            else if(abs(number) >= 5)  MaterialTheme.colorScheme.primary
-            else MaterialTheme.colorScheme.onSurfaceVariant,
+        targetValue = getColors(mono, number).second,
         animationSpec = MotionScheme.expressive().fastEffectsSpec(),
         label = "lineColor"
     )
@@ -392,6 +369,18 @@ fun BoxScope.DrawHorizontalLine(mono: Boolean, number: Int) {
                 .clip(CircleShape)
                 .background(lineColor.value)
         )
+    }
+}
+
+@Composable
+fun getColors(mono: Boolean, number: Int): Pair<Color, Color> {
+    if(mono) return MaterialTheme.colorScheme.outline to MaterialTheme.colorScheme.outlineVariant
+    when(abs(number)) {
+        in 0..4 -> return MaterialTheme.colorScheme.onSurface to MaterialTheme.colorScheme.onSurfaceVariant
+        in 5..19 -> return MaterialTheme.colorScheme.primary to MaterialTheme.colorScheme.primaryContainer
+        in 20..29 -> return MaterialTheme.colorScheme.tertiary to MaterialTheme.colorScheme.tertiaryContainer
+        in 30..39 -> return MaterialTheme.colorScheme.secondary to MaterialTheme.colorScheme.secondaryContainer
+        else -> return MaterialTheme.colorScheme.outline to MaterialTheme.colorScheme.outlineVariant
     }
 }
 
