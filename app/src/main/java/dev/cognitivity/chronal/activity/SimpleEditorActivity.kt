@@ -129,12 +129,7 @@ class SimpleEditorActivity : ComponentActivity() {
         val startPage = if(initialValue.timeSignature.first != 0 && initialValue.timeSignature.second == 0) "beat" else "time_signature"
         rhythm = remember { mutableStateOf(setting.value) }
         val sizeClass = calculateWindowSizeClass(this)
-        var expanded = false
-        when(sizeClass.widthSizeClass) {
-            WindowWidthSizeClass.Expanded -> {
-                expanded = true
-            }
-        }
+        val expanded = sizeClass.widthSizeClass >= WindowWidthSizeClass.Medium
 
         previewRhythm = getRhythm(rhythm.value)
 
