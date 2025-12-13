@@ -31,8 +31,10 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.FilledIconToggleButton
@@ -277,7 +279,10 @@ fun ConductorDisplay() {
             }
         }
 
-        Box(Modifier.align(Alignment.CenterHorizontally)) {
+        Box(
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+                .height(IntrinsicSize.Min)
+        ) {
             TempoChanger()
         }
     }
