@@ -114,7 +114,7 @@ fun PlayButton(modifier: Modifier = Modifier) {
     )
 
     val animatedColor by animateColorAsState(
-        targetValue = if (paused) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.tertiary,
+        targetValue = if (paused) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primary,
         animationSpec = MotionScheme.expressive().defaultSpatialSpec(),
         label = "animatedColor"
     )
@@ -262,7 +262,7 @@ fun PlayButton(modifier: Modifier = Modifier) {
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun PlayPauseIcon(paused: Boolean, playColor: Color = MaterialTheme.colorScheme.onTertiary, pauseColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+fun PlayPauseIcon(paused: Boolean, playColor: Color = MaterialTheme.colorScheme.onPrimary, pauseColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
                   modifier: Modifier = Modifier) {
     val animatedColor by animateColorAsState(
         targetValue = if (paused) pauseColor else playColor,
