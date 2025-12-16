@@ -236,6 +236,7 @@
     <string name="setting_name_metronome_presets">Metronome presets</string>
     <string name="setting_name_fullscreen_warning">Fullscreen photosensitivity warning</string>
     <string name="setting_name_tuner_layout">Tuner layout</string>
+    <string name="setting_name_version">Version</string>
     <string name="setting_name_raw">Raw settings</string>
 
     <string name="setting_description_color_scheme">Changes the color scheme of the app.</string>
@@ -264,6 +265,7 @@
     <string name="setting_description_metronome_presets">Presets for metronome rhythms and states.</string>
     <string name="setting_description_fullscreen_warning">Shows warning when first entering fullscreen mode.</string>
     <string name="setting_description_tuner_layout">Changes the size of the tuner for expanded screens.</string>
+    <string name="setting_description_version">Last installed version.</string>
     <string name="setting_description_raw">Shows all settings in its raw format.</string>
 
     <string name="setting_info_recommended_value">Recommended value:\ </string>
