@@ -18,11 +18,7 @@
 
 package dev.cognitivity.chronal.activity
 
-import android.app.PendingIntent
-import android.appwidget.AppWidgetManager
-import android.content.ComponentName
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.util.Base64
 import androidx.activity.ComponentActivity
@@ -63,12 +59,10 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.FileProvider
 import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.MetronomePreset
 import dev.cognitivity.chronal.MetronomeState
 import dev.cognitivity.chronal.MusicFont
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.glance.ClockWidgetReceiver
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
@@ -418,10 +412,8 @@ class PresetActivity : ComponentActivity() {
 
                             primaryTrack.bpm = preset.state.bpm
                             primaryTrack.beatValue = preset.state.beatValuePrimary
-                            if(secondaryTrack != null) {
-                                secondaryTrack.bpm = preset.state.bpm
-                                secondaryTrack.beatValue = preset.state.beatValueSecondary
-                            }
+                            secondaryTrack.bpm = preset.state.bpm
+                            secondaryTrack.beatValue = preset.state.beatValueSecondary
 
                             settings.metronomeState.value = preset.state
                             settings.metronomeRhythm.value = preset.primaryRhythm.serialize()
@@ -510,33 +502,6 @@ class PresetActivity : ComponentActivity() {
                                 scope.launch {
                                     settings.save()
                                     onUpdate(newPreset)
-                                }
-                            }
-                        )
-                        DropdownMenuItem(
-                            leadingIcon = {
-                                Icon(
-                                   painter = painterResource(R.drawable.outline_widgets_24),
-                                    contentDescription = getString(R.string.presets_widget_create),
-                                )
-                            },
-                            text = { Text(getString(R.string.presets_widget_create)) },
-                            onClick = {
-                                checked = false
-
-                                val widgetManager = AppWidgetManager.getInstance(context)
-                                val widgetProvider = ComponentName(context, ClockWidgetReceiver::class.java)
-
-                                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                    val successCallback = PendingIntent.getActivity(
-                                        context,
-                                        0,
-                                        Intent(context, WidgetConfigurationActivity::class.java)
-                                            .putExtra("preset", preset.toJson().toString()),
-                                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                                    )
-
-                                    widgetManager.requestPinAppWidget(widgetProvider, null, successCallback)
                                 }
                             }
                         )

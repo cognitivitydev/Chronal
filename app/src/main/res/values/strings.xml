@@ -371,7 +371,6 @@
     <string name="presets_rename_hint">New name</string>
     <string name="presets_rhythm_primary">Primary rhythm</string>
     <string name="presets_rhythm_secondary">Secondary rhythm</string>
-    <string name="presets_widget_create">Create widget</string>
 
     <string name="import_preset_title">Import preset</string>
     <string name="import_preset_button">Import</string>
@@ -400,14 +399,6 @@
     <string name="sound_bell">Bell</string>
     <string name="sound_tambourine">Tambourine</string>
     <string name="sound_block">Block</string>
-
-    <string name="widget_clock_title">Preset</string>
-    <string name="widget_clock_description">Create a shortcut for a preset or your previous settings.</string>
-
-    <string name="widget_choose_preset_title">Choose a preset</string>
-    <string name="widget_choose_preset_hint">Select a preset below to use when clicking the widget</string>
-    <string name="widget_choose_none">None</string>
-    <string name="widget_choose_none_hint">Use your previous metronome settings</string>
 
     <string name="widget_list_title">Presets</string>
     <string name="widget_list_description">Quickly access all of your metronome presets</string>
