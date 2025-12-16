@@ -57,7 +57,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -258,13 +257,7 @@ fun TopBar(tuner: Tuner?, hz: Float, instrument: Instrument, wide: Boolean) {
                         Column(
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text(context.getString(R.string.tuner_concert_pitch),
-                                modifier = Modifier.fillMaxWidth()
-                                    .align(Alignment.CenterHorizontally),
-                                textAlign = TextAlign.Center,
-                                style = MaterialTheme.typography.headlineMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            DrawName(context.getString(R.string.tuner_concert_pitch), context.getString(R.string.tuner_concert_pitch_short))
                             DrawNote(hz)
                         }
                         if(showTransposition) {
@@ -294,13 +287,7 @@ fun TopBar(tuner: Tuner?, hz: Float, instrument: Instrument, wide: Boolean) {
                             Modifier.align(Alignment.CenterVertically)
                                 .then(if(showTransposition) Modifier.weight(1f) else Modifier.fillMaxWidth(0.5f))
                         ) {
-                            Text(context.getString(R.string.tuner_concert_pitch),
-                                modifier = Modifier.fillMaxWidth()
-                                    .align(Alignment.CenterHorizontally),
-                                textAlign = TextAlign.Center,
-                                style = MaterialTheme.typography.headlineMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            DrawName(context.getString(R.string.tuner_concert_pitch), context.getString(R.string.tuner_concert_pitch_short))
                             DrawNote(hz)
                         }
                         if(showTransposition) {
