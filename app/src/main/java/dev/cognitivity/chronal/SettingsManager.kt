@@ -61,6 +61,7 @@ enum class SettingKey(val category: Int, val settingName: Int) {
     METRONOME_PRESETS(R.string.setting_category_internal, R.string.setting_name_metronome_presets),
     FULLSCREEN_WARNING(R.string.setting_category_internal, R.string.setting_name_fullscreen_warning),
     TUNER_LAYOUT(R.string.setting_category_internal, R.string.setting_name_tuner_layout),
+    VERSION(R.string.setting_category_internal, R.string.setting_name_version),
     RAW(R.string.setting_category_internal, R.string.setting_name_raw)
     ;
 
@@ -265,6 +266,11 @@ class SettingsManager(val context: Context) {
         menu = SettingMenu.Expandable("Percentage"),
         default = 0.33f
     )
+    val version = Setting(
+        SettingKey.VERSION,
+        hint = R.string.setting_description_version,
+        default = context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "0.0.0"
+    )
     val raw = Setting( // view only, not written
         SettingKey.RAW,
         hint = R.string.setting_description_raw,
@@ -383,11 +389,16 @@ class SettingsManager(val context: Context) {
 
             val tunerLayoutKey = floatPreferencesKey(tunerLayout.key.toString())
             settings[tunerLayoutKey] = tunerLayout.value
+
+            val versionKey = stringPreferencesKey(version.key.toString())
+            settings[versionKey] = version.value
         }
     }
 
     suspend fun load() {
         val prefs = context.dataStore.data.first()
+
+        // (update outdated settings here)
 
         /******* GENERAL *******/
         colorScheme.value = prefs[stringPreferencesKey(colorScheme.key.toString())]
@@ -472,6 +483,8 @@ class SettingsManager(val context: Context) {
 
         tunerLayout.value = prefs[floatPreferencesKey(tunerLayout.key.toString())]
             ?: tunerLayout.default
+
+        version.value = context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "0.0.0"
     }
 
     suspend fun toJson(): JsonObject {
