@@ -1,8 +1,9 @@
 <img src="metadata/en-US/images/featureGraphic.png" alt="Chronal logo">
 
+[<img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" alt="Get it on Google Play" height="80">](https://play.google.com/store/apps/details?id=dev.cognitivity.chronal)
 [<img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="80">](https://f-droid.org/packages/dev.cognitivity.chronal)
 
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/M4M41JEDWA)
+[![Support me on Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/M4M41JEDWA)
 
 # Chronal
 Chronal is a metronome and tuner app for Android made for beginner and advanced musicians. 
