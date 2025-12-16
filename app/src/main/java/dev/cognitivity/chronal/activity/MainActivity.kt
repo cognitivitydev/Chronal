@@ -77,7 +77,6 @@ import dev.cognitivity.chronal.ui.metronome.windows.activity
 import dev.cognitivity.chronal.ui.settings.windows.SettingsPageMain
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import dev.cognitivity.chronal.ui.tuner.windows.TunerPageMain
-import dev.cognitivity.chronal.widgets.ClockWidget
 import dev.cognitivity.chronal.widgets.PresetListWidget
 import dev.cognitivity.chronal.widgets.TunerWidget
 import kotlinx.coroutines.CoroutineScope
@@ -144,7 +143,6 @@ class MainActivity : ComponentActivity() {
     override fun onPause() {
         super.onPause()
         CoroutineScope(Dispatchers.IO).launch {
-            ClockWidget().updateAll(this@MainActivity)
             PresetListWidget().updateAll(this@MainActivity)
             TunerWidget().updateAll(this@MainActivity)
         }
