@@ -27,7 +27,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioAttributes
 import android.media.AudioFormat
-import android.media.AudioManager
 import android.media.AudioTrack
 import android.os.Build
 import android.os.Handler
@@ -51,17 +50,16 @@ import java.nio.charset.StandardCharsets
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.round
 
 class Metronome(private val sendNotifications: Boolean = true) : BroadcastReceiver() {
     private val sampleRate = 48000
 
-    private var audioManager: AudioManager? = null
     private var audioTrack = getAudioTrack()
 
     var playing = false
     var active = true
     var timestamp = 0L
-    private var scheduled = false
 
     private var handlerThread: HandlerThread
     private var handler: Handler
@@ -70,9 +68,13 @@ class Metronome(private val sendNotifications: Boolean = true) : BroadcastReceiv
 
     private val tickSoundCache = mutableMapOf<Int, FloatArray>()
 
+    private val frameSize = 256
+    private var writeHeadSample = 0L
+
+    private class OngoingSound(var samples: FloatArray, var pos: Int)
+    private val ongoingSounds = mutableListOf<OngoingSound>()
 
     init {
-        audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         handlerThread = HandlerThread("metronome")
         handlerThread.start()
         handler = Handler(handlerThread.looper)
@@ -91,7 +93,7 @@ class Metronome(private val sendNotifications: Boolean = true) : BroadcastReceiv
         tracks.remove(id)
     }
 
-    fun getTrack(id: Int): MetronomeTrack = tracks[id]!! // TEMP - always returns non-null for 0 and 1 for now
+    fun getTrack(id: Int): MetronomeTrack = tracks[id]!! // TEMP: always returns non-null for 0 and 1 for now
     fun getTracks(): List<MetronomeTrack> = tracks.values.toList()
 
     fun start() {
@@ -101,14 +103,16 @@ class Metronome(private val sendNotifications: Boolean = true) : BroadcastReceiv
             timestamp = System.currentTimeMillis()
             playing = true
 
-            tracks.forEach { track ->
-                track.value.nextScheduledTime = 0L
-                track.value.index = -1
+            val currentSamplePos = 0L
+            tracks.values.forEach { track ->
+                track.index = -1
+                track.nextBeatSample = currentSamplePos
+                track.sampleRemainder = 0.0
             }
 
-            scheduleTicks()
-
+            ongoingSounds.clear()
             audioTrack.play()
+            handler.post(audioRunnable)
 
             tracks.values.forEach { it.onPause(false) }
             if (sendNotifications) sendRunningNotification()
@@ -117,6 +121,8 @@ class Metronome(private val sendNotifications: Boolean = true) : BroadcastReceiv
 
     fun stop() {
         playing = false
+        handler.removeCallbacks(audioRunnable)
+        ongoingSounds.clear()
         tracks.values.forEach { it.onPause(true) }
         audioTrack.pause()
         audioTrack.flush()
@@ -147,115 +153,127 @@ class Metronome(private val sendNotifications: Boolean = true) : BroadcastReceiv
             .build()
     }
 
-    private fun scheduleTicks() {
-        if (!playing) return
-        if (scheduled) return
+    private val audioRunnable: Runnable = Runnable {
+        if (!playing) return@Runnable
 
-        val now = System.nanoTime()
-        var earliest = Long.MAX_VALUE
+        val outputBuffer = FloatArray(frameSize)
 
-        for (track in tracks.values) {
-            if(!track.enabled) continue
-            if (track.getIntervals().isEmpty()) continue
-            if (track.nextScheduledTime == 0L) {
-                track.nextScheduledTime = now
-                track.index = -1
+        val played = audioTrack.playbackHeadPosition.toLong()
+        if (writeHeadSample < played) writeHeadSample = played
+
+        val frameStartSample = writeHeadSample
+        val frameEndSample = frameStartSample + frameSize
+
+        mixOngoingSounds(outputBuffer)
+        mixTracks(outputBuffer, frameStartSample, frameEndSample)
+        writeAudio(outputBuffer)
+
+        writeHeadSample += frameSize
+        handler.post(audioRunnable)
+    }
+
+    private fun mixOngoingSounds(outputBuffer: FloatArray) {
+        val iterator = ongoingSounds.iterator()
+        while (iterator.hasNext()) {
+            val sound = iterator.next()
+            val remainingSamples = sound.samples.size - sound.pos
+            if (remainingSamples <= 0) {
+                iterator.remove()
+                continue
             }
-            if (track.nextScheduledTime < earliest) earliest = track.nextScheduledTime
+
+            val samplesToMix = min(remainingSamples, frameSize)
+            for (i in 0 until samplesToMix) {
+                outputBuffer[i] += sound.samples[sound.pos + i]
+            }
+
+            sound.pos += samplesToMix
+            if (sound.pos >= sound.samples.size) iterator.remove()
         }
-
-        if (earliest == Long.MAX_VALUE) return
-
-        val scheduledDelayMs = max(0L, (earliest - now) / 1_000_000L)
-        scheduled = true
-
-        handler.postDelayed({
-            scheduled = false
-            if (!playing) return@postDelayed
-            val runNow = System.nanoTime()
-
-            val events = mutableListOf<Pair<MetronomeTrack, Beat>>()
-
-            for (track in tracks.values) {
-                if (!track.enabled) continue
-                if (track.getIntervals().isEmpty()) continue
-
-                if (track.nextScheduledTime <= runNow) {
-                    track.index = (track.index + 1).mod(track.getIntervals().size)
-                    val beat = track.getIntervals()[track.index]
-                    events.add(Pair(track, beat))
-
-                    val delay = getBeatDelay(track, beat)
-                    track.nextScheduledTime = runNow + delay
-
-                    track.onUpdate(beat)
-                }
-            }
-
-            var nextGlobal = Long.MAX_VALUE
-            for (track in tracks.values) {
-                if (!track.enabled) continue
-                if (track.getIntervals().isEmpty()) continue
-                if (track.nextScheduledTime < nextGlobal) nextGlobal = track.nextScheduledTime
-            }
-
-            if (nextGlobal == Long.MAX_VALUE) {
-                handler.postDelayed({ scheduleTicks() }, 50)
-                return@postDelayed
-            }
-
-            val periodNanos = max(1L, nextGlobal - runNow)
-            writePeriod(periodNanos, events.map { it.second })
-
-            scheduleTicks()
-        }, scheduledDelayMs)
     }
 
-    private fun getBeatDelay(track: MetronomeTrack, interval: Beat): Long {
-        val trackBpm = track.bpm
-        val trackBeatValue = track.beatValue
-        val base = abs(interval.duration * 1_000_000.0)
-        val scaled = base * 60_000.0 / trackBpm * trackBeatValue
-        return scaled.toLong()
+    private fun mixTracks(outputBuffer: FloatArray, frameStartSample: Long, frameEndSample: Long) {
+        for (track in tracks.values) {
+            if (!track.enabled) continue
+
+            val pattern = track.getIntervals()
+            if (pattern.isEmpty()) continue
+
+            while (track.nextBeatSample < frameEndSample) {
+                if (track.nextBeatSample < frameStartSample - sampleRate) {
+                    track.nextBeatSample = frameStartSample
+                }
+
+                val beatIndex = (track.index + 1).mod(pattern.size)
+                val beat = pattern[beatIndex]
+                track.index = beatIndex
+
+                mixTick(outputBuffer, frameStartSample, track.nextBeatSample, beat.isHigh)
+                track.onUpdate(beat)
+
+                nextBeat(track, beat)
+
+                if (track.nextBeatSample - frameStartSample > frameSize * 1024L) break
+            }
+        }
     }
 
-    private fun writePeriod(nanos: Long, events: List<Beat>) {
-        val periodSize = ((nanos / 1_000_000_000.0) * sampleRate).toInt().coerceAtLeast(1)
+    private fun mixTick(outputBuffer: FloatArray, frameStartSample: Long, beatSample: Long, isHigh: Boolean) {
+        val tickSamples = getTickSound(isHigh)
+        if (tickSamples.isEmpty()) return
 
-        handler.post {
-            val buffer = FloatArray(periodSize)
+        val frameOffset = (beatSample - frameStartSample).toInt()
 
-            for (beat in events) {
-                if (beat.duration < 0) continue // silent
-                val tick = getTickSound(beat.isHigh)
-                if (tick.isEmpty()) continue
-                val len = min(tick.size, periodSize)
-                for (i in 0 until len) {
-                    buffer[i] = buffer[i] + tick[i]
+        if (frameOffset >= 0) {
+            val mixLength = min(tickSamples.size, frameSize - frameOffset)
+            for (i in 0 until mixLength) {
+                outputBuffer[frameOffset + i] += tickSamples[i]
+            }
+            if (mixLength < tickSamples.size) {
+                ongoingSounds.add(OngoingSound(tickSamples, mixLength))
+            }
+        } else {
+            val tickStart = -frameOffset
+            if (tickStart >= tickSamples.size) return
+
+            val mixLength = min(tickSamples.size - tickStart, frameSize)
+            for (i in 0 until mixLength) {
+                outputBuffer[i] += tickSamples[tickStart + i]
+            }
+            if (tickStart + mixLength < tickSamples.size) {
+                ongoingSounds.add(OngoingSound(tickSamples, tickStart + mixLength))
+            }
+        }
+    }
+
+    private fun nextBeat(track: MetronomeTrack, beat: Beat) {
+        val beatLength = abs(beat.duration) * track.beatValue * 60.0 / track.bpm.toDouble()
+
+        val exactSamples = beatLength * sampleRate + track.sampleRemainder
+        val roundedSamples = round(exactSamples).toLong()
+
+        track.sampleRemainder = exactSamples - roundedSamples
+        track.nextBeatSample += max(1L, roundedSamples)
+    }
+
+    private fun writeAudio(buffer: FloatArray) {
+        try {
+            var writtenSamples = 0
+            while (writtenSamples < buffer.size && playing) {
+                val result = audioTrack.write(
+                    buffer,
+                    writtenSamples,
+                    buffer.size - writtenSamples,
+                    AudioTrack.WRITE_BLOCKING
+                )
+                if (result < 0) {
+                    stop()
+                    throw IllegalStateException("Failed to write audio data ($result)")
                 }
+                writtenSamples += result
             }
-
-            var maxAbs = 0f
-            for (v in buffer) if (abs(v) > maxAbs) maxAbs = abs(v)
-            if (maxAbs > 1f) {
-                val norm = 1f / maxAbs
-                for (i in buffer.indices) buffer[i] = buffer[i] * norm
-            }
-
-            try {
-                var written = 0
-                while (written < buffer.size && playing) {
-                    val toWrite = buffer.size - written
-                    val res = audioTrack.write(buffer, written, toWrite, AudioTrack.WRITE_BLOCKING)
-                    if (res < 0) {
-                        stop()
-                        throw IllegalStateException("Failed to write audio data ($res)")
-                    }
-                    written += res
-                }
-            } catch (e: Exception) {
-                Log.e("Metronome", "Failed to write mixed audio data", e)
-            }
+        } catch (e: Exception) {
+            Log.e("Metronome", "Failed to write mixed audio data", e)
         }
     }
 
