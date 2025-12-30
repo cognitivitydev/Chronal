@@ -29,6 +29,9 @@ import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,40 +48,46 @@ import dev.cognitivity.chronal.ui.metronome.windows.showRhythmSecondary
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun RhythmButtons(navController: NavController, modifier: Modifier = Modifier) {
+    val settings = ChronalApp.getInstance().settings
     val metronome = ChronalApp.getInstance().metronome
+
+    val primaryTimeSignature = remember { mutableStateOf(SimpleRhythm(4 to 4, 4, 1).timeSignature) }
+    val primarySubdivision = remember { mutableIntStateOf(4) }
+
+    val secondaryTimeSignature = remember { mutableStateOf(SimpleRhythm(4 to 4, 4, 1).timeSignature) }
+    val secondarySubdivision = remember { mutableIntStateOf(4) }
     val secondaryEnabled = metronome.getTrack(1).enabled
+
+    fun updatePrimary() {
+        val simple = settings.metronomeSimpleRhythm.value
+        val parsed = metronome.getTrack(0).getRhythm()
+        val isAdvanced = simple == SimpleRhythm(0 to 0, 0, 0)
+
+        primaryTimeSignature.value = if (isAdvanced) parsed.measures[0].timeSig else simple.timeSignature
+
+        primarySubdivision.intValue =
+            if (isAdvanced || simple.subdivision == 0) primaryTimeSignature.value.second
+            else simple.subdivision
+    }
+    metronome.getTrack(0).setEditListener(3) { updatePrimary() }
+    updatePrimary()
+
+    fun updateSecondary() {
+        val simple = settings.metronomeSimpleRhythmSecondary.value
+        val parsed = metronome.getTrack(1).getRhythm()
+        val isAdvanced = simple == SimpleRhythm(0 to 0, 0, 0)
+
+        secondaryTimeSignature.value = if (isAdvanced) parsed.measures[0].timeSig else simple.timeSignature
+
+        secondarySubdivision.intValue =
+            if (isAdvanced || simple.subdivision == 0) secondaryTimeSignature.value.second
+            else simple.subdivision
+    }
+    metronome.getTrack(1).setEditListener(3) { updateSecondary() }
+    updateSecondary()
+
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-
-    val simpleRhythmPrimary = ChronalApp.getInstance().settings.metronomeSimpleRhythm.value
-    val parsedRhythmPrimary = metronome.getTrack(0).getRhythm()
-    val isAdvancedPrimary = simpleRhythmPrimary == SimpleRhythm(0 to 0, 0, 0)
-
-    val primaryTimeSignature = if(isAdvancedPrimary) {
-        parsedRhythmPrimary.measures[0].timeSig
-    } else {
-        simpleRhythmPrimary.timeSignature
-    }
-    val primarySubdivision = if(isAdvancedPrimary || simpleRhythmPrimary.subdivision == 0) { // advanced or auto
-        primaryTimeSignature.second
-    } else {
-        simpleRhythmPrimary.subdivision
-    }
-
-    val simpleRhythmSecondary = ChronalApp.getInstance().settings.metronomeSimpleRhythmSecondary.value
-    val parsedRhythmSecondary = metronome.getTrack(1).getRhythm()
-    val isAdvancedSecondary = simpleRhythmSecondary == SimpleRhythm(0 to 0, 0, 0)
-
-    val secondaryTimeSignature = if(isAdvancedSecondary) {
-        parsedRhythmSecondary.measures[0].timeSig
-    } else {
-        simpleRhythmSecondary.timeSignature
-    }
-    val secondarySubdivision = if(isAdvancedSecondary || simpleRhythmSecondary.subdivision == 0) {
-        secondaryTimeSignature.second
-    } else {
-        simpleRhythmSecondary.subdivision
-    }
 
     Row(
         modifier = modifier,
@@ -96,7 +105,7 @@ fun RhythmButtons(navController: NavController, modifier: Modifier = Modifier) {
                 showRhythmPrimary = true
             }
         ) {
-            DrawContent(primaryTimeSignature, primarySubdivision, MaterialTheme.colorScheme.onPrimaryContainer)
+            DrawContent(primaryTimeSignature.value, primarySubdivision.intValue, MaterialTheme.colorScheme.onPrimaryContainer)
         }
         val secondaryBackground by animateColorAsState(
             targetValue = if(currentRoute == "conductor") MaterialTheme.colorScheme.surfaceContainerLow
@@ -124,7 +133,7 @@ fun RhythmButtons(navController: NavController, modifier: Modifier = Modifier) {
                     showRhythmSecondary = true
                 }
         ) {
-            DrawContent(secondaryTimeSignature, secondarySubdivision, secondaryText)
+            DrawContent(secondaryTimeSignature.value, secondarySubdivision.value, secondaryText)
         }
     }
 }
