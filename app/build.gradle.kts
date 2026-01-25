@@ -14,8 +14,8 @@ android {
         applicationId = "dev.cognitivity.chronal"
         minSdk = 23
         targetSdk = 36
-        versionCode = 11
-        versionName = "1.0.0"
+        versionCode = 12
+        versionName = "1.0.1"
 
         vectorDrawables {
             useSupportLibrary = true
@@ -26,7 +26,6 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
 
             ndk {
                 debugSymbolLevel = "FULL"

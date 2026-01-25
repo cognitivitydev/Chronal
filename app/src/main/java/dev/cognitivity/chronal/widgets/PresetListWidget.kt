@@ -51,10 +51,10 @@ import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.padding
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.activity.PresetActivity
+import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.ui.theme.colors.AquaGlanceTheme
 
 class PresetListWidget : GlanceAppWidget() {
@@ -74,8 +74,7 @@ class PresetListWidget : GlanceAppWidget() {
 
     @Composable
     private fun WidgetContent(context: Context) {
-        val settings = ChronalApp.getInstance().settings
-        var presets = settings.metronomePresets.value
+        var presets = Settings.METRONOME_PRESETS.get()
 
         Scaffold(
             titleBar = {
@@ -91,7 +90,7 @@ class PresetListWidget : GlanceAppWidget() {
                             backgroundColor = null,
                             contentColor = GlanceTheme.colors.secondary,
                             onClick = {
-                                presets = settings.metronomePresets.value
+                                presets = Settings.METRONOME_PRESETS.get()
                             }
                         )
                     }

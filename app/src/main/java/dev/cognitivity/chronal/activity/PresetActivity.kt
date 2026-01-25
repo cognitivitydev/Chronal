@@ -59,10 +59,11 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.FileProvider
 import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.MetronomePreset
-import dev.cognitivity.chronal.MetronomeState
 import dev.cognitivity.chronal.MusicFont
 import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.settings.types.json.MetronomePreset
+import dev.cognitivity.chronal.settings.types.json.MetronomeState
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
@@ -87,9 +88,8 @@ class PresetActivity : ComponentActivity() {
         val scope = rememberCoroutineScope()
         val snackbarHostState = remember { SnackbarHostState() }
 
-        val settings = ChronalApp.getInstance().settings
-        val setting = settings.metronomePresets
-        val presets = remember { mutableStateListOf<MetronomePreset>().apply { addAll(setting.value) } }
+        val setting = Settings.METRONOME_PRESETS
+        val presets = remember { mutableStateListOf<MetronomePreset>().apply { addAll(setting.get()) } }
 
         var showCreateDialog by remember { mutableStateOf(false) }
 
@@ -211,9 +211,8 @@ class PresetActivity : ComponentActivity() {
                                         onUpdate = { newPreset ->
                                             preset = newPreset
                                             presets[i] = newPreset
-                                            setting.value = presets.toMutableList()
                                             scope.launch {
-                                                settings.save()
+                                                setting.save(presets.toMutableList())
                                             }
                                         }
                                     )
@@ -238,10 +237,9 @@ class PresetActivity : ComponentActivity() {
                                             onClick = {
                                                 preset = preset.copy(name = newName)
                                                 presets[i] = preset
-                                                setting.value = presets
                                                 renameDialog = false
                                                 scope.launch {
-                                                    settings.save()
+                                                    setting.save(presets)
                                                 }
                                             }
                                         ) {
@@ -266,11 +264,10 @@ class PresetActivity : ComponentActivity() {
                                         TextButton(
                                             onClick = {
                                                 presets.removeAt(i)
-                                                setting.value = presets
                                                 deleteDialog = false
                                                 showDialog = false
                                                 scope.launch {
-                                                    settings.save()
+                                                    setting.save(presets)
                                                     snackbarHostState.showSnackbar(
                                                         message = getString(R.string.presets_deleted, preset.name),
                                                         actionLabel = getString(R.string.generic_undo),
@@ -278,8 +275,7 @@ class PresetActivity : ComponentActivity() {
                                                     ).let { result ->
                                                         if (result == SnackbarResult.ActionPerformed) {
                                                             presets.add(preset)
-                                                            settings.metronomePresets.value = presets
-                                                            settings.save()
+                                                            setting.save(presets)
                                                         }
                                                     }
                                                 }
@@ -333,13 +329,12 @@ class PresetActivity : ComponentActivity() {
                                     ),
                                     primaryRhythm = primaryTrack.getRhythm(),
                                     secondaryRhythm = secondaryTrack.getRhythm(),
-                                    primarySimpleRhythm = settings.metronomeSimpleRhythm.value,
-                                    secondarySimpleRhythm = settings.metronomeSimpleRhythmSecondary.value
+                                    primarySimpleRhythm = Settings.METRONOME_SIMPLE_RHYTHM.get(),
+                                    secondarySimpleRhythm = Settings.METRONOME_SIMPLE_RHYTHM_SECONDARY.get(),
                                 )
                                 presets.add(newPreset)
-                                setting.value = presets
                                 scope.launch {
-                                    settings.save()
+                                    setting.save(presets)
                                     showCreateDialog = false
                                     snackbarHostState.showSnackbar(
                                         message = getString(R.string.presets_created, newPreset.name),
@@ -348,8 +343,7 @@ class PresetActivity : ComponentActivity() {
                                     ).let { result ->
                                         if (result == SnackbarResult.ActionPerformed) {
                                             presets.remove(newPreset)
-                                            setting.value = presets
-                                            settings.save()
+                                            setting.save(presets)
                                         }
                                     }
                                 }
@@ -374,7 +368,6 @@ class PresetActivity : ComponentActivity() {
     @Composable
     fun ColumnScope.DialogContent(preset: MetronomePreset, onDismiss: () -> Unit, onRename: (Boolean) -> Unit, onDelete: (Boolean) -> Unit, onUpdate: (MetronomePreset) -> Unit) {
         val scope = rememberCoroutineScope()
-        val settings = ChronalApp.getInstance().settings
         var checked by remember { mutableStateOf(false) }
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -414,17 +407,15 @@ class PresetActivity : ComponentActivity() {
                             primaryTrack.beatValue = preset.state.beatValuePrimary
                             secondaryTrack.bpm = preset.state.bpm
                             secondaryTrack.beatValue = preset.state.beatValueSecondary
-
-                            settings.metronomeState.value = preset.state
-                            settings.metronomeRhythm.value = preset.primaryRhythm.serialize()
-                            settings.metronomeRhythmSecondary.value = preset.secondaryRhythm.serialize()
-                            settings.metronomeSimpleRhythm.value = preset.primarySimpleRhythm
-                            settings.metronomeSimpleRhythmSecondary.value = preset.secondarySimpleRhythm
                             primaryTrack.setRhythm(preset.primaryRhythm)
                             secondaryTrack.setRhythm(preset.secondaryRhythm)
 
                             scope.launch {
-                                settings.save()
+                                Settings.METRONOME_STATE.save(preset.state)
+                                Settings.METRONOME_RHYTHM.save(preset.primaryRhythm.serialize())
+                                Settings.METRONOME_RHYTHM_SECONDARY.save(preset.secondaryRhythm.serialize())
+                                Settings.METRONOME_SIMPLE_RHYTHM.save(preset.primarySimpleRhythm)
+                                Settings.METRONOME_SIMPLE_RHYTHM_SECONDARY.save(preset.secondarySimpleRhythm)
                                 finish()
                             }
                         }
@@ -495,14 +486,11 @@ class PresetActivity : ComponentActivity() {
                                     ),
                                     primaryRhythm = primaryTrack.getRhythm(),
                                     secondaryRhythm = secondaryTrack.getRhythm(),
-                                    primarySimpleRhythm = settings.metronomeSimpleRhythm.value,
-                                    secondarySimpleRhythm = settings.metronomeSimpleRhythmSecondary.value,
+                                    primarySimpleRhythm = Settings.METRONOME_SIMPLE_RHYTHM.get(),
+                                    secondarySimpleRhythm = Settings.METRONOME_SIMPLE_RHYTHM_SECONDARY.get(),
                                 )
 
-                                scope.launch {
-                                    settings.save()
-                                    onUpdate(newPreset)
-                                }
+                                onUpdate(newPreset)
                             }
                         )
                         DropdownMenuItem(

@@ -46,7 +46,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.Setting
+import dev.cognitivity.chronal.settings.Setting
 import dev.cognitivity.chronal.ui.settings.windows.SettingOption
 
 @Composable
@@ -78,8 +78,11 @@ fun ExpandableOption(
     ) {
         val interactionSource = remember { MutableInteractionSource() }
         SettingOption(
-            name = ChronalApp.context.getString(setting.key.settingName),
-            hint = ChronalApp.context.getString(setting.hint),
+            name = setting.key,
+            hint = setting.get().toString(),
+
+//            name = ChronalApp.context.getString(setting.key.settingName),
+//            hint = ChronalApp.context.getString(setting.hint),
             onClick = {
                 expanded = !expanded
             },
@@ -114,7 +117,7 @@ fun ExpandableOption(
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ExpandableButtonRow(setting: Setting<*>, labels: List<String>, isSelected: (Int, Int) -> Boolean = { index, selection -> index == selection }, onClick: (Int) -> Int) {
-    var selection by remember { mutableIntStateOf(setting.value as Int) }
+    var selection by remember { mutableIntStateOf(setting.get() as Int) }
     Row(
         horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)
     ) {
@@ -170,8 +173,8 @@ fun ExpandableSlider(setting: Setting<*>, range: ClosedFloatingPointRange<Float>
 
             var value by remember {
                 mutableFloatStateOf(
-                    if (setting.value is Int) (setting.value as Int).toFloat()
-                    else setting.value as Float
+                    if (setting.get() is Int) (setting.get() as Int).toFloat()
+                    else setting.get() as Float
                 )
             }
             Slider(

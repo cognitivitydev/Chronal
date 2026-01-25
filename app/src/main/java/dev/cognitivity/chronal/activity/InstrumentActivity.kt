@@ -64,9 +64,9 @@ import androidx.compose.ui.window.DialogProperties
 import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
-import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.Instrument
 import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.settings.types.json.Instrument
 import dev.cognitivity.chronal.ui.WavyHorizontalLine
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import dev.cognitivity.chronal.ui.tuner.windows.keyToSemitones
@@ -99,7 +99,7 @@ class InstrumentActivity : ComponentActivity() {
         val searchBarState = rememberSearchBarState()
 
         var setting by remember {
-            mutableStateOf(ChronalApp.getInstance().settings.primaryInstrument.value)
+            mutableStateOf(Settings.PRIMARY_INSTRUMENT.get())
         }
 
         if(searching) {
@@ -398,8 +398,7 @@ class InstrumentActivity : ComponentActivity() {
                                 onSelect = { newInstrument ->
                                     setting = newInstrument
                                     scope.launch {
-                                        ChronalApp.getInstance().settings.primaryInstrument.value = newInstrument
-                                        ChronalApp.getInstance().settings.save()
+                                        Settings.PRIMARY_INSTRUMENT.save(newInstrument)
                                     }
                                 }
                             )

@@ -27,9 +27,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import dev.cognitivity.chronal.settings.Setting
+import dev.cognitivity.chronal.settings.Settings
+import kotlinx.coroutines.runBlocking
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.pow
@@ -37,28 +37,27 @@ import kotlin.math.roundToInt
 
 class ChronalApp : Application() {
     lateinit var metronome: Metronome
-    lateinit var settings: SettingsManager
     var tuner: Tuner? = null
     val developmentBuild = true
 
     override fun onCreate() {
         super.onCreate()
         application = this
+        Setting.init(applicationContext)
 
-        CoroutineScope(Dispatchers.Default).launch {
-            settings = SettingsManager(applicationContext)
-            settings.load()
+        runBlocking {
+            Setting.loadAll()
 
-            val state = settings.metronomeState.value
+            val state = Settings.METRONOME_STATE.get()
 
             metronome = Metronome()
             metronome.addTrack(0, MetronomeTrack(
-                rhythm = Rhythm.deserialize(settings.metronomeRhythm.value),
+                rhythm = Rhythm.deserialize(Settings.METRONOME_RHYTHM.get()),
                 bpm = state.bpm,
                 beatValue = state.beatValuePrimary,
             ))
             val secondaryTrack = MetronomeTrack(
-                rhythm = Rhythm.deserialize(settings.metronomeRhythmSecondary.value),
+                rhythm = Rhythm.deserialize(Settings.METRONOME_RHYTHM_SECONDARY.get()),
                 bpm = state.bpm,
                 beatValue = state.beatValueSecondary,
             )
@@ -68,7 +67,7 @@ class ChronalApp : Application() {
     }
 
     fun isInitialized(): Boolean {
-        return ::metronome.isInitialized && ::settings.isInitialized
+        return ::metronome.isInitialized
     }
 
     companion object {

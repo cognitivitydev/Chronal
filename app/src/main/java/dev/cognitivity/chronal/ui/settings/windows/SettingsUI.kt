@@ -45,7 +45,6 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -64,46 +63,32 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
-import dev.cognitivity.chronal.ColorScheme
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.Setting
 import dev.cognitivity.chronal.activity.CreditsActivity
 import dev.cognitivity.chronal.activity.HelpActivity
-import dev.cognitivity.chronal.activity.InstrumentActivity
-import dev.cognitivity.chronal.activity.LatencyActivity
 import dev.cognitivity.chronal.activity.MainActivity
-import dev.cognitivity.chronal.activity.TempoMarkingsActivity
-import dev.cognitivity.chronal.ui.settings.ExpandableButtonRow
-import dev.cognitivity.chronal.ui.settings.ExpandableOption
-import dev.cognitivity.chronal.ui.settings.ExpandableSlider
+import dev.cognitivity.chronal.settings.Setting
+import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.settings.types.BooleanSetting
+import dev.cognitivity.chronal.settings.types.json.ColorScheme
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kotlin.math.floor
 
 
 private var showFeedback by mutableStateOf(false)
-private var showDeveloperOptions by mutableStateOf(ChronalApp.getInstance().settings.showDeveloperOptions.value)
+private var showDeveloperOptions by mutableStateOf(Settings.SHOW_DEVELOPER_OPTIONS.get())
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsPageMain(expanded: Boolean, padding: PaddingValues) {
     val scope = rememberCoroutineScope()
     val categories = LinkedHashMap<String, ArrayList<Setting<*>>>().apply {
-        ChronalApp.getInstance().settings.keyMap.forEach { entry ->
-            val category = context.getString(entry.key.category)
-            val setting = entry.value
-            if (!containsKey(category)) {
-                if(category == context.getString(R.string.setting_category_internal)) {
-                    if(showDeveloperOptions) {
-                        put(category, arrayListOf())
-                    }
-                } else {
-                    put(category, arrayListOf())
-                }
-            }
-            get(category)?.add(setting)
-        }
+        put(context.getString(R.string.setting_category_general), arrayListOf( // TODO
+            Settings.SHOW_BEATS,
+            Settings.SHOW_SUBDIVISIONS,
+            Settings.SHOW_OCTAVE
+        ));
     }
 
     if(expanded) {
@@ -319,9 +304,8 @@ fun BoxScope.MoreSettingsDropdown() {
             HorizontalDivider()
             DropdownMenuItem(onClick = {
                 showDeveloperOptions = true
-                ChronalApp.getInstance().settings.showDeveloperOptions.value = true
                 scope.launch {
-                    ChronalApp.getInstance().settings.save()
+                    Settings.SHOW_DEVELOPER_OPTIONS.save(true)
                 }
             },
                 leadingIcon = {
@@ -356,147 +340,147 @@ fun DrawSetting(
     scope: CoroutineScope,
     context: Context
 ) {
-    if(setting.menu != null) {
-        when (setting.menu.type) {
-            "Launch" -> {
-                MenuOption(
-                    setting = setting,
-                    onClick = {
-                        when(setting.menu.id) {
-                            "Instrument" -> {
-                                context.startActivity(
-                                    Intent(context, InstrumentActivity::class.java)
-                                )
-                            }
-                            "Markings" -> {
-                                context.startActivity(
-                                    Intent(context, TempoMarkingsActivity::class.java)
-                                )
-                            }
-                            else -> {
-                                Log.w("SettingsUI", "Unknown menu type: ${setting.menu.id}")
-                            }
-                        }
-                    }
-                )
-            }
-            "Expandable" -> {
-                ExpandableOption(
-                    setting = setting,
-                ) {
-                    when (setting.menu.id) {
-                        "Colors" -> {
-                            ColorSetting(setting as Setting<ColorScheme>)
-                        }
-
-                        "Accidentals" -> {
-                            Box(
-                                modifier = Modifier.fillMaxWidth(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                ExpandableButtonRow(
-                                    setting = setting,
-                                    labels = listOf(
-                                        R.string.setting_accidental_sharps,
-                                        R.string.setting_accidental_flats,
-                                        R.string.setting_accidentals_sharps_flats
-                                    ).map { context.getString(it) },
-                                ) { index ->
-                                    scope.launch {
-                                        (setting as Setting<Int>).value = index
-                                        ChronalApp.getInstance().settings.save()
-                                    }
-                                    index
-                                }
-                            }
-                        }
-
-                        "Note" -> {
-                            NoteSetting(setting as Setting<Int>)
-                        }
-
-                        "Percentage" -> {
-                            ExpandableSlider(
-                                setting, 0f..1f, "0%", "50%",
-                                onValueChange = { value ->
-                                    scope.launch {
-                                        (setting as Setting<Float>).value = value
-                                        ChronalApp.getInstance().settings.save()
-                                    }
-                                },
-                                valueText = { value ->
-                                    "${floor(value * 100).toInt()}%"
-                                }
-                            )
-                        }
-
-                        "Latency" -> {
-                            ExpandableSlider(
-                                setting, 0f..500f, "0 ms", "50-150 ms",
-                                onValueChange = { value ->
-                                    scope.launch {
-                                        (setting as Setting<Int>).value = value.toInt()
-                                        ChronalApp.getInstance().settings.save()
-                                    }
-                                },
-                                valueText = { value ->
-                                    "${value.toInt()}"
-                                }
-                            ) {
-                                Button(
-                                    modifier = Modifier
-                                        .padding(8.dp)
-                                        .align(Alignment.CenterHorizontally),
-                                    onClick = {
-                                        context.startActivity(
-                                            Intent(context, LatencyActivity::class.java)
-                                        )
-                                    }
-                                ) {
-                                    Text(context.getString(R.string.setting_action_test_latency))
-                                }
-                            }
-                        }
-
-                        "Frequency" -> {
-                            ExpandableSlider(
-                                setting, 415f..466f, context.getString(R.string.tuner_hz, 415),
-                                context.getString(R.string.tuner_hz, 440),
-                                onValueChange = { value ->
-                                    scope.launch {
-                                        (setting as Setting<Int>).value = value.toInt()
-                                        ChronalApp.getInstance().settings.save()
-                                    }
-                                },
-                                valueText = { value ->
-                                    context.getString(R.string.tuner_hz, value.toInt())
-                                }
-                            )
-                        }
-
-                        "Raw" -> {
-                            var debugJson by remember { mutableStateOf<JsonObject?>(null) }
-                            LaunchedEffect(Unit) {
-                                debugJson = ChronalApp.getInstance().settings.toJson()
-                            }
-                            if (debugJson != null) {
-                                DebugSetting(debugJson!!)
-                            }
-                        }
-
-                        else -> {
-                            throw Error("Invalid menu type")
-                        }
-                    }
-                }
-            }
-        }
-        return
-    }
-    when (setting.default) {
+//    if(setting.menu != null) {
+//        when (setting.menu.type) {
+//            "Launch" -> {
+//                MenuOption(
+//                    setting = setting,
+//                    onClick = {
+//                        when(setting.menu.id) {
+//                            "Instrument" -> {
+//                                context.startActivity(
+//                                    Intent(context, InstrumentActivity::class.java)
+//                                )
+//                            }
+//                            "Markings" -> {
+//                                context.startActivity(
+//                                    Intent(context, TempoMarkingsActivity::class.java)
+//                                )
+//                            }
+//                            else -> {
+//                                Log.w("SettingsUI", "Unknown menu type: ${setting.menu.id}")
+//                            }
+//                        }
+//                    }
+//                )
+//            }
+//            "Expandable" -> {
+//                ExpandableOption(
+//                    setting = setting,
+//                ) {
+//                    when (setting.menu.id) {
+//                        "Colors" -> {
+//                            ColorSetting(setting as Setting<ColorScheme>)
+//                        }
+//
+//                        "Accidentals" -> {
+//                            Box(
+//                                modifier = Modifier.fillMaxWidth(),
+//                                contentAlignment = Alignment.Center
+//                            ) {
+//                                ExpandableButtonRow(
+//                                    setting = setting,
+//                                    labels = listOf(
+//                                        R.string.setting_accidental_sharps,
+//                                        R.string.setting_accidental_flats,
+//                                        R.string.setting_accidentals_sharps_flats
+//                                    ).map { context.getString(it) },
+//                                ) { index ->
+//                                    scope.launch {
+//                                        (setting as Setting<Int>).value = index
+//                                        ChronalApp.getInstance().settings.save()
+//                                    }
+//                                    index
+//                                }
+//                            }
+//                        }
+//
+//                        "Note" -> {
+//                            NoteSetting(setting as Setting<Int>)
+//                        }
+//
+//                        "Percentage" -> {
+//                            ExpandableSlider(
+//                                setting, 0f..1f, "0%", "50%",
+//                                onValueChange = { value ->
+//                                    scope.launch {
+//                                        (setting as Setting<Float>).value = value
+//                                        ChronalApp.getInstance().settings.save()
+//                                    }
+//                                },
+//                                valueText = { value ->
+//                                    "${floor(value * 100).toInt()}%"
+//                                }
+//                            )
+//                        }
+//
+//                        "Latency" -> {
+//                            ExpandableSlider(
+//                                setting, 0f..500f, "0 ms", "50-150 ms",
+//                                onValueChange = { value ->
+//                                    scope.launch {
+//                                        (setting as Setting<Int>).value = value.toInt()
+//                                        ChronalApp.getInstance().settings.save()
+//                                    }
+//                                },
+//                                valueText = { value ->
+//                                    "${value.toInt()}"
+//                                }
+//                            ) {
+//                                Button(
+//                                    modifier = Modifier
+//                                        .padding(8.dp)
+//                                        .align(Alignment.CenterHorizontally),
+//                                    onClick = {
+//                                        context.startActivity(
+//                                            Intent(context, LatencyActivity::class.java)
+//                                        )
+//                                    }
+//                                ) {
+//                                    Text(context.getString(R.string.setting_action_test_latency))
+//                                }
+//                            }
+//                        }
+//
+//                        "Frequency" -> {
+//                            ExpandableSlider(
+//                                setting, 415f..466f, context.getString(R.string.tuner_hz, 415),
+//                                context.getString(R.string.tuner_hz, 440),
+//                                onValueChange = { value ->
+//                                    scope.launch {
+//                                        (setting as Setting<Int>).value = value.toInt()
+//                                        ChronalApp.getInstance().settings.save()
+//                                    }
+//                                },
+//                                valueText = { value ->
+//                                    context.getString(R.string.tuner_hz, value.toInt())
+//                                }
+//                            )
+//                        }
+//
+//                        "Raw" -> {
+//                            var debugJson by remember { mutableStateOf<JsonObject?>(null) }
+//                            LaunchedEffect(Unit) {
+//                                debugJson = ChronalApp.getInstance().settings.toJson()
+//                            }
+//                            if (debugJson != null) {
+//                                DebugSetting(debugJson!!)
+//                            }
+//                        }
+//
+//                        else -> {
+//                            throw Error("Invalid menu type")
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        return
+//    }
+    when (setting.defaultValue) {
         is Boolean -> {
             var isChecked by remember {
-                mutableStateOf(setting.value as Boolean)
+                mutableStateOf(setting.get() as Boolean)
             }
 
             SwitchOption(
@@ -505,8 +489,7 @@ fun DrawSetting(
                 onCheckedChange = { newValue ->
                     isChecked = newValue
                     scope.launch {
-                        (setting as Setting<Boolean>).value = newValue
-                        ChronalApp.getInstance().settings.save()
+                        (setting as BooleanSetting).save(newValue)
                     }
                 }
             )
@@ -517,8 +500,8 @@ fun DrawSetting(
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ColorSetting(setting: Setting<ColorScheme>) {
-    var selection by remember { mutableStateOf(setting.value) }
-    var initialValue by remember { mutableStateOf(setting.value) }
+    var selection by remember { mutableStateOf(setting.get()) }
+    var initialValue by remember { mutableStateOf(setting.get()) }
     val scope = rememberCoroutineScope()
 
     val surfaceContainerLow = MaterialTheme.colorScheme.surfaceContainerLow
@@ -682,8 +665,7 @@ fun ColorSetting(setting: Setting<ColorScheme>) {
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 onClick = {
                     scope.launch {
-                        setting.value = selection
-                        ChronalApp.getInstance().settings.save()
+                        setting.save(selection)
                         context.startActivity(
                             Intent(context, MainActivity::class.java)
                                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -700,7 +682,7 @@ fun ColorSetting(setting: Setting<ColorScheme>) {
 
 @Composable
 fun NoteSetting(setting: Setting<Int>) {
-    var selection by remember { mutableIntStateOf(setting.value) }
+    var selection by remember { mutableIntStateOf(setting.get()) }
     val scope = rememberCoroutineScope()
 
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
@@ -713,8 +695,7 @@ fun NoteSetting(setting: Setting<Int>) {
                 ) {
                     selection = index
                     scope.launch {
-                        setting.value = index
-                        ChronalApp.getInstance().settings.save()
+                        setting.save(index)
                     }
                 },
                 verticalAlignment = Alignment.CenterVertically,
@@ -724,8 +705,7 @@ fun NoteSetting(setting: Setting<Int>) {
                     onClick = {
                         selection = index
                         scope.launch {
-                            setting.value = index
-                            ChronalApp.getInstance().settings.save()
+                            setting.save(index)
                         }
                     },
                     interactionSource = interactionSource
@@ -761,6 +741,7 @@ fun NoteSetting(setting: Setting<Int>) {
 @Composable
 fun DebugSetting(json: JsonObject) {
     val gson = GsonBuilder().setPrettyPrinting().create()
+    Log.d("SettingsUI", "Debug JSON: ${gson.toJson(json)}")
     val map = json["preferencesMap"].asJsonObject
 
     // strip ids from keys and remove duplicates
@@ -902,8 +883,10 @@ fun SwitchOption(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     SettingOption(
-        name = context.getString(setting.key.settingName),
-        hint = context.getString(setting.hint),
+        name = setting.key,
+        hint = setting.get().toString(),
+//        name = context.getString(setting.key.settingName),
+//        hint = context.getString(setting.hint),
         onClick = { onCheckedChange(!isChecked) },
         interactionSource = interactionSource,
         indication = null
@@ -922,8 +905,10 @@ fun MenuOption(
     onClick: () -> Unit
 ) {
     SettingOption(
-        name = context.getString(setting.key.settingName),
-        hint = context.getString(setting.hint),
+        name = setting.key,
+        hint = setting.get().toString(),
+//        name = context.getString(setting.key),
+//        hint = context.getString(setting.hint),
         onClick = onClick,
     ) {
         Icon(

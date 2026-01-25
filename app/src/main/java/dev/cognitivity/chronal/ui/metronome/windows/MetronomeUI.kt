@@ -52,6 +52,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -73,14 +74,16 @@ import com.google.gson.Gson
 import com.google.gson.JsonObject
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
-import dev.cognitivity.chronal.MetronomePreset
-import dev.cognitivity.chronal.MetronomeState
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.activity.NavigationIcon
 import dev.cognitivity.chronal.activity.NavigationItem
 import dev.cognitivity.chronal.activity.vibratorManager
 import dev.cognitivity.chronal.rhythm.metronome.Beat
+import dev.cognitivity.chronal.settings.Setting
+import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.settings.types.json.MetronomePreset
+import dev.cognitivity.chronal.settings.types.json.MetronomeState
 import dev.cognitivity.chronal.ui.metronome.sheets.EditRhythm
 import dev.cognitivity.chronal.ui.metronome.sheets.TapTempo
 import kotlinx.coroutines.CoroutineScope
@@ -97,8 +100,8 @@ var showTempoTapper by mutableStateOf(false)
 var showRhythmPrimary by mutableStateOf(false)
 var showRhythmSecondary by mutableStateOf(false)
 
-var vibratePrimary by mutableStateOf(ChronalApp.getInstance().settings.metronomeVibrations.value)
-var vibrateSecondary by mutableStateOf(ChronalApp.getInstance().settings.metronomeVibrationsSecondary.value)
+var vibratePrimary by mutableStateOf(Settings.METRONOME_VIBRATIONS.get())
+var vibrateSecondary by mutableStateOf(Settings.METRONOME_VIBRATIONS_SECONDARY.get())
 
 var paused by mutableStateOf(true)
 
@@ -111,7 +114,6 @@ var lastTapTime: Long? = null
 @Composable
 fun MetronomePageMain(window: Window, expanded: Boolean, mainActivity: MainActivity, padding: PaddingValues) {
     val metronome = ChronalApp.getInstance().metronome
-    val settings = ChronalApp.getInstance().settings
 
     activity = mainActivity
 
@@ -128,15 +130,19 @@ fun MetronomePageMain(window: Window, expanded: Boolean, mainActivity: MainActiv
         secondaryTrack.beatValue = preset.state.beatValueSecondary
         secondaryTrack.enabled = preset.state.secondaryEnabled
 
-        settings.metronomeState.value = preset.state
-        settings.metronomeRhythm.value = preset.primaryRhythm.serialize()
-        settings.metronomeRhythmSecondary.value = preset.secondaryRhythm.serialize()
-        settings.metronomeSimpleRhythm.value = preset.primarySimpleRhythm
-        settings.metronomeSimpleRhythmSecondary.value = preset.secondarySimpleRhythm
+        Settings.METRONOME_STATE.set(preset.state)
+        Settings.METRONOME_RHYTHM.set(preset.primaryRhythm.serialize())
+        Settings.METRONOME_RHYTHM_SECONDARY.set(preset.secondaryRhythm.serialize())
+        Settings.METRONOME_SIMPLE_RHYTHM.set(preset.primarySimpleRhythm)
+        Settings.METRONOME_SIMPLE_RHYTHM_SECONDARY.set(preset.secondarySimpleRhythm)
         metronome.getTrack(0).setRhythm(preset.primaryRhythm)
         metronome.getTrack(1).setRhythm(preset.secondaryRhythm)
 
         mainActivity.intent.removeExtra("preset")
+
+        LaunchedEffect(Unit) {
+            Setting.saveAll()
+        }
     }
 
     val navController = rememberNavController()
@@ -257,8 +263,8 @@ fun TopBar(navController: NavController, color: Color, padding: Boolean, clipSha
 @Composable
 fun ClockBeats(progress: Animatable<Float, AnimationVector1D>, trackSize: Float, beats: List<Beat>, majorOffColor: Color, minorOffColor: Color, majorPrimaryColor: Color, minorPrimaryColor: Color,
                surface: Color = MaterialTheme.colorScheme.surface) {
-    val showBeats = ChronalApp.getInstance().settings.showBeats.value
-    val showSubdivisions = ChronalApp.getInstance().settings.showSubdivisions.value
+    val showBeats = Settings.SHOW_BEATS.get()
+    val showSubdivisions = Settings.SHOW_SUBDIVISIONS.get()
     if (!showBeats && !showSubdivisions) return
 
     Canvas(Modifier.fillMaxSize()) {
@@ -332,13 +338,11 @@ fun setBPM(bpm: Float) {
     val primaryTrack = metronome.getTrack(0)
     val secondaryTrack = metronome.getTrack(1)
 
-    ChronalApp.getInstance().settings.metronomeState.value = MetronomeState(
-        bpm = new, beatValuePrimary = primaryTrack.beatValue,
-        beatValueSecondary = secondaryTrack.beatValue, secondaryEnabled = secondaryTrack.enabled,
-    )
-
     CoroutineScope(Dispatchers.Main).launch {
-        ChronalApp.getInstance().settings.save()
+        Settings.METRONOME_STATE.save(MetronomeState(
+            bpm = new, beatValuePrimary = primaryTrack.beatValue,
+            beatValueSecondary = secondaryTrack.beatValue, secondaryEnabled = secondaryTrack.enabled,
+        ))
     }
 
     if(new == 1f || new == 500f) {

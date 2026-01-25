@@ -61,6 +61,7 @@ import androidx.graphics.shapes.CornerRounding
 import androidx.graphics.shapes.RoundedPolygon
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.ui.metronome.windows.paused
 import dev.cognitivity.chronal.ui.metronome.windows.setBPM
 import dev.cognitivity.chronal.ui.metronome.windows.updateSleepMode
@@ -115,7 +116,7 @@ class FullscreenActivity : ComponentActivity() {
         val metronome = ChronalApp.getInstance().metronome
         val mainTrack = metronome.getTrack(0)
 
-        var doNotShow by remember { mutableStateOf(!ChronalApp.getInstance().settings.fullscreenWarning.value) }
+        var doNotShow by remember { mutableStateOf(!Settings.FULLSCREEN_WARNING.get()) }
         var settingDialog by remember { mutableStateOf(false) }
 
         val coroutineScope = rememberCoroutineScope()
@@ -123,8 +124,8 @@ class FullscreenActivity : ComponentActivity() {
         var invert by remember { mutableStateOf(false) }
         var i by remember { mutableIntStateOf(mainTrack.getRhythm().measures[0].timeSig.first) }
 
-        var highContrast by remember { mutableStateOf(ChronalApp.getInstance().settings.highContrast.value) }
-        var noAnimations by remember { mutableStateOf(ChronalApp.getInstance().settings.noAnimation.value) }
+        var highContrast by remember { mutableStateOf(Settings.HIGH_CONTRAST.get()) }
+        var noAnimations by remember { mutableStateOf(Settings.NO_ANIMATION.get()) }
 
         val color = MaterialTheme.colorScheme.surface
         val invertColor = if(highContrast) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.surfaceVariant
@@ -136,7 +137,7 @@ class FullscreenActivity : ComponentActivity() {
                 repeat(measure.timeSig.first) { index ->
                     coroutineScope.launch {
                         val beatDelay = ((1f / measure.timeSig.second) * 60000 / mainTrack.bpm * mainTrack.beatValue).toInt() * index
-                        delay(ChronalApp.getInstance().settings.visualLatency.value.toLong() + beatDelay)
+                        delay(Settings.VISUAL_LATENCY.get().toLong() + beatDelay)
                         if(!metronome.playing || timestamp != metronome.timestamp) return@launch
 
                         i = index + 1
@@ -288,7 +289,7 @@ class FullscreenActivity : ComponentActivity() {
 
             var photoDialog by remember { mutableStateOf(true) }
 
-            if(photoDialog && ChronalApp.getInstance().settings.fullscreenWarning.value) {
+            if(photoDialog && Settings.FULLSCREEN_WARNING.get()) {
                 AlertDialog(
                     onDismissRequest = { photoDialog = false },
                     icon = @Composable {
@@ -349,8 +350,7 @@ class FullscreenActivity : ComponentActivity() {
                             onClick = {
                                 photoDialog = false
                                 CoroutineScope(Dispatchers.Default).launch {
-                                    ChronalApp.getInstance().settings.fullscreenWarning.value = !doNotShow
-                                    ChronalApp.getInstance().settings.save()
+                                    Settings.FULLSCREEN_WARNING.save(!doNotShow)
                                 }
                             }
                         ) {
@@ -388,9 +388,8 @@ class FullscreenActivity : ComponentActivity() {
                                     indication = null
                                 ) {
                                     highContrast = !highContrast
-                                    ChronalApp.getInstance().settings.highContrast.value = highContrast
                                     coroutineScope.launch {
-                                        ChronalApp.getInstance().settings.save()
+                                        Settings.HIGH_CONTRAST.save(highContrast)
                                     }
                                 },
                                 verticalAlignment = Alignment.CenterVertically,
@@ -409,10 +408,9 @@ class FullscreenActivity : ComponentActivity() {
                                 Switch(
                                     checked = highContrast,
                                     onCheckedChange = { checked ->
-                                        ChronalApp.getInstance().settings.highContrast.value = checked
                                         highContrast = checked
                                         coroutineScope.launch {
-                                            ChronalApp.getInstance().settings.save()
+                                            Settings.HIGH_CONTRAST.save(highContrast)
                                         }
                                     },
                                     interactionSource = contrastInteraction,
@@ -429,9 +427,8 @@ class FullscreenActivity : ComponentActivity() {
                                     indication = null
                                 ) {
                                     noAnimations = !noAnimations
-                                    ChronalApp.getInstance().settings.noAnimation.value = noAnimations
                                     coroutineScope.launch {
-                                        ChronalApp.getInstance().settings.save()
+                                        Settings.NO_ANIMATION.save(noAnimations)
                                     }
                                 }
                             ) {
@@ -449,10 +446,9 @@ class FullscreenActivity : ComponentActivity() {
                                 Switch(
                                     checked = noAnimations,
                                     onCheckedChange = { checked ->
-                                        ChronalApp.getInstance().settings.noAnimation.value = checked
                                         noAnimations = checked
                                         coroutineScope.launch {
-                                            ChronalApp.getInstance().settings.save()
+                                            Settings.NO_ANIMATION.save(noAnimations)
                                         }
                                     },
                                     interactionSource = animationInteraction,

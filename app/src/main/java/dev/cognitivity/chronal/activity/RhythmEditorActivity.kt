@@ -71,11 +71,9 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.lifecycleScope
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.Metronome
-import dev.cognitivity.chronal.MetronomeState
 import dev.cognitivity.chronal.MetronomeTrack
 import dev.cognitivity.chronal.MusicFont
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.SimpleRhythm
 import dev.cognitivity.chronal.rhythm.metronome.Measure
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.rhythm.metronome.atoms
@@ -85,6 +83,10 @@ import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmRest
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.rhythm.metronome.elements.StemDirection
+import dev.cognitivity.chronal.settings.Setting
+import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.settings.types.json.MetronomeState
+import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
 import dev.cognitivity.chronal.ui.metronome.PlayPauseIcon
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.delay
@@ -145,7 +147,7 @@ class RhythmEditorActivity : ComponentActivity() {
         isPrimary = intent.getBooleanExtra("isPrimary", true)
         appTrack = appMetronome.getTrack(if(isPrimary) 0 else 1)
 
-        this.rhythm = if(isPrimary) ChronalApp.getInstance().settings.metronomeRhythm.value else ChronalApp.getInstance().settings.metronomeRhythmSecondary.value
+        this.rhythm = if(isPrimary) Settings.METRONOME_RHYTHM.get() else Settings.METRONOME_RHYTHM_SECONDARY.get()
         parsedRhythm = Rhythm.deserialize(rhythm)
 
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
@@ -173,7 +175,7 @@ class RhythmEditorActivity : ComponentActivity() {
         mainTrack.setUpdateListener(2) { beat ->
             val timestamp = metronome.timestamp
             lifecycleScope.launch {
-                delay(ChronalApp.getInstance().settings.visualLatency.value.toLong())
+                delay(Settings.VISUAL_LATENCY.get().toLong())
                 if(metronome.playing && timestamp == metronome.timestamp) {
                     if(beat.measure == 0) {
                         musicSelected = beat.index
@@ -199,7 +201,7 @@ class RhythmEditorActivity : ComponentActivity() {
             isPlaying = !isPaused
             if(isPaused) musicSelected = -1
             lifecycleScope.launch {
-                delay(ChronalApp.getInstance().settings.visualLatency.value.toLong())
+                delay(Settings.VISUAL_LATENCY.get().toLong())
                 if(timestamp == metronome.timestamp) musicSelected = if(isPaused) -1 else 0
             }
         }
@@ -593,22 +595,22 @@ class RhythmEditorActivity : ComponentActivity() {
                                     appTrack.bpm = mainTrack.bpm
                                     appTrack.beatValue = mainTrack.beatValue
 
-                                    ChronalApp.getInstance().settings.metronomeState.value = MetronomeState(
+                                    Settings.METRONOME_STATE.set(MetronomeState(
                                         bpm = appTrack.bpm,
                                         beatValuePrimary = appTrack.beatValue,
                                         beatValueSecondary = appTrack.beatValue,
                                         secondaryEnabled = !isPrimary && appMetronome.getTrack(1).enabled
-                                    )
+                                    ))
 
                                     if (isPrimary) {
-                                        ChronalApp.getInstance().settings.metronomeRhythm.value = parsedRhythm.serialize()
-                                        ChronalApp.getInstance().settings.metronomeSimpleRhythm.value = SimpleRhythm(0 to 0, 0, 0)
+                                        Settings.METRONOME_RHYTHM.set(parsedRhythm.serialize())
+                                        Settings.METRONOME_SIMPLE_RHYTHM.set(SimpleRhythm(0 to 0, 0, 0))
                                     } else {
-                                        ChronalApp.getInstance().settings.metronomeRhythmSecondary.value = parsedRhythm.serialize()
-                                        ChronalApp.getInstance().settings.metronomeSimpleRhythmSecondary.value = SimpleRhythm(0 to 0, 0, 0)
+                                        Settings.METRONOME_RHYTHM_SECONDARY.set(parsedRhythm.serialize())
+                                        Settings.METRONOME_SIMPLE_RHYTHM_SECONDARY.set(SimpleRhythm(0 to 0, 0, 0))
                                     }
                                     scope.launch {
-                                        ChronalApp.getInstance().settings.save()
+                                        Setting.saveAll()
                                         appTrack.setRhythm(parsedRhythm)
                                         finish()
                                     }

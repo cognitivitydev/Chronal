@@ -50,9 +50,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.TempoMarking
+import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.settings.types.json.TempoMarking
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.launch
 
@@ -76,9 +76,8 @@ class TempoMarkingsActivity : ComponentActivity() {
         var showAddDialog by remember { mutableStateOf(false) }
         var showResetDialog by remember { mutableStateOf(false) }
 
-        val settings = ChronalApp.getInstance().settings
-        val setting = settings.tempoMarkings
-        val markings = remember { mutableStateListOf<TempoMarking>().apply { addAll(setting.value) } }
+        val setting = Settings.TEMPO_MARKINGS
+        val markings = remember { mutableStateListOf<TempoMarking>().apply { addAll(setting.get()) } }
 
         Scaffold(
             topBar = {
@@ -166,16 +165,15 @@ class TempoMarkingsActivity : ComponentActivity() {
                             range = marking.range,
                             onDismiss = { showEditDialog = false },
                             onConfirm = { new ->
-                                if(new == null) {
-                                    markings.removeAt(i)
-                                    setting.value = markings
-                                } else {
-                                    marking = new
-                                    markings[i] = new
-                                    setting.value = markings.toMutableList()
-                                }
                                 scope.launch {
-                                    settings.save()
+                                    if(new == null) {
+                                        markings.removeAt(i)
+                                        setting.save(markings)
+                                    } else {
+                                        marking = new
+                                        markings[i] = new
+                                        setting.save(markings.toMutableList())
+                                    }
                                     showEditDialog = false
                                 }
                             }
@@ -195,9 +193,8 @@ class TempoMarkingsActivity : ComponentActivity() {
                             return@MarkingDialog
                         }
                         markings.add(new)
-                        setting.value = markings
                         scope.launch {
-                            settings.save()
+                            setting.save(markings)
                             showAddDialog = false
                         }
                     }
@@ -218,10 +215,9 @@ class TempoMarkingsActivity : ComponentActivity() {
                         TextButton(
                             onClick = {
                                 markings.clear()
-                                markings.addAll(setting.default)
-                                setting.value = markings
+                                markings.addAll(setting.defaultValue)
                                 scope.launch {
-                                    settings.save()
+                                    setting.save(markings)
                                     showResetDialog = false
                                 }
                             }

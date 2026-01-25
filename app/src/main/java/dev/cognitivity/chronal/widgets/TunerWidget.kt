@@ -56,6 +56,7 @@ import androidx.glance.unit.ColorProvider
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.services.TunerWidgetService
+import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.ui.theme.colors.AquaGlanceTheme
 import dev.cognitivity.chronal.ui.tuner.windows.frequencyToNote
 import dev.cognitivity.chronal.ui.tuner.windows.toDisplayNote
@@ -305,8 +306,8 @@ class TunerWidget : GlanceAppWidget() {
             }
         }
 
-        val transpose = ChronalApp.getInstance().settings.transposeNotes.value
-        val instrument = ChronalApp.getInstance().settings.primaryInstrument.value
+        val transpose = Settings.TRANSPOSE_NOTES.get()
+        val instrument = Settings.PRIMARY_INSTRUMENT.get()
         Row(
             modifier = modifier
         ) {

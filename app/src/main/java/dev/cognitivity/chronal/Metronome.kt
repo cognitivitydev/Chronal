@@ -37,6 +37,7 @@ import androidx.core.content.ContextCompat
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.rhythm.metronome.Beat
+import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.ui.metronome.windows.paused
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -278,7 +279,7 @@ class Metronome(private val sendNotifications: Boolean = true) : BroadcastReceiv
     }
 
     private fun getTickSound(high: Boolean): FloatArray {
-        val setting = ChronalApp.getInstance().settings.metronomeSounds.value
+        val setting = Settings.METRONOME_SOUNDS.get()
         val id = if (high) setting.first else setting.second
         val soundRes = when (id) {
             0 -> if (high) R.raw.click_hi else R.raw.click_lo

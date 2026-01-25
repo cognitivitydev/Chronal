@@ -23,7 +23,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import dev.cognitivity.chronal.ColorScheme
+import dev.cognitivity.chronal.settings.types.json.ColorScheme
 
 private val primaryLight = Color(0xFF804D7A)
 private val onPrimaryLight = Color(0xFFFFFFFF)

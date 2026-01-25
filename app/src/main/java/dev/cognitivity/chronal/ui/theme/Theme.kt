@@ -25,9 +25,9 @@ import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
-import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
-import dev.cognitivity.chronal.ColorScheme
+import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.settings.types.json.ColorScheme
 import dev.cognitivity.chronal.ui.theme.colors.AquaTheme
 import dev.cognitivity.chronal.ui.theme.colors.BlueTheme
 import dev.cognitivity.chronal.ui.theme.colors.GreenTheme
@@ -42,7 +42,7 @@ fun MetronomeTheme(
     color: ColorScheme.Color? = null,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = ChronalApp.getInstance().settings.colorScheme.value
+    val colorScheme = Settings.COLOR_SCHEME.get()
     val isDark = when(colorScheme.theme) {
         ColorScheme.Theme.SYSTEM -> isSystemInDarkTheme()
         ColorScheme.Theme.LIGHT -> false

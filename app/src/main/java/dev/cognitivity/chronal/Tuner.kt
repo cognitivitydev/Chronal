@@ -29,13 +29,14 @@ import be.tarsos.dsp.AudioProcessor
 import be.tarsos.dsp.io.android.AudioDispatcherFactory
 import be.tarsos.dsp.pitch.PitchDetectionHandler
 import be.tarsos.dsp.pitch.PitchProcessor
+import dev.cognitivity.chronal.settings.Settings
 
 class Tuner {
     var hz by mutableFloatStateOf(0f)
     var history = mutableListOf<Pair<Long, Float>>() // max 100
     var probability by mutableFloatStateOf(0f)
     var lastUpdate = 0L
-    var threshold = ChronalApp.getInstance().settings.audioThreshold
+    var threshold = Settings.AUDIO_THRESHOLD.get()
 
     private val dispatcher: AudioDispatcher
     private val pitchDetectionHandler = PitchDetectionHandler { res, event ->
@@ -46,7 +47,7 @@ class Tuner {
         if(history.size > 100) history = history.subList(history.size - 100, history.size)
 
         val newProbability = normalizeThreshold(res.probability.coerceIn(0.8f, 1f))
-        if(newProbability > threshold.value) {
+        if(newProbability > threshold) {
             if(System.currentTimeMillis() - lastUpdate < 100 && res.pitch - hz < 20) {
                 hz = (res.pitch + hz) / 2
                 probability = newProbability

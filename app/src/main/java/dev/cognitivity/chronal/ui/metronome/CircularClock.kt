@@ -52,6 +52,7 @@ import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.activity.vibratorManager
 import dev.cognitivity.chronal.rhythm.metronome.Beat
+import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.ui.metronome.windows.ClockBeats
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -89,10 +90,10 @@ fun BoxScope.CircularClock(primary: Boolean, trackSize: Float, trackOff: Color, 
         val timestamp = metronome.timestamp
 
         coroutineScope.launch {
-            delay(ChronalApp.getInstance().settings.visualLatency.value.toLong())
+            delay(Settings.VISUAL_LATENCY.get().toLong())
             if(!metronome.playing || timestamp != metronome.timestamp) return@launch
-            if((!ChronalApp.getInstance().settings.metronomeVibrations.value && primary)
-                || (!ChronalApp.getInstance().settings.metronomeVibrationsSecondary.value && !primary)) return@launch
+            if((!Settings.METRONOME_VIBRATIONS.get() && primary)
+                || (!Settings.METRONOME_VIBRATIONS_SECONDARY.get() && !primary)) return@launch
             if(beat.duration >= 0f) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null) {
                     val vibration = if(beat.isHigh) VibrationEffect.createOneShot(10, 255) else VibrationEffect.createOneShot(3, 255)
@@ -104,7 +105,7 @@ fun BoxScope.CircularClock(primary: Boolean, trackSize: Float, trackOff: Color, 
             }
         }
         coroutineScope.launch {
-            delay(ChronalApp.getInstance().settings.visualLatency.value.toLong())
+            delay(Settings.VISUAL_LATENCY.get().toLong())
             if(!metronome.playing || timestamp != metronome.timestamp) return@launch
 
             if(beat.measure == 0 && beat.index == 0) loopIndex++

@@ -25,7 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.glance.color.ColorProviders
 import androidx.glance.material3.ColorProviders
-import dev.cognitivity.chronal.ColorScheme
+import dev.cognitivity.chronal.settings.types.json.ColorScheme
 
 private val primaryLight = Color(0xFF006A6A)
 private val onPrimaryLight = Color(0xFFFFFFFF)

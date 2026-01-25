@@ -50,9 +50,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
-import dev.cognitivity.chronal.MetronomeState
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.ceil
+import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.settings.types.json.MetronomeState
 import dev.cognitivity.chronal.ui.metronome.windows.intervals
 import dev.cognitivity.chronal.ui.metronome.windows.lastTapTime
 import kotlinx.coroutines.delay
@@ -160,13 +161,14 @@ fun TapTempo() {
                                     val primaryTrack = metronome.getTrack(0)
                                     val secondaryTrack = metronome.getTrack(1)
 
-                                    ChronalApp.getInstance().settings.metronomeState.value = MetronomeState(
-                                        bpm = newBpm.toFloat(), beatValuePrimary = primaryTrack.beatValue,
-                                        beatValueSecondary = secondaryTrack.beatValue, secondaryEnabled = secondaryTrack.enabled,
-                                    )
 
                                     scope.launch {
-                                        ChronalApp.getInstance().settings.save()
+                                        Settings.METRONOME_STATE.save(MetronomeState(
+                                            bpm = newBpm.toFloat(),
+                                            beatValuePrimary = primaryTrack.beatValue,
+                                            beatValueSecondary = secondaryTrack.beatValue,
+                                            secondaryEnabled = secondaryTrack.enabled,
+                                        ))
                                     }
                                     newBpm = 0
                                     intervals.clear()

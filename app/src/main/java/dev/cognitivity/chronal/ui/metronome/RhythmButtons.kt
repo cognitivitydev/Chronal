@@ -41,14 +41,14 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.MusicFont
-import dev.cognitivity.chronal.SimpleRhythm
+import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
 import dev.cognitivity.chronal.ui.metronome.windows.showRhythmPrimary
 import dev.cognitivity.chronal.ui.metronome.windows.showRhythmSecondary
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun RhythmButtons(navController: NavController, modifier: Modifier = Modifier) {
-    val settings = ChronalApp.getInstance().settings
     val metronome = ChronalApp.getInstance().metronome
 
     val primaryTimeSignature = remember { mutableStateOf(SimpleRhythm(4 to 4, 4, 1).timeSignature) }
@@ -59,7 +59,7 @@ fun RhythmButtons(navController: NavController, modifier: Modifier = Modifier) {
     val secondaryEnabled = metronome.getTrack(1).enabled
 
     fun updatePrimary() {
-        val simple = settings.metronomeSimpleRhythm.value
+        val simple = Settings.METRONOME_SIMPLE_RHYTHM.get()
         val parsed = metronome.getTrack(0).getRhythm()
         val isAdvanced = simple == SimpleRhythm(0 to 0, 0, 0)
 
@@ -73,7 +73,7 @@ fun RhythmButtons(navController: NavController, modifier: Modifier = Modifier) {
     updatePrimary()
 
     fun updateSecondary() {
-        val simple = settings.metronomeSimpleRhythmSecondary.value
+        val simple = Settings.METRONOME_SIMPLE_RHYTHM_SECONDARY.get()
         val parsed = metronome.getTrack(1).getRhythm()
         val isAdvanced = simple == SimpleRhythm(0 to 0, 0, 0)
 

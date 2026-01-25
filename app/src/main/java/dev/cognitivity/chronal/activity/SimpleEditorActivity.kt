@@ -79,13 +79,15 @@ import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.MusicFont
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.SimpleRhythm
 import dev.cognitivity.chronal.rhythm.metronome.Measure
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmElement
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.rhythm.metronome.elements.StemDirection
+import dev.cognitivity.chronal.settings.Setting
+import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
 import dev.cognitivity.chronal.toPx
 import dev.cognitivity.chronal.ui.metronome.windows.ClockBeats
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
@@ -124,10 +126,10 @@ class SimpleEditorActivity : ComponentActivity() {
         val scope = rememberCoroutineScope()
         val navController = rememberNavController()
         var backDropdown by remember { mutableStateOf(false) }
-        val setting = if (isPrimary) ChronalApp.getInstance().settings.metronomeSimpleRhythm else ChronalApp.getInstance().settings.metronomeSimpleRhythmSecondary
-        val initialValue = setting.value
+        val setting = if (isPrimary) Settings.METRONOME_SIMPLE_RHYTHM else Settings.METRONOME_SIMPLE_RHYTHM_SECONDARY
+        val initialValue = setting.get()
         val startPage = if(initialValue.timeSignature.first != 0 && initialValue.timeSignature.second == 0) "beat" else "time_signature"
-        rhythm = remember { mutableStateOf(setting.value) }
+        rhythm = remember { mutableStateOf(setting.get()) }
         val sizeClass = calculateWindowSizeClass(this)
         val expanded = sizeClass.widthSizeClass >= WindowWidthSizeClass.Medium
 
@@ -172,14 +174,14 @@ class SimpleEditorActivity : ComponentActivity() {
                                             val metronome = ChronalApp.getInstance().metronome
                                             val selectedTrack = metronome.getTrack(if(isPrimary) 0 else 1)
                                             if(isPrimary) {
-                                                ChronalApp.getInstance().settings.metronomeRhythm.value = parsedRhythm.serialize()
-                                                ChronalApp.getInstance().settings.metronomeSimpleRhythm.value = rhythm.value
+                                                Settings.METRONOME_RHYTHM.set(parsedRhythm.serialize())
+                                                Settings.METRONOME_SIMPLE_RHYTHM.set(rhythm.value)
                                             } else {
-                                                ChronalApp.getInstance().settings.metronomeRhythmSecondary.value = parsedRhythm.serialize()
-                                                ChronalApp.getInstance().settings.metronomeSimpleRhythmSecondary.value = rhythm.value
+                                                Settings.METRONOME_RHYTHM_SECONDARY.set(parsedRhythm.serialize())
+                                                Settings.METRONOME_SIMPLE_RHYTHM_SECONDARY.set(rhythm.value)
                                             }
                                             scope.launch {
-                                                ChronalApp.getInstance().settings.save()
+                                                Setting.saveAll()
                                                 selectedTrack.setRhythm(parsedRhythm)
                                                 finish()
                                             }
@@ -207,14 +209,14 @@ class SimpleEditorActivity : ComponentActivity() {
                                         val selectedTrack = metronome.getTrack(if(isPrimary) 0 else 1)
 
                                         if(isPrimary) {
-                                            ChronalApp.getInstance().settings.metronomeRhythm.value = rhythm.serialize()
-                                            ChronalApp.getInstance().settings.metronomeSimpleRhythm.value = initialValue
+                                            Settings.METRONOME_RHYTHM.set(rhythm.serialize())
+                                            Settings.METRONOME_SIMPLE_RHYTHM.set(initialValue)
                                         } else {
-                                            ChronalApp.getInstance().settings.metronomeRhythmSecondary.value = rhythm.serialize()
-                                            ChronalApp.getInstance().settings.metronomeSimpleRhythmSecondary.value = initialValue
+                                            Settings.METRONOME_RHYTHM_SECONDARY.set(rhythm.serialize())
+                                            Settings.METRONOME_SIMPLE_RHYTHM_SECONDARY.set(initialValue)
                                         }
                                         scope.launch {
-                                            ChronalApp.getInstance().settings.save()
+                                            Setting.saveAll()
                                             selectedTrack.setRhythm(rhythm)
                                             finish()
                                         }

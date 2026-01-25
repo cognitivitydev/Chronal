@@ -66,12 +66,12 @@ import androidx.graphics.shapes.RoundedPolygon
 import androidx.graphics.shapes.circle
 import androidx.graphics.shapes.star
 import androidx.graphics.shapes.toPath
-import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
-import dev.cognitivity.chronal.Instrument
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.Tuner
 import dev.cognitivity.chronal.activity.MainActivity
+import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.settings.types.json.Instrument
 import dev.cognitivity.chronal.toSp
 import dev.cognitivity.chronal.ui.MorphedShape
 import dev.cognitivity.chronal.ui.tuner.AudioDialog
@@ -94,7 +94,7 @@ fun TunerPageCompact(
     } else {
         context.getString(R.string.generic_not_applicable) to Float.NaN
     }
-    val instrument = ChronalApp.getInstance().settings.primaryInstrument.value
+    val instrument = Settings.PRIMARY_INSTRUMENT.get()
 
     BoxWithConstraints(
         modifier = Modifier.padding(bottom = padding.calculateBottomPadding())
@@ -221,7 +221,7 @@ fun TopBar(tuner: Tuner?, hz: Float, instrument: Instrument, wide: Boolean) {
                         .align(Alignment.CenterVertically)
                         .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(8.dp))
                 ) {
-                    val hertz = context.getString(R.string.tuner_hz, ChronalApp.getInstance().settings.tunerFrequency.value)
+                    val hertz = context.getString(R.string.tuner_hz, Settings.TUNER_FREQUENCY.get())
                     Text(context.getString(R.string.tuner_tuning_at, hertz),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -246,7 +246,7 @@ fun TopBar(tuner: Tuner?, hz: Float, instrument: Instrument, wide: Boolean) {
 
 
             Box {
-                val showTransposition = ChronalApp.getInstance().settings.transposeNotes.value
+                val showTransposition = Settings.TRANSPOSE_NOTES.get()
 
                 if(wide) {
                     Column(

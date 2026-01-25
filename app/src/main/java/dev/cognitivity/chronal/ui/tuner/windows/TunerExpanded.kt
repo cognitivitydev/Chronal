@@ -77,12 +77,12 @@ import androidx.graphics.shapes.RoundedPolygon
 import androidx.graphics.shapes.circle
 import androidx.graphics.shapes.star
 import androidx.graphics.shapes.toPath
-import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
-import dev.cognitivity.chronal.Instrument
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.Tuner
 import dev.cognitivity.chronal.activity.MainActivity
+import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.settings.types.json.Instrument
 import dev.cognitivity.chronal.toSp
 import dev.cognitivity.chronal.ui.MorphedShape
 import dev.cognitivity.chronal.ui.tuner.AudioDialog
@@ -100,7 +100,7 @@ fun TunerPageExpanded(
     mainActivity: MainActivity
 ) {
     val scope = rememberCoroutineScope()
-    var weight by remember { mutableFloatStateOf(ChronalApp.getInstance().settings.tunerLayout.value) }
+    var weight by remember { mutableFloatStateOf(Settings.TUNER_LAYOUT.get()) }
     var screenSize by remember { mutableStateOf(IntSize.Zero) }
 
     var showTuningDialog by remember { mutableStateOf(false) }
@@ -111,7 +111,7 @@ fun TunerPageExpanded(
     } else {
         mainActivity.getString(R.string.generic_not_applicable) to Float.NaN
     }
-    val instrument = ChronalApp.getInstance().settings.primaryInstrument.value
+    val instrument = Settings.PRIMARY_INSTRUMENT.get()
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -140,11 +140,11 @@ fun TunerPageExpanded(
                     orientation = Orientation.Horizontal,
                     state = rememberDraggableState { delta ->
                         weight = (weight + delta/screenSize.width).coerceIn(0.3f, 0.5f)
-                        ChronalApp.getInstance().settings.tunerLayout.value = weight
+                        Settings.TUNER_LAYOUT.set(weight)
                     },
                     onDragStopped = {
                         CoroutineScope(Dispatchers.Default).launch {
-                            ChronalApp.getInstance().settings.save()
+                            Settings.TUNER_LAYOUT.save()
                         }
                     }
                 ).systemGestureExclusion()
@@ -217,7 +217,7 @@ fun NoteDisplay(tuner: Tuner?, hz: Float, instrument: Instrument) {
                     .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(8.dp))
                     .padding(8.dp, 4.dp)
             ) {
-                val hertz = context.getString(R.string.tuner_hz, ChronalApp.getInstance().settings.tunerFrequency.value)
+                val hertz = context.getString(R.string.tuner_hz, Settings.TUNER_FREQUENCY.get())
                 Text(context.getString(R.string.tuner_tuning_at, hertz),
                     modifier = Modifier.align(Alignment.Center),
                     style = MaterialTheme.typography.labelLarge,
@@ -237,7 +237,7 @@ fun NoteDisplay(tuner: Tuner?, hz: Float, instrument: Instrument) {
             }
         }
 
-        val showTransposition = ChronalApp.getInstance().settings.transposeNotes.value
+        val showTransposition = Settings.TRANSPOSE_NOTES.get()
         Column(
             modifier = Modifier.padding(8.dp)
                 .fillMaxHeight(),

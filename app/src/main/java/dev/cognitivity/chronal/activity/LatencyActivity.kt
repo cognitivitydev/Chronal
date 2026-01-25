@@ -54,12 +54,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.Metronome
 import dev.cognitivity.chronal.MetronomeTrack
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.pxToDp
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
+import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -206,12 +206,11 @@ class LatencyActivity : ComponentActivity() {
                     Spacer(Modifier.width(16.dp))
                     Button(
                         onClick = {
-                            ChronalApp.getInstance().settings.visualLatency.value = average
+                            scope.launch {
+                                Settings.VISUAL_LATENCY.save(average)
+                            }
                             clicks.clear()
                             average = -1
-                            scope.launch {
-                                ChronalApp.getInstance().settings.save()
-                            }
                         },
                         enabled = average >= 0,
                     ) {

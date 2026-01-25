@@ -42,11 +42,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.google.gson.Gson
 import com.google.gson.JsonObject
-import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
-import dev.cognitivity.chronal.MetronomePreset
 import dev.cognitivity.chronal.MusicFont
 import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.settings.types.json.MetronomePreset
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.launch
 import java.io.ByteArrayInputStream
@@ -140,10 +140,11 @@ class ImportActivity : ComponentActivity() {
                         modifier = Modifier.heightIn(ButtonDefaults.MediumContainerHeight),
                         contentPadding = ButtonDefaults.contentPaddingFor(ButtonDefaults.MediumContainerHeight),
                         onClick = {
-                            val settings = ChronalApp.getInstance().settings
-                            settings.metronomePresets.value.add(preset)
                             scope.launch {
-                                settings.save()
+                                val new = Settings.METRONOME_PRESETS.get()
+                                new.add(preset)
+                                Settings.METRONOME_PRESETS.save(new)
+
                                 val intent = Intent(context, MainActivity::class.java)
                                     .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
                                     .putExtra("preset", preset.toJson().toString())

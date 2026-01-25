@@ -18,8 +18,6 @@
 
 package dev.cognitivity.chronal.activity
 
-import android.media.MediaPlayer
-import android.media.SyncParams
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
@@ -53,51 +51,40 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
+import androidx.lifecycle.lifecycleScope
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.rhythm.player.PlayerRhythm
+import dev.cognitivity.chronal.rhythm.player.SyncedAudioEngine
 import dev.cognitivity.chronal.rhythm.player.elements.Pause
 import dev.cognitivity.chronal.rhythm.player.elements.PlayerRhythmElement
 import dev.cognitivity.chronal.rhythm.player.elements.SetTempo
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.io.File
 import java.util.*
 import kotlin.math.ceil
 
 
 class AudioPlayerActivity : ComponentActivity() {
+    private lateinit var engine: SyncedAudioEngine
     var rhythm by mutableStateOf(PlayerRhythm(listOf()))
-    var updatingRhythm by mutableStateOf(false)
     var mediaUri: Uri = Uri.EMPTY
-    var metronomeUri: Uri = Uri.EMPTY
-
     var playing by mutableStateOf(false)
-    var audioLength by mutableLongStateOf(25200L)
-    var progress by mutableLongStateOf(0L)
-
     var mediaVolume by mutableFloatStateOf(0.5f)
     var metronomeVolume by mutableFloatStateOf(0.5f)
+    var audioLength by mutableLongStateOf(0L)
+    var progress by mutableLongStateOf(0L)
+    private var progressJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        var uri = intent.getStringExtra("file")?.toUri() // opening from within app
-        if (uri == null) {
-            val data = intent.data // for opening audio files
-            if (data == null) {
-                finish()
-                return
-            }
-            uri = data
-        }
-        mediaUri = uri
+        mediaUri = intent.getStringExtra("file")?.toUri() ?: intent.data ?: run { finish(); return }
 
-        updateRhythm()
+        engine = SyncedAudioEngine(this, rhythm, mediaUri, mediaVolume, metronomeVolume)
 
         setContent {
             MetronomeTheme {
@@ -106,13 +93,18 @@ class AudioPlayerActivity : ComponentActivity() {
         }
     }
 
-    fun updateRhythm() {
-        playing = false
+    private fun startProgressUpdater() {
+        progressJob = lifecycleScope.launch {
+            while (playing) {
+//                progress = engine.getProgressMs()
+                delay(50L)
+            }
+        }
+    }
 
-        val tempFile = File.createTempFile("temp_metronome", ".wav", cacheDir)
-        rhythm.toWav(tempFile)
-
-        metronomeUri = Uri.fromFile(tempFile)
+    fun updateRhythm(newRhythm: PlayerRhythm) {
+        rhythm = newRhythm
+        engine.updateRhythm(newRhythm)
     }
 
     @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -122,94 +114,7 @@ class AudioPlayerActivity : ComponentActivity() {
         var showBpmDialog by remember { mutableStateOf(false) }
         var showPauseDialog by remember { mutableStateOf(false) }
 
-        val mediaPlayer = remember {
-            MediaPlayer.create(this, mediaUri).apply {
-                setVolume(mediaVolume, mediaVolume)
-                setOnCompletionListener {
-                    playing = false
-                }
-                syncParams.syncSource = SyncParams.SYNC_SOURCE_SYSTEM_CLOCK
-                syncParams.audioAdjustMode = SyncParams.AUDIO_ADJUST_MODE_STRETCH
-            }
-        }
-        audioLength = mediaPlayer.duration.toLong()
-
-        val metronomePlayer = remember {
-            MediaPlayer.create(this, metronomeUri).apply {
-                setVolume(metronomeVolume, metronomeVolume)
-                syncParams.syncSource = SyncParams.SYNC_SOURCE_SYSTEM_CLOCK
-                syncParams.audioAdjustMode = SyncParams.AUDIO_ADJUST_MODE_STRETCH
-            }
-        }
-
-        DisposableEffect(Unit) {
-            onDispose {
-                mediaPlayer.release()
-                metronomePlayer.release()
-            }
-        }
-
-        LaunchedEffect(rhythm) {
-            if (updatingRhythm) return@LaunchedEffect
-            updatingRhythm = true
-
-            CoroutineScope(Dispatchers.IO).launch {
-                updateRhythm()
-
-                mediaPlayer.reset()
-                mediaPlayer.setDataSource(this@AudioPlayerActivity, mediaUri)
-                mediaPlayer.prepare()
-                mediaPlayer.seekTo(progress.toInt())
-                audioLength = mediaPlayer.duration.toLong()
-
-                metronomePlayer.reset()
-                metronomePlayer.setDataSource(this@AudioPlayerActivity, metronomeUri)
-                metronomePlayer.prepare()
-                metronomePlayer.seekTo(progress.toInt())
-
-                updatingRhythm = false
-            }
-        }
-
-        LaunchedEffect(playing) {
-            if (playing) {
-                if (!mediaPlayer.isPlaying) {
-                    CoroutineScope(coroutineContext).launch {
-                        mediaPlayer.seekTo(progress.toInt())
-                        mediaPlayer.start()
-                    }
-                    CoroutineScope(coroutineContext).launch {
-                        metronomePlayer.seekTo(progress.toInt())
-                        metronomePlayer.start()
-                    }
-                }
-                val startProgress = progress
-                val start = System.currentTimeMillis()
-                while (playing) {
-                    val elapsed = System.currentTimeMillis() - start
-                    progress = (startProgress + elapsed).coerceAtMost(audioLength)
-                    if (progress >= audioLength) {
-                        playing = false
-                    }
-                    delay(10L)
-                }
-                playing = false
-            } else {
-                if (mediaPlayer.isPlaying) {
-                    mediaPlayer.pause()
-                    metronomePlayer.pause()
-                    mediaPlayer.seekTo(progress.toInt())
-                    metronomePlayer.seekTo(progress.toInt())
-                }
-            }
-        }
-
-        LaunchedEffect(mediaVolume) {
-            mediaPlayer.setVolume(mediaVolume, mediaVolume)
-        }
-        LaunchedEffect(metronomeVolume) {
-            metronomePlayer.setVolume(metronomeVolume, metronomeVolume)
-        }
+        LaunchedEffect(rhythm) { engine.updateRhythm(rhythm) }
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -347,7 +252,7 @@ class AudioPlayerActivity : ComponentActivity() {
                 )
             }
 
-            if(updatingRhythm) {
+            if(false) {
                 Dialog(
                     onDismissRequest = { },
                     properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -381,12 +286,12 @@ class AudioPlayerActivity : ComponentActivity() {
                 Timer(time = audioLength)
             }
             Slider(
-                value = progress.toFloat() / audioLength.toFloat(),
+                value = progress.toFloat(),
                 onValueChange = {
-                    playing = false
-                    progress = (it * audioLength).toLong()
+                    progress = it.toLong()
+                    engine.seekToMs(progress)
                 },
-                valueRange = 0f..1f,
+                valueRange = 0f..audioLength.toFloat(),
                 modifier = Modifier.fillMaxWidth(),
             )
             FlowRow(
@@ -461,11 +366,16 @@ class AudioPlayerActivity : ComponentActivity() {
                 ToggleButton(
                     checked = playing,
                     onCheckedChange = {
-                        if(progress >= audioLength) {
+                        // Toggle playback
+                        if (playing) {
+                            engine.pause()
                             playing = false
-                            progress = 0L
+                        } else {
+                            engine.seekToMs(progress)
+                            engine.play()
+                            playing = true
+                            startProgressUpdater()
                         }
-                        playing = it
                     },
                     shapes = ButtonGroupDefaults.connectedMiddleButtonShapes(),
                     modifier = Modifier.minimumInteractiveComponentSize()
@@ -574,6 +484,7 @@ class AudioPlayerActivity : ComponentActivity() {
                     value = mediaVolume,
                     onValueChange = {
                         mediaVolume = it
+                        engine.setVolumes(mediaVolume, metronomeVolume)
                     },
                     valueRange = 0f..1f,
                     modifier = Modifier.fillMaxWidth()
@@ -589,6 +500,7 @@ class AudioPlayerActivity : ComponentActivity() {
                     value = metronomeVolume,
                     onValueChange = {
                         metronomeVolume = it
+                        engine.setVolumes(mediaVolume, metronomeVolume)
                     },
                     valueRange = 0f..1f,
                     modifier = Modifier.fillMaxWidth()

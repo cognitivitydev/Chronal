@@ -45,7 +45,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.Setting
+import dev.cognitivity.chronal.settings.Setting
 import kotlinx.coroutines.CoroutineScope
 import kotlin.math.sin
 

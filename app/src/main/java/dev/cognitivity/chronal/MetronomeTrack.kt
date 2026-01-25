@@ -18,6 +18,7 @@
 
 package dev.cognitivity.chronal
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.setValue
@@ -82,5 +83,5 @@ class MetronomeTrack(private var rhythm: Rhythm, bpm: Float = 60f, var beatValue
 
     fun onUpdate(beat: Beat) { for (l in listenerUpdate.values) l(beat) }
     fun onPause(paused: Boolean) { for (l in listenerPause.values) l(paused) }
-    fun onEdit(rhythm: Rhythm) { for (l in listenerEdit.values) l(rhythm) }
+    fun onEdit(rhythm: Rhythm) { Log.d("a", "updated!"); for (l in listenerEdit.values) l(rhythm) }
 }

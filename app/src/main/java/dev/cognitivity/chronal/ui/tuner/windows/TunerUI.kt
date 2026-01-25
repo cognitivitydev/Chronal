@@ -54,6 +54,7 @@ import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.Tuner
 import dev.cognitivity.chronal.activity.MainActivity
+import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.toSp
 import dev.cognitivity.chronal.ui.tuner.SineWavePlayer
 import kotlin.math.abs
@@ -216,7 +217,7 @@ fun ColumnScope.DrawNote(frequency: Float) {
     val tune = frequencyToNote(frequency)
     val note = if(tune.first == context.getString(R.string.generic_not_applicable)) "-" else tune.first
     val enharmonic = getEnharmonic(note)
-    val accidentals = ChronalApp.getInstance().settings.accidentals.value
+    val accidentals = Settings.ACCIDENTALS.get()
 
     Row(
         Modifier.fillMaxSize().align(Alignment.CenterHorizontally),
@@ -385,7 +386,7 @@ fun getColors(mono: Boolean, number: Int): Pair<Color, Color> {
 }
 
 fun getNoteNames(): List<String> {
-    val system = ChronalApp.getInstance().settings.noteNames.value
+    val system = Settings.NOTE_NAMES.get()
     return when(system) {
         0 -> listOf("C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B")
         1 -> listOf("Do", "Do♯", "Re", "Re♯", "Mi", "Fa", "Fa♯", "Sol", "Sol♯", "La", "La♯", "Ti")
@@ -397,7 +398,7 @@ fun getNoteNames(): List<String> {
     }
 }
 fun getEnharmonics(): List<Pair<String, String>> {
-    val system = ChronalApp.getInstance().settings.noteNames.value
+    val system = Settings.NOTE_NAMES.get()
     return when(system) {
         0 -> listOf("C♯" to "D♭", "D♯" to "E♭", "F♯" to "G♭", "G♯" to "A♭", "A♯" to "B♭")
         1 -> listOf("Do♯" to "Re♭", "Re♯" to "Mi♭", "Fa♯" to "Sol♭", "Sol♯" to "La♭", "La♯" to "Ti♭")
@@ -410,7 +411,7 @@ fun getEnharmonics(): List<Pair<String, String>> {
 }
 
 fun getA4(): Int {
-    return ChronalApp.getInstance().settings.tunerFrequency.value
+    return Settings.TUNER_FREQUENCY.get()
 }
 const val A4Midi = 69
 
@@ -444,7 +445,7 @@ fun getEnharmonic(note: String): String {
 }
 
 fun toDisplayNote(note: String): String {
-    if(ChronalApp.getInstance().settings.showOctave.value) {
+    if(Settings.SHOW_OCTAVE.get()) {
         return note
     }
     return note.replace(Regex("\\d$"), "")

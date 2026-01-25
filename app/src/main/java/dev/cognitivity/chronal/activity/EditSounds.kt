@@ -50,8 +50,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.launch
 
@@ -82,7 +82,7 @@ class EditSounds: ComponentActivity() {
     @Composable
     fun MainContent() {
         val scope = rememberCoroutineScope()
-        val setting = ChronalApp.getInstance().settings.metronomeSounds
+        val setting = Settings.METRONOME_SOUNDS
         val soundPool = SoundPool.Builder()
             .setMaxStreams(1)
             .setAudioAttributes(
@@ -95,7 +95,7 @@ class EditSounds: ComponentActivity() {
 
         var showAttribution by remember { mutableStateOf(false) }
 
-        var selectedSound by remember { mutableStateOf(setting.value) }
+        var selectedSound by remember { mutableStateOf(setting.get()) }
         var selection by remember { mutableIntStateOf(0) }
 
         Scaffold(
@@ -316,9 +316,8 @@ class EditSounds: ComponentActivity() {
                                     checked = selectedSound.first == selection,
                                     onCheckedChange = {
                                         selectedSound = selection to selectedSound.second
-                                        setting.value = selectedSound
                                         scope.launch {
-                                            ChronalApp.getInstance().settings.save()
+                                            setting.save(selectedSound)
                                         }
                                     },
                                     shapes = ButtonGroupDefaults.connectedLeadingButtonShapes(),
@@ -342,9 +341,8 @@ class EditSounds: ComponentActivity() {
                                     checked = selectedSound.second == selection,
                                     onCheckedChange = {
                                         selectedSound = selectedSound.first to selection
-                                        setting.value = selectedSound
                                         scope.launch {
-                                            ChronalApp.getInstance().settings.save()
+                                            setting.save(selectedSound)
                                         }
                                     },
                                     shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),

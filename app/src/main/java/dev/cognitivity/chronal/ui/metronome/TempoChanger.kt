@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.ui.metronome.windows.setBPM
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -118,7 +119,7 @@ fun BoxScope.TempoChanger() {
             )
         }
 
-        val markings = ChronalApp.getInstance().settings.tempoMarkings.value.reversed()
+        val markings = Settings.TEMPO_MARKINGS.get().reversed()
         val marking = markings.firstOrNull { it.range.contains(track.bpm.toInt()) }
         val string = marking?.name ?: context.getString(R.string.metronome_tempo_unknown)
 
