@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="page_metronome">Métronome</string>
+    <string name="page_settings">Paramètres</string>
+    <string name="page_tuner">Accordeur</string>
+    <string name="metronome_increase_tempo">Augmenter le tempo</string>
+    <string name="metronome_notification_title">%d BPM</string>
+    <string name="metronome_option_change_sounds">Changer de sons</string>
+    <string name="metronome_option_fullscreen_mode">Mode plein écran</string>
+</resources>
