@@ -14,10 +14,12 @@
     <string name="generic_error">Error</string>
     <string name="generic_exit">Exit</string>
     <string name="generic_exit_discard">Exit without saving</string>
+    <string name="generic_export">Export</string>
     <string name="generic_fix">Fix</string>
     <string name="generic_fullscreen">Fullscreen</string>
     <string name="generic_github" translatable="false">GitHub</string>
     <string name="generic_ignore">Ignore</string>
+    <string name="generic_import">Import</string>
     <string name="generic_info">Info</string>
     <string name="generic_menu_collapse">Collapse</string>
     <string name="generic_menu_expand">Expand</string>
@@ -29,6 +31,7 @@
     <string name="generic_okay">Okay</string>
     <string name="generic_pause">Pause</string>
     <string name="generic_play">Play</string>
+    <string name="generic_refresh">Refresh</string>
     <string name="generic_required_field">Required field</string>
     <string name="generic_reset">Reset</string>
     <string name="generic_resume">Resume</string>
@@ -51,6 +54,14 @@
     <string name="page_conductor">Conductor</string>
     <string name="page_metronome">Metronome</string>
     <string name="page_settings">Settings</string>
+    <string name="page_settings_a4_frequency">A4 Frequency</string>
+    <string name="page_settings_accidentals">Accidentals</string>
+    <string name="page_settings_app_info">App info</string>
+    <string name="page_settings_color_scheme">Color scheme</string>
+    <string name="page_settings_developer_options">Developer options</string>
+    <string name="page_settings_feedback">Feedback</string>
+    <string name="page_settings_note_locale">Note locale</string>
+    <string name="page_settings_notifications">Notifications</string>
     <string name="page_tuner">Tuner</string>
 
     <string name="metronome_bpm">bpm</string>
@@ -198,6 +209,11 @@
     <string name="settings_footer_version">Version %s</string>
     <string name="settings_footer_development_build">Development build</string>
     <string name="settings_footer_privacy_policy">Privacy Policy</string>
+    <string name="settings_support_project">Support the project!</string>
+    <string name="settings_developer_options_warning">Edit these values at your own risk! Changing some values may cause Chronal to break or lose data. Export and save your settings before making any changes.</string>
+    <string name="settings_notifications_no_permission">Notification permission required</string>
+    <string name="settings_notifications_no_permission_description">To use notifications, the permission needs to be granted. Tap to grant it.</string>
+    <string name="settings_notifications_no_permission_grant">Grant permission</string>
 
     <string name="settings_menu_help">Help</string>
     <string name="settings_menu_open_source_credits">Open source credits</string>
@@ -210,13 +226,16 @@
     <string name="setting_category_metronome">Metronome</string>
     <string name="setting_category_tuner">Tuner</string>
 
+    <string name="settings_header_beat_display">Beat display</string>
+    <string name="settings_header_note_display">Note display</string>
+
     <string name="setting_name_color_scheme">Color scheme</string>
     <string name="setting_name_primary_instrument">Primary instrument</string>
     <string name="setting_name_visual_latency">Visual latency</string>
     <string name="setting_name_show_beats">Show high emphasis</string>
     <string name="setting_name_show_subdivisions">Show low emphasis</string>
     <string name="setting_name_high_contrast">Fullscreen high contrast</string>
-    <string name="setting_name_no_animation">No fullscreen animation</string>
+    <string name="setting_name_no_animation">Disable fullscreen animation</string>
     <string name="setting_name_tempo_markings">Tempo markings</string>
     <string name="setting_name_tuner_frequency">A4 Frequency</string>
     <string name="setting_name_show_octave">Show octave</string>
@@ -224,7 +243,7 @@
     <string name="setting_name_audio_threshold">Audio threshold</string>
     <string name="setting_name_accidentals">Accidentals</string>
     <string name="setting_name_note_names">Change note names</string>
-    <string name="setting_name_show_developer_options">Show developer options</string>
+    <string name="setting_name_show_developer_options">Enable developer options</string>
     <string name="setting_name_metronome_rhythm">Metronome rhythm</string>
     <string name="setting_name_metronome_simple_rhythm">Metronome simple rhythm</string>
     <string name="setting_name_metronome_vibrations">Metronome vibrations</string>
@@ -238,8 +257,9 @@
     <string name="setting_name_tuner_layout">Tuner layout</string>
     <string name="setting_name_version">Version</string>
     <string name="setting_name_raw">Raw settings</string>
+    <string name="setting_name_metronome_controls_notification">Metronome controls</string>
 
-    <string name="setting_description_color_scheme">Changes the color scheme of the app.</string>
+    <string name="setting_description_color_scheme">Color, dark mode, contrast</string>
     <string name="setting_description_primary_instrument">Changes the primary instrument for transpositions and other features.</string>
     <string name="setting_description_visual_latency">Changes the delay between the visual metronome and audio to correct for hardware and bluetooth latencies.</string>
     <string name="setting_description_show_beats">Marks the location of high emphasis beats on the metronome.</string>
@@ -247,10 +267,10 @@
     <string name="setting_description_high_contrast">Enables high contrast mode for the fullscreen metronome.</string>
     <string name="setting_description_no_animation">Disables the fullscreen animation when using fullscreen mode. May be hard to watch at higher tempos, but better at a distance.</string>
     <string name="setting_description_tempo_markings">Customize tempo markings for BPM ranges.</string>
-    <string name="setting_description_tuner_frequency">Changes the frequency of A4 for the tuner.</string>
+    <string name="setting_description_tuner_frequency">Changes the reference frequency for tuning (A4).\n• Standard tuning: 440 Hz\n• Baroque tuning: 415 Hz\n• Classical tuning: 430 Hz</string>
     <string name="setting_description_show_octave">Shows the octave of the current played note (such as \"A4\").</string>
     <string name="setting_description_transpose_notes">Shows the transposed note for your primary instrument in addition to concert pitch.</string>
-    <string name="setting_description_audio_threshold">Edits the audio threshold for detecting notes. Decrease if notes are not being detected.</string>
+    <string name="setting_description_audio_threshold">Edits the threshold for detecting notes. Decrease if notes are not being detected.</string>
     <string name="setting_description_accidentals">Changes which accidentals are displayed.</string>
     <string name="setting_description_note_names">Changes note names to their solfège name.</string>
     <string name="setting_description_show_developer_options">Changes the visibility of developer options in settings.</string>
@@ -285,7 +305,7 @@
 
     <string name="setting_accidental_flats">Flats</string>
     <string name="setting_accidental_sharps">Sharps</string>
-    <string name="setting_accidentals_sharps_flats">Sharps and Flats</string>
+    <string name="setting_accidentals_sharps_flats">Sharps and flats</string>
     <string name="setting_action_navigate_menu">Navigate to setting</string>
     <string name="setting_action_test_latency">Test latency</string>
 
