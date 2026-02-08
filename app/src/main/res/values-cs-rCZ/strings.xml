@@ -160,12 +160,9 @@
     <string name="setting_name_audio_threshold">Prahová hodnota zvuku</string>
     <string name="setting_name_accidentals">Posuvky</string>
     <string name="setting_name_note_names">Změnit názvy not</string>
-    <string name="setting_name_show_developer_options">Zobrazit možnosti pro vývojáře</string>
     <string name="setting_name_tuner_layout">Rozvržení ladičky</string>
     <string name="setting_name_version">Verze</string>
     <string name="setting_name_raw">Surové nastavení</string>
-    <string name="setting_description_color_scheme">Změní barevné schéma aplikace.</string>
-    <string name="setting_description_audio_threshold">Nastaví práh zvuku pro detekci not. Snižte hodnotu, pokud se nedetekují noty.</string>
     <string name="setting_description_accidentals">Nastaví, jaké se mají zobrazovat posuvky.</string>
     <string name="setting_description_note_names">Změní názvy not na jejich solmizační slabiky.</string>
     <string name="setting_description_raw">Zobrazí všechna nastavení v surovém formátu.</string>
@@ -184,7 +181,6 @@
     <string name="setting_color_save_reload">Uložit a znovu načíst</string>
     <string name="setting_accidental_flats">Béčka</string>
     <string name="setting_accidental_sharps">Křížky</string>
-    <string name="setting_accidentals_sharps_flats">Křížky a béčka</string>
     <string name="setting_note_name_english">Anglické</string>
     <string name="setting_note_name_german">Německé</string>
     <string name="setting_note_name_nashville">Nashvillská čísla</string>
