@@ -1,2 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="metronome_conductor_not_supported">Current time signature is not supported.</string>
+    <string name="setting_name_no_animation">No fullscreen animation</string>
+    <string name="setting_name_show_developer_options">Show developer options</string>
+    <string name="setting_description_color_scheme">Changes the color scheme of the app.</string>
+    <string name="setting_description_tuner_frequency">Changes the frequency of A4 for the tuner.</string>
+    <string name="setting_description_audio_threshold">Edits the audio threshold for detecting notes. Decrease if notes are not being detected.</string>
+    <string name="setting_description_show_developer_options">Changes the visibility of developer options in settings. Only available in development builds.</string>
+    <string name="setting_accidentals_sharps_flats">Sharps and Flats</string>
+</resources>
