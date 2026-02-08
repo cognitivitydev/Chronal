@@ -208,9 +208,9 @@ class LatencyActivity : ComponentActivity() {
                         onClick = {
                             scope.launch {
                                 Settings.VISUAL_LATENCY.save(average)
+                                clicks.clear()
+                                average = -1
                             }
-                            clicks.clear()
-                            average = -1
                         },
                         enabled = average >= 0,
                     ) {

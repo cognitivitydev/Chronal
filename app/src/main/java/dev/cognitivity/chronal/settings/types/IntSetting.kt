@@ -39,7 +39,7 @@ class IntSetting(
     }
 
     override fun import(json: JsonObject) {
-        value = json.get(key)?.asInt ?: value
+        value = json.get(key)?.asInt ?: defaultValue
     }
 
     override fun export(json: JsonObject) {

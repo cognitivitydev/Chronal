@@ -74,7 +74,7 @@ import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.ui.metronome.windows.MetronomePageMain
 import dev.cognitivity.chronal.ui.metronome.windows.activity
-import dev.cognitivity.chronal.ui.settings.windows.SettingsPageMain
+import dev.cognitivity.chronal.ui.settings.SettingsPageMain
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import dev.cognitivity.chronal.ui.tuner.windows.TunerPageMain
 import dev.cognitivity.chronal.widgets.PresetListWidget

@@ -49,9 +49,9 @@ class JsonSetting<T>(
     }
 
     override fun import(json: JsonObject) {
-        json.get(key)?.let {
-            value = deserializer(it)
-        }
+        value = json.get(key)?.let {
+            deserializer(it)
+        } ?: defaultValue
     }
 
     override fun export(json: JsonObject) {

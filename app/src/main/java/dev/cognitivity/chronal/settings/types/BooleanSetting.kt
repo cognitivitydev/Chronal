@@ -39,7 +39,7 @@ class BooleanSetting(
     }
 
     override fun import(json: JsonObject) {
-        value = json.get(key)?.asBoolean ?: value
+        value = json.get(key)?.asBoolean ?: defaultValue
     }
 
     override fun export(json: JsonObject) {

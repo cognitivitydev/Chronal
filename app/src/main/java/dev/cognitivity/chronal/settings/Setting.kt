@@ -89,27 +89,40 @@ abstract class Setting<T>(
             }
         }
 
-        @SuppressWarnings("deprecation")
         suspend fun loadAll() {
-            dataStore.edit { prefs ->
-                Log.d("a", "size: ${prefs.asMap().size}")
-                val prevVersion = prefs[intPreferencesKey("version_code")] ?: -1
-                val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-                val versionCode = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    packageInfo.longVersionCode.toInt()
-                } else {
-                    packageInfo.versionCode
-                }
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            val versionName = packageInfo.versionName
+            val versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                packageInfo.longVersionCode.toInt()
+            } else {
+                packageInfo.versionCode
+            }
 
+
+            suspend fun load() {
+                Settings // initialize objects
+
+                val prefs = dataStore.data.first()
+                SETTINGS.forEach { it.load(prefs) }
+                Settings.VERSION.set(versionName ?: "0.0.0")
+                Settings.VERSION_CODE.set(versionCode)
+            }
+
+            if(dataStore.data.first().asMap().isEmpty()) { // first launch
+                load()
+                return
+            }
+
+            // check for updates
+            dataStore.edit { prefs ->
+                val prevVersion = prefs[intPreferencesKey("version_code")] ?: -1
                 if (prevVersion <= versionCode) {
                     Log.i("Setting", "App has been updated ($prevVersion > $versionCode), attempting migration")
                     migrate(prefs, prevVersion)
                     prefs[intPreferencesKey("version_code")] = versionCode
                 }
             }
-
-            val prefs = dataStore.data.first()
-            SETTINGS.forEach { it.load(prefs) }
+            load()
         }
 
         fun exportToJson(): JsonObject {
@@ -123,6 +136,7 @@ abstract class Setting<T>(
         fun importFromJson(json: JsonObject) {
             for (setting in SETTINGS) {
                 setting.import(json)
+                Log.d("Setting", "Imported setting ${setting.key} with value ${setting.get()}")
             }
         }
 

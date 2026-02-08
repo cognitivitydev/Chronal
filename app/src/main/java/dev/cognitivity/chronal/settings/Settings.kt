@@ -18,7 +18,6 @@
 
 package dev.cognitivity.chronal.settings
 
-import com.google.gson.Gson
 import com.google.gson.JsonArray
 import dev.cognitivity.chronal.settings.types.BooleanSetting
 import dev.cognitivity.chronal.settings.types.FloatSetting
@@ -57,7 +56,11 @@ object Settings {
     val TEMPO_MARKINGS = JsonSetting(
         key = "tempo_markings",
         defaultValue = TempoMarking.default(),
-        serializer = { Gson().toJsonTree(it).asJsonArray },
+        serializer = { markings ->
+            JsonArray().apply {
+                markings.forEach { add(it.toJson()) }
+            }
+        },
         deserializer = { json ->
             json.asJsonArray.map { TempoMarking.fromJson(it.asJsonObject) }.toMutableList()
         }
@@ -71,6 +74,11 @@ object Settings {
     val ACCIDENTALS = IntSetting("accidentals", 2)
     val NOTE_NAMES = IntSetting("note_names", 0)
     val TUNER_LAYOUT = FloatSetting("tuner_layout", 0.33f)
+
+    // Notifications
+    val METRONOME_CONTROLS_NOTIFICATION = BooleanSetting("metronome_controls_notification", true)
+    val PRACTICE_REMINDER_NOTIFICATION = BooleanSetting("practice_reminder_notification", true)
+    val PRACTICE_REMINDER_TIME = IntSetting("practice_reminder_time", 18 * 60) // 18:00
 
     // Internal
     val SHOW_DEVELOPER_OPTIONS = BooleanSetting("show_developer_options", false)
@@ -116,7 +124,11 @@ object Settings {
             MetronomePreset.exampleDefault(),
             MetronomePreset.examplePolyrhythm()
         ),
-        serializer = { Gson().toJsonTree(it).asJsonArray },
+        serializer = { presets ->
+            JsonArray().apply {
+                presets.forEach { add(it.toJson()) }
+            }
+        },
         deserializer = { json -> json.asJsonArray.map { MetronomePreset.fromJson(it.asJsonObject) }.toMutableList() }
     )
     val FULLSCREEN_WARNING = BooleanSetting("fullscreen_warning", true)

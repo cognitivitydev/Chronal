@@ -39,7 +39,7 @@ class StringSetting(
     }
 
     override fun import(json: JsonObject) {
-        value = json.get(key)?.asString ?: value
+        value = json.get(key)?.asString ?: defaultValue
     }
 
     override fun export(json: JsonObject) {

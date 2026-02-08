@@ -40,7 +40,7 @@ class FloatSetting(
     }
 
     override fun import(json: JsonObject) {
-        value = json.get(key)?.asFloat ?: value
+        value = json.get(key)?.asFloat ?: defaultValue
     }
 
     override fun export(json: JsonObject) {
