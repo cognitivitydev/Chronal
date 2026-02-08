@@ -154,6 +154,7 @@
     <string name="setting_name_color_scheme">Barevné schéma</string>
     <string name="setting_name_show_beats">Zobrazit hlavní přízvuk</string>
     <string name="setting_name_show_subdivisions">Zobrazit vedlejší přízvuk</string>
+    <string name="setting_name_no_animation">No fullscreen animation</string>
     <string name="setting_name_tempo_markings">Označení tempa</string>
     <string name="setting_name_tuner_frequency">Frekvence A4</string>
     <string name="setting_name_show_octave">Zobrazovat oktávu</string>
@@ -165,9 +166,11 @@
     <string name="setting_name_version">Verze</string>
     <string name="setting_name_raw">Surové nastavení</string>
     <string name="setting_description_color_scheme">Změní barevné schéma aplikace.</string>
+    <string name="setting_description_tuner_frequency">Changes the frequency of A4 for the tuner.</string>
     <string name="setting_description_audio_threshold">Nastaví práh zvuku pro detekci not. Snižte hodnotu, pokud se nedetekují noty.</string>
     <string name="setting_description_accidentals">Nastaví, jaké se mají zobrazovat posuvky.</string>
     <string name="setting_description_note_names">Změní názvy not na jejich solmizační slabiky.</string>
+    <string name="setting_description_show_developer_options">Changes the visibility of developer options in settings. Only available in development builds.</string>
     <string name="setting_description_raw">Zobrazí všechna nastavení v surovém formátu.</string>
     <string name="setting_info_recommended_value">Doporučená hodnota:\ </string>
     <string name="setting_color_scheme_title">Barva</string>
