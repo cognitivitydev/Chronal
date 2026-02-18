@@ -54,13 +54,13 @@ fun SettingsHomeScreen(navController: NavController, expanded: Boolean) {
             val categories = SettingsLayout.categories.toList()
             itemsIndexed(categories) { index, category ->
                 SettingItemRenderer(
-                    SettingItem.PageLink(
+                    SettingItem.CategoryOption(
                         meta = SettingMeta(
                             title = category.title,
                             icon = category.icon,
-                            iconColor = category.iconColor,
-                            iconContainer = category.iconContainer
                         ),
+                        iconColor = category.iconColor,
+                        iconContainer = category.iconContainer,
                         pageId = category.id
                     ),
                     topRounded = index == 0,

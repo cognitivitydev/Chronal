@@ -108,9 +108,28 @@ sealed class SettingItem(
     ) : SettingItem(meta, true)
 
     /**
+     * A time selector for integer settings, represented as minutes after midnight in local time.
+     */
+    data class TimeSelector(
+        val setting: IntSetting,
+        val onTimeSelected: ((Int) -> Unit) = {},
+        override val meta: SettingMeta
+    ) : SettingItem(meta, true)
+
+    /**
      * A link to another settings page.
      */
     data class PageLink(
+        val pageId: String,
+        override val meta: SettingMeta
+    ) : SettingItem(meta, true)
+
+    /**
+     * A button that appears in the main category list and opens a category when tapped.
+     */
+    data class CategoryOption(
+        val iconColor: @Composable (() -> Color),
+        val iconContainer: @Composable (() -> Color),
         val pageId: String,
         override val meta: SettingMeta
     ) : SettingItem(meta, true)
@@ -166,8 +185,6 @@ data class SettingMeta(
     val title: Int,
     val description: (() -> String)? = null,
     val icon: Int? = null,
-    val iconColor: (@Composable () -> Color)? = null,
-    val iconContainer: (@Composable () -> Color)? = null,
     val visible: () -> Boolean = { true }
 ) {
     constructor(
@@ -181,8 +198,6 @@ data class SettingMeta(
         title,
         description = { ChronalApp.getInstance().getString(description) },
         icon,
-        iconColor,
-        iconContainer,
         visible
     )
 }

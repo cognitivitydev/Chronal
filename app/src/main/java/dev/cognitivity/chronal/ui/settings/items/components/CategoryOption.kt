@@ -18,12 +18,15 @@
 
 package dev.cognitivity.chronal.ui.settings.items.components
 
-import android.content.Intent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -32,43 +35,37 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
-import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.ui.settings.items.SettingItem
 
 @Composable
-fun UriLinkItem(item: SettingItem.UriLink) {
+fun CategoryOptionItem(item: SettingItem.CategoryOption, onNavigate: ((String) -> Unit)?) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
-            .clickable {
-                ChronalApp.getInstance().startActivity(
-                    Intent(Intent.ACTION_VIEW, item.uri)
-                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                )
-            }
+            .clickable { onNavigate?.invoke(item.pageId) }
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         if(item.meta.icon != null) {
-            Icon(
-                painter = painterResource(item.meta.icon),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(12.dp)
-                    .size(24.dp)
-            )
+            Box(
+                modifier = Modifier.padding(end = 16.dp)
+                    .size(40.dp)
+                    .background(color = item.iconContainer.invoke(), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(item.meta.icon),
+                    contentDescription = null,
+                    tint = item.iconColor.invoke(),
+                    modifier = Modifier.size(24.dp)
+                )
+            }
         }
-        Column(modifier = Modifier.weight(1f)) {
+        Column(modifier = Modifier.fillMaxWidth()) {
             Text(context.getString(item.meta.title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
             if(item.meta.description != null) {
                 Text(item.meta.description.invoke(), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-        Icon(
-            painter = painterResource(R.drawable.baseline_open_in_new_24),
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.outline,
-        )
     }
 }

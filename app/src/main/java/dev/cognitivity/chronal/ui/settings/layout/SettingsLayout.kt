@@ -27,6 +27,7 @@ import dev.cognitivity.chronal.ui.settings.data.SettingsPage
 import dev.cognitivity.chronal.ui.settings.screens.appinfo.DeveloperOptionsPage
 import dev.cognitivity.chronal.ui.settings.screens.appinfo.FeedbackPage
 import dev.cognitivity.chronal.ui.settings.screens.appinfo.SchemePage
+import dev.cognitivity.chronal.ui.settings.screens.notifications.PracticeReminderPage
 import dev.cognitivity.chronal.ui.settings.screens.tuner.A4FrequencyPage
 import dev.cognitivity.chronal.ui.settings.screens.tuner.AccidentalsPage
 import dev.cognitivity.chronal.ui.settings.screens.tuner.NoteLocalePage
@@ -45,7 +46,8 @@ object SettingsLayout {
         AccidentalsPage,
         FeedbackPage,
         DeveloperOptionsPage,
-        SchemePage
+        SchemePage,
+        PracticeReminderPage
     )
 
     fun categoryOf(id: String): SettingsCategory = categories.find { it.id == id } ?: error("Unknown category: $id")

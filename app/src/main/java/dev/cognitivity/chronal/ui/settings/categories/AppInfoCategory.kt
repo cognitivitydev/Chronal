@@ -73,17 +73,17 @@ object AppInfoCategory : SettingsCategory(
             setting = Settings.SHOW_DEVELOPER_OPTIONS
         ),
         SettingItem.Divider(),
-        SettingItem.ActivityLink(
-            meta = SettingMeta(R.string.settings_menu_open_source_credits),
-            activity = CreditsActivity::class.java
-        ),
         SettingItem.UriLink(
             meta = SettingMeta(R.string.settings_menu_view_source),
             uri = "https://github.com/cognitivitydev/chronal".toUri()
         ),
+        SettingItem.ActivityLink(
+            meta = SettingMeta(R.string.settings_menu_open_source_credits),
+            activity = CreditsActivity::class.java
+        ),
         SettingItem.Divider(),
         SettingItem.PageLink(
-            meta = SettingMeta(R.string.page_settings_feedback),
+            meta = SettingMeta(R.string.page_settings_feedback, R.string.setting_description_feedback),
             pageId = FeedbackPage.id
         ),
         SettingItem.ActivityLink(

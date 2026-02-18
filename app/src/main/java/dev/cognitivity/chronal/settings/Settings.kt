@@ -23,6 +23,7 @@ import dev.cognitivity.chronal.settings.types.BooleanSetting
 import dev.cognitivity.chronal.settings.types.FloatSetting
 import dev.cognitivity.chronal.settings.types.IntSetting
 import dev.cognitivity.chronal.settings.types.JsonSetting
+import dev.cognitivity.chronal.settings.types.LongSetting
 import dev.cognitivity.chronal.settings.types.StringSetting
 import dev.cognitivity.chronal.settings.types.json.ColorScheme
 import dev.cognitivity.chronal.settings.types.json.Instrument
@@ -79,6 +80,7 @@ object Settings {
     val METRONOME_CONTROLS_NOTIFICATION = BooleanSetting("metronome_controls_notification", true)
     val PRACTICE_REMINDER_NOTIFICATION = BooleanSetting("practice_reminder_notification", true)
     val PRACTICE_REMINDER_TIME = IntSetting("practice_reminder_time", 18 * 60) // 18:00
+    val PRACTICE_REMINDER_SNOOZE = IntSetting("practice_reminder_snooze", 10) // time in minutes: 0 / 10 / 30 / 60 / 90
 
     // Internal
     val SHOW_DEVELOPER_OPTIONS = BooleanSetting("show_developer_options", false)
@@ -135,4 +137,5 @@ object Settings {
 
     val VERSION = StringSetting("version", "0.0.0")
     val VERSION_CODE = IntSetting("version_code", 0)
+    val LAST_OPEN = LongSetting("last_open", 0L)
 }

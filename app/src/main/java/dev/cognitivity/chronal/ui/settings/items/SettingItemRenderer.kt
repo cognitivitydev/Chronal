@@ -67,7 +67,9 @@ fun SettingItemRenderer(
                 is SettingItem.IntSlider,
                 is SettingItem.FloatSlider
                     -> SliderItem(item, onNavigate)
+                is SettingItem.TimeSelector -> TimeSelectorItem(item)
                 is SettingItem.PageLink -> PageLinkItem(item, onNavigate)
+                is SettingItem.CategoryOption -> CategoryOptionItem(item, onNavigate)
                 is SettingItem.ActivityLink -> ActivityLinkItem(item)
                 is SettingItem.UriLink -> UriLinkItem(item)
                 is SettingItem.TextElement -> TextItem(item)

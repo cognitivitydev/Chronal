@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@ import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
 import android.os.VibratorManager
-import android.provider.Settings
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -72,6 +71,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.ui.metronome.windows.MetronomePageMain
 import dev.cognitivity.chronal.ui.metronome.windows.activity
 import dev.cognitivity.chronal.ui.settings.SettingsPageMain
@@ -155,6 +155,10 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         microphoneEnabled = ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+
+        CoroutineScope(Dispatchers.IO).launch {
+            Settings.LAST_OPEN.save(System.currentTimeMillis())
+        }
     }
 
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class, ExperimentalMaterial3Api::class)
@@ -188,7 +192,7 @@ class MainActivity : ComponentActivity() {
                     confirmButton = @Composable {
                         TextButton(onClick = {
                             showMicrophoneDialog = false
-                            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                            val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
                             intent.data = ("package:$packageName").toUri()
                             startActivity(intent)
                         }) {

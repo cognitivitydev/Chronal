@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
             android:name="dev.cognitivity.chronal.ChronalApp"
@@ -145,6 +147,18 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/tuner_widget_info" />
         </receiver>
+
+        <receiver android:name=".notifications.PracticeReminderReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="dev.cognitivity.chronal.PRACTICE_REMINDER_SNOOZE" />
+                <action android:name="dev.cognitivity.chronal.PRACTICE_REMINDER_DISMISSED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name=".notifications.PracticeReminderAlarmReceiver"
+            android:exported="false" />
 
         <service
             android:name=".services.TunerWidgetService"

@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import dev.cognitivity.chronal.notifications.PracticeReminderScheduler
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.settings.Setting
 import dev.cognitivity.chronal.settings.Settings
@@ -63,6 +64,8 @@ class ChronalApp : Application() {
             )
             secondaryTrack.enabled = false
             metronome.addTrack(1, secondaryTrack)
+
+            PracticeReminderScheduler.initialize(applicationContext)
         }
     }
 

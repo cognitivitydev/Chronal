@@ -59,6 +59,7 @@ import dev.cognitivity.chronal.ui.settings.categories.NotificationsCategory.Noti
 import dev.cognitivity.chronal.ui.settings.items.SettingItem
 import dev.cognitivity.chronal.ui.settings.items.SettingMeta
 import dev.cognitivity.chronal.ui.settings.data.SettingsCategory
+import dev.cognitivity.chronal.ui.settings.screens.notifications.PracticeReminderPage
 
 private var showNotificationWarning by mutableStateOf(true)
 private var notificationsEnabled by mutableStateOf(NotificationManagerCompat.from(ChronalApp.getInstance()).areNotificationsEnabled())
@@ -77,6 +78,11 @@ object NotificationsCategory : SettingsCategory(
             meta = SettingMeta(R.string.setting_name_metronome_controls_notification),
             setting = Settings.METRONOME_CONTROLS_NOTIFICATION
         ),
+        SettingItem.Switch(
+            meta = SettingMeta(R.string.page_settings_practice_reminder),
+            setting = Settings.PRACTICE_REMINDER_NOTIFICATION,
+            pageId = PracticeReminderPage.id
+        )
     )
 ) {
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -101,7 +107,7 @@ object NotificationsCategory : SettingsCategory(
             Column(
                 modifier = Modifier.padding(16.dp)
                     .clip(RoundedCornerShape(16.dp))
-                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                    .background(MaterialTheme.colorScheme.surfaceContainerHighest)
                     .clickable {
                         request()
                     }
@@ -138,7 +144,7 @@ object NotificationsCategory : SettingsCategory(
                     onClick = { request() },
                     modifier = Modifier.padding(top = 16.dp)
                 ) {
-                    Text(context.getString(R.string.settings_notifications_no_permission_description))
+                    Text(context.getString(R.string.settings_notifications_no_permission_grant))
                 }
             }
         }

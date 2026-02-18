@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2026  cognitivity
+ * Copyright (C) 2025  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,17 +16,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package dev.cognitivity.chronal.ui.settings.data
+package dev.cognitivity.chronal.notifications
 
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
-import dev.cognitivity.chronal.ui.settings.items.SettingItem
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
 
-open class SettingsCategory(
-    val id: String,
-    val title: Int,
-    val icon: Int? = null,
-    val iconColor: (@Composable () -> Color),
-    val iconContainer: (@Composable () -> Color),
-    val items: List<SettingItem>
-)
+class PracticeReminderAlarmReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        PracticeReminderScheduler.showNotification(context)
+    }
+}
+

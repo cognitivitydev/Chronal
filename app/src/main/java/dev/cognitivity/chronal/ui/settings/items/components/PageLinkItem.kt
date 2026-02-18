@@ -18,15 +18,12 @@
 
 package dev.cognitivity.chronal.ui.settings.items.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -47,29 +44,13 @@ fun PageLinkItem(item: SettingItem.PageLink, onNavigate: ((String) -> Unit)?) {
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         if(item.meta.icon != null) {
-            if(item.meta.iconContainer != null) {
-                Box(
-                    modifier = Modifier.padding(end = 16.dp)
-                        .size(40.dp)
-                        .background(color = item.meta.iconContainer.invoke(), CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(item.meta.icon),
-                        contentDescription = null,
-                        tint = item.meta.iconColor?.invoke() ?: MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            } else {
-                Icon(
-                    painter = painterResource(item.meta.icon),
-                    contentDescription = null,
-                    tint = item.meta.iconColor?.invoke() ?: MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(24.dp)
-                        .padding(8.dp)
-                )
-            }
+            Icon(
+                painter = painterResource(item.meta.icon),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(24.dp)
+                    .padding(8.dp)
+            )
         }
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(context.getString(item.meta.title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)

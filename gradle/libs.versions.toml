@@ -21,6 +21,7 @@ ui = "1.8.3"
 material3WindowSizeClassAndroidVersion = "1.3.2"
 material3AdaptiveNavigationSuiteAndroid = "1.3.2"
 material = "1.12.0"
+workManager = "2.11.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -51,6 +52,7 @@ ui = { module = "androidx.compose.ui:ui", version.ref = "ui" }
 androidx-material3-window-size-clazz-android = { group = "androidx.compose.material3", name = "material3-window-size-class-android", version.ref = "material3WindowSizeClassAndroidVersion" }
 androidx-material3-adaptive-navigation-suite-android = { group = "androidx.compose.material3", name = "material3-adaptive-navigation-suite-android", version.ref = "material3AdaptiveNavigationSuiteAndroid" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workManager" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

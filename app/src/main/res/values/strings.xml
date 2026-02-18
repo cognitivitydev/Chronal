@@ -1,4 +1,22 @@
-<resources>
+<!--
+  ~ Chronal: Metronome app for Android
+  ~ Copyright (C) 2026  cognitivity
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="app_name">Chronal</string>
 
     <string name="generic_add">Add</string>
@@ -30,6 +48,10 @@
     <string name="generic_number_invalid">Invalid number</string>
     <string name="generic_okay">Okay</string>
     <string name="generic_pause">Pause</string>
+    <string name="generic_picker_input_time">Input time</string>
+    <string name="generic_picker_select_time">Select time</string>
+    <string name="generic_picker_switch_to_input">Switch to text input</string>
+    <string name="generic_picker_switch_to_picker">Switch to picker input</string>
     <string name="generic_play">Play</string>
     <string name="generic_refresh">Refresh</string>
     <string name="generic_required_field">Required field</string>
@@ -62,6 +84,8 @@
     <string name="page_settings_feedback">Feedback</string>
     <string name="page_settings_note_locale">Note locale</string>
     <string name="page_settings_notifications">Notifications</string>
+    <string name="page_settings_practice_reminder">Practice reminder</string>
+
     <string name="page_tuner">Tuner</string>
 
     <string name="metronome_bpm">bpm</string>
@@ -73,6 +97,9 @@
     <string name="metronome_notification_title">%d BPM</string>
     <string name="metronome_notification_playing">Playing.</string>
     <string name="metronome_notification_paused">Paused.</string>
+    <string name="notification_practice_reminder_title">Time to practice!</string>
+    <string name="notification_practice_reminder_text">Haven\'t seen you yet. Ready to start?</string>
+    <string name="notification_practice_reminder_open">Open</string>
     <string name="metronome_option_beat_detector">Beat detector</string>
     <string name="metronome_option_change_sounds">Change sounds</string>
     <string name="metronome_option_fullscreen_mode">Fullscreen mode</string>
@@ -228,6 +255,7 @@
 
     <string name="settings_header_beat_display">Beat display</string>
     <string name="settings_header_note_display">Note display</string>
+    <string name="settings_header_practice_snooze">Snooze timer</string>
 
     <string name="setting_name_color_scheme">Color scheme</string>
     <string name="setting_name_primary_instrument">Primary instrument</string>
@@ -258,7 +286,19 @@
     <string name="setting_name_version">Version</string>
     <string name="setting_name_raw">Raw settings</string>
     <string name="setting_name_metronome_controls_notification">Metronome controls</string>
+    <string name="setting_name_practice_reminder_notification">Enable practice reminder</string>
+    <string name="setting_name_practice_reminder_time">Practice reminder time</string>
+    <string name="setting_name_practice_reminder_snooze_off">Off</string>
+    <string name="setting_name_practice_reminder_snooze_10">10 minutes</string>
+    <string name="notification_practice_reminder_snooze_10">Snooze 10m</string>
+    <string name="setting_name_practice_reminder_snooze_30">30 minutes</string>
+    <string name="notification_practice_reminder_snooze_30">Snooze 30m</string>
+    <string name="setting_name_practice_reminder_snooze_60">1 hour</string>
+    <string name="notification_practice_reminder_snooze_60">Snooze 1h</string>
+    <string name="setting_name_practice_reminder_snooze_90">1 hour 30 minutes</string>
+    <string name="notification_practice_reminder_snooze_90">Snooze 1h30</string>
 
+    <string name="setting_description_feedback">Bug reports, feature requests, reviews</string>
     <string name="setting_description_color_scheme">Color, dark mode, contrast</string>
     <string name="setting_description_primary_instrument">Changes the primary instrument for transpositions and other features.</string>
     <string name="setting_description_visual_latency">Changes the delay between the visual metronome and audio to correct for hardware and bluetooth latencies.</string>
@@ -287,6 +327,7 @@
     <string name="setting_description_tuner_layout">Changes the size of the tuner for expanded screens.</string>
     <string name="setting_description_version">Last installed version.</string>
     <string name="setting_description_raw">Shows all settings in its raw format.</string>
+    <string name="setting_description_practice_reminder_notification">Sends a reminder at the specified time if you have not opened the app in the past day.</string>
 
     <string name="setting_info_recommended_value">Recommended value:\ </string>
 
