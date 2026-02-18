@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -937,6 +937,7 @@ class SimpleEditorActivity : ComponentActivity() {
         val subdivision = if(value.subdivision == 0) timeSignature.second else value.subdivision
         val isTuplet = (subdivision and (subdivision - 1)) != 0
         val duration = 1.0 / subdivision
+        val baseDuration = if(!isTuplet) duration else 1.0 / (subdivision * 2 / 3.0)
         val measureDuration = timeSignature.first / timeSignature.second.toDouble()
 
         var remaining = measureDuration
@@ -951,7 +952,7 @@ class SimpleEditorActivity : ComponentActivity() {
                                 if (remaining <= 0) return@repeat
                                 add(RhythmNote(
                                     stemDirection = if(emphasizeNext) StemDirection.UP else StemDirection.DOWN,
-                                    baseDuration = duration,
+                                    baseDuration = baseDuration,
                                     dots = 0
                                 ))
                                 remaining -= duration
