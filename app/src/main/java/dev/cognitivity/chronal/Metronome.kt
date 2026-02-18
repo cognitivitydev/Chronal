@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -209,7 +209,9 @@ class Metronome(private val sendNotifications: Boolean = true) : BroadcastReceiv
                 val beat = pattern[beatIndex]
                 track.index = beatIndex
 
-                mixTick(outputBuffer, frameStartSample, track.nextBeatSample, beat.isHigh)
+                if (beat.duration >= 0) {
+                    mixTick(outputBuffer, frameStartSample, track.nextBeatSample, beat.isHigh)
+                }
                 track.onUpdate(beat)
 
                 nextBeat(track, beat)
