@@ -48,7 +48,7 @@ data class TempoMarking(
                 TempoMarking("Allegro", 133..143),
                 TempoMarking("Vivace", 144..159),
                 TempoMarking("Presto", 160..199),
-                TempoMarking("Prestissimo", 200..500)
+                TempoMarking("Prestissimo", 200..800)
             )
         }
     }

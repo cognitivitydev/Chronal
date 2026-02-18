@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,17 +18,25 @@
 
 package dev.cognitivity.chronal
 
-import android.util.Log
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.setValue
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmAtom
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 
 class MetronomeTrack(private var rhythm: Rhythm, bpm: Float = 60f, var beatValue: Float = 4f) {
-    var bpm by mutableFloatStateOf(bpm)
+    companion object {
+        const val MIN_BPM = 1f
+        const val MAX_BPM = 800f
+    }
+
+    private var _bpm = mutableFloatStateOf(bpm.coerceIn(MIN_BPM, MAX_BPM))
+    var bpm: Float
+        get() = _bpm.floatValue
+        set(value) {
+            _bpm.floatValue = value.coerceIn(MIN_BPM, MAX_BPM)
+        }
+
     var enabled: Boolean = true
 
     private var intervals: List<Beat> = calculateIntervals(rhythm)
@@ -83,5 +91,5 @@ class MetronomeTrack(private var rhythm: Rhythm, bpm: Float = 60f, var beatValue
 
     fun onUpdate(beat: Beat) { for (l in listenerUpdate.values) l(beat) }
     fun onPause(paused: Boolean) { for (l in listenerPause.values) l(paused) }
-    fun onEdit(rhythm: Rhythm) { Log.d("a", "updated!"); for (l in listenerEdit.values) l(rhythm) }
+    fun onEdit(rhythm: Rhythm) { for (l in listenerEdit.values) l(rhythm) }
 }

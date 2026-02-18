@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1622,7 +1622,7 @@ class RhythmEditorActivity : ComponentActivity() {
                                     change += dragAmount.toInt()
                                     if (abs(change) >= 8) {
                                         val adjustment = (change / 8)
-                                        bpm = (bpm - adjustment).coerceIn(1f, 500f)
+                                        bpm = (bpm - adjustment).coerceIn(MetronomeTrack.MIN_BPM, MetronomeTrack.MAX_BPM)
                                         change %= 8
                                     }
                                 }
@@ -1664,10 +1664,10 @@ class RhythmEditorActivity : ComponentActivity() {
                                             onPress = {
                                                 var isHeld = true
                                                 scope.launch {
-                                                    bpm = (bpm + 1).coerceIn(1f, 500f)
+                                                    bpm = (bpm + 1).coerceIn(MetronomeTrack.MIN_BPM, MetronomeTrack.MAX_BPM)
                                                     delay(500)
                                                     while (isHeld) {
-                                                        bpm = (bpm + 1).coerceIn(1f, 500f)
+                                                        bpm = (bpm + 1).coerceIn(MetronomeTrack.MIN_BPM, MetronomeTrack.MAX_BPM)
                                                         delay(50)
                                                     }
                                                 }
@@ -1686,10 +1686,10 @@ class RhythmEditorActivity : ComponentActivity() {
                                             onPress = {
                                                 var isHeld = true
                                                 scope.launch {
-                                                    bpm = (bpm - 1).coerceIn(1f, 500f)
+                                                    bpm = (bpm - 1).coerceIn(MetronomeTrack.MIN_BPM, MetronomeTrack.MAX_BPM)
                                                     delay(500)
                                                     while (isHeld) {
-                                                        bpm = (bpm - 1).coerceIn(1f, 500f)
+                                                        bpm = (bpm - 1).coerceIn(MetronomeTrack.MIN_BPM, MetronomeTrack.MAX_BPM)
                                                         delay(50)
                                                     }
                                                 }

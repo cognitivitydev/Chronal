@@ -234,9 +234,9 @@
     <string name="tempo_markings_add_min">Minimální tempo</string>
     <string name="tempo_markings_add_max">Maximální tempo</string>
     <string name="tempo_markings_add_error_invalid">Hodnota musí být platné číslo.</string>
-    <string name="tempo_markings_add_error_low">Hodnota musí být alespoň 1 BPM.</string>
+    <string name="tempo_markings_add_error_low">Hodnota musí být alespoň %d BPM.</string>
     <string name="tempo_markings_add_error_min">Maximální hodnota musí být větší nebo rovna %d.</string>
-    <string name="tempo_markings_add_error_high">Hodnota může být nejvýše 500 BPM.</string>
+    <string name="tempo_markings_add_error_high">Hodnota může být nejvýše %d BPM.</string>
     <string name="tempo_markings_reset_title">Obnovit výchozí</string>
     <string name="tempo_markings_reset_text">Určitě chcete vrátit všechna označení tempa na výchozí hodnoty? Tuto akci nelze vrátit zpět.</string>
     <string name="widget_tuner_title">Ladička</string>

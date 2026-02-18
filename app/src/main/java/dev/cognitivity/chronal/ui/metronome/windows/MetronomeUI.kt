@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -74,6 +74,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonObject
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
+import dev.cognitivity.chronal.MetronomeTrack
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.activity.NavigationIcon
@@ -330,22 +331,21 @@ var lastVibration = 0L
 fun setBPM(bpm: Float) {
     val metronome = ChronalApp.getInstance().metronome
 
-    val new = bpm.coerceIn(1f, 500f)
     paused = true
     metronome.stop()
-    metronome.getTracks().forEach { it.bpm = new }
+    metronome.getTracks().forEach { it.bpm = bpm }
 
     val primaryTrack = metronome.getTrack(0)
     val secondaryTrack = metronome.getTrack(1)
 
     CoroutineScope(Dispatchers.Main).launch {
         Settings.METRONOME_STATE.save(MetronomeState(
-            bpm = new, beatValuePrimary = primaryTrack.beatValue,
+            bpm = bpm, beatValuePrimary = primaryTrack.beatValue,
             beatValueSecondary = secondaryTrack.beatValue, secondaryEnabled = secondaryTrack.enabled,
         ))
     }
 
-    if(new == 1f || new == 500f) {
+    if(bpm <= MetronomeTrack.MIN_BPM || bpm >= MetronomeTrack.MAX_BPM) {
         if(System.currentTimeMillis() - lastVibration < 100) return
         lastVibration = System.currentTimeMillis()
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null)

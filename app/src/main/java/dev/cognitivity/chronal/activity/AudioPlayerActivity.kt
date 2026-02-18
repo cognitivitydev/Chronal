@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,6 +53,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import dev.cognitivity.chronal.ChronalApp
+import dev.cognitivity.chronal.MetronomeTrack
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.rhythm.player.PlayerRhythm
 import dev.cognitivity.chronal.rhythm.player.SyncedAudioEngine
@@ -742,7 +743,7 @@ class AudioPlayerActivity : ComponentActivity() {
                                 bpmText = it.filter { char -> char.isDigit() }
                                 bpm = bpmText.toIntOrNull() ?: 0
                             },
-                            isError = (bpm <= 0 || bpm >= 500) && bpmText != "",
+                            isError = (bpm < MetronomeTrack.MIN_BPM || bpm > MetronomeTrack.MIN_BPM) && bpmText != "",
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Number
                             ),
@@ -848,7 +849,7 @@ class AudioPlayerActivity : ComponentActivity() {
             confirmButton = {
                 TextButton(onClick = {
                     if(isTempo) {
-                        if(beats > 0 && bpm > 0 && bpm < 500) {
+                        if(beats > 0 && bpm >= MetronomeTrack.MIN_BPM && bpm <= MetronomeTrack.MAX_BPM) {
                             onConfirm(
                                 SetTempo(
                                     startTime = last?.endTime ?: 0,
@@ -857,7 +858,7 @@ class AudioPlayerActivity : ComponentActivity() {
                                     tempo = bpm
                                 )
                             )
-                        } else if(length > 0 && bpm > 0 && bpm < 500) {
+                        } else if(length > 0 && bpm >= MetronomeTrack.MIN_BPM && bpm <= MetronomeTrack.MAX_BPM) {
                             onConfirm(
                                 SetTempo(
                                     startTime = last?.endTime ?: 0,
@@ -866,7 +867,7 @@ class AudioPlayerActivity : ComponentActivity() {
                                 )
                             )
                         } else {
-                            if(bpm <= 0 || bpm >= 500) {
+                            if(bpm < MetronomeTrack.MIN_BPM || bpm > MetronomeTrack.MAX_BPM) {
                                 Toast.makeText(this, getString(R.string.audio_player_element_error_tempo), Toast.LENGTH_SHORT).show()
                             } else {
                                 Toast.makeText(this, getString(R.string.audio_player_element_error_duration), Toast.LENGTH_SHORT).show()
