@@ -164,7 +164,6 @@
     <string name="setting_name_tuner_layout">Rozvržení ladičky</string>
     <string name="setting_name_version">Verze</string>
     <string name="setting_name_raw">Surové nastavení</string>
-    <string name="setting_description_color_scheme">Změní barevné schéma aplikace.</string>
     <string name="setting_description_audio_threshold">Nastaví práh zvuku pro detekci not. Snižte hodnotu, pokud se nedetekují noty.</string>
     <string name="setting_description_accidentals">Nastaví, jaké se mají zobrazovat posuvky.</string>
     <string name="setting_description_note_names">Změní názvy not na jejich solmizační slabiky.</string>
