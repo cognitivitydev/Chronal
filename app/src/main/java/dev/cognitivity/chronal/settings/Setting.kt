@@ -30,8 +30,10 @@ import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import dev.cognitivity.chronal.ChronalApp.Companion.context
+import dev.cognitivity.chronal.settings.types.json.TempoMarking
 import kotlinx.coroutines.flow.first
 
 abstract class Setting<T>(
@@ -142,13 +144,14 @@ abstract class Setting<T>(
 
 
         fun migrate(prefs: MutablePreferences, fromVersion: Int) {
-            // Version 12: Reworked settings structure - "12345678_SETTING_NAME" to "setting_name"
-            if(fromVersion < 14) {
+            // Version 12:
+            // > Reworked settings structure - "12345678_SETTING_NAME" to "setting_name"
+            // > Updated BPM limit (500 -> 800) - update max tempo markings
+            if(fromVersion < 15) {
                 val keysToChange = prefs.asMap().keys.filter { it.name.matches(Regex("\\d+_.*")) }
                 for(key in keysToChange) {
                     val newKey = key.name.substringAfter("_").lowercase()
-                    val value = prefs[key]
-                    when(value) {
+                    when(val value = prefs[key]) {
                         is Boolean -> { prefs[booleanPreferencesKey(newKey)] = value }
                         is Float -> { prefs[floatPreferencesKey(newKey)] = value }
                         is Int -> { prefs[intPreferencesKey(newKey)] = value }
@@ -158,6 +161,20 @@ abstract class Setting<T>(
                     prefs.remove(key)
                 }
             }
+            // update tempo markings
+            val markings = Settings.TEMPO_MARKINGS.get()
+            val updatedMarkings = mutableListOf<TempoMarking>()
+            for(marking in markings) {
+                if(marking.range.last == 500) {
+                    updatedMarkings.add(marking.copy(range = marking.range.first..800))
+                } else {
+                    updatedMarkings.add(marking)
+                }
+            }
+            prefs[stringPreferencesKey(Settings.TEMPO_MARKINGS.key)] = JsonArray().apply {
+                markings.forEach { add(it.toJson()) }
+            }.toString()
+            Log.d("Setting", "(v12) Updated tempo markings to 800")
         }
     }
 }
