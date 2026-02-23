@@ -30,12 +30,6 @@ Chronal is a metronome and tuner app for Android made for beginner and advanced 
 ## Screenshots
 
 <p>
-  <img src="metadata/en-US/images/phoneScreenshots/1.png" alt="Visual metronomes with customizable polyrhythms" height="288px">
-  <img src="metadata/en-US/images/phoneScreenshots/2.png" alt="Conductor path visualization" height="288px">
-  <img src="metadata/en-US/images/phoneScreenshots/3.png" alt="Tune any instrument with reference tones" height="288px">
-  <br />
-  <img src="metadata/en-US/images/phoneScreenshots/4.png" alt="Create your own custom rhythms" height="288px"><img src="metadata/en-US/images/phoneScreenshots/5.png" alt="with a familiar interface" height="288px">
-  <br />
-  <img src="metadata/en-US/images/phoneScreenshots/6.png" alt="...or stick to a simpler layout" height="288px">
-  <img src="metadata/en-US/images/phoneScreenshots/7.png" alt="Detect the tempo of your rhythm" height="288px">
+  <img src="metadata/en-US/images/phoneScreenshots/1.png" alt="See every beat, play every rhythm" height="288px"><img src="metadata/en-US/images/phoneScreenshots/2.png" alt="Tune any instrument with perfect pitch" height="288px"><img src="metadata/en-US/images/phoneScreenshots/3.png" alt="Play and perform with no ads" height="288px">
+  <img src="metadata/en-US/images/phoneScreenshots/4.png" alt="Advanced built-in notation editor" height="288px"><img src="metadata/en-US/images/phoneScreenshots/5.png" alt="Create any complex rhythm" height="288px"><img src="metadata/en-US/images/phoneScreenshots/6.png" alt="Live tempo from your microphone" height="288px">
 </p>
