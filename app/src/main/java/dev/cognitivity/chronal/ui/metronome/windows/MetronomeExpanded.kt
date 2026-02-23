@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,6 +55,8 @@ import dev.cognitivity.chronal.ui.metronome.CircularClock
 import dev.cognitivity.chronal.ui.metronome.ConductorDisplay
 import dev.cognitivity.chronal.ui.metronome.PlayButton
 import dev.cognitivity.chronal.ui.metronome.RhythmButtons
+import dev.cognitivity.chronal.ui.metronome.verticalBPMGesture
+import kotlin.math.round
 
 @Composable
 fun MetronomePageExpanded(
@@ -82,24 +84,19 @@ fun MetronomePageExpanded(
             TopBar(navController, Color.Transparent, false, RoundedCornerShape(20.dp, 20.dp, 0.dp, 0.dp))
             Row(
                 modifier = Modifier.fillMaxSize()
-                    .verticalBPMGesture()
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = {
+                    .verticalBPMGesture(
+                        onTap = {
                             paused = !paused
-
-                            if (paused) {
-                                metronome.stop()
-                            }
-                            else {
-                                metronome.start()
-                            }
-
+                            if (paused) metronome.stop() else metronome.start()
                             updateSleepMode(window)
+                        },
+                        onHold = {
+                            showTempoTapper = true
+                        },
+                        onSwipe = { amount ->
+                            setBPM(metronome.getTrack(0).bpm + amount)
                         }
                     )
-
             ) {
                 NavHost(navController,
                     startDestination = "clock",

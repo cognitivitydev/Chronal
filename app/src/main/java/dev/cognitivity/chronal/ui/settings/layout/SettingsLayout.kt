@@ -27,6 +27,7 @@ import dev.cognitivity.chronal.ui.settings.data.SettingsPage
 import dev.cognitivity.chronal.ui.settings.screens.appinfo.DeveloperOptionsPage
 import dev.cognitivity.chronal.ui.settings.screens.appinfo.FeedbackPage
 import dev.cognitivity.chronal.ui.settings.screens.appinfo.SchemePage
+import dev.cognitivity.chronal.ui.settings.screens.metronome.GesturesPage
 import dev.cognitivity.chronal.ui.settings.screens.notifications.PracticeReminderPage
 import dev.cognitivity.chronal.ui.settings.screens.tuner.A4FrequencyPage
 import dev.cognitivity.chronal.ui.settings.screens.tuner.AccidentalsPage
@@ -41,6 +42,7 @@ object SettingsLayout {
     )
 
     val pages = listOf(
+        GesturesPage,
         A4FrequencyPage,
         NoteLocalePage,
         AccidentalsPage,

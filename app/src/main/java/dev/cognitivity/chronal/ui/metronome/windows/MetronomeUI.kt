@@ -23,12 +23,12 @@ import android.os.Build
 import android.os.CombinedVibration
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.util.Log
 import android.view.Window
 import android.view.WindowManager
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.interaction.Interaction
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.ColumnScope
@@ -92,8 +92,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.abs
 import kotlin.math.cos
+import kotlin.math.round
 import kotlin.math.sin
 
 var dropdownExpanded by mutableStateOf(false)
@@ -330,6 +334,7 @@ var lastVibration = 0L
 
 fun setBPM(bpm: Float) {
     val metronome = ChronalApp.getInstance().metronome
+    if(metronome.getTrack(0).bpm == bpm) return
 
     paused = true
     metronome.stop()
@@ -400,26 +405,5 @@ fun BottomSheet(
         containerColor = MaterialTheme.colorScheme.surfaceContainer
     ) {
         content()
-    }
-}
-
-fun Modifier.verticalBPMGesture(): Modifier {
-    val metronome = ChronalApp.getInstance().metronome
-    var change = 0
-
-    return this.pointerInput(Unit) {
-        detectVerticalDragGestures(
-            onDragStart = {
-                change = 0
-            },
-            onVerticalDrag = { _, dragAmount ->
-                change += dragAmount.toInt()
-                if (abs(change) >= 64) {
-                    val adjustment = (change / 40)
-                    setBPM((metronome.getTrack(0).bpm) - adjustment)
-                    change %= 40
-                }
-            }
-        )
     }
 }

@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 package dev.cognitivity.chronal.ui.metronome.windows
 
+import android.util.Log
 import android.view.Window
 import androidx.compose.animation.core.EaseInCubic
 import androidx.compose.animation.core.EaseOutCubic
@@ -52,6 +53,8 @@ import dev.cognitivity.chronal.ui.metronome.CircularClock
 import dev.cognitivity.chronal.ui.metronome.ConductorDisplay
 import dev.cognitivity.chronal.ui.metronome.PlayButton
 import dev.cognitivity.chronal.ui.metronome.RhythmButtons
+import dev.cognitivity.chronal.ui.metronome.verticalBPMGesture
+import kotlin.math.round
 
 @Composable
 fun MetronomePageCompact(
@@ -77,21 +80,17 @@ fun MetronomePageCompact(
         Box(
             modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
                 .fillMaxSize()
-                .verticalBPMGesture()
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = {
+                .verticalBPMGesture(
+                    onTap = {
                         paused = !paused
-
-                        if (paused) {
-                            metronome.stop()
-                        }
-                        else {
-                            metronome.start()
-                        }
-
+                        if (paused) metronome.stop() else metronome.start()
                         updateSleepMode(window)
+                    },
+                    onHold = {
+                        showTempoTapper = true
+                    },
+                    onSwipe = { amount ->
+                        setBPM(metronome.getTrack(0).bpm + amount)
                     }
                 ),
             contentAlignment = Alignment.Center

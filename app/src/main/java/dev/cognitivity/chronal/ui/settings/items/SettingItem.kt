@@ -90,6 +90,7 @@ sealed class SettingItem(
         val onValueChange: ((Int) -> Unit) = {},
         val onValueChangeFinished: ((Int) -> Unit) = {},
         val range: IntRange,
+        val steps: Int = 0,
         val valueLabel: (Int) -> String,
         override val meta: SettingMeta
     ) : SettingItem(meta, true)
@@ -103,6 +104,7 @@ sealed class SettingItem(
         val onValueChange: ((Float) -> Unit) = {},
         val onValueChangeFinished: ((Float) -> Unit) = {},
         val range: ClosedFloatingPointRange<Float>,
+        val steps: Int = 0,
         val valueLabel: (Float) -> String,
         override val meta: SettingMeta
     ) : SettingItem(meta, true)

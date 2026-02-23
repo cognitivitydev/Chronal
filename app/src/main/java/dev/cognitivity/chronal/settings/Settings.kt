@@ -33,19 +33,14 @@ import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
 import dev.cognitivity.chronal.settings.types.json.TempoMarking
 
 object Settings {
+    // General
     val COLOR_SCHEME = JsonSetting(
         key = "color_scheme",
         defaultValue = ColorScheme.default(),
         serializer = { it.toJson() },
         deserializer = { ColorScheme.fromJson(it.asJsonObject) }
     )
-
-    val PRIMARY_INSTRUMENT = JsonSetting(
-        key = "primary_instrument",
-        defaultValue = Instrument("B♭ Trumpet", "B♭ Tpt.", -1),
-        serializer = { it.toJson() },
-        deserializer = { Instrument.fromJson(it.asJsonObject) }
-    )
+    val SHOW_DEVELOPER_OPTIONS = BooleanSetting("show_developer_options", false)
 
     // Metronome
     val VISUAL_LATENCY = IntSetting("visual_latency", 100)
@@ -53,7 +48,6 @@ object Settings {
     val SHOW_SUBDIVISIONS = BooleanSetting("show_subdivisions", true)
     val HIGH_CONTRAST = BooleanSetting("high_contrast", false)
     val NO_ANIMATION = BooleanSetting("no_animation", false)
-
     val TEMPO_MARKINGS = JsonSetting(
         key = "tempo_markings",
         defaultValue = TempoMarking.default(),
@@ -66,11 +60,23 @@ object Settings {
             json.asJsonArray.map { TempoMarking.fromJson(it.asJsonObject) }.toMutableList()
         }
     )
+    val GESTURE_SWIPE_ENABLED = BooleanSetting("gesture_swipe_enabled", true)
+    val GESTURE_SWIPE_SENSITIVITY = FloatSetting("gesture_swipe_sensitivity", 0.5f)
+    val GESTURE_SWIPE_INVERTED = BooleanSetting("gesture_swipe_inverted", false)
+    val GESTURE_TAP_ENABLED = BooleanSetting("gesture_tap_enabled", true)
+    val GESTURE_HOLD_ENABLED = BooleanSetting("gesture_hold_enabled", true)
+    val GESTURE_HOLD_DURATION = IntSetting("gesture_hold_duration", 1500)
 
     // Tuner
     val TUNER_FREQUENCY = IntSetting("tuner_frequency", 440)
     val SHOW_OCTAVE = BooleanSetting("show_octave", false)
     val TRANSPOSE_NOTES = BooleanSetting("transpose_notes", false)
+    val PRIMARY_INSTRUMENT = JsonSetting(
+        key = "primary_instrument",
+        defaultValue = Instrument("B♭ Trumpet", "B♭ Tpt.", -1),
+        serializer = { it.toJson() },
+        deserializer = { Instrument.fromJson(it.asJsonObject) }
+    )
     val AUDIO_THRESHOLD = FloatSetting("audio_threshold", 0.5f)
     val ACCIDENTALS = IntSetting("accidentals", 2)
     val NOTE_NAMES = IntSetting("note_names", 0)
@@ -83,7 +89,6 @@ object Settings {
     val PRACTICE_REMINDER_SNOOZE = IntSetting("practice_reminder_snooze", 10) // time in minutes: 0 / 10 / 30 / 60 / 90
 
     // Internal
-    val SHOW_DEVELOPER_OPTIONS = BooleanSetting("show_developer_options", false)
     val METRONOME_RHYTHM = StringSetting("metronome_rhythm", "{4/4}Q;q;q;q;")
     val METRONOME_SIMPLE_RHYTHM = JsonSetting(
         key = "metronome_simple_rhythm",

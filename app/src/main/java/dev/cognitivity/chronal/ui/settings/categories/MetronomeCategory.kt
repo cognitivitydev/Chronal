@@ -26,6 +26,7 @@ import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.ui.settings.items.SettingItem
 import dev.cognitivity.chronal.ui.settings.items.SettingMeta
 import dev.cognitivity.chronal.ui.settings.data.SettingsCategory
+import dev.cognitivity.chronal.ui.settings.screens.metronome.GesturesPage
 
 object MetronomeCategory : SettingsCategory(
     id = "metronome",
@@ -41,6 +42,10 @@ object MetronomeCategory : SettingsCategory(
         SettingItem.ActivityLink(
             meta = SettingMeta(R.string.setting_name_tempo_markings),
             activity = TempoMarkingsActivity::class.java
+        ),
+        SettingItem.PageLink(
+            meta = SettingMeta(R.string.page_settings_gestures),
+            pageId = GesturesPage.id
         ),
         SettingItem.SubCategoryHeader(R.string.settings_header_beat_display),
         SettingItem.Switch(

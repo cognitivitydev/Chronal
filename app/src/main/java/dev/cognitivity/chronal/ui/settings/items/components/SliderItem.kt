@@ -105,6 +105,7 @@ fun SliderItem(item: SettingItem, onNavigate: ((String) -> Unit)?) {
                         item.onValueChangeFinished(value)
                     },
                     valueRange = item.range.first.toFloat()..item.range.last.toFloat(),
+                    steps = item.steps
                 )
             }
 
@@ -141,7 +142,8 @@ fun SliderItem(item: SettingItem, onNavigate: ((String) -> Unit)?) {
                         }
                         item.onValueChangeFinished(value)
                     },
-                    valueRange = item.range
+                    valueRange = item.range,
+                    steps = item.steps
                 )
             }
 

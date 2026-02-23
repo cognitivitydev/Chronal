@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,6 +62,7 @@ import androidx.graphics.shapes.RoundedPolygon
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.ui.metronome.verticalBPMGesture
 import dev.cognitivity.chronal.ui.metronome.windows.paused
 import dev.cognitivity.chronal.ui.metronome.windows.setBPM
 import dev.cognitivity.chronal.ui.metronome.windows.updateSleepMode
@@ -170,34 +171,16 @@ class FullscreenActivity : ComponentActivity() {
             } else invert = false
         }
 
-        var change = 0
-
         Scaffold(
             modifier = Modifier.fillMaxSize()
-                .pointerInput(Unit) {
-                    detectVerticalDragGestures { _, dragAmount ->
-                        change += dragAmount.toInt()
-                        if (abs(change) >= 8) {
-                            val adjustment = (change / 8)
-                            setBPM(mainTrack.bpm - adjustment)
-                            change %= 8
-                        }
-                    }
-                }
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = {
+                .verticalBPMGesture(
+                    onTap = {
                         paused = !paused
-
-                        if (paused) {
-                            metronome.stop()
-                        }
-                        else {
-                            metronome.start()
-                        }
-
+                        if (paused) metronome.stop() else metronome.start()
                         updateSleepMode(window)
+                    },
+                    onSwipe = { amount ->
+                        setBPM(metronome.getTrack(0).bpm + amount)
                     }
                 )
         ) { padding ->
