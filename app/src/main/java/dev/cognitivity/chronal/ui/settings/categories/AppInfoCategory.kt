@@ -28,6 +28,7 @@ import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.CreditsActivity
 import dev.cognitivity.chronal.activity.HelpActivity
 import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.ui.ChangelogSheet
 import dev.cognitivity.chronal.ui.settings.items.SettingItem
 import dev.cognitivity.chronal.ui.settings.items.SettingMeta
 import dev.cognitivity.chronal.ui.settings.data.SettingsCategory
@@ -39,6 +40,8 @@ private val PRIVACY_POLICY_URI = "https://chronal.cognitivity.dev/privacy".toUri
 
 private var developerOptionsEnabled by mutableStateOf(Settings.SHOW_DEVELOPER_OPTIONS.get())
 private var developerOptionsCount by mutableIntStateOf(0) // enable developer options after 3 taps
+
+private var showChangelog by mutableStateOf(false)
 
 object AppInfoCategory : SettingsCategory(
     id = "app_info",
@@ -60,6 +63,19 @@ object AppInfoCategory : SettingsCategory(
             },
             meta = SettingMeta(R.string.setting_name_version, description = { Settings.VERSION.get() }),
         ),
+        SettingItem.TextElement(
+            onClick = {
+                showChangelog = true
+            },
+            meta = SettingMeta(R.string.setting_name_version_changelog)
+        ),
+        SettingItem.Element {
+            if(showChangelog) {
+                ChangelogSheet(
+                    onDismissRequest = { showChangelog = false }
+                )
+            }
+        },
         SettingItem.PageLink(
             meta = SettingMeta(R.string.page_settings_color_scheme, R.string.setting_description_color_scheme),
             pageId = SchemePage.id

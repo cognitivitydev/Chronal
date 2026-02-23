@@ -1,3 +1,21 @@
+/*
+ * Chronal: Metronome app for Android
+ * Copyright (C) 2026  cognitivity
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -89,4 +107,19 @@ dependencies {
     implementation(libs.androidx.runtime.rxjava2)
     implementation(libs.material)
     implementation(libs.androidx.work.runtime.ktx)
+}
+
+val changelogSourceDir = file("${rootDir}/metadata/en-US/changelogs/")
+val changelogTargetDir = file("src/main/assets/changelogs/")
+
+// Task to copy changelog files to assets
+val copyChangelogsToAssets by tasks.registering(Copy::class) {
+    from(changelogSourceDir)
+    into(changelogTargetDir)
+    include("*.txt")
+}
+
+// Ensure changelogs are copied before assembling
+tasks.named("preBuild").configure {
+    dependsOn(copyChangelogsToAssets)
 }

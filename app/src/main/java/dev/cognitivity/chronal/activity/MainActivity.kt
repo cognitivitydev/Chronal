@@ -72,6 +72,7 @@ import androidx.navigation.compose.rememberNavController
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.ui.metronome.windows.BottomSheet
 import dev.cognitivity.chronal.ui.metronome.windows.MetronomePageMain
 import dev.cognitivity.chronal.ui.metronome.windows.activity
 import dev.cognitivity.chronal.ui.settings.SettingsPageMain
@@ -83,6 +84,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.Text
+import dev.cognitivity.chronal.ui.ChangelogSheet
 
 lateinit var audioManager: AudioManager
 var vibratorManager: VibratorManager? = null
@@ -161,7 +165,9 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class, ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class, ExperimentalMaterial3Api::class,
+        ExperimentalMaterial3ExpressiveApi::class
+    )
     @Composable
     fun MainContent() {
         val navController = rememberNavController()
@@ -218,6 +224,29 @@ class MainActivity : ComponentActivity() {
                     text = @Composable {
                         Text(getString(R.string.tuner_missing_permission_text))
                     }
+                )
+            }
+
+            var showChangelogSheet by remember { mutableStateOf(false) }
+            val lastVersionCode = Settings.LAST_VERSION_CODE.get()
+            val lastVersion = Settings.LAST_VERSION.get()
+            val currentVersionCode = Settings.VERSION_CODE.get()
+            val currentVersion = Settings.VERSION.get()
+            if(currentVersionCode > lastVersionCode && lastVersionCode != 0) {
+                showChangelogSheet = true
+                LaunchedEffect(Unit) {
+                    Settings.LAST_VERSION_CODE.save(currentVersionCode)
+                    Settings.LAST_VERSION.save(currentVersion)
+                }
+            }
+
+            if (showChangelogSheet) {
+                ChangelogSheet(
+                    onDismissRequest = { showChangelogSheet = false },
+                    fromVersionCode = lastVersionCode,
+                    fromVersion = lastVersion,
+                    toVersionCode = currentVersionCode,
+                    toVersion = currentVersion
                 )
             }
         }

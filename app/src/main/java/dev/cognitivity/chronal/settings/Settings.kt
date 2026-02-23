@@ -142,5 +142,7 @@ object Settings {
 
     val VERSION = StringSetting("version", "0.0.0")
     val VERSION_CODE = IntSetting("version_code", 0)
+    val LAST_VERSION = StringSetting("last_version", "0.0.0")
+    val LAST_VERSION_CODE = IntSetting("last_version_code", 0)
     val LAST_OPEN = LongSetting("last_open", 0L)
 }

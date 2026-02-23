@@ -86,8 +86,10 @@
     <string name="page_settings_note_locale">Note locale</string>
     <string name="page_settings_notifications">Notifications</string>
     <string name="page_settings_practice_reminder">Practice reminder</string>
-
     <string name="page_tuner">Tuner</string>
+
+    <string name="changelog_title">Changelog</string>
+    <string name="changelog_updated">Updated: %1$s → %2$s</string>
 
     <string name="metronome_bpm">bpm</string>
     <string name="metronome_tempo_unknown">Unknown</string>
@@ -291,6 +293,7 @@
     <string name="setting_name_fullscreen_warning">Fullscreen photosensitivity warning</string>
     <string name="setting_name_tuner_layout">Tuner layout</string>
     <string name="setting_name_version">Version</string>
+    <string name="setting_name_version_changelog">Show changelog</string>
     <string name="setting_name_raw">Raw settings</string>
     <string name="setting_name_metronome_controls_notification">Metronome controls</string>
     <string name="setting_name_practice_reminder_notification">Enable practice reminder</string>

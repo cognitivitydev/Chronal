@@ -1,0 +1,9 @@
+# v1.0.0
+
+ • Fixed German note names (#10)
+ • Fixed transpositions in expanded mode
+ • Refreshed advanced editor UI
+ • Updated colors for Material 3 Expressive
+ • Increased touch size of tempo changer arrows
+ • Improved expanded mode restrictions (#12 #13 #14)
+ • Removed Clock Widget - may be reworked later
