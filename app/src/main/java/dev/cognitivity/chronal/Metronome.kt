@@ -379,6 +379,7 @@ class Metronome(private val sendNotifications: Boolean = true) : BroadcastReceiv
     }
 
     private fun sendRunningNotification() {
+        if(!Settings.METRONOME_CONTROLS_NOTIFICATION.get()) return
         createNotificationChannel()
 
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

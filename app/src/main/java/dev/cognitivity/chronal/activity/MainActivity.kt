@@ -234,10 +234,10 @@ class MainActivity : ComponentActivity() {
             val currentVersion = Settings.VERSION.get()
             if(currentVersionCode > lastVersionCode && lastVersionCode != 0) {
                 showChangelogSheet = true
-                LaunchedEffect(Unit) {
-                    Settings.LAST_VERSION_CODE.save(currentVersionCode)
-                    Settings.LAST_VERSION.save(currentVersion)
-                }
+            }
+            LaunchedEffect(Unit) {
+                Settings.LAST_VERSION_CODE.save(currentVersionCode)
+                Settings.LAST_VERSION.save(currentVersion)
             }
 
             if (showChangelogSheet) {

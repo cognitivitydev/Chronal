@@ -84,23 +84,26 @@ fun ChangelogSheet(onDismissRequest: () -> Unit,
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(vertical = 16.dp),
-            overscrollEffect = null
+            overscrollEffect = null,
+            reverseLayout = true
         ) {
             items(entries.size) { index ->
                 val changelog = entries[index]
                 val version = changelog.lines()[0].removePrefix("# ").trim()
                 val content = changelog.replace("# $version\n\n", "")
 
-                Text(
-                    text = version,
-                    style = MaterialTheme.typography.titleLargeEmphasized,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = content,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Column {
+                    Text(
+                        text = version,
+                        style = MaterialTheme.typography.titleLargeEmphasized,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = content,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
     }
