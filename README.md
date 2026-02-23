@@ -31,5 +31,6 @@ Chronal is a metronome and tuner app for Android made for beginner and advanced 
 
 <p>
   <img src="metadata/en-US/images/phoneScreenshots/1.png" alt="See every beat, play every rhythm" height="288px"><img src="metadata/en-US/images/phoneScreenshots/2.png" alt="Tune any instrument with perfect pitch" height="288px"><img src="metadata/en-US/images/phoneScreenshots/3.png" alt="Play and perform with no ads" height="288px">
+  <br />
   <img src="metadata/en-US/images/phoneScreenshots/4.png" alt="Advanced built-in notation editor" height="288px"><img src="metadata/en-US/images/phoneScreenshots/5.png" alt="Create any complex rhythm" height="288px"><img src="metadata/en-US/images/phoneScreenshots/6.png" alt="Live tempo from your microphone" height="288px">
 </p>
