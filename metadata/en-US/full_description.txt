@@ -1,14 +1,20 @@
-<strong>Metronome features:</strong>
- • Beat visualization
- • Two synchronized metronomes for polyrhythms
- • Conductor mode with metronome and tuner
- • Notation editor for creating custom rhythms
- • Fullscreen mode for easy peripheral viewing
- • Play audio files with custom tempos
+Chronal is a powerful, ad-free metronome and tuner built for musicians of all levels.
 
-<strong>Tuner features:</strong>
- • Transpose to any instrument
- • Custom tuning to any frequency
- • Tuner graph
- • Real-time BPM detection from microphone
- • A4 reference tone
+Practice, rehearse, and perform with precise timing, advanced rhythm tools, and a chromatic tuner, all in one app.
+
+<strong>🎵 Metronome Features</strong>
+ • <strong>Notation editor:</strong> Hear the rhythm that you see on the page.
+ • <strong>Multiple synchronized metronomes:</strong> Layer independent rhythms for polyrhythms and advanced practice.
+ • <strong>Beat & subdivision visualization:</strong> Clear visual indicators for beats and subdivisions.
+ • <strong>Fullscreen mode:</strong> Focus on your music with large, easy-to-see visuals from a distance.
+ • <strong>Conductor mode:</strong> Follow a visual conducting path to internalize timing.
+ • <strong>Real-time BPM detection:</strong> Detect the tempo of percussion patterns straight from your microphone.
+
+<strong>🎸 Tuner Features</strong>
+ • <strong>Transpose for any instrument:</strong> Tune guitar, strings, and wind instruments with precision.
+ • <strong>Custom tuning frequency:</strong> Adjust the reference pitch (A4) to any frequency you prefer.
+ • <strong>Tuner graph:</strong> Visualize your pitch stability and accuracy in real time.
+ • <strong>Reference tones:</strong> Generate reference tones to tune by ear.
+
+<strong>🎷 No ads, no interruptions</strong>
+Chronal is completely ad-free and distraction-free. Practice and perform without any distractions or annoying pop-ups. The app is completely open-source and is funded solely by generous donations.

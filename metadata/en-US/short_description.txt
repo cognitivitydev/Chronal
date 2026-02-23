@@ -1,1 +1,1 @@
-Metronome and tuner app designed for beginner and advanced musicians.
+Clean metronome & tuner with polyrhythms and notation editor.
