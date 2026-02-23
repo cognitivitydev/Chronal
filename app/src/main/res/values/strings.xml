@@ -76,6 +76,7 @@
     <string name="page_conductor">Conductor</string>
     <string name="page_metronome">Metronome</string>
     <string name="page_settings">Settings</string>
+    <string name="page_settings_gestures">Gestures</string>
     <string name="page_settings_a4_frequency">A4 Frequency</string>
     <string name="page_settings_accidentals">Accidentals</string>
     <string name="page_settings_app_info">App info</string>
@@ -281,6 +282,12 @@
     <string name="setting_name_metronome_sounds">Metronome sounds</string>
     <string name="setting_name_metronome_state">Metronome state</string>
     <string name="setting_name_metronome_presets">Metronome presets</string>
+    <string name="setting_name_metronome_gesture_tap">Enable tapping</string>
+    <string name="setting_name_metronome_gesture_hold">Enable holding</string>
+    <string name="setting_name_metronome_gesture_hold_duration">Hold duration</string>
+    <string name="setting_name_metronome_gesture_swipe">Enable swiping</string>
+    <string name="setting_name_metronome_gesture_swipe_sensitivity">Swipe sensitivity</string>
+    <string name="setting_name_metronome_gesture_swipe_invert">Invert swipe direction</string>
     <string name="setting_name_fullscreen_warning">Fullscreen photosensitivity warning</string>
     <string name="setting_name_tuner_layout">Tuner layout</string>
     <string name="setting_name_version">Version</string>
@@ -323,6 +330,9 @@
     <string name="setting_description_metronome_sounds">Changes the high and low emphasis sounds for the metronome.</string>
     <string name="setting_description_metronome_state">Miscellaneous info for both metronomes.</string>
     <string name="setting_description_metronome_presets">Presets for metronome rhythms and states.</string>
+    <string name="setting_description_metronome_gesture_swipe">Swipe anywhere to change tempo</string>
+    <string name="setting_description_metronome_gesture_tap">Tap anywhere to play or pause</string>
+    <string name="setting_description_metronome_gesture_hold">Hold anywhere to tap tempo</string>
     <string name="setting_description_fullscreen_warning">Shows warning when first entering fullscreen mode.</string>
     <string name="setting_description_tuner_layout">Changes the size of the tuner for expanded screens.</string>
     <string name="setting_description_version">Last installed version.</string>
