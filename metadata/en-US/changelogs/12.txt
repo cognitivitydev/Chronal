@@ -1,0 +1,12 @@
+# v1.0.1
+
+ • Moved metronome to sample-based alignment
+ • Reworked and reorganized settings menu
+ • Added gesture customization for the metronome
+ • Added practice reminders and notification controls
+ • Increased BPM limit (500 → 800)
+ • Fixed rhythm buttons not updating
+ • Fixed metronome playing ticks for rests
+ • Added changelog popup
+ • Added Czech translation (Petr Kadlec @mormegil-cz)
+ • Added French translation (@Minos2020)
