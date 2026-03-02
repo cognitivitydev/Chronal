@@ -62,6 +62,7 @@
     <string name="page_conductor">Dirigent</string>
     <string name="page_metronome">Metronom</string>
     <string name="page_settings">Nastavení</string>
+    <string name="page_settings_notifications">Oznámení</string>
     <string name="page_tuner">Ladička</string>
     <string name="metronome_tempo_unknown">Neznámé</string>
     <string name="metronome_conductor_not_supported">Nastavený takt není zatím podporován.</string>
@@ -70,6 +71,8 @@
     <string name="metronome_notification_title">%d BPM</string>
     <string name="metronome_notification_playing">Hraje.</string>
     <string name="metronome_notification_paused">Pozastaveno.</string>
+    <string name="notification_practice_reminder_title">Je čas cvičit!</string>
+    <string name="notification_practice_reminder_text">Ještě jsme se neviděli. Jste připraveni začít?</string>
     <string name="metronome_option_change_sounds">Změnit zvuky</string>
     <string name="metronome_option_fullscreen_mode">Režim celé obrazovky</string>
     <string name="metronome_option_play_audio">Přehrávat audio</string>
@@ -159,6 +162,9 @@
     <string name="settings_footer_version">Verze %s</string>
     <string name="settings_footer_development_build">Vývojářská verze</string>
     <string name="settings_footer_privacy_policy">Ochrana osobních údajů</string>
+    <string name="settings_notifications_no_permission">Vyžadováno povolení pro oznámení</string>
+    <string name="settings_notifications_no_permission_description">Pokud chcete používat oznámení, musíte udělit oprávnění pro oznámení. Udělte ho klepnutím.</string>
+    <string name="settings_notifications_no_permission_grant">Udělit povolení</string>
     <string name="settings_menu_help">Nápověda</string>
     <string name="settings_menu_open_source_credits">Licence open source</string>
     <string name="settings_menu_send_feedback">Odeslat zpětnou vazbu</string>
