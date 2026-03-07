@@ -24,6 +24,7 @@ import android.os.CombinedVibration
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import android.util.Log
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import dev.cognitivity.chronal.ChronalApp.Companion.context
@@ -60,6 +61,8 @@ fun Modifier.verticalBPMGesture(
                 var holdTriggered = false
                 var vibrating = false
 
+                var consumed = false
+
                 try {
                     while(true) {
                         val elapsed = System.currentTimeMillis() - downTime
@@ -80,7 +83,10 @@ fun Modifier.verticalBPMGesture(
                         if(event == null) continue
 
                         val change = event.changes.find { it.id == down.id } ?: break
-                        if(!change.pressed || change.isConsumed) break
+                        consumed = change.isConsumed
+                        if(!change.pressed || change.isConsumed) {
+                            break
+                        }
 
                         val dy = change.position.y - lastY
                         lastY = change.position.y
@@ -113,7 +119,7 @@ fun Modifier.verticalBPMGesture(
                     if(vibrating) cancelVibration()
                 }
 
-                if(!isDrag && !holdTriggered && tapEnabled) {
+                if(!isDrag && !holdTriggered && tapEnabled && !consumed) {
                     onTap()
                 }
             }
