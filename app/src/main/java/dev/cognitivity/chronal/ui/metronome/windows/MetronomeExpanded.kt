@@ -18,6 +18,7 @@
 
 package dev.cognitivity.chronal.ui.metronome.windows
 
+import android.R.attr.track
 import android.view.Window
 import androidx.compose.animation.core.EaseInCubic
 import androidx.compose.animation.core.EaseOutCubic
@@ -40,7 +41,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -55,8 +55,8 @@ import dev.cognitivity.chronal.ui.metronome.CircularClock
 import dev.cognitivity.chronal.ui.metronome.ConductorDisplay
 import dev.cognitivity.chronal.ui.metronome.PlayButton
 import dev.cognitivity.chronal.ui.metronome.RhythmButtons
+import dev.cognitivity.chronal.ui.metronome.TempoChanger
 import dev.cognitivity.chronal.ui.metronome.verticalBPMGesture
-import kotlin.math.round
 
 @Composable
 fun MetronomePageExpanded(
@@ -164,6 +164,23 @@ fun MetronomePageExpanded(
                                     )
                                 }
                             }
+                            val metronome = ChronalApp.getInstance().metronome
+                            val track = metronome.getTrack(0)
+
+                            TempoChanger( // TODO move to make more space
+                                modifier = Modifier.fillMaxWidth(0.5f)
+                                    .align(Alignment.Center),
+                                bpm = track.bpm,
+                                onIncrement = {
+                                    setBPM(track.bpm + 1)
+                                },
+                                onDecrement = {
+                                    setBPM(track.bpm - 1)
+                                },
+                                onClick = { // TODO
+                                    track.bpm += 0.01f
+                                }
+                            )
                         }
                     }
                     composable("conductor") {

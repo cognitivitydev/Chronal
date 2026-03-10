@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 package dev.cognitivity.chronal.ui.metronome
 
+import android.R.attr.track
 import android.content.Context
 import android.graphics.Matrix
 import android.os.Build
@@ -70,6 +71,7 @@ import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.round
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.toPx
+import dev.cognitivity.chronal.ui.metronome.windows.setBPM
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -284,7 +286,23 @@ fun ConductorDisplay() {
             modifier = Modifier.align(Alignment.CenterHorizontally)
                 .height(IntrinsicSize.Min)
         ) {
-            TempoChanger()
+            val metronome = ChronalApp.getInstance().metronome
+            val track = metronome.getTrack(0)
+
+            TempoChanger(
+                modifier = Modifier.padding(start = 56.dp, top = 8.dp, end = 56.dp)
+                    .align(Alignment.Center),
+                bpm = track.bpm,
+                onIncrement = {
+                    setBPM(track.bpm + 1)
+                },
+                onDecrement = {
+                    setBPM(track.bpm - 1)
+                },
+                onClick = { // TODO
+                    track.bpm += 0.01f
+                }
+            )
         }
     }
 }

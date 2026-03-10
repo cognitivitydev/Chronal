@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -271,7 +271,6 @@ fun BoxScope.CircularClock(primary: Boolean, trackSize: Float, trackOff: Color, 
         }
         ClockBeats(progress, trackSize, intervals.filter { it.measure == currentMeasure }, majorOff, minorOff, majorPrimary, minorPrimary)
     }
-    TempoChanger()
 }
 
 
