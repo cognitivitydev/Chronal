@@ -18,21 +18,34 @@
 
 package dev.cognitivity.chronal.ui
 
+import android.R.attr.onClick
+import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
+import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.settings.Settings
@@ -87,6 +100,43 @@ fun ChangelogSheet(onDismissRequest: () -> Unit,
             overscrollEffect = null,
             reverseLayout = true
         ) {
+            item {
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+                ) {
+                    Button(
+                        onClick = {
+                            ChronalApp.getInstance().startActivity(
+                                Intent(Intent.ACTION_VIEW, "https://ko-fi.com/cognitivity".toUri())
+                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            )
+                        },
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.outline_volunteer_activism_24),
+                            contentDescription = null
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(context.getString(R.string.settings_support_project))
+                    }
+                    FilledTonalButton(
+                        onClick = {
+                            ChronalApp.getInstance().startActivity(
+                                Intent(Intent.ACTION_VIEW, "https://github.com/cognitivitydev/chronal/issues".toUri())
+                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            )
+                        },
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.outline_bug_report_24),
+                            contentDescription = null
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(context.getString(R.string.page_settings_feedback))
+                    }
+                }
+            }
             items(entries.size) { index ->
                 val changelog = entries[index]
                 val version = changelog.lines()[0].removePrefix("# ").trim()

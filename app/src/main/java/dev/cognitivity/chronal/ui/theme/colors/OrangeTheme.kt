@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import dev.cognitivity.chronal.settings.types.json.ColorScheme
+import dev.cognitivity.chronal.ui.theme.AppTypography
 
 private val primaryLight = Color(0xFF8B4F24)
 private val onPrimaryLight = Color(0xFFFFFFFF)
@@ -494,6 +495,7 @@ fun OrangeTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
+        typography = AppTypography,
         content = content
     )
 }

@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,6 +53,7 @@ fun MetronomeTheme(
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 MaterialExpressiveTheme(
                     colorScheme = if(isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context),
+                    typography = AppTypography,
                     content = content
                 )
             } else {
