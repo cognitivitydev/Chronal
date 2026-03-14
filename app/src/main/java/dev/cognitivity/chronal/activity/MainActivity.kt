@@ -22,7 +22,6 @@ import android.Manifest
 import android.app.NotificationManager
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Path
 import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
@@ -39,10 +38,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Settings
@@ -62,7 +58,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
-import androidx.glance.appwidget.updateAll
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -72,21 +67,28 @@ import androidx.navigation.compose.rememberNavController
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.settings.Settings
-import dev.cognitivity.chronal.ui.metronome.windows.BottomSheet
-import dev.cognitivity.chronal.ui.metronome.windows.MetronomePageMain
 import dev.cognitivity.chronal.ui.metronome.windows.activity
 import dev.cognitivity.chronal.ui.settings.SettingsPageMain
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import dev.cognitivity.chronal.ui.tuner.windows.TunerPageMain
-import dev.cognitivity.chronal.widgets.PresetListWidget
-import dev.cognitivity.chronal.widgets.TunerWidget
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.material3.Text
+import androidx.glance.appwidget.updateAll
 import dev.cognitivity.chronal.ui.ChangelogSheet
+import dev.cognitivity.chronal.ui.metronome.MetronomePageMain
+import dev.cognitivity.chronal.widgets.PresetListWidget
+import dev.cognitivity.chronal.widgets.TunerWidget
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import androidx.compose.material3.ScaffoldDefaults
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
+import dev.cognitivity.chronal.toPx
+import kotlin.math.exp
+import kotlin.math.max
 
 lateinit var audioManager: AudioManager
 var vibratorManager: VibratorManager? = null
@@ -165,6 +167,14 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    fun setKeepScreenOn(enabled: Boolean) {
+        if(enabled) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+    }
+
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class, ExperimentalMaterial3Api::class,
         ExperimentalMaterial3ExpressiveApi::class
     )
@@ -176,21 +186,35 @@ class MainActivity : ComponentActivity() {
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            containerColor = if(expanded) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.surface,
             bottomBar = {
                 if(!expanded) {
                     NavigationBar(navController)
                 }
             },
         ) { innerPadding ->
+            val compactPadding = innerPadding
+            val expandedPadding = WindowInsets.statusBars
+                .union(WindowInsets.navigationBars)
+                .union(WindowInsets.ime)
+                .asPaddingValues()
+            val padding = if(expanded) {
+                PaddingValues( // minimum 12dp on all sides
+                    start = maxOf(12.dp, expandedPadding.calculateStartPadding(LocalLayoutDirection.current)),
+                    top = maxOf(12.dp, expandedPadding.calculateTopPadding()),
+                    end = maxOf(12.dp, expandedPadding.calculateEndPadding(LocalLayoutDirection.current)),
+                    bottom = maxOf(12.dp, expandedPadding.calculateBottomPadding())
+                )
+            } else compactPadding
+
             if(expanded) {
                 Row(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     NavigationRail(navController)
-                    NavigationHost(navController, true, innerPadding)
+                    NavigationHost(navController, true, padding)
                 }
-            } else NavigationHost(navController, false, innerPadding)
+            } else NavigationHost(navController, false, padding)
 
             if(showMicrophoneDialog) {
                 AlertDialog(
@@ -255,11 +279,6 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
     fun NavigationHost(navController: NavHostController, expanded: Boolean, padding: PaddingValues) {
-        val path = Path()
-        path.moveTo(0f, 0f)
-        path.cubicTo(0.05f, 0f, 0.133333f, 0.06f, 0.166666f, 0.4f)
-        path.cubicTo(0.208333f, 0.82f, 0.25f, 1f, 1f, 1f)
-
         val enterTransition: (Boolean) -> EnterTransition = { forward ->
             if (expanded) {
                 slideInVertically(MotionScheme.expressive().slowSpatialSpec(), initialOffsetY = { if(forward) it else -it })
@@ -291,7 +310,7 @@ class MainActivity : ComponentActivity() {
                     exitTransition(true)
                 }
             ) {
-                MetronomePageMain(window, expanded, this@MainActivity, padding)
+                MetronomePageMain(this@MainActivity, padding)
                 ChronalApp.getInstance().tuner?.stop()
             }
             composable("tuner",

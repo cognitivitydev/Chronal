@@ -23,82 +23,38 @@ import android.os.Build
 import android.os.CombinedVibration
 import android.os.VibrationEffect
 import android.os.Vibrator
-import android.util.Log
-import android.view.Window
-import android.view.WindowManager
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.interaction.Interaction
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.PrimaryTabRow
-import androidx.compose.material3.SheetValue
-import androidx.compose.material3.Tab
-import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.rotate
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
-import com.google.gson.Gson
-import com.google.gson.JsonObject
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.MetronomeTrack
-import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.MainActivity
-import dev.cognitivity.chronal.activity.NavigationIcon
-import dev.cognitivity.chronal.activity.NavigationItem
 import dev.cognitivity.chronal.activity.vibratorManager
 import dev.cognitivity.chronal.rhythm.metronome.Beat
-import dev.cognitivity.chronal.settings.Setting
 import dev.cognitivity.chronal.settings.Settings
-import dev.cognitivity.chronal.settings.types.json.MetronomePreset
 import dev.cognitivity.chronal.settings.types.json.MetronomeState
-import dev.cognitivity.chronal.ui.metronome.sheets.EditRhythm
-import dev.cognitivity.chronal.ui.metronome.sheets.TapTempo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.abs
 import kotlin.math.cos
-import kotlin.math.round
 import kotlin.math.sin
+
+// TODO remove this
 
 var dropdownExpanded by mutableStateOf(false)
 var showTempoTapper by mutableStateOf(false)
@@ -115,159 +71,9 @@ lateinit var activity: MainActivity
 val intervals = mutableListOf<Long>()
 var lastTapTime: Long? = null
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MetronomePageMain(window: Window, expanded: Boolean, mainActivity: MainActivity, padding: PaddingValues) {
-    val metronome = ChronalApp.getInstance().metronome
-
-    activity = mainActivity
-
-    //load preset from widget if available
-    val presetJson = mainActivity.intent.getStringExtra("preset")
-    if(presetJson != null && presetJson.isNotEmpty()) {
-        val preset = MetronomePreset.fromJson(Gson().fromJson(presetJson, JsonObject::class.java))
-
-        val primaryTrack = metronome.getTrack(0)
-        primaryTrack.bpm = preset.state.bpm
-        primaryTrack.beatValue = preset.state.beatValuePrimary
-        val secondaryTrack = metronome.getTrack(1)
-        secondaryTrack.bpm = preset.state.bpm
-        secondaryTrack.beatValue = preset.state.beatValueSecondary
-        secondaryTrack.enabled = preset.state.secondaryEnabled
-
-        Settings.METRONOME_STATE.set(preset.state)
-        Settings.METRONOME_RHYTHM.set(preset.primaryRhythm.serialize())
-        Settings.METRONOME_RHYTHM_SECONDARY.set(preset.secondaryRhythm.serialize())
-        Settings.METRONOME_SIMPLE_RHYTHM.set(preset.primarySimpleRhythm)
-        Settings.METRONOME_SIMPLE_RHYTHM_SECONDARY.set(preset.secondarySimpleRhythm)
-        metronome.getTrack(0).setRhythm(preset.primaryRhythm)
-        metronome.getTrack(1).setRhythm(preset.secondaryRhythm)
-
-        mainActivity.intent.removeExtra("preset")
-
-        LaunchedEffect(Unit) {
-            Setting.saveAll()
-        }
-    }
-
-    val navController = rememberNavController()
-
-    if(expanded) {
-        MetronomePageExpanded(navController, window)
-    } else {
-        MetronomePageCompact(navController, window, padding)
-    }
-    if(showTempoTapper) {
-        BottomSheet(
-            onDismissRequest = {
-                showTempoTapper = false
-                intervals.clear()
-                lastTapTime = 0
-            },
-        ) {
-            TapTempo()
-        }
-    }
-    if(showRhythmPrimary) {
-        BottomSheet(
-            onDismissRequest = {
-                showRhythmPrimary = false
-            },
-        ) {
-            EditRhythm(true, expanded) {
-                showRhythmPrimary = false
-            }
-        }
-    }
-    if(showRhythmSecondary) {
-        BottomSheet(
-            onDismissRequest = {
-                showRhythmSecondary = false
-            },
-        ) {
-            EditRhythm(false, expanded) {
-                showRhythmSecondary = false
-            }
-        }
-    }
-}
-
-@Composable
-fun TopBar(navController: NavController, color: Color, padding: Boolean, clipShape: Shape) {
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-
-    val items = listOf(
-        NavigationItem(
-            R.string.page_metronome, "clock", NavigationIcon.ResourceIcon(R.drawable.baseline_music_note_24)
-        ),
-        NavigationItem(
-            R.string.page_conductor, "conductor", NavigationIcon.VectorIcon(Icons.Outlined.Person),
-            NavigationIcon.VectorIcon(Icons.Filled.Person)
-        )
-    )
-
-    val selectedIndex = items.indexOfFirst { it.route == currentRoute }.coerceAtLeast(0)
-
-    PrimaryTabRow(
-        selectedTabIndex = selectedIndex,
-        modifier = Modifier.windowInsetsPadding(if(padding) WindowInsets.statusBars else WindowInsets(0.dp))
-            .selectableGroup()
-            .clip(clipShape),
-        containerColor = color,
-        contentColor = MaterialTheme.colorScheme.primary,
-    ) {
-        items.forEachIndexed { index, item ->
-            Tab(
-                selected = index == selectedIndex,
-                onClick = {
-                    if (currentRoute != item.route) {
-                        navController.navigate(item.route) {
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    }
-                },
-                icon = {
-                    when (val icon = item.icon) {
-                        is NavigationIcon.ResourceIcon -> {
-                            Icon(
-                                painter = painterResource(
-                                    if (currentRoute == item.route)
-                                        (item.selectedIcon as NavigationIcon.ResourceIcon).resourceId
-                                    else icon.resourceId
-                                ),
-                                contentDescription = context.getString(item.label)
-                            )
-                        }
-
-                        is NavigationIcon.VectorIcon -> {
-                            Icon(
-                                imageVector = (
-                                        if (currentRoute == item.route)
-                                            (item.selectedIcon as NavigationIcon.VectorIcon).imageVector
-                                        else icon.imageVector
-                                        ),
-                                contentDescription = context.getString(item.label)
-                            )
-                        }
-                    }
-                },
-                text = { Text(context.getString(item.label)) },
-                interactionSource = object : MutableInteractionSource {
-                    override val interactions: Flow<Interaction> = emptyFlow()
-
-                    override suspend fun emit(interaction: Interaction) {}
-
-                    override fun tryEmit(interaction: Interaction) = true
-                }
-            )
-        }
-    }
-}
-@Composable
-fun ClockBeats(progress: Animatable<Float, AnimationVector1D>, trackSize: Float, beats: List<Beat>, majorOffColor: Color, minorOffColor: Color, majorPrimaryColor: Color, minorPrimaryColor: Color,
-               surface: Color = MaterialTheme.colorScheme.surface) {
+fun ClockBeats(beats: List<Beat>, progress: Animatable<Float, AnimationVector1D>, trackSize: Float,
+               offColor: Color, primaryColor: Color, surface: Color = MaterialTheme.colorScheme.surface) {
     val showBeats = Settings.SHOW_BEATS.get()
     val showSubdivisions = Settings.SHOW_SUBDIVISIONS.get()
     if (!showBeats && !showSubdivisions) return
@@ -300,9 +106,9 @@ fun ClockBeats(progress: Animatable<Float, AnimationVector1D>, trackSize: Float,
 
             val reached = progress.value > percentage
             val beatColor = if (isMajor) {
-                if (reached) majorPrimaryColor else majorOffColor
+                if (reached) primaryColor else offColor
             } else {
-                if (reached) minorPrimaryColor else minorOffColor
+                if (reached) primaryColor else offColor
             }
 
             drawContext.canvas.save()
@@ -376,34 +182,5 @@ fun setBPM(bpm: Float) {
             val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
             vibrator.vibrate(5)
         }
-    }
-}
-
-fun updateSleepMode(window: Window) {
-    if(!paused) {
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-    } else {
-        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun BottomSheet(
-    onDismissRequest: () -> Unit,
-    content: @Composable ColumnScope.() -> Unit = {}
-) {
-    ModalBottomSheet(
-        onDismissRequest = {
-            onDismissRequest()
-        },
-        sheetState = rememberModalBottomSheetState(
-            skipPartiallyExpanded = true,
-            confirmValueChange = { it != SheetValue.PartiallyExpanded }
-        ),
-        contentWindowInsets = { WindowInsets.navigationBars },
-        containerColor = MaterialTheme.colorScheme.surfaceContainer
-    ) {
-        content()
     }
 }

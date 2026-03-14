@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,7 +61,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {}) {
+fun EditRhythm(primary: Boolean, onDismiss: () -> Unit = {}) {
     val metronome = ChronalApp.getInstance().metronome
     var showSimpleWarning by remember { mutableStateOf(false) }
 
@@ -97,64 +97,53 @@ fun EditRhythm(primary: Boolean, expanded: Boolean, onDismiss: () -> Unit = {}) 
                 animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
                 label = "animatedText"
             )
-            Row(
-                modifier = Modifier.padding(16.dp, 16.dp, 16.dp, 8.dp)
-                    .fillMaxWidth(0.9f)
-                    .align(Alignment.CenterHorizontally)
+            FlowRow(
+                horizontalArrangement = Arrangement.Center
             ) {
-                val weight = if(expanded) Modifier else Modifier.weight(1f)
                 Row(
-                    modifier = Modifier.clip(RoundedCornerShape(16.dp))
-                        .background(animatedBackground)
-                        .then(weight)
-                        .clickable {
-                            if (primary) {
-                                Toast.makeText(context, context.getString(R.string.simple_editor_primary_disable), Toast.LENGTH_SHORT).show()
-                                return@clickable
-                            }
-                            secondaryEnabled = !secondaryEnabled
-                            onSwitch(secondaryEnabled)
-                        }
+                    modifier = Modifier.padding(16.dp, 16.dp, 16.dp, 8.dp)
+                        .fillMaxWidth(0.9f)
                 ) {
-                    Text(context.getString(if(primary) R.string.simple_editor_primary_enabled else R.string.simple_editor_secondary_enable),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = animatedText,
-                        modifier = Modifier.padding(16.dp, 8.dp)
-                            .then(weight)
-                            .align(Alignment.CenterVertically)
-                    )
-                    Switch(
-                        checked = if(primary) true else secondaryEnabled,
-                        onCheckedChange = { checked ->
-                            if (primary) {
-                                Toast.makeText(context, context.getString(R.string.simple_editor_primary_disable), Toast.LENGTH_SHORT).show()
-                                return@Switch
+                    Row(
+                        modifier = Modifier.clip(RoundedCornerShape(16.dp))
+                            .background(animatedBackground)
+                            .weight(1f)
+                            .clickable {
+                                if (primary) {
+                                    Toast.makeText(context, context.getString(R.string.simple_editor_primary_disable), Toast.LENGTH_SHORT).show()
+                                    return@clickable
+                                }
+                                secondaryEnabled = !secondaryEnabled
+                                onSwitch(secondaryEnabled)
                             }
-                            secondaryEnabled = checked
-                            onSwitch(secondaryEnabled)
-                        },
-                        colors = SwitchDefaults.colors(
-                            checkedTrackColor = if(primary) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary,
-                            checkedThumbColor = if(primary) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onTertiary
-                        ),
-                        modifier = Modifier.padding(16.dp, 8.dp)
-                            .align(Alignment.CenterVertically)
-                    )
-                }
-                if(expanded) {
-                    Box(
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                            .weight(1f),
-                        contentAlignment = Alignment.Center
                     ) {
-                        Vibration(primary, enabled)
+                        Text(context.getString(if(primary) R.string.simple_editor_primary_enabled else R.string.simple_editor_secondary_enable),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = animatedText,
+                            modifier = Modifier.padding(16.dp, 8.dp)
+                                .weight(1f)
+                                .align(Alignment.CenterVertically)
+                        )
+                        Switch(
+                            checked = if(primary) true else secondaryEnabled,
+                            onCheckedChange = { checked ->
+                                if (primary) {
+                                    Toast.makeText(context, context.getString(R.string.simple_editor_primary_disable), Toast.LENGTH_SHORT).show()
+                                    return@Switch
+                                }
+                                secondaryEnabled = checked
+                                onSwitch(secondaryEnabled)
+                            },
+                            colors = SwitchDefaults.colors(
+                                checkedTrackColor = if(primary) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary,
+                                checkedThumbColor = if(primary) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onTertiary
+                            ),
+                            modifier = Modifier.padding(16.dp, 8.dp)
+                                .align(Alignment.CenterVertically)
+                        )
                     }
                 }
-            }
-            if(!expanded) {
-                Box(
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                ) {
+                Box {
                     Vibration(primary, enabled)
                 }
             }

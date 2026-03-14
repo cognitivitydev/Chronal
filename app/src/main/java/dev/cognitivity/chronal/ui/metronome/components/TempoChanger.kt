@@ -16,25 +16,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package dev.cognitivity.chronal.ui.metronome
+package dev.cognitivity.chronal.ui.metronome.components
 
 import android.os.Build
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -65,10 +55,8 @@ import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.round
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.toDp
-import kotlinx.coroutines.NonCancellable.isActive
 import kotlinx.coroutines.delay
 import kotlin.math.max
-import kotlin.math.min
 
 @OptIn(ExperimentalTextApi::class)
 @Composable
@@ -101,7 +89,7 @@ fun TempoChanger(
             }
         }
         Box(
-            modifier = Modifier.size(48.dp)
+            modifier = Modifier.requiredSize(36.dp, 42.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.secondaryContainer)
                 .pointerInput(Unit) {
@@ -122,15 +110,14 @@ fun TempoChanger(
     Surface(
         modifier = modifier
             .wrapContentWidth()
-            .height(120.dp),
+            .heightIn(max = 128.dp),
         shape = CircleShape,
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
         tonalElevation = 4.dp,
         onClick = onClick
     ) {
         Row(
-            modifier = Modifier
-                .padding(horizontal = 16.dp),
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -144,7 +131,7 @@ fun TempoChanger(
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(horizontal = 8.dp)
-                    .widthIn(min = 120.dp)
+                    .widthIn(min = 60.dp)
             ) {
 
                 val roundedFontFamily = FontFamily(
@@ -173,9 +160,9 @@ fun TempoChanger(
 
                 Row {
                     val fontSize = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { // variable fonts only supported for O+
-                        56.sp
+                        40.sp
                     } else {
-                        56.sp * (width/100f)
+                        40.sp * (width/100f)
                     }
                     Text(
                         text = bpmText.substringBefore('.'),
@@ -191,18 +178,18 @@ fun TempoChanger(
                             .alignByBaseline(),
                         color = MaterialTheme.colorScheme.onSurface,
                     )
-                    if(bpmText.contains('.')) {
+                    if (bpmText.contains('.')) {
                         Text(
                             text = "." + bpmText.substringAfter('.'),
                             style = TextStyle(
                                 fontFamily = bpmFontFamily,
                                 fontWeight = FontWeight(700),
-                                fontSize = fontSize/2,
+                                fontSize = fontSize / 2,
                                 lineHeight = 0.sp,
                                 fontFeatureSettings = "'tnum'"
                             ),
                             maxLines = 1,
-                            modifier = Modifier.height((fontSize/2).toDp())
+                            modifier = Modifier.height((fontSize / 2).toDp())
                                 .alignByBaseline(),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )

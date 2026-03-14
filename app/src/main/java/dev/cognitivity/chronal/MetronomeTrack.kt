@@ -24,7 +24,12 @@ import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmAtom
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 
-class MetronomeTrack(private var rhythm: Rhythm, bpm: Float = 60f, var beatValue: Float = 4f) {
+class MetronomeTrack(
+    var name: String = "New track",
+    private var rhythm: Rhythm,
+    bpm: Float = 60f,
+    var beatValue: Float = 4f
+) {
     companion object {
         const val MIN_BPM = 1f
         const val MAX_BPM = 16000f

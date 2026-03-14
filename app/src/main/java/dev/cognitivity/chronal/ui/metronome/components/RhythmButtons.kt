@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package dev.cognitivity.chronal.ui.metronome
+package dev.cognitivity.chronal.ui.metronome.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
@@ -48,6 +48,7 @@ import dev.cognitivity.chronal.ui.metronome.windows.showRhythmSecondary
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
+@Deprecated("")
 fun RhythmButtons(navController: NavController, modifier: Modifier = Modifier) {
     val metronome = ChronalApp.getInstance().metronome
 

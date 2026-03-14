@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -67,7 +67,7 @@ import kotlinx.coroutines.launch
 class LatencyActivity : ComponentActivity() {
     val metronome = Metronome(sendNotifications = false).apply {
         addTrack(0, MetronomeTrack(
-            Rhythm.deserialize("{4/4}Q;Q;Q;Q;"),
+            rhythm = Rhythm.deserialize("{4/4}Q;Q;Q;Q;"),
             bpm = 120f,
             beatValue = 4f,
         ))

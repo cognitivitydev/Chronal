@@ -25,6 +25,7 @@ import android.os.Bundle
 import android.text.format.DateFormat
 import android.view.View
 import android.view.WindowInsets
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -34,7 +35,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -52,7 +52,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -62,10 +61,9 @@ import androidx.graphics.shapes.RoundedPolygon
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.settings.Settings
-import dev.cognitivity.chronal.ui.metronome.verticalBPMGesture
+import dev.cognitivity.chronal.ui.metronome.components.verticalBPMGesture
 import dev.cognitivity.chronal.ui.metronome.windows.paused
 import dev.cognitivity.chronal.ui.metronome.windows.setBPM
-import dev.cognitivity.chronal.ui.metronome.windows.updateSleepMode
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -177,7 +175,11 @@ class FullscreenActivity : ComponentActivity() {
                     onTap = {
                         paused = !paused
                         if (paused) metronome.stop() else metronome.start()
-                        updateSleepMode(window)
+                        if(!paused) {
+                            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                        } else {
+                            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                        }
                     },
                     onSwipe = { amount ->
                         setBPM(metronome.getTrack(0).bpm + amount)

@@ -16,9 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package dev.cognitivity.chronal.ui.metronome
+package dev.cognitivity.chronal.ui.metronome.pages
 
-import android.R.attr.track
 import android.content.Context
 import android.graphics.Matrix
 import android.os.Build
@@ -38,7 +37,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -64,25 +62,27 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
+import dev.cognitivity.chronal.Metronome
 import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.activity.vibratorManager
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmAtom
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.round
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.toPx
+import dev.cognitivity.chronal.ui.metronome.components.TempoChanger
 import dev.cognitivity.chronal.ui.metronome.windows.setBPM
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 // TODO
-//   - pick display track
 //   - separate versions for different time signatures (5/4, 6/8...)
 @Composable
-fun ConductorDisplay() {
-    val metronome = ChronalApp.getInstance().metronome
-    val displayTrack = metronome.getTrack(0)
+fun ConductorDisplay(mainActivity: MainActivity, metronome: Metronome, flipped: Boolean, modifier: Modifier = Modifier) {
+    val tracks = metronome.getTracks()
+    val displayTrack = tracks[0]
 
     val coroutineScope = rememberCoroutineScope()
     var loopIndex by remember { mutableIntStateOf(0) }
@@ -90,7 +90,6 @@ fun ConductorDisplay() {
     var (path, segments) = getConductorPath(currentTimeSignature.first)
     val currentBeat = remember { Animatable(0f) }
 
-    var flipped by remember { mutableStateOf(false) }
 
     var lastBeatId: Pair<Int, Int>? = null // measure index and beat index
 
@@ -189,6 +188,7 @@ fun ConductorDisplay() {
         Box(
             modifier = Modifier.fillMaxSize()
                 .weight(1f)
+                .padding(8.dp)
         ) {
             if(segments.isEmpty()) {
                 Column(
@@ -211,19 +211,7 @@ fun ConductorDisplay() {
                     )
                 }
             } else {
-                FilledIconToggleButton(
-                    checked = flipped,
-                    onCheckedChange = { flipped = it },
-                    modifier = Modifier.align(Alignment.TopStart)
-                        .padding(horizontal = 8.dp),
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.outline_flip_24),
-                        contentDescription = context.getString(R.string.metronome_conductor_flip)
-                    )
-                }
-
-                DrawPath(flipped, path.copy(), 0f, 0f, color = MaterialTheme.colorScheme.secondaryContainer, style = Stroke(width = 3.dp.toPx()))
+                DrawPath(flipped, path.copy(), 0f, 0f, color = MaterialTheme.colorScheme.onPrimary, style = Stroke(width = 3.dp.toPx()))
                 if(!metronome.playing && currentBeat.value == 0f) {
                     return@Box
                 }
@@ -290,7 +278,7 @@ fun ConductorDisplay() {
             val track = metronome.getTrack(0)
 
             TempoChanger(
-                modifier = Modifier.padding(start = 56.dp, top = 8.dp, end = 56.dp)
+                modifier = Modifier.padding(8.dp)
                     .align(Alignment.Center),
                 bpm = track.bpm,
                 onIncrement = {

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package dev.cognitivity.chronal.ui.metronome
+package dev.cognitivity.chronal.ui.metronome.components
 
 import android.content.Context
 import android.os.Build
@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MotionScheme
@@ -48,8 +49,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
+import dev.cognitivity.chronal.MetronomeTrack
 import dev.cognitivity.chronal.activity.vibratorManager
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.settings.Settings
@@ -62,12 +65,8 @@ import kotlin.math.sin
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun BoxScope.CircularClock(primary: Boolean, trackSize: Float, trackOff: Color, trackPrimary: Color, trackSecondary: Color,
-                           majorOffColor: Color, minorOffColor: Color, majorPrimaryColor: Color, minorPrimaryColor: Color,
-                           majorSecondaryColor: Color, minorSecondaryColor: Color
-) {
+fun BoxScope.CircularClock(track: MetronomeTrack, trackSize: Float, trackOff: Color, trackPrimary: Color, trackSecondary: Color) {
     val metronome = ChronalApp.getInstance().metronome
-    val track = metronome.getTrack(if(primary) 0 else 1)
 
     var rhythm by remember { mutableStateOf(track.getRhythm()) }
     var intervals by remember { mutableStateOf(track.getIntervals()) }
@@ -92,8 +91,7 @@ fun BoxScope.CircularClock(primary: Boolean, trackSize: Float, trackOff: Color, 
         coroutineScope.launch {
             delay(Settings.VISUAL_LATENCY.get().toLong())
             if(!metronome.playing || timestamp != metronome.timestamp) return@launch
-            if((!Settings.METRONOME_VIBRATIONS.get() && primary)
-                || (!Settings.METRONOME_VIBRATIONS_SECONDARY.get() && !primary)) return@launch
+            if(!Settings.METRONOME_VIBRATIONS.get()) return@launch
             if(beat.duration >= 0f) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null) {
                     val vibration = if(beat.isHigh) VibrationEffect.createOneShot(10, 255) else VibrationEffect.createOneShot(3, 255)
@@ -183,6 +181,7 @@ fun BoxScope.CircularClock(primary: Boolean, trackSize: Float, trackOff: Color, 
     Box(
         modifier = Modifier.aspectRatio(1f)
             .align(Alignment.Center)
+            .padding(9.dp)
     ) {
         val surface = MaterialTheme.colorScheme.surface
 
@@ -196,28 +195,10 @@ fun BoxScope.CircularClock(primary: Boolean, trackSize: Float, trackOff: Color, 
             1 -> trackPrimary
             else -> trackSecondary
         }
-        val majorOff = when(trackColorType) {
-            0 -> majorOffColor
-            1 -> majorPrimaryColor
-            else -> majorSecondaryColor
-        }
-        val minorOff = when(trackColorType) {
-            0 -> minorOffColor
-            1 -> minorPrimaryColor
-            else -> minorSecondaryColor
-        }
-        val majorPrimary = when(progressColorType) {
-            0 -> majorOffColor
-            1 -> majorPrimaryColor
-            else -> majorSecondaryColor
-        }
-        val minorPrimary = when(progressColorType) {
-            0 -> minorOffColor
-            1 -> minorPrimaryColor
-            else -> minorSecondaryColor
-        }
 
-        Canvas(Modifier.fillMaxSize()) {
+        Canvas(
+            modifier = Modifier.fillMaxSize()
+        ) {
             val radius = (size.minDimension / 2) - trackSize / 2
             val center = Offset(size.width / 2, size.height / 2)
 
@@ -231,11 +212,6 @@ fun BoxScope.CircularClock(primary: Boolean, trackSize: Float, trackOff: Color, 
             val arcAngle = (progress.value * 360f) - 90f
             if(arcAngle == -90f) return@Canvas // hide outlines when not playing
 
-            drawCircle(
-                color = surface,
-                radius = trackSize * 1.5f,
-                center = Offset(center.x, center.y - radius)
-            )
             drawCircle(
                 color = surface,
                 radius = trackSize * 1.75f,
@@ -269,7 +245,7 @@ fun BoxScope.CircularClock(primary: Boolean, trackSize: Float, trackOff: Color, 
                 )
             )
         }
-        ClockBeats(progress, trackSize, intervals.filter { it.measure == currentMeasure }, majorOff, minorOff, majorPrimary, minorPrimary)
+        ClockBeats(intervals.filter { it.measure == currentMeasure }, progress, trackSize, trackColor, progressColor)
     }
 }
 

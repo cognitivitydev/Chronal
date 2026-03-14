@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package dev.cognitivity.chronal.ui.metronome
+package dev.cognitivity.chronal.ui.metronome.components
 
 import android.content.Context
 import android.os.Build
@@ -24,7 +24,6 @@ import android.os.CombinedVibration
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
-import android.util.Log
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import dev.cognitivity.chronal.ChronalApp.Companion.context

@@ -73,7 +73,6 @@
     <string name="generic_warning">Warning</string>
     <string name="generic_website">Website</string>
 
-    <string name="page_conductor">Conductor</string>
     <string name="page_metronome">Metronome</string>
     <string name="page_settings">Settings</string>
     <string name="page_settings_gestures">Gestures</string>
@@ -92,7 +91,14 @@
     <string name="changelog_updated">Updated: %1$s → %2$s</string>
 
     <string name="metronome_bpm">bpm</string>
+    <string name="metronome_track_list">Tracks (%1$d)</string>
+    <string name="metronome_track_add">Add track</string>
     <string name="metronome_tempo_unknown">Unknown</string>
+
+    <string name="metronome_display_clock">Clock</string>
+    <string name="metronome_display_conductor">Conductor</string>
+    <string name="metronome_display_grid">Grid</string>
+    <string name="metronome_switch_display_mode">Switch display modes</string>
 
     <string name="metronome_conductor_not_supported">Current time signature is not yet supported.</string>
     <string name="metronome_conductor_flip">Flip horizontally</string>

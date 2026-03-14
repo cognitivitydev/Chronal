@@ -427,22 +427,18 @@ class SimpleEditorActivity : ComponentActivity() {
                     )
                 }
                 if(isPrimary) {
-                    ClockBeats(remember { Animatable(-1f) }, 4.dp.toPx(),
-                        selectedTrack.calculateIntervals(previewRhythm!!).filter { it.measure == 0 },
-                        majorOffColor = MaterialTheme.colorScheme.primaryContainer,
-                        minorOffColor = MaterialTheme.colorScheme.onPrimary,
-                        majorPrimaryColor = MaterialTheme.colorScheme.primary,
-                        minorPrimaryColor = MaterialTheme.colorScheme.primary,
-                        surface = MaterialTheme.colorScheme.surface
+                    ClockBeats(selectedTrack.calculateIntervals(previewRhythm!!).filter { it.measure == 0 },
+                        progress = remember { Animatable(-1f) },
+                        trackSize = 4.dp.toPx(),
+                        offColor = MaterialTheme.colorScheme.onPrimary,
+                        primaryColor = MaterialTheme.colorScheme.primary,
                     )
                 } else {
-                    ClockBeats(remember { Animatable(-1f) }, 4.dp.toPx(),
-                        selectedTrack.calculateIntervals(previewRhythm!!).filter { it.measure == 0 },
-                        majorOffColor = MaterialTheme.colorScheme.tertiaryContainer,
-                        minorOffColor = MaterialTheme.colorScheme.onTertiary,
-                        majorPrimaryColor = MaterialTheme.colorScheme.tertiary,
-                        minorPrimaryColor = MaterialTheme.colorScheme.tertiary,
-                        surface = MaterialTheme.colorScheme.surface
+                    ClockBeats(selectedTrack.calculateIntervals(previewRhythm!!).filter { it.measure == 0 },
+                        progress = remember { Animatable(-1f) },
+                        trackSize = 4.dp.toPx(),
+                        offColor = MaterialTheme.colorScheme.onTertiary,
+                        primaryColor = MaterialTheme.colorScheme.tertiary,
                     )
                 }
                 content()

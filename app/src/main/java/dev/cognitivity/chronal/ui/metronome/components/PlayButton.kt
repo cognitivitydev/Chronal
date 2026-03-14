@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package dev.cognitivity.chronal.ui.metronome
+package dev.cognitivity.chronal.ui.metronome.components
 
 import android.content.Intent
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -31,14 +30,12 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.requiredSizeIn
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
@@ -49,15 +46,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -66,10 +59,7 @@ import androidx.graphics.shapes.CornerRounding
 import androidx.graphics.shapes.Morph
 import androidx.graphics.shapes.RoundedPolygon
 import androidx.graphics.shapes.circle
-import androidx.graphics.shapes.rectangle
 import androidx.graphics.shapes.star
-import androidx.graphics.shapes.toPath
-import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.BeatDetectorActivity
@@ -78,14 +68,11 @@ import dev.cognitivity.chronal.activity.FullscreenActivity
 import dev.cognitivity.chronal.ui.MorphedShape
 import dev.cognitivity.chronal.ui.metronome.windows.activity
 import dev.cognitivity.chronal.ui.metronome.windows.dropdownExpanded
-import dev.cognitivity.chronal.ui.metronome.windows.paused
 import dev.cognitivity.chronal.ui.metronome.windows.showTempoTapper
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun PlayButton(modifier: Modifier = Modifier) {
-    val metronome = ChronalApp.getInstance().metronome
-
+fun PlayButton(active: Boolean, onClick: (Boolean) -> Unit, modifier: Modifier = Modifier) {
     val shapeA = remember {
         RoundedPolygon.star(9, rounding = CornerRounding(0.2f), radius = 1.8f)
     }
@@ -97,7 +84,7 @@ fun PlayButton(modifier: Modifier = Modifier) {
     }
 
     val morphProgress by animateFloatAsState(
-        targetValue = if (!paused) 0.6f else 1f,
+        targetValue = if (active) 0.6f else 1f,
         animationSpec = MotionScheme.expressive().defaultSpatialSpec(),
         label = "morphProgress"
     )
@@ -114,13 +101,14 @@ fun PlayButton(modifier: Modifier = Modifier) {
     )
 
     val animatedColor by animateColorAsState(
-        targetValue = if (paused) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primary,
+        targetValue = if (!active) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primary,
         animationSpec = MotionScheme.expressive().defaultSpatialSpec(),
         label = "animatedColor"
     )
 
     Box(
-        modifier = modifier,
+        modifier = modifier.fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp)),
         contentAlignment = Alignment.Center,
     ) {
         MaterialTheme(
@@ -168,20 +156,9 @@ fun PlayButton(modifier: Modifier = Modifier) {
             }
         }
 
-        Box(Modifier.fillMaxSize()) {
-            Row(
-                modifier = Modifier.align(Alignment.Center)
-            ) {
-                Spacer(
-                    modifier = Modifier.weight(0.3f)
-                        .fillMaxHeight()
-                )
-
-                Spacer(
-                    modifier = Modifier.weight(0.1f)
-                        .fillMaxHeight()
-                )
-            }
+        Box(
+            modifier = Modifier.wrapContentHeight()
+        ) {
             Box(
                 modifier = Modifier.size(120.dp, 56.dp)
                     .offset(x = (-60).dp)
@@ -228,8 +205,8 @@ fun PlayButton(modifier: Modifier = Modifier) {
                 )
             }
             Box(
-                modifier = Modifier.aspectRatio(1f)
-                    .requiredSizeIn(maxWidth = 96.dp, maxHeight = 96.dp)
+                modifier = Modifier.requiredSizeIn(maxWidth = 96.dp, maxHeight = 96.dp)
+                    .aspectRatio(1f)
                     .align(Alignment.Center)
                     .clip(
                         MorphedShape(
@@ -240,103 +217,18 @@ fun PlayButton(modifier: Modifier = Modifier) {
                     )
                     .background(animatedColor)
                     .clickable {
-                        paused = !paused
-
-                        if (paused) {
-                            metronome.stop()
-                        } else {
-                            metronome.start()
-                        }
+                        onClick(!active)
                     }
                     .zIndex(2f)
             ) {
                 PlayPauseIcon(
-                    paused = paused,
-                    modifier = Modifier.fillMaxSize(0.5f)
+                    paused = !active,
+                    modifier = Modifier.size(48.dp)
                         .align(Alignment.Center)
                 )
             }
         }
     }
-}
-
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@Composable
-fun PlayPauseIcon(paused: Boolean, playColor: Color = MaterialTheme.colorScheme.onPrimary, pauseColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
-                  modifier: Modifier = Modifier) {
-    val animatedColor by animateColorAsState(
-        targetValue = if (paused) pauseColor else playColor,
-        animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
-        label = "animatedColor"
-    )
-
-    val playProgress = remember { Animatable(0f) }
-
-    LaunchedEffect(paused) {
-        playProgress.animateTo(
-            targetValue = if (paused) 0f else 1f,
-            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
-        )
-    }
-
-    Box(
-        modifier = Modifier.then(modifier)
-            .drawWithCache {
-                val barWidth = size.width / 4.5f
-                val barHeight = size.height / 1.333f
-
-                val square = RoundedPolygon.rectangle(
-                    width = barWidth,
-                    height = barHeight,
-                    centerX = barWidth * 1.5f - 9,
-                    centerY = barHeight / 1.5f,
-                    rounding = CornerRounding(0f)
-                )
-
-                val square2 = RoundedPolygon.rectangle(
-                    width = barWidth,
-                    height = barHeight,
-                    centerX = barWidth * 3.5f - 9,
-                    centerY = barHeight / 1.5f,
-                    rounding = CornerRounding(0f)
-                )
-
-                val triangle = RoundedPolygon(
-                    numVertices = 3,
-                    radius = size.minDimension / 2f,
-                    centerX = size.width / 2f - 10,
-                    centerY = size.height / 2f,
-                    rounding = CornerRounding(
-                        size.minDimension / 10f,
-                        smoothing = 0.1f
-                    )
-                )
-
-                val triangle2 = RoundedPolygon(
-                    numVertices = 3,
-                    radius = size.minDimension / 3f,
-                    centerX = size.width / 2f - 10,
-                    centerY = size.height / 2f,
-                    rounding = CornerRounding(
-                        size.minDimension / 10f,
-                        smoothing = 0.1f
-                    )
-                )
-
-                val morphPath = Morph(start = triangle, end = square)
-                    .toPath(progress = playProgress.value)
-                    .asComposePath()
-
-                val morphPath2 = Morph(start = triangle2, end = square2)
-                    .toPath(progress = playProgress.value)
-                    .asComposePath()
-
-                onDrawBehind {
-                    drawPath(morphPath, color = animatedColor)
-                    drawPath(morphPath2, color = animatedColor)
-                }
-            }
-    )
 }
 
 @Composable
