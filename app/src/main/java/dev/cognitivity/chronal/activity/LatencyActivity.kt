@@ -65,10 +65,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class LatencyActivity : ComponentActivity() {
-    val metronome = Metronome(sendNotifications = false).apply {
+    val metronome = Metronome(sendNotifications = false, bpm = 120f).apply {
         addTrack(0, MetronomeTrack(
             rhythm = Rhythm.deserialize("{4/4}Q;Q;Q;Q;"),
-            bpm = 120f,
             beatValue = 4f,
         ))
     }

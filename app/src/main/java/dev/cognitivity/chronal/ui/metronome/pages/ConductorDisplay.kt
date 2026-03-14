@@ -167,7 +167,7 @@ fun ConductorDisplay(mainActivity: MainActivity, metronome: Metronome, flipped: 
                     currentBeat.animateTo(
                         targetValue = endValue.toFloat(),
                         animationSpec = tween(
-                            durationMillis = (beatDuration * 60000 / displayTrack.bpm * displayTrack.beatValue).toInt(),
+                            durationMillis = (beatDuration * 60000 / metronome.bpm * displayTrack.beatValue).toInt(),
                             easing = CubicBezierEasing(0f, 0f, 0.5f, 0.75f)
                         )
                     )
@@ -275,20 +275,19 @@ fun ConductorDisplay(mainActivity: MainActivity, metronome: Metronome, flipped: 
                 .height(IntrinsicSize.Min)
         ) {
             val metronome = ChronalApp.getInstance().metronome
-            val track = metronome.getTrack(0)
 
             TempoChanger(
                 modifier = Modifier.padding(8.dp)
                     .align(Alignment.Center),
-                bpm = track.bpm,
+                bpm = metronome.bpm,
                 onIncrement = {
-                    setBPM(track.bpm + 1)
+                    setBPM(metronome.bpm + 1)
                 },
                 onDecrement = {
-                    setBPM(track.bpm - 1)
+                    setBPM(metronome.bpm - 1)
                 },
                 onClick = { // TODO
-                    track.bpm += 0.01f
+                    metronome.bpm += 0.01f
                 }
             )
         }

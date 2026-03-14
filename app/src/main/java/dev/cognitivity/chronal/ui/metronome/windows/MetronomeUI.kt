@@ -140,11 +140,11 @@ var lastVibration = 0L
 
 fun setBPM(bpm: Float) {
     val metronome = ChronalApp.getInstance().metronome
-    if(metronome.getTrack(0).bpm == bpm) return
+    if(metronome.bpm == bpm) return
 
     paused = true
     metronome.stop()
-    metronome.getTracks().forEach { it.bpm = bpm }
+    metronome.bpm = bpm
 
     val primaryTrack = metronome.getTrack(0)
     val secondaryTrack = metronome.getTrack(1)

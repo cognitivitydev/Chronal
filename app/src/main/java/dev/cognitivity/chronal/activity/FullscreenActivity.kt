@@ -135,7 +135,7 @@ class FullscreenActivity : ComponentActivity() {
             if (beat.index == 0) {
                 repeat(measure.timeSig.first) { index ->
                     coroutineScope.launch {
-                        val beatDelay = ((1f / measure.timeSig.second) * 60000 / mainTrack.bpm * mainTrack.beatValue).toInt() * index
+                        val beatDelay = ((1f / measure.timeSig.second) * 60000 / metronome.bpm * mainTrack.beatValue).toInt() * index
                         delay(Settings.VISUAL_LATENCY.get().toLong() + beatDelay)
                         if(!metronome.playing || timestamp != metronome.timestamp) return@launch
 
@@ -146,7 +146,7 @@ class FullscreenActivity : ComponentActivity() {
                             progress.animateTo(
                                 targetValue = 1f,
                                 animationSpec = tween(
-                                    durationMillis = ((1f / measure.timeSig.second) * 60000 / mainTrack.bpm * mainTrack.beatValue).toInt(),
+                                    durationMillis = ((1f / measure.timeSig.second) * 60000 / metronome.bpm * mainTrack.beatValue).toInt(),
                                     easing = LinearEasing
                                 )
                             )
@@ -182,7 +182,7 @@ class FullscreenActivity : ComponentActivity() {
                         }
                     },
                     onSwipe = { amount ->
-                        setBPM(metronome.getTrack(0).bpm + amount)
+                        setBPM(metronome.bpm + amount)
                     }
                 )
         ) { padding ->
@@ -269,7 +269,7 @@ class FullscreenActivity : ComponentActivity() {
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
-                BeatShape(i, mainTrack.bpm)
+                BeatShape(i, metronome.bpm)
             }
 
             var photoDialog by remember { mutableStateOf(true) }

@@ -121,7 +121,6 @@ class RhythmEditorActivity : ComponentActivity() {
     private val metronome = Metronome(sendNotifications = false).apply {
         addTrack(0, MetronomeTrack(
             rhythm = parsedRhythm,
-            bpm = 120f,
             beatValue = 4f
         ))
     }
@@ -168,7 +167,7 @@ class RhythmEditorActivity : ComponentActivity() {
         }
 
         appMetronome = ChronalApp.getInstance().metronome
-        mainTrack.bpm = appTrack.bpm
+        metronome.bpm = appMetronome.bpm
         mainTrack.beatValue = appTrack.beatValue
 
         mainTrack.setRhythm(parsedRhythm)
@@ -592,11 +591,11 @@ class RhythmEditorActivity : ComponentActivity() {
                                 text = { Text(getString(R.string.generic_save_exit)) },
                                 onClick = {
                                     backDropdown = false
-                                    appTrack.bpm = mainTrack.bpm
+                                    appMetronome.bpm = metronome.bpm
                                     appTrack.beatValue = mainTrack.beatValue
 
                                     Settings.METRONOME_STATE.set(MetronomeState(
-                                        bpm = appTrack.bpm,
+                                        bpm = appMetronome.bpm,
                                         beatValuePrimary = appTrack.beatValue,
                                         beatValueSecondary = appTrack.beatValue,
                                         secondaryEnabled = !isPrimary && appMetronome.getTrack(1).enabled
@@ -707,7 +706,7 @@ class RhythmEditorActivity : ComponentActivity() {
                             modifier = Modifier.width(8.dp)
                         )
                         Text(
-                            "= ${mainTrack.bpm.toInt()}",
+                            "= ${metronome.bpm.toInt()}",
                             modifier = Modifier.align(Alignment.CenterVertically),
                             color = MaterialTheme.colorScheme.onSurface,
                             style = MaterialTheme.typography.bodyLarge
@@ -1544,7 +1543,7 @@ class RhythmEditorActivity : ComponentActivity() {
     @Composable
     fun EditBpmDialog() {
         var beatValue by remember { mutableFloatStateOf(mainTrack.beatValue) }
-        var bpm by remember { mutableFloatStateOf(mainTrack.bpm) }
+        var bpm by remember { mutableFloatStateOf(metronome.bpm) }
         val scope = rememberCoroutineScope()
         var change = 0
 
@@ -1718,7 +1717,7 @@ class RhythmEditorActivity : ComponentActivity() {
                         TextButton(onClick = {
                             metronome.stop()
                             mainTrack.beatValue = beatValue
-                            mainTrack.bpm = bpm
+                            metronome.bpm = bpm
                             showBpm = false
                         }) {
                             Text(getString(R.string.generic_confirm))

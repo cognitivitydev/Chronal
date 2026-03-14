@@ -302,7 +302,7 @@ fun EditRhythm(primary: Boolean, onDismiss: () -> Unit = {}) {
                     )))
 
                     Settings.METRONOME_STATE.set(MetronomeState(
-                        bpm = selectedTrack.bpm, beatValuePrimary = primaryTrack.beatValue,
+                        bpm = metronome.bpm, beatValuePrimary = primaryTrack.beatValue,
                         beatValueSecondary = secondaryTrack.beatValue, secondaryEnabled = secondaryEnabled
                     ))
 
@@ -399,7 +399,7 @@ private fun onSwitch(enabled: Boolean) {
 
     CoroutineScope(Dispatchers.Main).launch {
         Settings.METRONOME_STATE.save(MetronomeState(
-            bpm = primaryTrack.bpm, beatValuePrimary = primaryTrack.beatValue,
+            bpm = metronome.bpm, beatValuePrimary = primaryTrack.beatValue,
             beatValueSecondary = secondaryTrack.beatValue, secondaryEnabled = enabled,
         ))
     }

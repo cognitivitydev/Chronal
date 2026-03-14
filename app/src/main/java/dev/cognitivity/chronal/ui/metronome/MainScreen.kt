@@ -90,7 +90,7 @@ fun MetronomePageMain(mainActivity: MainActivity, padding: PaddingValues) {
                     showTempoTapper = true
                 },
                 onSwipe = { amount ->
-                    setBPM(metronome.getTrack(0).bpm + amount)
+                    setBPM(metronome.bpm + amount)
                 }
             )
     ) {
@@ -180,7 +180,7 @@ fun MetronomePageMain(mainActivity: MainActivity, padding: PaddingValues) {
                                 showTempoTapper = true
                             },
                             onSwipe = { amount ->
-                                setBPM(metronome.getTrack(0).bpm + amount)
+                                setBPM(metronome.bpm + amount)
                             }
                         )
                 ) {

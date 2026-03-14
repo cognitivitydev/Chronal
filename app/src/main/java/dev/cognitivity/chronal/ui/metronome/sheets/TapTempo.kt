@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -156,7 +156,7 @@ fun TapTempo() {
                                 val last = lastTapTime
                                 delay(60000L / newBpm * 5)
                                 if (last == lastTapTime) {
-                                    metronome.getTracks().forEach { it.bpm = newBpm.toFloat() }
+                                    metronome.bpm = newBpm.toFloat()
 
                                     val primaryTrack = metronome.getTrack(0)
                                     val secondaryTrack = metronome.getTrack(1)

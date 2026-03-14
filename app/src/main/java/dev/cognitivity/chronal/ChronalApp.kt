@@ -51,15 +51,13 @@ class ChronalApp : Application() {
 
             val state = Settings.METRONOME_STATE.get()
 
-            metronome = Metronome()
+            metronome = Metronome(bpm = state.bpm)
             metronome.addTrack(0, MetronomeTrack(
                 rhythm = Rhythm.deserialize(Settings.METRONOME_RHYTHM.get()),
-                bpm = state.bpm,
                 beatValue = state.beatValuePrimary,
             ))
             val secondaryTrack = MetronomeTrack(
                 rhythm = Rhythm.deserialize(Settings.METRONOME_RHYTHM_SECONDARY.get()),
-                bpm = state.bpm,
                 beatValue = state.beatValueSecondary,
             )
             secondaryTrack.enabled = false

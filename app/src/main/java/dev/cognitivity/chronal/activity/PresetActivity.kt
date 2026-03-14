@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -322,7 +322,7 @@ class PresetActivity : ComponentActivity() {
                                 val newPreset = MetronomePreset(
                                     name = newName.trim().ifBlank { getString(R.string.presets_new_name) },
                                     state = MetronomeState(
-                                        bpm = primaryTrack.bpm,
+                                        bpm = metronome.bpm,
                                         beatValuePrimary = primaryTrack.beatValue,
                                         beatValueSecondary = secondaryTrack.beatValue,
                                         secondaryEnabled = secondaryTrack.enabled
@@ -403,9 +403,8 @@ class PresetActivity : ComponentActivity() {
                             val primaryTrack = metronome.getTrack(0)
                             val secondaryTrack = metronome.getTrack(1)
 
-                            primaryTrack.bpm = preset.state.bpm
+                            metronome.bpm = preset.state.bpm
                             primaryTrack.beatValue = preset.state.beatValuePrimary
-                            secondaryTrack.bpm = preset.state.bpm
                             secondaryTrack.beatValue = preset.state.beatValueSecondary
                             primaryTrack.setRhythm(preset.primaryRhythm)
                             secondaryTrack.setRhythm(preset.secondaryRhythm)
@@ -479,7 +478,7 @@ class PresetActivity : ComponentActivity() {
 
                                 val newPreset = preset.copy(
                                     state = MetronomeState(
-                                        bpm = primaryTrack.bpm,
+                                        bpm = metronome.bpm,
                                         beatValuePrimary = primaryTrack.beatValue,
                                         beatValueSecondary = secondaryTrack.beatValue,
                                         secondaryEnabled = secondaryTrack.enabled,

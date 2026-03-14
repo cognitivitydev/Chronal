@@ -27,20 +27,12 @@ import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 class MetronomeTrack(
     var name: String = "New track",
     private var rhythm: Rhythm,
-    bpm: Float = 60f,
     var beatValue: Float = 4f
 ) {
     companion object {
         const val MIN_BPM = 1f
         const val MAX_BPM = 16000f
     }
-
-    private var _bpm = mutableFloatStateOf(bpm.coerceIn(MIN_BPM, MAX_BPM))
-    var bpm: Float
-        get() = _bpm.floatValue
-        set(value) {
-            _bpm.floatValue = value.round(2).coerceIn(MIN_BPM, MAX_BPM)
-        }
 
     var enabled: Boolean = true
 

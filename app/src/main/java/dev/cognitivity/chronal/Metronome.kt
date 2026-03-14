@@ -32,9 +32,12 @@ import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.Log
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import dev.cognitivity.chronal.ChronalApp.Companion.context
+import dev.cognitivity.chronal.MetronomeTrack.Companion.MAX_BPM
+import dev.cognitivity.chronal.MetronomeTrack.Companion.MIN_BPM
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.settings.Settings
@@ -53,7 +56,7 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.round
 
-class Metronome(private val sendNotifications: Boolean = true) : BroadcastReceiver() {
+class Metronome(private val sendNotifications: Boolean = true, bpm: Float = 60f) : BroadcastReceiver() {
     private val sampleRate = 48000
 
     private var audioTrack = getAudioTrack()
@@ -61,6 +64,13 @@ class Metronome(private val sendNotifications: Boolean = true) : BroadcastReceiv
     var playing = false
     var active = true
     var timestamp = 0L
+
+    private var _bpm = mutableFloatStateOf(bpm.coerceIn(MIN_BPM, MAX_BPM))
+    var bpm: Float
+        get() = _bpm.floatValue
+        set(value) {
+            _bpm.floatValue = value.round(2).coerceIn(MIN_BPM, MAX_BPM)
+        }
 
     private var handlerThread: HandlerThread
     private var handler: Handler
@@ -250,7 +260,7 @@ class Metronome(private val sendNotifications: Boolean = true) : BroadcastReceiv
     }
 
     private fun nextBeat(track: MetronomeTrack, beat: Beat) {
-        val beatLength = abs(beat.duration) * track.beatValue * 60.0 / track.bpm.toDouble()
+        val beatLength = abs(beat.duration) * track.beatValue * 60.0 / bpm.toDouble()
 
         val exactSamples = beatLength * sampleRate + track.sampleRemainder
         val roundedSamples = round(exactSamples).toLong()
@@ -399,7 +409,7 @@ class Metronome(private val sendNotifications: Boolean = true) : BroadcastReceiv
 
         val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.baseline_music_note_24)
-            .setContentTitle(context.getString(R.string.metronome_notification_title, tracks.values.firstOrNull()?.bpm?.toInt() ?: 120))
+            .setContentTitle(context.getString(R.string.metronome_notification_title, bpm.toInt()))
             .setContentText(context.getString(if (this.playing) R.string.metronome_notification_playing else R.string.metronome_notification_paused))
             .setPriority(NotificationCompat.PRIORITY_MIN)
             .setSilent(true)

@@ -79,15 +79,15 @@ fun CircularDisplay(metronome: Metronome, modifier: Modifier = Modifier) {
 
             TempoChanger(
                 modifier = Modifier.align(Alignment.Center),
-                bpm = track.bpm,
+                bpm = metronome.bpm,
                 onIncrement = {
-                    setBPM(track.bpm + 1)
+                    setBPM(metronome.bpm + 1)
                 },
                 onDecrement = {
-                    setBPM(track.bpm - 1)
+                    setBPM(metronome.bpm - 1)
                 },
                 onClick = { // TODO
-                    track.bpm += 0.01f
+                    metronome.bpm += 0.01f
                 }
             )
         }

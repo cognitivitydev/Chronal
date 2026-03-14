@@ -149,7 +149,7 @@ fun BoxScope.CircularClock(track: MetronomeTrack, trackSize: Float, trackOff: Co
             progress.animateTo(
                 targetValue = next / measureDuration,
                 animationSpec = tween(
-                    durationMillis = (abs(beat.duration) * 60000 / track.bpm * track.beatValue).toInt(),
+                    durationMillis = (abs(beat.duration) * 60000 / metronome.bpm * track.beatValue).toInt(),
                     easing = LinearEasing
                 )
             )
