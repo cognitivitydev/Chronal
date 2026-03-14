@@ -18,6 +18,7 @@
 
 package dev.cognitivity.chronal.ui.settings.screens
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.navigationBars
@@ -92,7 +93,10 @@ fun SettingsListScreen(
             )
         }
     ) { padding ->
-        LazyColumn(modifier = Modifier.padding(padding)) {
+        LazyColumn(
+            modifier = Modifier.padding(padding),
+            contentPadding = PaddingValues(bottom = 48.dp)
+        ) {
             itemsIndexed(items) { index, item ->
                 val prevItem = prevVisible(index)
                 val nextItem = nextVisible(index)

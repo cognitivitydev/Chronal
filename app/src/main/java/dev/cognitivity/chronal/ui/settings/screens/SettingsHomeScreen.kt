@@ -18,6 +18,7 @@
 
 package dev.cognitivity.chronal.ui.settings.screens
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.navigationBars
@@ -31,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import dev.cognitivity.chronal.ui.settings.items.SettingItemRenderer
 import dev.cognitivity.chronal.ui.settings.items.SettingItem
@@ -50,6 +52,7 @@ fun SettingsHomeScreen(navController: NavController, expanded: Boolean) {
     ) { padding ->
         LazyColumn(
             modifier = Modifier.padding(padding),
+            contentPadding = PaddingValues(bottom = 48.dp)
         ) {
             val categories = SettingsLayout.categories.toList()
             itemsIndexed(categories) { index, category ->
