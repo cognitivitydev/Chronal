@@ -28,9 +28,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,48 +48,28 @@ import dev.cognitivity.chronal.ui.metronome.components.TrackList
 import dev.cognitivity.chronal.ui.metronome.components.verticalBPMGesture
 import dev.cognitivity.chronal.ui.metronome.pages.CircularDisplay
 import dev.cognitivity.chronal.ui.metronome.pages.ConductorDisplay
-import dev.cognitivity.chronal.ui.metronome.sheets.EditRhythm
 import dev.cognitivity.chronal.ui.metronome.sheets.TapTempo
-import dev.cognitivity.chronal.ui.metronome.windows.activity
-import dev.cognitivity.chronal.ui.metronome.windows.intervals
-import dev.cognitivity.chronal.ui.metronome.windows.lastTapTime
-import dev.cognitivity.chronal.ui.metronome.windows.paused
-import dev.cognitivity.chronal.ui.metronome.windows.setBPM
-import dev.cognitivity.chronal.ui.metronome.windows.showRhythmPrimary
-import dev.cognitivity.chronal.ui.metronome.windows.showRhythmSecondary
-import dev.cognitivity.chronal.ui.metronome.windows.showTempoTapper
-
-var displayDropdown by mutableStateOf(false)
-var flipConductor by mutableStateOf(false)
-var displayMode by mutableStateOf(0)
-var fullscreenMode by mutableStateOf(false)
-val modes = listOf(
-    R.string.metronome_display_clock to R.drawable.outline_timelapse_24,
-    R.string.metronome_display_conductor to R.drawable.outline_person_24,
-    R.string.metronome_display_grid to R.drawable.outline_apps_24
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MetronomePageMain(mainActivity: MainActivity, padding: PaddingValues) {
-    activity = mainActivity
+fun MetronomePageMain(mainActivity: MainActivity, viewModel: MetronomeViewModel, padding: PaddingValues) {
     val metronome = ChronalApp.getInstance().metronome
     val tracks = metronome.getTracks()
+    val playing by viewModel.playing.collectAsState()
 
     BoxWithConstraints(
         modifier = Modifier.fillMaxSize()
             .padding(padding)
             .verticalBPMGesture(
                 onTap = {
-                    paused = !paused
-                    if (paused) metronome.stop() else metronome.start()
-                    mainActivity.setKeepScreenOn(!paused)
+                    viewModel.setPlaying(!playing)
+                    mainActivity.setKeepScreenOn(!playing)
                 },
                 onHold = {
-                    showTempoTapper = true
+                    viewModel.setShowTapTempo(true)
                 },
                 onSwipe = { amount ->
-                    setBPM(metronome.bpm + amount)
+                    viewModel.setBpm(metronome.bpm + amount)
                 }
             )
     ) {
@@ -101,7 +80,7 @@ fun MetronomePageMain(mainActivity: MainActivity, padding: PaddingValues) {
                 modifier = Modifier.fillMaxSize(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                MetronomeDisplay(mainActivity, metronome,
+                MetronomeDisplay(viewModel, metronome,
                     modifier = Modifier.weight(1f)
                         .clip(RoundedCornerShape(16.dp))
                         .background(MaterialTheme.colorScheme.surface)
@@ -118,10 +97,10 @@ fun MetronomePageMain(mainActivity: MainActivity, padding: PaddingValues) {
                             .background(MaterialTheme.colorScheme.surface)
                     )
                     Spacer(Modifier.height(16.dp))
-                    PlayButton(!paused,
+                    PlayButton(mainActivity, viewModel,
                         onClick = {
-                            paused = !it
-                            if(paused) metronome.stop() else metronome.start()
+                            viewModel.setPlaying(!playing)
+                            mainActivity.setKeepScreenOn(!playing)
                         },
                         modifier = Modifier.fillMaxWidth()
                             .weight(1f)
@@ -140,17 +119,17 @@ fun MetronomePageMain(mainActivity: MainActivity, padding: PaddingValues) {
                         .background(MaterialTheme.colorScheme.surfaceContainerLow)
                 )
                 Spacer(Modifier.height(16.dp))
-                MetronomeDisplay(mainActivity, metronome,
+                MetronomeDisplay(viewModel, metronome,
                     modifier = Modifier.weight(1f)
                         .clip(RoundedCornerShape(16.dp))
                         .background(MaterialTheme.colorScheme.surface)
                         .padding(8.dp)
                 )
                 Spacer(Modifier.height(16.dp))
-                PlayButton(!paused,
+                PlayButton(mainActivity, viewModel,
                     onClick = {
-                        paused = !it
-                        if(paused) metronome.stop() else metronome.start()
+                        viewModel.setPlaying(!playing)
+                        mainActivity.setKeepScreenOn(!playing)
                     },
                     modifier = Modifier.wrapContentHeight()
                         .align(Alignment.CenterHorizontally)
@@ -158,9 +137,9 @@ fun MetronomePageMain(mainActivity: MainActivity, padding: PaddingValues) {
             }
         }
 
-        if (fullscreenMode) {
+        if(viewModel.fullscreenMode.collectAsState().value) {
             Dialog(
-                onDismissRequest = { fullscreenMode = false },
+                onDismissRequest = { viewModel.setFullscreenMode(false) },
                 properties = DialogProperties(
                     usePlatformDefaultWidth = false,
                     decorFitsSystemWindows = false
@@ -172,25 +151,24 @@ fun MetronomePageMain(mainActivity: MainActivity, padding: PaddingValues) {
                         .windowInsetsPadding(WindowInsets.safeDrawing)
                         .verticalBPMGesture(
                             onTap = {
-                                paused = !paused
-                                if (paused) metronome.stop() else metronome.start()
-                                mainActivity.setKeepScreenOn(!paused)
+                                viewModel.setPlaying(!playing)
+                                mainActivity.setKeepScreenOn(!playing)
                             },
                             onHold = {
-                                showTempoTapper = true
+                                viewModel.setShowTapTempo(true)
                             },
                             onSwipe = { amount ->
-                                setBPM(metronome.bpm + amount)
+                                viewModel.setBpm(metronome.bpm + amount)
                             }
                         )
                 ) {
-                    when (displayMode) {
-                        0 -> CircularDisplay(metronome)
-                        1 -> ConductorDisplay(mainActivity, metronome, flipConductor)
-                        else -> CircularDisplay(metronome)
+                    when(viewModel.displayMode.collectAsState().value) {
+                        DisplayMode.CLOCK -> CircularDisplay(viewModel, metronome)
+                        DisplayMode.CONDUCTOR -> ConductorDisplay(viewModel, metronome, viewModel.flipConductor.collectAsState().value)
+                        DisplayMode.GRID -> CircularDisplay(viewModel, metronome)
                     }
                     IconButton(
-                        onClick = { fullscreenMode = false },
+                        onClick = { viewModel.setFullscreenMode(false) },
                         modifier = Modifier.align(Alignment.TopEnd).padding(16.dp)
                     ) {
                         Icon(
@@ -203,37 +181,37 @@ fun MetronomePageMain(mainActivity: MainActivity, padding: PaddingValues) {
         }
     }
 
-    if(showTempoTapper) {
+    if(viewModel.showTapTempo.collectAsState().value) {
         BottomSheet(
             onDismissRequest = {
-                showTempoTapper = false
-                intervals.clear()
-                lastTapTime = 0
+                viewModel.setShowTapTempo(false)
+                viewModel.setIntervals(emptyList())
+                viewModel.setLastTapTime(0L)
             },
         ) {
-            TapTempo()
+            TapTempo(viewModel)
         }
     }
-    if(showRhythmPrimary) {
-        BottomSheet(
-            onDismissRequest = {
-                showRhythmPrimary = false
-            },
-        ) {
-            EditRhythm(true) {
-                showRhythmPrimary = false
-            }
-        }
-    }
-    if(showRhythmSecondary) {
-        BottomSheet(
-            onDismissRequest = {
-                showRhythmSecondary = false
-            },
-        ) {
-            EditRhythm(false) {
-                showRhythmSecondary = false
-            }
-        }
-    }
+//    if(viewModel.showRhythmPrimary.value) {
+//        BottomSheet(
+//            onDismissRequest = {
+//                viewModel.setShowRhythmPrimary(false)
+//            },
+//        ) {
+//            EditRhythm(true) {
+//                viewModel.setShowRhythmPrimary(false)
+//            }
+//        }
+//    }
+//    if(viewModel.showRhythmSecondary.value) {
+//        BottomSheet(
+//            onDismissRequest = {
+//                viewModel.setShowRhythmSecondary(false)
+//            },
+//        ) {
+//            EditRhythm(false) {
+//                viewModel.setShowRhythmSecondary(false)
+//            }
+//        }
+//    }
 }

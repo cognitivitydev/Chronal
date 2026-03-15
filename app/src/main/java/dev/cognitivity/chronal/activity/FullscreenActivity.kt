@@ -62,8 +62,6 @@ import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.ui.metronome.components.verticalBPMGesture
-import dev.cognitivity.chronal.ui.metronome.windows.paused
-import dev.cognitivity.chronal.ui.metronome.windows.setBPM
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -73,6 +71,9 @@ import java.util.*
 import kotlin.math.abs
 
 class FullscreenActivity : ComponentActivity() {
+    val metronome = ChronalApp.getInstance().metronome
+    val mainTrack = metronome.getTrack(0)
+
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -112,9 +113,6 @@ class FullscreenActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
     fun MainContent() {
-        val metronome = ChronalApp.getInstance().metronome
-        val mainTrack = metronome.getTrack(0)
-
         var doNotShow by remember { mutableStateOf(!Settings.FULLSCREEN_WARNING.get()) }
         var settingDialog by remember { mutableStateOf(false) }
 
@@ -173,16 +171,15 @@ class FullscreenActivity : ComponentActivity() {
             modifier = Modifier.fillMaxSize()
                 .verticalBPMGesture(
                     onTap = {
-                        paused = !paused
-                        if (paused) metronome.stop() else metronome.start()
-                        if(!paused) {
+                        if(metronome.playing) metronome.stop() else metronome.start()
+                        if(metronome.playing) {
                             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                         } else {
                             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                         }
                     },
                     onSwipe = { amount ->
-                        setBPM(metronome.bpm + amount)
+                        metronome.bpm += amount
                     }
                 )
         ) { padding ->

@@ -41,7 +41,6 @@ import dev.cognitivity.chronal.MetronomeTrack.Companion.MIN_BPM
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.settings.Settings
-import dev.cognitivity.chronal.ui.metronome.windows.paused
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -426,15 +425,12 @@ class Metronome(private val sendNotifications: Boolean = true, bpm: Float = 60f)
         if (intent?.action == "dev.cognitivity.chronal.PlayPause") {
             if (playing) {
                 stop()
-                paused = true
             } else {
                 start()
-                paused = false
             }
         }
         if (intent?.action == "dev.cognitivity.chronal.Stop") {
             if (playing) stop()
-            paused = true
             val notificationManager = ChronalApp.context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.cancel(1)
         }

@@ -65,14 +65,13 @@ import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.BeatDetectorActivity
 import dev.cognitivity.chronal.activity.EditSounds
 import dev.cognitivity.chronal.activity.FullscreenActivity
+import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.ui.MorphedShape
-import dev.cognitivity.chronal.ui.metronome.windows.activity
-import dev.cognitivity.chronal.ui.metronome.windows.dropdownExpanded
-import dev.cognitivity.chronal.ui.metronome.windows.showTempoTapper
+import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun PlayButton(active: Boolean, onClick: (Boolean) -> Unit, modifier: Modifier = Modifier) {
+fun PlayButton(mainActivity: MainActivity, viewModel: MetronomeViewModel, onClick: (Boolean) -> Unit, modifier: Modifier = Modifier) {
     val shapeA = remember {
         RoundedPolygon.star(9, rounding = CornerRounding(0.2f), radius = 1.8f)
     }
@@ -84,7 +83,7 @@ fun PlayButton(active: Boolean, onClick: (Boolean) -> Unit, modifier: Modifier =
     }
 
     val morphProgress by animateFloatAsState(
-        targetValue = if (active) 0.6f else 1f,
+        targetValue = if(viewModel.playing.value) 0.6f else 1f,
         animationSpec = MotionScheme.expressive().defaultSpatialSpec(),
         label = "morphProgress"
     )
@@ -101,7 +100,7 @@ fun PlayButton(active: Boolean, onClick: (Boolean) -> Unit, modifier: Modifier =
     )
 
     val animatedColor by animateColorAsState(
-        targetValue = if (!active) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primary,
+        targetValue = if (!viewModel.playing.value) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primary,
         animationSpec = MotionScheme.expressive().defaultSpatialSpec(),
         label = "animatedColor"
     )
@@ -127,26 +126,26 @@ fun PlayButton(active: Boolean, onClick: (Boolean) -> Unit, modifier: Modifier =
                     )
             ) {
                 DropdownMenu(
-                    expanded = dropdownExpanded,
+                    expanded = viewModel.settingsExpanded.value,
                     onDismissRequest = {
-                        dropdownExpanded = false
+                        viewModel.setSettingsExpanded(false)
                     },
                     modifier = Modifier.zIndex(1f)
                 ) {
-                    DropdownItem(R.string.metronome_option_fullscreen_mode, painterResource(R.drawable.baseline_fullscreen_24)) {
-                        activity.runActivity(FullscreenActivity::class.java)
+                    DropdownItem(viewModel, R.string.metronome_option_fullscreen_mode, painterResource(R.drawable.baseline_fullscreen_24)) {
+                        mainActivity.runActivity(FullscreenActivity::class.java)
                     }
-                    DropdownItem(R.string.metronome_option_beat_detector, painterResource(R.drawable.outline_music_cast_24)) {
-                        activity.runActivity(BeatDetectorActivity::class.java)
+                    DropdownItem(viewModel, R.string.metronome_option_beat_detector, painterResource(R.drawable.outline_music_cast_24)) {
+                        mainActivity.runActivity(BeatDetectorActivity::class.java)
                     }
-                    DropdownItem(R.string.metronome_option_tap_tempo, painterResource(R.drawable.outline_timer_24)) {
-                        showTempoTapper = true
+                    DropdownItem(viewModel, R.string.metronome_option_tap_tempo, painterResource(R.drawable.outline_timer_24)) {
+                        viewModel.setShowTapTempo(true)
                     }
-                    DropdownItem(R.string.metronome_option_change_sounds, painterResource(R.drawable.outline_volume_up_24)) {
-                        activity.runActivity(EditSounds::class.java)
+                    DropdownItem(viewModel, R.string.metronome_option_change_sounds, painterResource(R.drawable.outline_volume_up_24)) {
+                        mainActivity.runActivity(EditSounds::class.java)
                     }
-                    DropdownItem(R.string.metronome_option_play_audio, painterResource(R.drawable.outline_audio_file_24)) {
-                        activity.fileActivity.launch(Intent().apply {
+                    DropdownItem(viewModel, R.string.metronome_option_play_audio, painterResource(R.drawable.outline_audio_file_24)) {
+                        mainActivity.fileActivity.launch(Intent().apply {
                             action = Intent.ACTION_GET_CONTENT
                             type = "audio/*"
                             addCategory(Intent.CATEGORY_OPENABLE)
@@ -166,7 +165,7 @@ fun PlayButton(active: Boolean, onClick: (Boolean) -> Unit, modifier: Modifier =
                     .background(MaterialTheme.colorScheme.surfaceContainer)
                     .align(Alignment.Center)
                     .clickable {
-                        showTempoTapper = true
+                        viewModel.setShowTapTempo(true)
                     }
             ) {
                 Icon(
@@ -184,7 +183,7 @@ fun PlayButton(active: Boolean, onClick: (Boolean) -> Unit, modifier: Modifier =
                     .clip(CircleShape)
                     .background(
                         animateColorAsState(
-                            targetValue = if (dropdownExpanded) MaterialTheme.colorScheme.surfaceContainerHigh
+                            targetValue = if(viewModel.settingsExpanded.value) MaterialTheme.colorScheme.surfaceContainerHigh
                             else MaterialTheme.colorScheme.surfaceContainer,
                             animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
                             label = "dropdownBackground"
@@ -192,7 +191,7 @@ fun PlayButton(active: Boolean, onClick: (Boolean) -> Unit, modifier: Modifier =
                     )
                     .align(Alignment.Center)
                     .clickable {
-                        dropdownExpanded = !dropdownExpanded
+                        viewModel.setSettingsExpanded(!viewModel.settingsExpanded.value)
                     }
             ) {
                 Icon(
@@ -217,12 +216,12 @@ fun PlayButton(active: Boolean, onClick: (Boolean) -> Unit, modifier: Modifier =
                     )
                     .background(animatedColor)
                     .clickable {
-                        onClick(!active)
+                        onClick(!viewModel.playing.value)
                     }
                     .zIndex(2f)
             ) {
                 PlayPauseIcon(
-                    paused = !active,
+                    paused = !viewModel.playing.value,
                     modifier = Modifier.size(48.dp)
                         .align(Alignment.Center)
                 )
@@ -232,10 +231,11 @@ fun PlayButton(active: Boolean, onClick: (Boolean) -> Unit, modifier: Modifier =
 }
 
 @Composable
-fun DropdownItem(name: Int, icon: Painter, onClick: () -> Unit) {
+fun DropdownItem(viewModel: MetronomeViewModel, name: Int, icon: Painter, onClick: () -> Unit) {
     DropdownMenuItem(
         text = { Text(context.getString(name)) },
         onClick = {
+            viewModel.setSettingsExpanded(false)
             onClick()
         },
         leadingIcon = {

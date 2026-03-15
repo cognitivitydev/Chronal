@@ -107,124 +107,127 @@ fun TempoChanger(
         }
     }
 
-    Surface(
-        modifier = modifier
-            .wrapContentWidth()
-            .heightIn(max = 128.dp),
-        shape = CircleShape,
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        tonalElevation = 4.dp,
-        onClick = onClick
+    BoxWithConstraints(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+        Surface(
+            modifier = Modifier.wrapContentWidth()
+                .heightIn(max = 128.dp),
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            tonalElevation = 4.dp,
+            onClick = onClick
         ) {
-            IncrementButton(onDecrement) {
-                Icon(
-                    painter = painterResource(R.drawable.baseline_remove_24),
-                    contentDescription = context.getString(R.string.editor_bpm_decrease)
-                )
-            }
-
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(horizontal = 8.dp)
-                    .widthIn(min = 60.dp)
+            Row(
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
+                IncrementButton(onDecrement) {
+                    Icon(
+                        painter = painterResource(R.drawable.baseline_remove_24),
+                        contentDescription = context.getString(R.string.editor_bpm_decrease)
+                    )
+                }
 
-                val roundedFontFamily = FontFamily(
-                    Font(R.font.google_sans_flex_variable,
-                        variationSettings = FontVariation.Settings(
-                            FontVariation.Setting("ROND", 100f),
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                        .widthIn(min = maxOf(60.dp, this@BoxWithConstraints.maxWidth * 0.275f))
+                ) {
+                    val roundedFontFamily = FontFamily(
+                        Font(R.font.google_sans_flex_variable,
+                            variationSettings = FontVariation.Settings(
+                                FontVariation.Setting("ROND", 100f),
+                            )
                         )
                     )
-                )
 
-                val bpmText = if (bpm % 1 == 0f) bpm.toInt().toString()
-                    else bpm.round(2).toString()
-                val decimals = bpmText.substringAfter('.', "").length
-                val bpmLength = bpm.toInt().toString().length + decimals * 0.5f
+                    val bpmText = if (bpm % 1 == 0f) bpm.toInt().toString()
+                        else bpm.round(2).toString()
+                    val decimals = bpmText.substringAfter('.', "").length
+                    val bpmLength = bpm.toInt().toString().length + decimals * 0.5f
 
-                val width = 100f - ((bpmLength - 2).coerceAtLeast(0f) * 25f)
-                val bpmFontFamily = FontFamily(
-                    Font(
-                        R.font.google_sans_flex_variable,
-                        variationSettings = FontVariation.Settings(
-                            FontVariation.Setting("ROND", 100f),
-                            FontVariation.Setting("wdth", width)
+                    val width = 100f - ((bpmLength - 2).coerceAtLeast(0f) * 25f)
+                    val bpmFontFamily = FontFamily(
+                        Font(
+                            R.font.google_sans_flex_variable,
+                            variationSettings = FontVariation.Settings(
+                                FontVariation.Setting("ROND", 100f),
+                                FontVariation.Setting("wdth", width)
+                            )
                         )
                     )
-                )
 
-                Row {
-                    val fontSize = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { // variable fonts only supported for O+
-                        40.sp
-                    } else {
-                        40.sp * (width/100f)
-                    }
-                    Text(
-                        text = bpmText.substringBefore('.'),
-                        style = TextStyle(
-                            fontFamily = bpmFontFamily,
-                            fontWeight = FontWeight(700),
-                            fontSize = fontSize,
-                            lineHeight = 0.sp,
-                            fontFeatureSettings = "'tnum'"
-                        ),
-                        maxLines = 1,
-                        modifier = Modifier.height(fontSize.toDp())
-                            .alignByBaseline(),
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    if (bpmText.contains('.')) {
+                    Row {
+                        val fontSize = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { // variable fonts only supported for O+
+                            40.sp
+                        } else {
+                            40.sp * (width/100f)
+                        }
                         Text(
-                            text = "." + bpmText.substringAfter('.'),
+                            text = bpmText.substringBefore('.'),
                             style = TextStyle(
                                 fontFamily = bpmFontFamily,
                                 fontWeight = FontWeight(700),
-                                fontSize = fontSize / 2,
+                                fontSize = fontSize,
                                 lineHeight = 0.sp,
                                 fontFeatureSettings = "'tnum'"
                             ),
                             maxLines = 1,
-                            modifier = Modifier.height((fontSize / 2).toDp())
+                            modifier = Modifier.height(fontSize.toDp())
                                 .alignByBaseline(),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        if (bpmText.contains('.')) {
+                            Text(
+                                text = "." + bpmText.substringAfter('.'),
+                                style = TextStyle(
+                                    fontFamily = bpmFontFamily,
+                                    fontWeight = FontWeight(700),
+                                    fontSize = fontSize / 2,
+                                    lineHeight = 0.sp,
+                                    fontFeatureSettings = "'tnum'"
+                                ),
+                                maxLines = 1,
+                                modifier = Modifier.height((fontSize / 2).toDp())
+                                    .alignByBaseline(),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                    Text(
+                        text = context.getString(R.string.metronome_bpm),
+                        style = TextStyle(
+                            fontFamily = roundedFontFamily,
+                            fontWeight = FontWeight(600),
+                            fontSize = 14.sp
+                        ),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    if(true) { // TODO add setting
+                        val tempoMarking = getTempoMarking(bpm.toInt())
+                        Text(
+                            text = tempoMarking ?: context.getString(R.string.metronome_tempo_unknown),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = if(tempoMarking != null) MaterialTheme.colorScheme.tertiary
+                                else MaterialTheme.colorScheme.error,
+                            fontStyle = FontStyle.Italic,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(top = 4.dp)
                         )
                     }
                 }
-                Text(
-                    text = context.getString(R.string.metronome_bpm),
-                    style = TextStyle(
-                        fontFamily = roundedFontFamily,
-                        fontWeight = FontWeight(600),
-                        fontSize = 14.sp
-                    ),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
 
-                if(true) { // TODO add setting
-                    val tempoMarking = getTempoMarking(bpm.toInt())
-                    Text(
-                        text = tempoMarking ?: context.getString(R.string.metronome_tempo_unknown),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = if(tempoMarking != null) MaterialTheme.colorScheme.tertiary
-                            else MaterialTheme.colorScheme.error,
-                        fontStyle = FontStyle.Italic,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(top = 4.dp)
+                IncrementButton(onIncrement) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = context.getString(R.string.editor_bpm_increase)
                     )
                 }
-            }
-
-            IncrementButton(onIncrement) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = context.getString(R.string.editor_bpm_increase)
-                )
             }
         }
     }

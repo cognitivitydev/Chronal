@@ -56,7 +56,6 @@ import dev.cognitivity.chronal.MetronomeTrack
 import dev.cognitivity.chronal.activity.vibratorManager
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.settings.Settings
-import dev.cognitivity.chronal.ui.metronome.windows.ClockBeats
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs

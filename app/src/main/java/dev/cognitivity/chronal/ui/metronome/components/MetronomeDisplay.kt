@@ -27,6 +27,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -34,41 +36,39 @@ import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.Metronome
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.activity.MainActivity
-import dev.cognitivity.chronal.ui.metronome.displayDropdown
-import dev.cognitivity.chronal.ui.metronome.displayMode
-import dev.cognitivity.chronal.ui.metronome.flipConductor
-import dev.cognitivity.chronal.ui.metronome.fullscreenMode
-import dev.cognitivity.chronal.ui.metronome.modes
+import dev.cognitivity.chronal.ui.metronome.DisplayMode
+import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
 import dev.cognitivity.chronal.ui.metronome.pages.CircularDisplay
 import dev.cognitivity.chronal.ui.metronome.pages.ConductorDisplay
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun MetronomeDisplay(
-    mainActivity: MainActivity,
+    viewModel: MetronomeViewModel,
     metronome: Metronome,
     modifier: Modifier = Modifier,
 ) {
+    val displayMode by viewModel.displayMode.collectAsState()
+
     Box(
         modifier = modifier
     ) {
-        when (displayMode) {
-            0 -> CircularDisplay(metronome)
-            1 -> ConductorDisplay(mainActivity, metronome, flipConductor)
-            else -> CircularDisplay(metronome)
+        when(displayMode) {
+            DisplayMode.CLOCK -> CircularDisplay(viewModel, metronome)
+            DisplayMode.CONDUCTOR -> ConductorDisplay(viewModel, metronome, viewModel.flipConductor.value)
+            DisplayMode.GRID -> CircularDisplay(viewModel, metronome)
         }
 
         Row(
             modifier = Modifier.align(Alignment.TopStart),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            DisplaySelector()
+            DisplaySelector(viewModel)
 
-            if(displayMode == 1) { // Conductor
+            if(displayMode == DisplayMode.CONDUCTOR) {
                 IconToggleButton(
-                    checked = flipConductor,
-                    onCheckedChange = { flipConductor = it }
+                    checked = viewModel.flipConductor.value,
+                    onCheckedChange = { viewModel.setFlipConductor(it) }
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.outline_flip_24),
@@ -78,7 +78,7 @@ fun MetronomeDisplay(
             }
         }
         IconButton(
-            onClick = { fullscreenMode = true },
+            onClick = { viewModel.setFullscreenMode(true) },
             modifier = Modifier.align(Alignment.BottomEnd)
         ) {
             Icon(
@@ -91,14 +91,22 @@ fun MetronomeDisplay(
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun DisplaySelector() {
+fun DisplaySelector(viewModel: MetronomeViewModel) {
+    val modes = listOf(
+        R.string.metronome_display_clock to R.drawable.outline_timelapse_24,
+        R.string.metronome_display_conductor to R.drawable.outline_person_24,
+        R.string.metronome_display_grid to R.drawable.outline_apps_24
+    )
+
+    val displayMode by viewModel.displayMode.collectAsState()
+
     TooltipBox(
         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
         tooltip = { PlainTooltip { Text(context.getString(R.string.metronome_switch_display_mode)) } },
         state = rememberTooltipState(),
     ) {
         IconButton(
-            onClick = { displayDropdown = true }
+            onClick = { viewModel.setModesExpanded(true) }
         ) {
             Icon(
                 painter = painterResource(R.drawable.outline_browse_24),
@@ -106,11 +114,11 @@ fun DisplaySelector() {
             )
         }
         DropdownMenuPopup(
-            expanded = displayDropdown,
-            onDismissRequest = { displayDropdown = false },
+            expanded = viewModel.modesExpanded.collectAsState().value,
+            onDismissRequest = { viewModel.setModesExpanded(false) },
         ) {
             DropdownMenuGroup(
-                shapes = MenuDefaults.groupShape(displayMode, modes.size)
+                shapes = MenuDefaults.groupShape(displayMode.ordinal, modes.size)
             ) {
                 MenuDefaults.Label {
                     Text(
@@ -140,8 +148,8 @@ fun DisplaySelector() {
                                 contentDescription = null
                             )
                         },
-                        checked = displayMode == index,
-                        onCheckedChange = { displayMode = index },
+                        checked = displayMode.ordinal == index,
+                        onCheckedChange = { viewModel.setDisplayMode(DisplayMode.entries[index]) },
                         shapes = MenuDefaults.itemShape(index, modes.size),
                         enabled = index != 2 // TODO
                     )

@@ -52,10 +52,7 @@ import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.ceil
-import dev.cognitivity.chronal.settings.Settings
-import dev.cognitivity.chronal.settings.types.json.MetronomeState
-import dev.cognitivity.chronal.ui.metronome.windows.intervals
-import dev.cognitivity.chronal.ui.metronome.windows.lastTapTime
+import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -64,7 +61,7 @@ import kotlin.math.sqrt
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun TapTempo() {
+fun TapTempo(viewModel: MetronomeViewModel) {
     val metronome = ChronalApp.getInstance().metronome
     var newBpm by remember { mutableIntStateOf(0) }
     val progress = remember { Animatable(0f) }
@@ -117,18 +114,18 @@ fun TapTempo() {
                     detectTapGestures(onPress = {
                         val previousBpm = newBpm
                         val currentTime = System.nanoTime()
-                        lastTapTime?.let { last ->
+                        viewModel.lastTapTime.value.let { last ->
                             val interval = currentTime - last
-                            intervals.add(interval)
+                            viewModel.addInterval(interval)
 
-                            val filtered = filteredStdDev(intervals)
+                            val filtered = filteredStdDev(viewModel.intervals.value.toMutableList())
                             val isOutlier = !filtered.contains(interval)
 
                             val average = filtered.average()
                             newBpm = (60_000_000_000 / average).toInt()
 
                             var newProgress = progress.value
-                            if (intervals.size <= 4) {
+                            if (viewModel.intervals.value.size <= 4) {
                                 newProgress += 0.05f
                             }
                             if (newBpm == previousBpm) {
@@ -146,33 +143,22 @@ fun TapTempo() {
                                 )
                             }
                         }
-                        lastTapTime = currentTime
-                        if (intervals.size > 64) {
-                            intervals.removeAt(0)
+                        viewModel.setLastTapTime(currentTime)
+                        if (viewModel.intervals.value.size > 64) {
+                            viewModel.setIntervals(viewModel.intervals.value.drop(1))
                         }
 
                         if (newBpm != 0) {
                             scope.launch {
-                                val last = lastTapTime
+                                val last = viewModel.lastTapTime.value
                                 delay(60000L / newBpm * 5)
-                                if (last == lastTapTime) {
-                                    metronome.bpm = newBpm.toFloat()
+                                if (last == viewModel.lastTapTime.value) {
+                                    viewModel.setBpm(newBpm.toFloat())
 
-                                    val primaryTrack = metronome.getTrack(0)
-                                    val secondaryTrack = metronome.getTrack(1)
-
-
-                                    scope.launch {
-                                        Settings.METRONOME_STATE.save(MetronomeState(
-                                            bpm = newBpm.toFloat(),
-                                            beatValuePrimary = primaryTrack.beatValue,
-                                            beatValueSecondary = secondaryTrack.beatValue,
-                                            secondaryEnabled = secondaryTrack.enabled,
-                                        ))
-                                    }
                                     newBpm = 0
-                                    intervals.clear()
-                                    lastTapTime = 0
+                                    viewModel.setIntervals(emptyList())
+                                    viewModel.setLastTapTime(0)
+
                                     scope.launch {
                                         progress.animateTo(
                                             targetValue = 0f,

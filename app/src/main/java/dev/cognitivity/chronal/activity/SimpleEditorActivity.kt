@@ -89,7 +89,7 @@ import dev.cognitivity.chronal.settings.Setting
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
 import dev.cognitivity.chronal.toPx
-import dev.cognitivity.chronal.ui.metronome.windows.ClockBeats
+import dev.cognitivity.chronal.ui.metronome.components.ClockBeats
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.launch
 import kotlin.math.abs

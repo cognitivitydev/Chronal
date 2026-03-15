@@ -32,6 +32,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.slideInHorizontally
@@ -67,7 +68,6 @@ import androidx.navigation.compose.rememberNavController
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.settings.Settings
-import dev.cognitivity.chronal.ui.metronome.windows.activity
 import dev.cognitivity.chronal.ui.settings.SettingsPageMain
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import dev.cognitivity.chronal.ui.tuner.windows.TunerPageMain
@@ -82,13 +82,9 @@ import dev.cognitivity.chronal.widgets.PresetListWidget
 import dev.cognitivity.chronal.widgets.TunerWidget
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import dev.cognitivity.chronal.toPx
-import kotlin.math.exp
-import kotlin.math.max
+import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
 
 lateinit var audioManager: AudioManager
 var vibratorManager: VibratorManager? = null
@@ -107,7 +103,7 @@ class MainActivity : ComponentActivity() {
     }
     val fileActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if(it.resultCode == RESULT_OK) {
-            activity.startActivity(
+            startActivity(
                 Intent(this, AudioPlayerActivity::class.java).apply {
                     putExtra("file", it.data?.data.toString())
                 }
@@ -127,6 +123,8 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
 
+        val metronomeViewModel: MetronomeViewModel by viewModels()
+
         val splashScreen = installSplashScreen()
         var keepSplashScreen = true
         splashScreen.setKeepOnScreenCondition { keepSplashScreen }
@@ -138,7 +136,7 @@ class MainActivity : ComponentActivity() {
 
             setContent {
                 MetronomeTheme {
-                    MainContent()
+                    MainContent(metronomeViewModel)
                 }
             }
 
@@ -165,6 +163,9 @@ class MainActivity : ComponentActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             Settings.LAST_OPEN.save(System.currentTimeMillis())
         }
+
+        val metronomeViewModel: MetronomeViewModel by viewModels()
+        metronomeViewModel.setPlaying(ChronalApp.getInstance().metronome.playing)
     }
 
     fun setKeepScreenOn(enabled: Boolean) {
@@ -179,7 +180,7 @@ class MainActivity : ComponentActivity() {
         ExperimentalMaterial3ExpressiveApi::class
     )
     @Composable
-    fun MainContent() {
+    fun MainContent(metronomeViewModel: MetronomeViewModel) {
         val navController = rememberNavController()
         val sizeClass = calculateWindowSizeClass(this)
         val expanded = sizeClass.widthSizeClass >= WindowWidthSizeClass.Medium
@@ -212,9 +213,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize()
                 ) {
                     NavigationRail(navController)
-                    NavigationHost(navController, true, padding)
+                    NavigationHost(navController, true, padding, metronomeViewModel)
                 }
-            } else NavigationHost(navController, false, padding)
+            } else NavigationHost(navController, false, padding, metronomeViewModel)
 
             if(showMicrophoneDialog) {
                 AlertDialog(
@@ -278,7 +279,7 @@ class MainActivity : ComponentActivity() {
 
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
-    fun NavigationHost(navController: NavHostController, expanded: Boolean, padding: PaddingValues) {
+    fun NavigationHost(navController: NavHostController, expanded: Boolean, padding: PaddingValues, metronomeViewModel: MetronomeViewModel) {
         val enterTransition: (Boolean) -> EnterTransition = { forward ->
             if (expanded) {
                 slideInVertically(MotionScheme.expressive().slowSpatialSpec(), initialOffsetY = { if(forward) it else -it })
@@ -310,7 +311,7 @@ class MainActivity : ComponentActivity() {
                     exitTransition(true)
                 }
             ) {
-                MetronomePageMain(this@MainActivity, padding)
+                MetronomePageMain(this@MainActivity, metronomeViewModel, padding)
                 ChronalApp.getInstance().tuner?.stop()
             }
             composable("tuner",

@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025-2026  cognitivity
+ * Copyright (C) 2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,22 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package dev.cognitivity.chronal.ui.metronome.windows
+package dev.cognitivity.chronal.ui.metronome.components
 
-import android.content.Context
-import android.os.Build
-import android.os.CombinedVibration
-import android.os.VibrationEffect
-import android.os.Vibrator
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -39,37 +31,11 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.rotate
 import androidx.compose.ui.unit.dp
-import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.ChronalApp.Companion.context
-import dev.cognitivity.chronal.MetronomeTrack
-import dev.cognitivity.chronal.activity.MainActivity
-import dev.cognitivity.chronal.activity.vibratorManager
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.settings.Settings
-import dev.cognitivity.chronal.settings.types.json.MetronomeState
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
-
-// TODO remove this
-
-var dropdownExpanded by mutableStateOf(false)
-var showTempoTapper by mutableStateOf(false)
-var showRhythmPrimary by mutableStateOf(false)
-var showRhythmSecondary by mutableStateOf(false)
-
-var vibratePrimary by mutableStateOf(Settings.METRONOME_VIBRATIONS.get())
-var vibrateSecondary by mutableStateOf(Settings.METRONOME_VIBRATIONS_SECONDARY.get())
-
-var paused by mutableStateOf(true)
-
-lateinit var activity: MainActivity
-
-val intervals = mutableListOf<Long>()
-var lastTapTime: Long? = null
 
 @Composable
 fun ClockBeats(beats: List<Beat>, progress: Animatable<Float, AnimationVector1D>, trackSize: Float,
@@ -132,55 +98,6 @@ fun ClockBeats(beats: List<Beat>, progress: Animatable<Float, AnimationVector1D>
 
             drawContext.canvas.restore()
             currentDuration += abs(beat.duration)
-        }
-    }
-}
-
-var lastVibration = 0L
-
-fun setBPM(bpm: Float) {
-    val metronome = ChronalApp.getInstance().metronome
-    if(metronome.bpm == bpm) return
-
-    paused = true
-    metronome.stop()
-    metronome.bpm = bpm
-
-    val primaryTrack = metronome.getTrack(0)
-    val secondaryTrack = metronome.getTrack(1)
-
-    CoroutineScope(Dispatchers.Main).launch {
-        Settings.METRONOME_STATE.save(MetronomeState(
-            bpm = bpm, beatValuePrimary = primaryTrack.beatValue,
-            beatValueSecondary = secondaryTrack.beatValue, secondaryEnabled = secondaryTrack.enabled,
-        ))
-    }
-
-    if(bpm <= MetronomeTrack.MIN_BPM || bpm >= MetronomeTrack.MAX_BPM) {
-        if(System.currentTimeMillis() - lastVibration < 100) return
-        lastVibration = System.currentTimeMillis()
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null)
-            vibratorManager!!.vibrate(
-            CombinedVibration.createParallel(
-                VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK)
-            )
-        ) else {
-            val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-            vibrator.vibrate(10)
-        }
-    } else {
-        val tickPattern = longArrayOf(5)
-        val tickAmplitude = intArrayOf((bpm / 2).toInt().coerceIn(1, 255))
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null) {
-            vibratorManager!!.vibrate(
-                CombinedVibration.createParallel(
-                    VibrationEffect.createWaveform(tickPattern,tickAmplitude, -1)
-                )
-            )
-        } else {
-            val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-            vibrator.vibrate(5)
         }
     }
 }

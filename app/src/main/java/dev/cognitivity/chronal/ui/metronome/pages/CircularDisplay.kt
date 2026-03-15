@@ -31,12 +31,12 @@ import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.Metronome
 import dev.cognitivity.chronal.toPx
+import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
 import dev.cognitivity.chronal.ui.metronome.components.CircularClock
 import dev.cognitivity.chronal.ui.metronome.components.TempoChanger
-import dev.cognitivity.chronal.ui.metronome.windows.setBPM
 
 @Composable
-fun CircularDisplay(metronome: Metronome, modifier: Modifier = Modifier) {
+fun CircularDisplay(viewModel: MetronomeViewModel, metronome: Metronome, modifier: Modifier = Modifier) {
     val tracks = metronome.getTracks()
     Box(
         modifier = modifier.fillMaxSize()
@@ -81,10 +81,10 @@ fun CircularDisplay(metronome: Metronome, modifier: Modifier = Modifier) {
                 modifier = Modifier.align(Alignment.Center),
                 bpm = metronome.bpm,
                 onIncrement = {
-                    setBPM(metronome.bpm + 1)
+                    viewModel.setBpm(metronome.bpm + 1)
                 },
                 onDecrement = {
-                    setBPM(metronome.bpm - 1)
+                    viewModel.setBpm(metronome.bpm - 1)
                 },
                 onClick = { // TODO
                     metronome.bpm += 0.01f

@@ -64,15 +64,14 @@ import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.Metronome
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.activity.vibratorManager
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmAtom
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.round
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.toPx
+import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
 import dev.cognitivity.chronal.ui.metronome.components.TempoChanger
-import dev.cognitivity.chronal.ui.metronome.windows.setBPM
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -80,7 +79,7 @@ import kotlin.math.abs
 // TODO
 //   - separate versions for different time signatures (5/4, 6/8...)
 @Composable
-fun ConductorDisplay(mainActivity: MainActivity, metronome: Metronome, flipped: Boolean, modifier: Modifier = Modifier) {
+fun ConductorDisplay(viewModel: MetronomeViewModel, metronome: Metronome, flipped: Boolean, modifier: Modifier = Modifier) {
     val tracks = metronome.getTracks()
     val displayTrack = tracks[0]
 
@@ -281,10 +280,10 @@ fun ConductorDisplay(mainActivity: MainActivity, metronome: Metronome, flipped: 
                     .align(Alignment.Center),
                 bpm = metronome.bpm,
                 onIncrement = {
-                    setBPM(metronome.bpm + 1)
+                    viewModel.setBpm(metronome.bpm + 1)
                 },
                 onDecrement = {
-                    setBPM(metronome.bpm - 1)
+                    viewModel.setBpm(metronome.bpm - 1)
                 },
                 onClick = { // TODO
                     metronome.bpm += 0.01f
