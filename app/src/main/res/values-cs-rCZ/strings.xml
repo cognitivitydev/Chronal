@@ -73,6 +73,7 @@
     <string name="page_settings_practice_reminder">Připomínky cvičení</string>
     <string name="page_tuner">Ladička</string>
     <string name="metronome_tempo_unknown">Neznámé</string>
+    <string name="metronome_display_conductor">Dirigent</string>
     <string name="metronome_conductor_not_supported">Nastavený takt není zatím podporován.</string>
     <string name="metronome_conductor_flip">Překlopit vodorovně</string>
     <string name="metronome_increase_tempo">Zvýšit tempo</string>
