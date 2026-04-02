@@ -16,9 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package dev.cognitivity.chronal
+package dev.cognitivity.chronal.metronome
 
-import androidx.compose.runtime.mutableFloatStateOf
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmAtom

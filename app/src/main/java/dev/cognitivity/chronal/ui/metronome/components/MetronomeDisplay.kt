@@ -34,7 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
-import dev.cognitivity.chronal.Metronome
+import dev.cognitivity.chronal.metronome.Metronome
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.ui.metronome.DisplayMode
 import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
@@ -55,7 +55,7 @@ fun MetronomeDisplay(
     ) {
         when(displayMode) {
             DisplayMode.CLOCK -> CircularDisplay(viewModel, metronome)
-            DisplayMode.CONDUCTOR -> ConductorDisplay(viewModel, metronome, viewModel.flipConductor.value)
+            DisplayMode.CONDUCTOR -> ConductorDisplay(viewModel, metronome)
             DisplayMode.GRID -> CircularDisplay(viewModel, metronome)
         }
 
@@ -67,7 +67,7 @@ fun MetronomeDisplay(
 
             if(displayMode == DisplayMode.CONDUCTOR) {
                 IconToggleButton(
-                    checked = viewModel.flipConductor.value,
+                    checked = viewModel.flipConductor.collectAsState().value,
                     onCheckedChange = { viewModel.setFlipConductor(it) }
                 ) {
                     Icon(
@@ -118,7 +118,7 @@ fun DisplaySelector(viewModel: MetronomeViewModel) {
             onDismissRequest = { viewModel.setModesExpanded(false) },
         ) {
             DropdownMenuGroup(
-                shapes = MenuDefaults.groupShape(displayMode.ordinal, modes.size)
+                shapes = MenuDefaults.groupShape(displayMode.ordinal, modes.size),
             ) {
                 MenuDefaults.Label {
                     Text(

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package dev.cognitivity.chronal
+package dev.cognitivity.chronal.metronome
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -35,11 +35,14 @@ import android.util.Log
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
-import dev.cognitivity.chronal.MetronomeTrack.Companion.MAX_BPM
-import dev.cognitivity.chronal.MetronomeTrack.Companion.MIN_BPM
+import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.metronome.MetronomeTrack.Companion.MAX_BPM
+import dev.cognitivity.chronal.metronome.MetronomeTrack.Companion.MIN_BPM
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.rhythm.metronome.Beat
+import dev.cognitivity.chronal.round
 import dev.cognitivity.chronal.settings.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -70,6 +73,9 @@ class Metronome(private val sendNotifications: Boolean = true, bpm: Float = 60f)
         set(value) {
             _bpm.floatValue = value.round(2).coerceIn(MIN_BPM, MAX_BPM)
         }
+
+    // list of modifiers
+    var modifiers: MutableSet<MetronomeModifier> = mutableSetOf()
 
     private var handlerThread: HandlerThread
     private var handler: Handler
@@ -431,7 +437,7 @@ class Metronome(private val sendNotifications: Boolean = true, bpm: Float = 60f)
         }
         if (intent?.action == "dev.cognitivity.chronal.Stop") {
             if (playing) stop()
-            val notificationManager = ChronalApp.context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val notificationManager = ChronalApp.Companion.context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.cancel(1)
         }
     }

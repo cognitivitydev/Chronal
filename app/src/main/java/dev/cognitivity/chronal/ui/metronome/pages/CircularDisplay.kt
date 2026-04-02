@@ -29,7 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.Metronome
+import dev.cognitivity.chronal.metronome.Metronome
 import dev.cognitivity.chronal.toPx
 import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
 import dev.cognitivity.chronal.ui.metronome.components.CircularClock
@@ -86,8 +86,8 @@ fun CircularDisplay(viewModel: MetronomeViewModel, metronome: Metronome, modifie
                 onDecrement = {
                     viewModel.setBpm(metronome.bpm - 1)
                 },
-                onClick = { // TODO
-                    metronome.bpm += 0.01f
+                onClick = {
+                    viewModel.setShowBpmDialog(true)
                 }
             )
         }

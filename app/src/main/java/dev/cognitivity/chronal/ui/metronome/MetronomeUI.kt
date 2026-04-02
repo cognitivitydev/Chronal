@@ -41,9 +41,11 @@ import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.MainActivity
+import dev.cognitivity.chronal.metronome.MetronomeModifier
 import dev.cognitivity.chronal.ui.metronome.components.BottomSheet
 import dev.cognitivity.chronal.ui.metronome.components.MetronomeDisplay
 import dev.cognitivity.chronal.ui.metronome.components.PlayButton
+import dev.cognitivity.chronal.ui.metronome.components.TempoControlsDialog
 import dev.cognitivity.chronal.ui.metronome.components.TrackList
 import dev.cognitivity.chronal.ui.metronome.components.verticalBPMGesture
 import dev.cognitivity.chronal.ui.metronome.pages.CircularDisplay
@@ -164,7 +166,7 @@ fun MetronomePageMain(mainActivity: MainActivity, viewModel: MetronomeViewModel,
                 ) {
                     when(viewModel.displayMode.collectAsState().value) {
                         DisplayMode.CLOCK -> CircularDisplay(viewModel, metronome)
-                        DisplayMode.CONDUCTOR -> ConductorDisplay(viewModel, metronome, viewModel.flipConductor.collectAsState().value)
+                        DisplayMode.CONDUCTOR -> ConductorDisplay(viewModel, metronome)
                         DisplayMode.GRID -> CircularDisplay(viewModel, metronome)
                     }
                     IconButton(
@@ -192,26 +194,12 @@ fun MetronomePageMain(mainActivity: MainActivity, viewModel: MetronomeViewModel,
             TapTempo(viewModel)
         }
     }
-//    if(viewModel.showRhythmPrimary.value) {
-//        BottomSheet(
-//            onDismissRequest = {
-//                viewModel.setShowRhythmPrimary(false)
-//            },
-//        ) {
-//            EditRhythm(true) {
-//                viewModel.setShowRhythmPrimary(false)
-//            }
-//        }
-//    }
-//    if(viewModel.showRhythmSecondary.value) {
-//        BottomSheet(
-//            onDismissRequest = {
-//                viewModel.setShowRhythmSecondary(false)
-//            },
-//        ) {
-//            EditRhythm(false) {
-//                viewModel.setShowRhythmSecondary(false)
-//            }
-//        }
-//    }
+    if(viewModel.showBpmDialog.collectAsState().value) {
+        TempoControlsDialog(
+            metronome, viewModel,
+            onDismissRequest = {
+                viewModel.setShowBpmDialog(false)
+            }
+        )
+    }
 }

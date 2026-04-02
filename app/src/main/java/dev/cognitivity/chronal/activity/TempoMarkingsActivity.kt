@@ -50,7 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import dev.cognitivity.chronal.MetronomeTrack
+import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.TempoMarking

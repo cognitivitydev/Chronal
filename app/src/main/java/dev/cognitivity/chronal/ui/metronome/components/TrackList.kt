@@ -31,7 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
-import dev.cognitivity.chronal.MetronomeTrack
+import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.R
 
 @Composable

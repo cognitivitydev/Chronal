@@ -54,8 +54,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import dev.cognitivity.chronal.Metronome
-import dev.cognitivity.chronal.MetronomeTrack
+import dev.cognitivity.chronal.metronome.Metronome
+import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.pxToDp
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm

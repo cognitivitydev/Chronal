@@ -49,7 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import dev.cognitivity.chronal.MetronomeTrack
+import dev.cognitivity.chronal.metronome.MetronomeTrack
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable

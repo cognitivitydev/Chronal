@@ -41,6 +41,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -62,7 +63,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
-import dev.cognitivity.chronal.Metronome
+import dev.cognitivity.chronal.metronome.Metronome
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.vibratorManager
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmAtom
@@ -79,9 +80,11 @@ import kotlin.math.abs
 // TODO
 //   - separate versions for different time signatures (5/4, 6/8...)
 @Composable
-fun ConductorDisplay(viewModel: MetronomeViewModel, metronome: Metronome, flipped: Boolean, modifier: Modifier = Modifier) {
+fun ConductorDisplay(viewModel: MetronomeViewModel, metronome: Metronome, modifier: Modifier = Modifier) {
     val tracks = metronome.getTracks()
     val displayTrack = tracks[0]
+
+    val flipped by viewModel.flipConductor.collectAsState()
 
     val coroutineScope = rememberCoroutineScope()
     var loopIndex by remember { mutableIntStateOf(0) }
@@ -271,7 +274,6 @@ fun ConductorDisplay(viewModel: MetronomeViewModel, metronome: Metronome, flippe
 
         Box(
             modifier = Modifier.align(Alignment.CenterHorizontally)
-                .height(IntrinsicSize.Min)
         ) {
             val metronome = ChronalApp.getInstance().metronome
 
@@ -285,8 +287,8 @@ fun ConductorDisplay(viewModel: MetronomeViewModel, metronome: Metronome, flippe
                 onDecrement = {
                     viewModel.setBpm(metronome.bpm - 1)
                 },
-                onClick = { // TODO
-                    metronome.bpm += 0.01f
+                onClick = {
+                    viewModel.setShowBpmDialog(true)
                 }
             )
         }

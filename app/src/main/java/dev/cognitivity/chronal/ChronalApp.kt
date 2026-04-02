@@ -26,6 +26,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import dev.cognitivity.chronal.metronome.Metronome
+import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.notifications.PracticeReminderScheduler
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.settings.Setting
@@ -55,7 +57,8 @@ class ChronalApp : Application() {
             metronome.addTrack(0, MetronomeTrack(
                 rhythm = Rhythm.deserialize(Settings.METRONOME_RHYTHM.get()),
                 beatValue = state.beatValuePrimary,
-            ))
+            )
+            )
             val secondaryTrack = MetronomeTrack(
                 rhythm = Rhythm.deserialize(Settings.METRONOME_RHYTHM_SECONDARY.get()),
                 beatValue = state.beatValueSecondary,

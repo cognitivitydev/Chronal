@@ -94,6 +94,16 @@
     <string name="metronome_track_list">Tracks (%1$d)</string>
     <string name="metronome_track_add">Add track</string>
     <string name="metronome_tempo_unknown">Unknown</string>
+    <string name="metronome_tempo_controls">Tempo controls</string>
+    <string name="metronome_input_manual">Manual</string>
+    <string name="metronome_input_tap">Tap</string>
+    <string name="metronome_input_tap_start">Start tapping</string>
+    <string name="metronome_input_tap_continue">Keep going…</string>
+    <string name="metronome_input_tap_precision">Decimal precision</string>
+    <string name="metronome_input_tap_precision_auto">Auto</string>
+    <string name="metronome_input_tap_precision_0">0</string>
+    <string name="metronome_input_tap_precision_1">1</string>
+    <string name="metronome_input_tap_precision_2">2</string>
 
     <string name="metronome_display_clock">Clock</string>
     <string name="metronome_display_conductor">Conductor</string>

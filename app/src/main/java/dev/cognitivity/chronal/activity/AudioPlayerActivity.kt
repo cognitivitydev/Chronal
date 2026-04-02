@@ -53,7 +53,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.MetronomeTrack
+import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.rhythm.player.PlayerRhythm
 import dev.cognitivity.chronal.rhythm.player.SyncedAudioEngine

@@ -70,8 +70,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.lifecycleScope
 import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.Metronome
-import dev.cognitivity.chronal.MetronomeTrack
+import dev.cognitivity.chronal.metronome.Metronome
+import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.MusicFont
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.rhythm.metronome.Measure

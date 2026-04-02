@@ -26,7 +26,7 @@ import android.os.Vibrator
 import androidx.lifecycle.ViewModel
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
-import dev.cognitivity.chronal.MetronomeTrack
+import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.activity.vibratorManager
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.MetronomeState
@@ -85,10 +85,10 @@ class MetronomeViewModel: ViewModel() {
     }
 
     private var lastVibration = 0L
-    fun setBpm(newValue: Float) {
+    fun setBpm(newValue: Float, vibrate: Boolean = true) {
         if(bpm.value == newValue) return
         _bpm.value = newValue
-        setPlaying(false)
+//        setPlaying(false)
 
         metronome.bpm = newValue
 
@@ -101,6 +101,8 @@ class MetronomeViewModel: ViewModel() {
                 beatValueSecondary = secondaryTrack.beatValue, secondaryEnabled = secondaryTrack.enabled,
             ))
         }
+
+        if(!vibrate) return
 
         if(newValue <= MetronomeTrack.MIN_BPM || newValue >= MetronomeTrack.MAX_BPM) {
             if(System.currentTimeMillis() - lastVibration < 100) return
