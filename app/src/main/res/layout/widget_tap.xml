@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Chronal: Metronome app for Android
+  ~ Copyright (C) 2026  cognitivity
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/widget_tap"
+    android:background="@drawable/widget_material_cookie6sided"
+    android:backgroundTint="@color/widget_tap_surface"
+    android:layout_width="160dp"
+    android:layout_height="160dp"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <ImageView tools:ignore="UseAppTint"
+        android:id="@+id/widget_tap_image"
+        android:src="@drawable/baseline_touch_triple_24"
+        android:contentDescription="@string/metronome_input_tap_start"
+        app:tint="@color/widget_tap_on_surface"
+        android:tint="@color/widget_tap_on_surface"
+        android:layout_width="64dp"
+        android:layout_height="64dp" />
+
+    <TextView
+        android:id="@+id/widget_tap_text"
+        android:text="@string/widget_tap_title"
+        android:textColor="@color/widget_tap_on_surface"
+        android:textSize="16sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+</LinearLayout>
+

@@ -1,9 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Chronal: Metronome app for Android
+  ~ Copyright (C) 2026  cognitivity
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
 <resources>
-    <style name="Theme.Chronal" parent="android:Theme.Material.Light.NoActionBar"/>
+    <style name="Theme.Chronal" parent="Theme.Chronal.Aqua"/>
     <style name="Theme.Chronal.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/logo_background</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
         <item name="postSplashScreenTheme">@style/Theme.Chronal</item>
+    </style>
+    <style name="Theme.Chronal.Widget" parent="@android:style/Theme.DeviceDefault" />
+
+    <style name="Theme.Chronal.Aqua" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/aqua_primary</item>
+        <item name="colorOnPrimary">@color/aqua_on_primary</item>
+        <item name="colorPrimaryContainer">@color/aqua_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/aqua_on_primary_container</item>
+        <item name="colorSecondary">@color/aqua_secondary</item>
+        <item name="colorOnSecondary">@color/aqua_on_secondary</item>
+        <item name="colorSecondaryContainer">@color/aqua_secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/aqua_on_secondary_container</item>
+        <item name="colorTertiary">@color/aqua_tertiary</item>
+        <item name="colorOnTertiary">@color/aqua_on_tertiary</item>
+        <item name="colorTertiaryContainer">@color/aqua_tertiary_container</item>
+        <item name="colorOnTertiaryContainer">@color/aqua_on_tertiary_container</item>
+        <item name="colorError">@color/aqua_error</item>
+        <item name="colorOnError">@color/aqua_on_error</item>
+        <item name="colorErrorContainer">@color/aqua_error_container</item>
+        <item name="colorOnErrorContainer">@color/aqua_on_error_container</item>
+        <item name="android:colorBackground">@color/aqua_background</item>
+        <item name="colorOnBackground">@color/aqua_on_background</item>
+        <item name="colorSurface">@color/aqua_surface</item>
+        <item name="colorOnSurface">@color/aqua_on_surface</item>
+        <item name="colorSurfaceVariant">@color/aqua_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/aqua_on_surface_variant</item>
+        <item name="colorOutline">@color/aqua_outline</item>
+        <item name="colorOutlineVariant">@color/aqua_outline_variant</item>
     </style>
 </resources>

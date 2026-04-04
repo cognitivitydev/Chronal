@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Chronal: Metronome app for Android
+  ~ Copyright (C) 2026  cognitivity
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<resources>
+
+    <color name="aqua_primary">#FF80D5D4</color>
+    <color name="aqua_on_primary">#FF003737</color>
+    <color name="aqua_primary_container">#FF004F4F</color>
+    <color name="aqua_on_primary_container">#FF9CF1F0</color>
+    <color name="aqua_secondary">#FFB0CCCB</color>
+    <color name="aqua_on_secondary">#FF1B3534</color>
+    <color name="aqua_secondary_container">#FF324B4B</color>
+    <color name="aqua_on_secondary_container">#FFCCE8E7</color>
+    <color name="aqua_tertiary">#FFB3C8E8</color>
+    <color name="aqua_on_tertiary">#FF1C314B</color>
+    <color name="aqua_tertiary_container">#FF334863</color>
+    <color name="aqua_on_tertiary_container">#FFD3E4FF</color>
+    <color name="aqua_error">#FFFFB4AB</color>
+    <color name="aqua_on_error">#FF690005</color>
+    <color name="aqua_error_container">#FF93000A</color>
+    <color name="aqua_on_error_container">#FFFFDAD6</color>
+    <color name="aqua_background">#FF0E1514</color>
+    <color name="aqua_on_background">#FFDDE4E3</color>
+    <color name="aqua_surface">#FF0E1514</color>
+    <color name="aqua_on_surface">#FFDDE4E3</color>
+    <color name="aqua_surface_variant">#FF3F4948</color>
+    <color name="aqua_on_surface_variant">#FFBEC9C8</color>
+    <color name="aqua_outline">#FF889392</color>
+    <color name="aqua_outline_variant">#FF3F4948</color>
+    <color name="aqua_scrim">#FF000000</color>
+    <color name="aqua_inverse_surface">#FFDDE4E3</color>
+    <color name="aqua_inverse_on_surface">#FF2B3231</color>
+    <color name="aqua_inverse_primary">#FF006A6A</color>
+    <color name="aqua_surface_dim">#FF0E1514</color>
+    <color name="aqua_surface_bright">#FF343A3A</color>
+    <color name="aqua_surface_container_lowest">#FF090F0F</color>
+    <color name="aqua_surface_container_low">#FF161D1D</color>
+    <color name="aqua_surface_container">#FF1A2121</color>
+    <color name="aqua_surface_container_high">#FF252B2B</color>
+    <color name="aqua_surface_container_highest">#FF2F3636</color>
+
+    <color name="widget_tap_surface">@color/aqua_surface</color>
+    <color name="widget_tap_on_surface">@color/aqua_on_surface</color>
+</resources>

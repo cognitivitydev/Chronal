@@ -141,6 +141,10 @@ class MainActivity : ComponentActivity() {
             }
 
             keepSplashScreen = false
+            if(intent.hasExtra("tap_tempo")) {
+                metronomeViewModel.setShowBpmDialog(true)
+                metronomeViewModel.setBpmDialogTab(1)
+            }
         }
     }
 

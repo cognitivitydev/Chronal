@@ -40,10 +40,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -79,7 +77,6 @@ fun TempoControlsDialog(
             resetTapper(viewModel)
             onDismissRequest()
         },
-        modifier = Modifier,
         title = {
             Text(context.getString(R.string.metronome_tempo_controls))
         },
@@ -94,8 +91,6 @@ fun TempoControlsDialog(
 
 @Composable
 fun TempoControlsDialogContent(scrollState: ScrollState, metronome: Metronome, viewModel: MetronomeViewModel) {
-    var inputTab by remember { mutableStateOf(0) }
-
     val scrollable = scrollState.maxValue != 0 && scrollState.maxValue != Int.MAX_VALUE
     Column {
         if(scrollable) HorizontalDivider()
@@ -112,9 +107,9 @@ fun TempoControlsDialogContent(scrollState: ScrollState, metronome: Metronome, v
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    InputPage(metronome, viewModel, inputTab,
+                    InputPage(metronome, viewModel,
                         onTabChanged = {
-                            inputTab = it
+                            viewModel.setBpmDialogTab(it)
                             resetTapper(viewModel)
                         }
                     )
@@ -131,7 +126,8 @@ fun TempoControlsDialogContent(scrollState: ScrollState, metronome: Metronome, v
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun InputPage(metronome: Metronome, viewModel: MetronomeViewModel, inputTab: Int, onTabChanged: (Int) -> Unit) {
+fun InputPage(metronome: Metronome, viewModel: MetronomeViewModel, onTabChanged: (Int) -> Unit) {
+    val inputTab by viewModel.bpmDialogTab.collectAsState()
     val navController = rememberNavController()
     ButtonGroup(
         overflowIndicator = { menuState ->
@@ -178,7 +174,7 @@ fun InputPage(metronome: Metronome, viewModel: MetronomeViewModel, inputTab: Int
     val fastEffectsSpec = MaterialTheme.motionScheme.fastEffectsSpec<Float>()
     NavHost(
         navController = navController,
-        startDestination = "manual",
+        startDestination = if(inputTab == 1) "tap" else "manual",
         enterTransition = { fadeIn(animationSpec = fastEffectsSpec) },
         exitTransition = { fadeOut(animationSpec = fastEffectsSpec) },
     ) {

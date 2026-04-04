@@ -1,0 +1,27 @@
+<!--
+  ~ Chronal: Metronome app for Android
+  ~ Copyright (C) 2026  cognitivity
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="316dp"
+    android:height="316dp"
+    android:viewportWidth="316"
+    android:viewportHeight="316">
+  <path
+      android:pathData="M102.19,22.57C133.28,-7.52 182.72,-7.52 213.81,22.57C223.33,31.77 234.98,38.48 247.74,42.09C289.42,53.89 314.14,96.59 303.55,138.47C300.31,151.29 300.31,164.71 303.55,177.53C314.14,219.41 289.42,262.11 247.74,273.91C234.98,277.52 223.33,284.23 213.81,293.43C182.72,323.52 133.28,323.52 102.19,293.43C92.67,284.23 81.02,277.52 68.26,273.91C26.58,262.11 1.86,219.41 12.45,177.53C15.69,164.71 15.69,151.29 12.45,138.47C1.86,96.59 26.58,53.89 68.26,42.09C81.02,38.48 92.67,31.77 102.19,22.57Z"
+      android:fillColor="#fff"/>
+</vector>
