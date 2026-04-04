@@ -33,6 +33,10 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.util.Log
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import dev.cognitivity.chronal.ChronalApp
@@ -58,7 +62,12 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.round
 
-class Metronome(private val sendNotifications: Boolean = true, bpm: Float = 60f) : BroadcastReceiver() {
+class Metronome(
+    private val sendNotifications: Boolean = true,
+    bpm: Float = 60f,
+    tracks: MutableList<MetronomeTrack>
+) : BroadcastReceiver() {
+
     private val sampleRate = 48000
 
     private var audioTrack = getAudioTrack()
@@ -74,13 +83,17 @@ class Metronome(private val sendNotifications: Boolean = true, bpm: Float = 60f)
             _bpm.floatValue = value.round(2).coerceIn(MIN_BPM, MAX_BPM)
         }
 
-    // list of modifiers
+    private var _tracks by mutableStateOf(tracks.toMutableStateList())
+    var tracks: MutableList<MetronomeTrack>
+        get() = _tracks
+        set(value) {
+            _tracks = value.toMutableStateList()
+        }
+
     var modifiers: MutableSet<MetronomeModifier> = mutableSetOf()
 
     private var handlerThread: HandlerThread
     private var handler: Handler
-
-    private val tracks = mutableMapOf<Int, MetronomeTrack>()
 
     private val tickSoundCache = mutableMapOf<Int, FloatArray>()
 
@@ -101,17 +114,6 @@ class Metronome(private val sendNotifications: Boolean = true, bpm: Float = 60f)
         }
     }
 
-    fun addTrack(id: Int, track: MetronomeTrack) {
-        tracks.put(id, track)
-    }
-
-    fun removeTrack(id: Int) {
-        tracks.remove(id)
-    }
-
-    fun getTrack(id: Int): MetronomeTrack = tracks[id]!! // TEMP: always returns non-null for 0 and 1 for now
-    fun getTracks(): List<MetronomeTrack> = tracks.values.toList()
-
     fun start() {
         if (playing || !active) return
 
@@ -120,7 +122,7 @@ class Metronome(private val sendNotifications: Boolean = true, bpm: Float = 60f)
             playing = true
 
             val currentSamplePos = 0L
-            tracks.values.forEach { track ->
+            tracks.forEach { track ->
                 track.index = -1
                 track.nextBeatSample = currentSamplePos
                 track.sampleRemainder = 0.0
@@ -130,7 +132,7 @@ class Metronome(private val sendNotifications: Boolean = true, bpm: Float = 60f)
             audioTrack.play()
             handler.post(audioRunnable)
 
-            tracks.values.forEach { it.onPause(false) }
+            tracks.forEach { it.onPause(false) }
             if (sendNotifications) sendRunningNotification()
         }
     }
@@ -139,7 +141,7 @@ class Metronome(private val sendNotifications: Boolean = true, bpm: Float = 60f)
         playing = false
         handler.removeCallbacks(audioRunnable)
         ongoingSounds.clear()
-        tracks.values.forEach { it.onPause(true) }
+        tracks.forEach { it.onPause(true) }
         audioTrack.pause()
         audioTrack.flush()
         if (sendNotifications) sendRunningNotification()
@@ -209,7 +211,7 @@ class Metronome(private val sendNotifications: Boolean = true, bpm: Float = 60f)
     }
 
     private fun mixTracks(outputBuffer: FloatArray, frameStartSample: Long, frameEndSample: Long) {
-        for (track in tracks.values) {
+        for(track in tracks) {
             if (!track.enabled) continue
 
             val pattern = track.getIntervals()
@@ -437,7 +439,7 @@ class Metronome(private val sendNotifications: Boolean = true, bpm: Float = 60f)
         }
         if (intent?.action == "dev.cognitivity.chronal.Stop") {
             if (playing) stop()
-            val notificationManager = ChronalApp.Companion.context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val notificationManager = ChronalApp.context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.cancel(1)
         }
     }

@@ -22,18 +22,37 @@ import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmAtom
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
+import dev.cognitivity.chronal.settings.types.json.MetronomeConfigTrack
+import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
 class MetronomeTrack(
     var name: String = "New track",
     private var rhythm: Rhythm,
-    var beatValue: Float = 4f
+    var beatValue: Float = 4f,
+    var vibrate: Boolean = true,
+    enabled: Boolean = true,
+    var simpleRhythm: SimpleRhythm = SimpleRhythm(4 to 4, 4, 2),
 ) {
     companion object {
         const val MIN_BPM = 1f
         const val MAX_BPM = 16000f
+
+        fun fromSetting(setting: MetronomeConfigTrack): MetronomeTrack {
+            return MetronomeTrack(
+                name = setting.name,
+                rhythm = Rhythm.deserialize(setting.rhythm),
+                simpleRhythm = setting.simpleRhythm,
+                beatValue = setting.beatValue,
+                vibrate = setting.vibrate,
+                enabled = setting.enabled
+            )
+        }
     }
 
-    var enabled: Boolean = true
+    var enabled by mutableStateOf(enabled)
 
     private var intervals: List<Beat> = calculateIntervals(rhythm)
 

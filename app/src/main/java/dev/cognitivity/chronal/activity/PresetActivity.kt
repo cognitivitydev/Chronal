@@ -21,6 +21,7 @@ package dev.cognitivity.chronal.activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Base64
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -58,12 +59,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.FileProvider
+import androidx.lifecycle.lifecycleScope
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.MusicFont
 import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.MetronomePreset
-import dev.cognitivity.chronal.settings.types.json.MetronomeState
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
@@ -157,7 +159,7 @@ class PresetActivity : ComponentActivity() {
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
                             Text(
-                                text = getString(R.string.presets_bpm, preset.state.bpm.toInt()),
+                                text = getString(R.string.presets_bpm, preset.config.bpm.toInt()),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -314,23 +316,9 @@ class PresetActivity : ComponentActivity() {
                     confirmButton = {
                         TextButton(
                             onClick = {
-                                val metronome = ChronalApp.getInstance().metronome
-
-                                val primaryTrack = metronome.getTrack(0)
-                                val secondaryTrack = metronome.getTrack(1)
-
                                 val newPreset = MetronomePreset(
                                     name = newName.trim().ifBlank { getString(R.string.presets_new_name) },
-                                    state = MetronomeState(
-                                        bpm = metronome.bpm,
-                                        beatValuePrimary = primaryTrack.beatValue,
-                                        beatValueSecondary = secondaryTrack.beatValue,
-                                        secondaryEnabled = secondaryTrack.enabled
-                                    ),
-                                    primaryRhythm = primaryTrack.getRhythm(),
-                                    secondaryRhythm = secondaryTrack.getRhythm(),
-                                    primarySimpleRhythm = Settings.METRONOME_SIMPLE_RHYTHM.get(),
-                                    secondarySimpleRhythm = Settings.METRONOME_SIMPLE_RHYTHM_SECONDARY.get(),
+                                    config = Settings.METRONOME_CONFIG.get()
                                 )
                                 presets.add(newPreset)
                                 scope.launch {
@@ -367,7 +355,6 @@ class PresetActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
     fun ColumnScope.DialogContent(preset: MetronomePreset, onDismiss: () -> Unit, onRename: (Boolean) -> Unit, onDelete: (Boolean) -> Unit, onUpdate: (MetronomePreset) -> Unit) {
-        val scope = rememberCoroutineScope()
         var checked by remember { mutableStateOf(false) }
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -399,22 +386,11 @@ class PresetActivity : ComponentActivity() {
                             onDismiss()
 
                             val metronome = ChronalApp.getInstance().metronome
+                            metronome.bpm = preset.config.bpm
+                            metronome.tracks = preset.config.tracks.map { MetronomeTrack.fromSetting(it) }.toMutableList()
 
-                            val primaryTrack = metronome.getTrack(0)
-                            val secondaryTrack = metronome.getTrack(1)
-
-                            metronome.bpm = preset.state.bpm
-                            primaryTrack.beatValue = preset.state.beatValuePrimary
-                            secondaryTrack.beatValue = preset.state.beatValueSecondary
-                            primaryTrack.setRhythm(preset.primaryRhythm)
-                            secondaryTrack.setRhythm(preset.secondaryRhythm)
-
-                            scope.launch {
-                                Settings.METRONOME_STATE.save(preset.state)
-                                Settings.METRONOME_RHYTHM.save(preset.primaryRhythm.serialize())
-                                Settings.METRONOME_RHYTHM_SECONDARY.save(preset.secondaryRhythm.serialize())
-                                Settings.METRONOME_SIMPLE_RHYTHM.save(preset.primarySimpleRhythm)
-                                Settings.METRONOME_SIMPLE_RHYTHM_SECONDARY.save(preset.secondarySimpleRhythm)
+                            lifecycleScope.launch {
+                                Settings.METRONOME_CONFIG.save(preset.config)
                                 finish()
                             }
                         }
@@ -471,24 +447,9 @@ class PresetActivity : ComponentActivity() {
                             text = { Text(getString(R.string.presets_set_current)) },
                             onClick = {
                                 checked = false
-                                val metronome = ChronalApp.getInstance().metronome
-
-                                val primaryTrack = metronome.getTrack(0)
-                                val secondaryTrack = metronome.getTrack(1)
-
                                 val newPreset = preset.copy(
-                                    state = MetronomeState(
-                                        bpm = metronome.bpm,
-                                        beatValuePrimary = primaryTrack.beatValue,
-                                        beatValueSecondary = secondaryTrack.beatValue,
-                                        secondaryEnabled = secondaryTrack.enabled,
-                                    ),
-                                    primaryRhythm = primaryTrack.getRhythm(),
-                                    secondaryRhythm = secondaryTrack.getRhythm(),
-                                    primarySimpleRhythm = Settings.METRONOME_SIMPLE_RHYTHM.get(),
-                                    secondarySimpleRhythm = Settings.METRONOME_SIMPLE_RHYTHM_SECONDARY.get(),
+                                    config = Settings.METRONOME_CONFIG.get()
                                 )
-
                                 onUpdate(newPreset)
                             }
                         )
@@ -520,7 +481,9 @@ class PresetActivity : ComponentActivity() {
                                     putExtra(Intent.EXTRA_STREAM, uri)
                                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                 }
-                                startActivity(Intent.createChooser(intent, "getString(R.string.presets_share_title)"))
+                                // debug print string from file
+                                Log.d("a", "${file.name}: ${file.readText()}")
+                                startActivity(Intent.createChooser(intent, getString(R.string.presets_share)))
                             }
                         )
                         DropdownMenuItem(
@@ -547,12 +510,12 @@ class PresetActivity : ComponentActivity() {
         ) {
             Icon(
                 painter = painterResource(R.drawable.baseline_music_note_24),
-                contentDescription = getString(R.string.presets_bpm, preset.state.bpm.toInt()),
+                contentDescription = getString(R.string.presets_bpm, preset.config.bpm.toInt()),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = getString(R.string.presets_bpm, preset.state.bpm.toInt()),
+                text = getString(R.string.presets_bpm, preset.config.bpm.toInt()),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -577,7 +540,7 @@ class PresetActivity : ComponentActivity() {
                 RhythmInfo(preset, true)
             }
 
-            val enabled = preset.state.secondaryEnabled
+            val enabled = preset.config.tracks.getOrNull(1)?.enabled ?: false
             Column(
                 modifier = Modifier.weight(1f)
                     .clip(RoundedCornerShape(16.dp))
@@ -590,7 +553,7 @@ class PresetActivity : ComponentActivity() {
                     style = MaterialTheme.typography.titleMedium,
                     color = if(enabled) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                RhythmInfo(preset, false, preset.state.secondaryEnabled)
+                RhythmInfo(preset, false, enabled)
             }
         }
     }

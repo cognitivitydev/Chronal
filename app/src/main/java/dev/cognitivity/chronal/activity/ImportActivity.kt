@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -167,12 +167,12 @@ class ImportActivity : ComponentActivity() {
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.baseline_music_note_24),
-                            contentDescription = getString(R.string.presets_bpm, preset.state.bpm),
+                            contentDescription = getString(R.string.presets_bpm, preset.config.bpm.toInt()),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = getString(R.string.presets_bpm, preset.state.bpm),
+                            text = getString(R.string.presets_bpm, preset.config.bpm.toInt()),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -197,7 +197,7 @@ class ImportActivity : ComponentActivity() {
                             RhythmInfo(preset, true)
                         }
 
-                        val enabled = preset.state.secondaryEnabled
+                        val enabled = preset.config.tracks.getOrNull(1)?.enabled ?: false
                         Column(
                             modifier = Modifier.weight(1f)
                                 .clip(RoundedCornerShape(16.dp))
@@ -210,7 +210,7 @@ class ImportActivity : ComponentActivity() {
                                 style = MaterialTheme.typography.titleMedium,
                                 color = if (enabled) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant,
                             )
-                            RhythmInfo(preset, false, preset.state.secondaryEnabled)
+                            RhythmInfo(preset, false, enabled)
                         }
                     }
                 }

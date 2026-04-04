@@ -19,7 +19,6 @@
 package dev.cognitivity.chronal.settings
 
 import android.content.Context
-import android.os.Build
 import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.MutablePreferences
@@ -30,9 +29,12 @@ import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
-import dev.cognitivity.chronal.ChronalApp.Companion.context
+import dev.cognitivity.chronal.settings.types.json.MetronomeConfig
+import dev.cognitivity.chronal.settings.types.json.MetronomeConfigTrack
+import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
 import dev.cognitivity.chronal.settings.types.json.TempoMarking
 import kotlinx.coroutines.flow.first
 
@@ -92,21 +94,15 @@ abstract class Setting<T>(
         }
 
         suspend fun loadAll() {
-            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-            val versionName = packageInfo.versionName
-            val versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                packageInfo.longVersionCode.toInt()
-            } else {
-                packageInfo.versionCode
-            }
-
+            val version = Settings.getCurrentVersionName()
+            val versionCode = Settings.getCurrentVersionCode()
 
             suspend fun load() {
                 Settings // initialize objects
 
                 val prefs = dataStore.data.first()
                 SETTINGS.forEach { it.load(prefs) }
-                Settings.VERSION.set(versionName ?: "0.0.0")
+                Settings.VERSION.set(version)
                 Settings.VERSION_CODE.set(versionCode)
             }
 
@@ -147,7 +143,7 @@ abstract class Setting<T>(
             // Version 12:
             // > Reworked settings structure - "12345678_SETTING_NAME" to "setting_name"
             // > Updated BPM limit (500 -> 800) - update max tempo markings
-            if(fromVersion < 15) {
+            if(fromVersion < 12) {
                 val keysToChange = prefs.asMap().keys.filter { it.name.matches(Regex("\\d+_.*")) }
                 for(key in keysToChange) {
                     val newKey = key.name.substringAfter("_").lowercase()
@@ -160,21 +156,128 @@ abstract class Setting<T>(
                     Log.d("Setting", "(v12) Migrated setting ${key.name} to $newKey")
                     prefs.remove(key)
                 }
-            }
-            // update tempo markings
-            val markings = Settings.TEMPO_MARKINGS.get()
-            val updatedMarkings = mutableListOf<TempoMarking>()
-            for(marking in markings) {
-                if(marking.range.last == 500) {
-                    updatedMarkings.add(marking.copy(range = marking.range.first..800))
-                } else {
-                    updatedMarkings.add(marking)
+
+                // update tempo markings
+                val markings = Settings.TEMPO_MARKINGS.get()
+                val updatedMarkings = mutableListOf<TempoMarking>()
+                for (marking in markings) {
+                    if (marking.range.last == 500) {
+                        updatedMarkings.add(marking.copy(range = marking.range.first..800))
+                    } else {
+                        updatedMarkings.add(marking)
+                    }
                 }
+                prefs[stringPreferencesKey(Settings.TEMPO_MARKINGS.key)] = JsonArray().apply {
+                    markings.forEach { add(it.toJson()) }
+                }.toString()
+                Log.d("Setting", "(v12) Updated tempo markings to 800")
             }
-            prefs[stringPreferencesKey(Settings.TEMPO_MARKINGS.key)] = JsonArray().apply {
-                markings.forEach { add(it.toJson()) }
-            }.toString()
-            Log.d("Setting", "(v12) Updated tempo markings to 800")
+
+            // Version 13:
+            // > Split rhythms into tracks
+            // > Combined metronome settings into a single JSON object
+            // > Moved presets to the new MetronomeConfig structure
+            if(fromVersion < 13) {
+                val configKey = stringPreferencesKey(Settings.METRONOME_CONFIG.key)
+                // update rhythm
+                if(prefs[configKey] == null) {
+                    val bpm = prefs[stringPreferencesKey("metronome_state")]?.let {
+                        try {
+                            Gson().fromJson(it, JsonObject::class.java).get("bpm")?.asFloat ?: 120f
+                        } catch (_: Exception) {
+                            120f
+                        }
+                    } ?: 120f
+
+                    val migratedConfig = MetronomeConfig(
+                        version = 2,
+                        bpm = bpm,
+                        tracks = listOf(
+                            MetronomeConfigTrack(
+                                name = "Primary track",
+                                enabled = true,
+                                vibrate = prefs[booleanPreferencesKey("metronome_vibrations")] ?: true,
+                                rhythm = prefs[stringPreferencesKey("metronome_rhythm")] ?: "{4/4}Q;q;q;q;",
+                                beatValue = prefs[stringPreferencesKey("metronome_beat_value")]?.toFloatOrNull() ?: 4f,
+                                simpleRhythm = prefs[stringPreferencesKey("metronome_simple_rhythm")]?.let {
+                                    try {
+                                        SimpleRhythm.fromJson(it)
+                                    } catch (_: Exception) {
+                                        SimpleRhythm(4 to 4, 4, 2)
+                                    }
+                                } ?: SimpleRhythm(4 to 4, 4, 2)
+                            ),
+                            MetronomeConfigTrack(
+                                name = "Secondary track",
+                                enabled = prefs[booleanPreferencesKey("metronome_secondary_enabled")] ?: false,
+                                vibrate = prefs[booleanPreferencesKey("metronome_vibrations_secondary")] ?: true,
+                                rhythm = prefs[stringPreferencesKey("metronome_rhythm_secondary")] ?: "{4/4}Q;q;q;q;",
+                                beatValue = prefs[stringPreferencesKey("metronome_beat_value_secondary")]?.toFloatOrNull() ?: 4f,
+                                simpleRhythm = prefs[stringPreferencesKey("metronome_simple_rhythm_secondary")]?.let {
+                                    try {
+                                        SimpleRhythm.fromJson(it)
+                                    } catch (_: Exception) {
+                                        SimpleRhythm(4 to 4, 4, 2)
+                                    }
+                                } ?: SimpleRhythm(4 to 4, 4, 2)
+                            )
+                        )
+                    )
+                    prefs[configKey] = migratedConfig.toJson().toString()
+                    Log.d("Setting", "(v13) Migrated rhythms to MetronomeConfig format")
+                }
+
+                // update presets
+                val presetsString = prefs[stringPreferencesKey(Settings.METRONOME_PRESETS.key)]
+                val presetsJson = Gson().fromJson(presetsString, JsonArray::class.java)
+                val newPresets = JsonArray()
+
+                for(preset in presetsJson.map { it.asJsonObject} ) {
+                    if(preset.has("config")) continue
+                    val timestamp = preset["timestamp"].asLong
+                    val name = preset["name"].asString
+                    val primaryRhythm = preset["primaryRhythm"].asString
+                    val primarySimpleRhythm = preset["primarySimpleRhythm"].asJsonObject
+                    val secondaryRhythm = preset["secondaryRhythm"].asString
+                    val secondarySimpleRhythm = preset["secondarySimpleRhythm"].asJsonObject
+                    val state = preset["state"].asJsonObject
+                    val bpm = state["bpm"].asFloat
+                    val primaryBeatValue = state["valuePrimary"].asFloat
+                    val secondaryBeatValue = state["valueSecondary"].asFloat
+                    val secondaryEnabled = state["secondaryEnabled"].asBoolean
+
+                    val migratedConfig = MetronomeConfig(
+                        version = 13,
+                        bpm = bpm,
+                        tracks = listOf(
+                            MetronomeConfigTrack(
+                                name = "Primary track",
+                                enabled = true,
+                                vibrate = true,
+                                rhythm = primaryRhythm,
+                                beatValue = primaryBeatValue,
+                                simpleRhythm = SimpleRhythm.fromJson(primarySimpleRhythm)
+                            ),
+                            MetronomeConfigTrack(
+                                name = "Secondary track",
+                                enabled = secondaryEnabled,
+                                vibrate = true,
+                                rhythm = secondaryRhythm,
+                                beatValue = secondaryBeatValue,
+                                simpleRhythm = SimpleRhythm.fromJson(secondarySimpleRhythm)
+                            )
+                        )
+                    )
+
+                    val newPreset = JsonObject()
+                    newPreset.addProperty("timestamp", timestamp)
+                    newPreset.addProperty("name", name)
+                    newPreset.add("config", migratedConfig.toJson())
+
+                    newPresets.add(newPreset)
+                }
+                Log.d("Setting", "(v13) Migrated presets to MetronomeConfig format")
+            }
         }
     }
 }

@@ -18,80 +18,133 @@
 
 package dev.cognitivity.chronal.ui.metronome.components
 
+import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.activity.PresetActivity
+import dev.cognitivity.chronal.activity.RhythmEditorActivity
+import dev.cognitivity.chronal.activity.SimpleEditorActivity
+import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
+import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun TrackList(tracks: List<MetronomeTrack>, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier.padding(8.dp)
-            .verticalScroll(rememberScrollState()),
+fun TrackList(viewModel: MetronomeViewModel, modifier: Modifier = Modifier) {
+    val tracks by viewModel.tracks.collectAsState()
+
+    LazyColumn(
+        modifier = modifier.padding(horizontal = 8.dp),
         verticalArrangement = Arrangement.spacedBy(3.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        contentPadding = PaddingValues(vertical = 8.dp)
     ) {
-        Row(
-            modifier = Modifier.padding(start = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.outline_library_music_24),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurface,
-            )
-            Text(context.getString(R.string.metronome_track_list, tracks.size),
-                style = MaterialTheme.typography.titleMediumEmphasized,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.weight(1f)
-                    .padding(horizontal = 8.dp)
-            )
-            FilledIconButton(
-                onClick = {
-                    // TODO
-                },
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                ),
-                modifier = Modifier.minimumInteractiveComponentSize()
-                    .size(IconButtonDefaults.smallContainerSize(IconButtonDefaults.IconButtonWidthOption.Narrow)),
+        item {
+            Row(
+                modifier = Modifier.padding(start = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = context.getString(R.string.metronome_track_add)
+                    painter = painterResource(R.drawable.outline_library_music_24),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurface,
                 )
+                Text(context.getString(R.string.metronome_track_list, tracks.size),
+                    style = MaterialTheme.typography.titleMediumEmphasized,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f)
+                        .padding(horizontal = 8.dp)
+                )
+                FilledTonalButton(
+                    onClick = {
+                        ChronalApp.getInstance().startActivity(
+                            Intent(context, PresetActivity::class.java)
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        )
+                    }
+                ) {
+                    Text(context.getString(R.string.presets_title))
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                FilledIconButton(
+                    onClick = {
+                        val primaryTrack = tracks[0]
+                        val primaryTimeSignature = primaryTrack.getRhythm().measures[0].timeSig
+
+                        val simpleRhythm = SimpleRhythm(
+                            timeSignature = primaryTimeSignature,
+                            subdivision = primaryTimeSignature.second,
+                            emphasis = 2
+                        )
+
+                        val newTrack = MetronomeTrack(
+                            name = "New track",
+                            rhythm = simpleRhythm.asRhythm(),
+                            simpleRhythm = simpleRhythm,
+                            beatValue = primaryTrack.beatValue
+                        )
+                        val trackIndex = viewModel.addTrack(newTrack)
+
+                        ChronalApp.getInstance().startActivity(
+                            Intent(context, SimpleEditorActivity::class.java)
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                .putExtra("trackIndex", trackIndex)
+                        )
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = context.getString(R.string.metronome_track_add)
+                    )
+                }
             }
         }
-        tracks.forEachIndexed { index, track ->
+        itemsIndexed(tracks) { index, track ->
             val topRounded = index == 0
             val bottomRounded = index == tracks.size - 1
-            TrackItem(track, index, topRounded, bottomRounded)
+            TrackItem(track, index, topRounded, bottomRounded,
+                onCheckedChanged = { enabled ->
+                    viewModel.setTrackEnabled(index, enabled)
+                }
+            ) {
+                if(track.simpleRhythm == SimpleRhythm.DISABLED) {
+                    ChronalApp.getInstance().startActivity(
+                        Intent(context, RhythmEditorActivity::class.java)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            .putExtra("trackIndex", index)
+                    )
+                } else {
+                    ChronalApp.getInstance().startActivity(
+                        Intent(context, SimpleEditorActivity::class.java)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            .putExtra("trackIndex", index)
+                    )
+                }
+            }
         }
     }
 }

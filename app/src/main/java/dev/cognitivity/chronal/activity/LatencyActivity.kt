@@ -65,12 +65,16 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class LatencyActivity : ComponentActivity() {
-    val metronome = Metronome(sendNotifications = false, bpm = 120f).apply {
-        addTrack(0, MetronomeTrack(
-            rhythm = Rhythm.deserialize("{4/4}Q;Q;Q;Q;"),
-            beatValue = 4f,
-        ))
-    }
+    val metronome = Metronome(
+        sendNotifications = false,
+        bpm = 120f,
+        tracks = mutableListOf(
+            MetronomeTrack(
+                rhythm = Rhythm.deserialize("{4/4}Q;Q;Q;Q;"),
+                beatValue = 4f,
+            )
+        )
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -104,7 +108,7 @@ class LatencyActivity : ComponentActivity() {
 
         val scope = rememberCoroutineScope()
 
-        metronome.getTrack(0).setUpdateListener(0) {
+        metronome.tracks[0].setUpdateListener(0) {
             lastTick = System.currentTimeMillis()
 
             scope.launch {

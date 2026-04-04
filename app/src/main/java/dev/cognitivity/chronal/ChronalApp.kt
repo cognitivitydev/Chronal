@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.metronome.Metronome
 import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.notifications.PracticeReminderScheduler
-import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.settings.Setting
 import dev.cognitivity.chronal.settings.Settings
 import kotlinx.coroutines.runBlocking
@@ -41,7 +40,6 @@ import kotlin.math.roundToInt
 class ChronalApp : Application() {
     lateinit var metronome: Metronome
     var tuner: Tuner? = null
-    val developmentBuild = true
 
     override fun onCreate() {
         super.onCreate()
@@ -51,20 +49,13 @@ class ChronalApp : Application() {
         runBlocking {
             Setting.loadAll()
 
-            val state = Settings.METRONOME_STATE.get()
+            val tracksSetting = Settings.METRONOME_CONFIG.get()
+            val tracks = tracksSetting.tracks.map { MetronomeTrack.fromSetting(it) }
 
-            metronome = Metronome(bpm = state.bpm)
-            metronome.addTrack(0, MetronomeTrack(
-                rhythm = Rhythm.deserialize(Settings.METRONOME_RHYTHM.get()),
-                beatValue = state.beatValuePrimary,
+            metronome = Metronome(
+                bpm = Settings.getBpm(),
+                tracks = tracks.toMutableList()
             )
-            )
-            val secondaryTrack = MetronomeTrack(
-                rhythm = Rhythm.deserialize(Settings.METRONOME_RHYTHM_SECONDARY.get()),
-                beatValue = state.beatValueSecondary,
-            )
-            secondaryTrack.enabled = false
-            metronome.addTrack(1, secondaryTrack)
 
             PracticeReminderScheduler.initialize(applicationContext)
         }

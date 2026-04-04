@@ -18,7 +18,9 @@
 
 package dev.cognitivity.chronal.settings
 
+import android.os.Build
 import com.google.gson.JsonArray
+import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.settings.types.BooleanSetting
 import dev.cognitivity.chronal.settings.types.FloatSetting
 import dev.cognitivity.chronal.settings.types.IntSetting
@@ -28,8 +30,8 @@ import dev.cognitivity.chronal.settings.types.StringSetting
 import dev.cognitivity.chronal.settings.types.json.ColorScheme
 import dev.cognitivity.chronal.settings.types.json.Instrument
 import dev.cognitivity.chronal.settings.types.json.MetronomePreset
-import dev.cognitivity.chronal.settings.types.json.MetronomeState
-import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
+import dev.cognitivity.chronal.settings.types.json.MetronomeConfigTrack
+import dev.cognitivity.chronal.settings.types.json.MetronomeConfig
 import dev.cognitivity.chronal.settings.types.json.TempoMarking
 
 object Settings {
@@ -89,22 +91,12 @@ object Settings {
     val PRACTICE_REMINDER_SNOOZE = IntSetting("practice_reminder_snooze", 10) // time in minutes: 0 / 10 / 30 / 60 / 90
 
     // Internal
-    val METRONOME_RHYTHM = StringSetting("metronome_rhythm", "{4/4}Q;q;q;q;")
-    val METRONOME_SIMPLE_RHYTHM = JsonSetting(
-        key = "metronome_simple_rhythm",
-        defaultValue = SimpleRhythm(4 to 4, 4, 2),
+    val METRONOME_CONFIG = JsonSetting(
+        key = "metronome_config",
+        defaultValue = MetronomeConfig.default(),
         serializer = { it.toJson() },
-        deserializer = { SimpleRhythm.fromJson(it.asJsonObject) }
+        deserializer = { MetronomeConfig.fromJson(it.asJsonObject) }
     )
-    val METRONOME_VIBRATIONS = BooleanSetting("metronome_vibrations", true)
-    val METRONOME_RHYTHM_SECONDARY = StringSetting("metronome_rhythm_secondary", "{4/4}Q;q;q;q;")
-    val METRONOME_SIMPLE_RHYTHM_SECONDARY = JsonSetting(
-        key = "metronome_simple_rhythm_secondary",
-        defaultValue = SimpleRhythm(4 to 4, 4, 2),
-        serializer = { it.toJson() },
-        deserializer = { SimpleRhythm.fromJson(it.asJsonObject) }
-    )
-    val METRONOME_VIBRATIONS_SECONDARY = BooleanSetting("metronome_vibrations_secondary", true)
     val METRONOME_SOUNDS = JsonSetting(
         key = "metronome_sounds",
         defaultValue = 0 to 0,
@@ -118,12 +110,6 @@ object Settings {
             val arr = json.asJsonArray
             (arr[0].asInt to arr[1].asInt)
         }
-    )
-    val METRONOME_STATE = JsonSetting(
-        key = "metronome_state",
-        defaultValue = MetronomeState(120f, 4f, 4f, false),
-        serializer = { it.toJson() },
-        deserializer = { MetronomeState.fromJson(it.asJsonObject) }
     )
     val METRONOME_PRESETS = JsonSetting(
         key = "metronome_presets",
@@ -145,4 +131,36 @@ object Settings {
     val LAST_VERSION = StringSetting("last_version", "0.0.0")
     val LAST_VERSION_CODE = IntSetting("last_version_code", 0)
     val LAST_OPEN = LongSetting("last_open", 0L)
+
+    fun getCurrentVersionCode(): Int {
+        val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            packageInfo.longVersionCode.toInt()
+        } else {
+            packageInfo.versionCode
+        }
+    }
+
+    fun getCurrentVersionName(): String {
+        val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+        return packageInfo.versionName ?: "0.0.0"
+    }
+
+    fun getTrack(index: Int): MetronomeConfigTrack? {
+        return METRONOME_CONFIG.get().tracks.getOrNull(index)
+    }
+
+    fun getBpm() = METRONOME_CONFIG.get().bpm
+    fun setBpm(newValue: Float) {
+        val config = METRONOME_CONFIG.get()
+        METRONOME_CONFIG.set(config.copy(bpm = newValue))
+    }
+
+    fun setTrack(index: Int, update: (MetronomeConfigTrack) -> MetronomeConfigTrack) {
+        val config = METRONOME_CONFIG.get()
+        val tracks = config.tracks.toMutableList()
+        val track = tracks.getOrNull(index) ?: return
+        tracks[index] = update(track)
+        METRONOME_CONFIG.set(config.copy(tracks = tracks))
+    }
 }

@@ -49,14 +49,15 @@ fun MetronomeDisplay(
     modifier: Modifier = Modifier,
 ) {
     val displayMode by viewModel.displayMode.collectAsState()
+    val tracks by viewModel.tracks.collectAsState()
 
     Box(
         modifier = modifier
     ) {
         when(displayMode) {
-            DisplayMode.CLOCK -> CircularDisplay(viewModel, metronome)
-            DisplayMode.CONDUCTOR -> ConductorDisplay(viewModel, metronome)
-            DisplayMode.GRID -> CircularDisplay(viewModel, metronome)
+            DisplayMode.CLOCK -> CircularDisplay(viewModel, tracks)
+            DisplayMode.CONDUCTOR -> ConductorDisplay(viewModel, metronome, tracks)
+            DisplayMode.GRID -> CircularDisplay(viewModel, tracks)
         }
 
         Row(

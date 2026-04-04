@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -145,7 +145,7 @@ class PresetListWidget : GlanceAppWidget() {
                                         maxLines = 1
                                     )
                                     Text(
-                                        text = context.getString(R.string.presets_bpm, preset.state.bpm.toInt()),
+                                        text = context.getString(R.string.presets_bpm, preset.config.bpm.toInt()),
                                         style = TextStyle(
                                             fontSize = 12.sp,
                                             color = GlanceTheme.colors.onSecondaryContainer

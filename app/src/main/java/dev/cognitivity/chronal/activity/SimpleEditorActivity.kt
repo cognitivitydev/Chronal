@@ -79,12 +79,7 @@ import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.MusicFont
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.rhythm.metronome.Measure
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
-import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmElement
-import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
-import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
-import dev.cognitivity.chronal.rhythm.metronome.elements.StemDirection
 import dev.cognitivity.chronal.settings.Setting
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
@@ -95,7 +90,7 @@ import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 class SimpleEditorActivity : ComponentActivity() {
-    private var isPrimary by mutableStateOf(true)
+    private var trackIndex by mutableStateOf(0)
     private var error by mutableStateOf(false)
     private var previewRhythm by mutableStateOf<Rhythm?>(null)
     private lateinit var rhythm: MutableState<SimpleRhythm>
@@ -104,11 +99,11 @@ class SimpleEditorActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        if(!intent.hasExtra("isPrimary")) {
+        if(!intent.hasExtra("trackIndex")) {
             finish()
             return
         }
-        isPrimary = intent.getBooleanExtra("isPrimary", true)
+        trackIndex = intent.getIntExtra("trackIndex", 0)
 
 
         setContent {
@@ -126,19 +121,23 @@ class SimpleEditorActivity : ComponentActivity() {
         val scope = rememberCoroutineScope()
         val navController = rememberNavController()
         var backDropdown by remember { mutableStateOf(false) }
-        val setting = if (isPrimary) Settings.METRONOME_SIMPLE_RHYTHM else Settings.METRONOME_SIMPLE_RHYTHM_SECONDARY
-        val initialValue = setting.get()
+        val selectedTrack = ChronalApp.getInstance().metronome.tracks[trackIndex]
+        val initialValue = selectedTrack.simpleRhythm
+        rhythm = remember { mutableStateOf(initialValue) }
         val startPage = if(initialValue.timeSignature.first != 0 && initialValue.timeSignature.second == 0) "beat" else "time_signature"
-        rhythm = remember { mutableStateOf(setting.get()) }
         val sizeClass = calculateWindowSizeClass(this)
         val expanded = sizeClass.widthSizeClass >= WindowWidthSizeClass.Medium
 
-        previewRhythm = getRhythm(rhythm.value)
+        try {
+            previewRhythm = rhythm.value.asRhythm()
+        } catch(_: Exception) {
+            error = true
+        }
 
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(getString(if(isPrimary) R.string.simple_editor_primary else R.string.simple_editor_secondary)) },
+                    title = { Text(selectedTrack.name) },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                     ),
@@ -166,20 +165,24 @@ class SimpleEditorActivity : ComponentActivity() {
                                     onClick = {
                                         backDropdown = false
                                         if(!error) {
-                                            val parsedRhythm = getRhythm(rhythm.value)
-                                            if(parsedRhythm == null) {
+                                            val parsedRhythm: Rhythm
+                                            try {
+                                                parsedRhythm = rhythm.value.asRhythm()
+                                            } catch(_: Exception) {
                                                 error = true
                                                 return@DropdownMenuItem
                                             }
                                             val metronome = ChronalApp.getInstance().metronome
-                                            val selectedTrack = metronome.getTrack(if(isPrimary) 0 else 1)
-                                            if(isPrimary) {
-                                                Settings.METRONOME_RHYTHM.set(parsedRhythm.serialize())
-                                                Settings.METRONOME_SIMPLE_RHYTHM.set(rhythm.value)
-                                            } else {
-                                                Settings.METRONOME_RHYTHM_SECONDARY.set(parsedRhythm.serialize())
-                                                Settings.METRONOME_SIMPLE_RHYTHM_SECONDARY.set(rhythm.value)
+                                            val selectedTrack = metronome.tracks[trackIndex]
+                                            selectedTrack.simpleRhythm = rhythm.value
+                                            selectedTrack.setRhythm(parsedRhythm)
+                                            Settings.setTrack(trackIndex) {
+                                                it.copy(
+                                                    rhythm = parsedRhythm.serialize(),
+                                                    simpleRhythm = selectedTrack.simpleRhythm
+                                                )
                                             }
+                                            metronome.tracks[trackIndex] = selectedTrack
                                             scope.launch {
                                                 Setting.saveAll()
                                                 selectedTrack.setRhythm(parsedRhythm)
@@ -200,24 +203,27 @@ class SimpleEditorActivity : ComponentActivity() {
                                     onClick = {
                                         backDropdown = false
                                         rhythm.value = initialValue
-                                        val rhythm = getRhythm(rhythm.value)
-                                        if(rhythm == null) {
+                                        val updatedRhythm: Rhythm
+                                        try {
+                                            updatedRhythm = rhythm.value.asRhythm()
+                                        } catch(_: Exception) {
                                             error = true
                                             return@DropdownMenuItem
                                         }
                                         val metronome = ChronalApp.getInstance().metronome
-                                        val selectedTrack = metronome.getTrack(if(isPrimary) 0 else 1)
-
-                                        if(isPrimary) {
-                                            Settings.METRONOME_RHYTHM.set(rhythm.serialize())
-                                            Settings.METRONOME_SIMPLE_RHYTHM.set(initialValue)
-                                        } else {
-                                            Settings.METRONOME_RHYTHM_SECONDARY.set(rhythm.serialize())
-                                            Settings.METRONOME_SIMPLE_RHYTHM_SECONDARY.set(initialValue)
+                                        val selectedTrack = metronome.tracks[trackIndex]
+                                        selectedTrack.simpleRhythm = initialValue
+                                        selectedTrack.setRhythm(updatedRhythm)
+                                        Settings.setTrack(trackIndex) {
+                                            it.copy(
+                                                rhythm = updatedRhythm.serialize(),
+                                                simpleRhythm = selectedTrack.simpleRhythm
+                                            )
                                         }
+                                        metronome.tracks[trackIndex] = selectedTrack
                                         scope.launch {
                                             Setting.saveAll()
-                                            selectedTrack.setRhythm(rhythm)
+                                            selectedTrack.setRhythm(updatedRhythm)
                                             finish()
                                         }
                                     }
@@ -280,12 +286,15 @@ class SimpleEditorActivity : ComponentActivity() {
                                             .align(Alignment.Center)
                                     ) {
                                         if (currentRoute == "beat") {
-                                            MusicFont.Number.TimeSignatureLine(rhythm.value.timeSignature.first,
-                                                color = if (isPrimary) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
+                                            MusicFont.Number.TimeSignatureLine(
+                                                rhythm.value.timeSignature.first,
+                                                color = MaterialTheme.colorScheme.primary
                                             )
                                         } else {
-                                            MusicFont.Number.TimeSignature(rhythm.value.timeSignature.first, rhythm.value.timeSignature.second,
-                                                color = if (isPrimary) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
+                                            MusicFont.Number.TimeSignature(
+                                                rhythm.value.timeSignature.first,
+                                                rhythm.value.timeSignature.second,
+                                                color = MaterialTheme.colorScheme.primary
                                             )
                                         }
                                     }
@@ -318,12 +327,15 @@ class SimpleEditorActivity : ComponentActivity() {
                                             .align(Alignment.Center)
                                     ) {
                                         if (currentRoute == "beat") {
-                                            MusicFont.Number.TimeSignatureLine(rhythm.value.timeSignature.first,
-                                                color = if (isPrimary) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
+                                            MusicFont.Number.TimeSignatureLine(
+                                                rhythm.value.timeSignature.first,
+                                                color = MaterialTheme.colorScheme.primary
                                             )
                                         } else {
-                                            MusicFont.Number.TimeSignature(rhythm.value.timeSignature.first, rhythm.value.timeSignature.second,
-                                                color = if (isPrimary) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
+                                            MusicFont.Number.TimeSignature(
+                                                rhythm.value.timeSignature.first,
+                                                rhythm.value.timeSignature.second,
+                                                color = MaterialTheme.colorScheme.primary
                                             )
                                         }
                                     }
@@ -405,8 +417,8 @@ class SimpleEditorActivity : ComponentActivity() {
             }
         } else {
             val metronome = ChronalApp.getInstance().metronome
-            val selectedTrack = metronome.getTrack(if(isPrimary) 0 else 1)
-            val trackColor = if(isPrimary) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.tertiaryContainer
+            val selectedTrack = metronome.tracks[trackIndex]
+            val trackColor = MaterialTheme.colorScheme.primaryContainer
 
             Box(
                 modifier = Modifier.size(180.dp)
@@ -426,21 +438,12 @@ class SimpleEditorActivity : ComponentActivity() {
                         style = Stroke(width = trackSize)
                     )
                 }
-                if(isPrimary) {
-                    ClockBeats(selectedTrack.calculateIntervals(previewRhythm!!).filter { it.measure == 0 },
-                        progress = remember { Animatable(-1f) },
-                        trackSize = 4.dp.toPx(),
-                        offColor = MaterialTheme.colorScheme.onPrimary,
-                        primaryColor = MaterialTheme.colorScheme.primary,
-                    )
-                } else {
-                    ClockBeats(selectedTrack.calculateIntervals(previewRhythm!!).filter { it.measure == 0 },
-                        progress = remember { Animatable(-1f) },
-                        trackSize = 4.dp.toPx(),
-                        offColor = MaterialTheme.colorScheme.onTertiary,
-                        primaryColor = MaterialTheme.colorScheme.tertiary,
-                    )
-                }
+                ClockBeats(selectedTrack.calculateIntervals(previewRhythm!!).filter { it.measure == 0 },
+                    progress = remember { Animatable(-1f) },
+                    trackSize = 4.dp.toPx(),
+                    offColor = MaterialTheme.colorScheme.onPrimary,
+                    primaryColor = MaterialTheme.colorScheme.primary,
+                )
                 content()
             }
         }
@@ -473,8 +476,7 @@ class SimpleEditorActivity : ComponentActivity() {
                         selected = selected,
                         onClick = onClick,
                         colors = RadioButtonDefaults.colors(
-                            selectedColor = if (isPrimary) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.tertiary,
+                            selectedColor = MaterialTheme.colorScheme.primary,
                         ),
                         interactionSource = interactionSource
                     )
@@ -858,8 +860,7 @@ class SimpleEditorActivity : ComponentActivity() {
                 .clip(RoundedCornerShape(8.dp))
                 .background(if(!enabled || !custom) MaterialTheme.colorScheme.surfaceContainer
                     else if(checked) {
-                        if(isPrimary) MaterialTheme.colorScheme.primaryContainer
-                        else MaterialTheme.colorScheme.tertiaryContainer
+                        MaterialTheme.colorScheme.primaryContainer
                     } else MaterialTheme.colorScheme.surfaceContainerHigh
                 )
                 .clickable(custom) {
@@ -872,8 +873,7 @@ class SimpleEditorActivity : ComponentActivity() {
         ) {
             val noteColor = if(!enabled || !custom) MaterialTheme.colorScheme.onSurfaceVariant
                 else if(checked) {
-                    if(isPrimary) MaterialTheme.colorScheme.onPrimaryContainer
-                    else MaterialTheme.colorScheme.onTertiaryContainer
+                    MaterialTheme.colorScheme.onPrimaryContainer
                 } else MaterialTheme.colorScheme.onSurface
             MusicFont.Notation.NoteCentered(
                 note = MusicFont.Notation.entries.find { it.char == MusicFont.Notation.convert(value) }
@@ -913,74 +913,22 @@ class SimpleEditorActivity : ComponentActivity() {
         }
     }
     fun checkRhythm(value: SimpleRhythm): Boolean {
-        if (getRhythm(value) != null) return true
+        try {
+            value.asRhythm()
+            return true
+        } catch(_: IllegalStateException) {}
 
         // fallback: switch to automatic beats and use denominator as subdivision
         val autoFixed = value.copy(subdivision = 0)
-        if (getRhythm(autoFixed) == null) { // shouldn't happen
-            error = true
-            return false
-        }
-        error = false
-        rhythm.value = autoFixed
-        previewRhythm = getRhythm(autoFixed)
-        Toast.makeText(this, R.string.simple_editor_error_adjusted, Toast.LENGTH_SHORT).show()
-        return true
-    }
-
-    fun getRhythm(value: SimpleRhythm): Rhythm? {
-        val timeSignature = if(value.timeSignature.second == 0) (value.timeSignature.first to 4) else value.timeSignature
-        val subdivision = if(value.subdivision == 0) timeSignature.second else value.subdivision
-        val isTuplet = (subdivision and (subdivision - 1)) != 0
-        val duration = 1.0 / subdivision
-        val baseDuration = if(!isTuplet) duration else 1.0 / (subdivision * 2 / 3.0)
-        val measureDuration = timeSignature.first / timeSignature.second.toDouble()
-
-        var remaining = measureDuration
-        var emphasizeNext = value.emphasis != 1
-        val newMeasure = Measure(timeSignature, arrayListOf<RhythmElement>().apply {
-            while(remaining > 1e-6) {
-                if(isTuplet) {
-                    add(RhythmTuplet(
-                        ratio = 3 to 2,
-                        notes = ArrayList<RhythmNote>().apply {
-                            repeat(3) {
-                                if (remaining <= 0) return@repeat
-                                add(RhythmNote(
-                                    stemDirection = if(emphasizeNext) StemDirection.UP else StemDirection.DOWN,
-                                    baseDuration = baseDuration,
-                                    dots = 0
-                                ))
-                                remaining -= duration
-                                emphasizeNext = when (value.emphasis) {
-                                    0 -> true
-                                    3 -> !emphasizeNext
-                                    else -> false
-                                }
-                            }
-                        }
-                    ))
-                } else {
-                    add(RhythmNote(
-                        stemDirection = if(emphasizeNext) StemDirection.UP else StemDirection.DOWN,
-                        baseDuration = duration,
-                        dots = 0
-                    ))
-                    remaining -= duration
-                    emphasizeNext = when (value.emphasis) {
-                        0 -> true
-                        3 -> !emphasizeNext
-                        else -> false
-                    }
-                }
-            }
-        })
-        if(remaining < -1e-6) return null
-
-        val newRhythm = Rhythm(listOf(newMeasure))
-        previewRhythm = newRhythm
-
-        return newRhythm
+        try {
+            autoFixed.asRhythm()
+            error = false
+            rhythm.value = autoFixed
+            previewRhythm = autoFixed.asRhythm()
+            Toast.makeText(this, R.string.simple_editor_error_adjusted, Toast.LENGTH_SHORT).show()
+        } catch(_: IllegalStateException) {}
+        error = true
+        return false
     }
 
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)

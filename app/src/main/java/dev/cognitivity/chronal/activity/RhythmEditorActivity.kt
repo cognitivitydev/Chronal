@@ -24,6 +24,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.WindowInsets
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -53,6 +54,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -85,7 +87,6 @@ import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.rhythm.metronome.elements.StemDirection
 import dev.cognitivity.chronal.settings.Setting
 import dev.cognitivity.chronal.settings.Settings
-import dev.cognitivity.chronal.settings.types.json.MetronomeState
 import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
 import dev.cognitivity.chronal.ui.metronome.components.PlayPauseIcon
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
@@ -118,35 +119,45 @@ class RhythmEditorActivity : ComponentActivity() {
     private var parsedRhythm by mutableStateOf(Rhythm.deserialize(rhythm))
     private var backupRhythm by mutableStateOf(parsedRhythm)
 
-    private val metronome = Metronome(sendNotifications = false).apply {
-        addTrack(0, MetronomeTrack(
-            rhythm = parsedRhythm,
-            beatValue = 4f
-        ))
-    }
+    private val metronome = Metronome(
+        sendNotifications = false,
+        tracks = mutableListOf(
+            MetronomeTrack(
+                rhythm = parsedRhythm,
+                beatValue = 4f
+            )
+        )
+    )
     private var appMetronome by mutableStateOf(ChronalApp.getInstance().metronome)
-    private var mainTrack = metronome.getTrack(0)
-    private var appTrack = appMetronome.getTrack(0)
+    private var mainTrack = metronome.tracks[0]
+    private var appTrack = appMetronome.tracks[0]
 
     var isPlaying by mutableStateOf(false)
 
     private var showTimeSignature by mutableIntStateOf(-1)
     private var showBpm by mutableStateOf(false)
 
-    private var isPrimary by mutableStateOf(true)
+    private var trackIndex by mutableIntStateOf(0)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        if(!intent.hasExtra("isPrimary")) {
+        if(!intent.hasExtra("trackIndex")) {
             finish()
             return
         }
-        isPrimary = intent.getBooleanExtra("isPrimary", true)
-        appTrack = appMetronome.getTrack(if(isPrimary) 0 else 1)
 
-        this.rhythm = if(isPrimary) Settings.METRONOME_RHYTHM.get() else Settings.METRONOME_RHYTHM_SECONDARY.get()
+        trackIndex = intent.getIntExtra("trackIndex", 0)
+        val track = Settings.getTrack(trackIndex)
+        if(track == null) {
+            Toast.makeText(this, "Failed to find track at index $trackIndex", Toast.LENGTH_LONG).show()
+            finish()
+            return
+        }
+        this.rhythm = track.rhythm
+
+        appTrack = appMetronome.tracks[trackIndex]
         parsedRhythm = Rhythm.deserialize(rhythm)
 
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
@@ -154,10 +165,10 @@ class RhythmEditorActivity : ComponentActivity() {
             window.decorView.windowInsetsController?.hide(WindowInsets.Type.systemBars())
         } else {
             window.decorView.systemUiVisibility = (
-                    View.SYSTEM_UI_FLAG_FULLSCREEN or
-                            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-                            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    )
+                View.SYSTEM_UI_FLAG_FULLSCREEN or
+                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            )
         }
 
         setContent {
@@ -228,30 +239,17 @@ class RhythmEditorActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
     fun MainContent() {
-        val ltr = LocalLayoutDirection.current == LayoutDirection.Ltr
-        var backDropdown by remember { mutableStateOf(false) }
-
-        val animatedRatio by animateFloatAsState(
-            targetValue = if (isPlaying) 1.5f else 1f,
-            animationSpec = MotionScheme.expressive().fastSpatialSpec(),
-            label = "animatedRatio"
-        )
-
         Scaffold(
             modifier = Modifier.fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface),
         ) { innerPadding ->
             Column {
                 // top row
-                Box(
+                TopRow(
                     modifier = Modifier.fillMaxSize()
                         .weight(4f)
-                        .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(
-                            topStart = 0.dp,
-                            topEnd = 0.dp,
-                            bottomStart = 16.dp,
-                            bottomEnd = 16.dp
-                        ))
+                        .clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
                         .padding(
                             top = innerPadding.calculateTopPadding(),
                             start = innerPadding.calculateStartPadding(LocalLayoutDirection.current),
@@ -259,228 +257,7 @@ class RhythmEditorActivity : ComponentActivity() {
                             bottom = 0.dp
                         )
                         .padding(32.dp, 0.dp)
-                ) {
-                    LazyRow(
-                        modifier = Modifier.fillMaxSize()
-                            .padding(1.dp, 0.dp),
-                        reverseLayout = !ltr // always display ltr
-                    ) {
-                        item {
-                            DrawRhythm(parsedRhythm, updateBackup = true)
-                        }
-                        item {
-                            var showTimeSignature by remember { mutableStateOf(false) }
-
-                            Box(
-                                modifier = Modifier.fillMaxHeight()
-                                    .background(MaterialTheme.colorScheme.surfaceContainer)
-                            ) {
-                                Column(modifier = Modifier.align(Alignment.Center)) {
-                                    Button(
-                                        modifier = Modifier.padding(16.dp, 4.dp)
-                                            .align(Alignment.CenterHorizontally),
-                                        onClick = {
-                                            showTimeSignature = true
-                                        }
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Add,
-                                            contentDescription = getString(R.string.editor_measure_add),
-                                            modifier = Modifier.align(Alignment.CenterVertically)
-                                        )
-                                        Text(
-                                            getString(R.string.editor_measure_add),
-                                            modifier = Modifier.align(Alignment.CenterVertically)
-                                        )
-                                    }
-                                    FilledTonalButton(
-                                        modifier = Modifier.padding(16.dp, 4.dp)
-                                            .align(Alignment.CenterHorizontally),
-                                        onClick = {
-                                            val measures = parsedRhythm.measures.toMutableList()
-                                            if (measures.size > 1) {
-                                                measures.removeAt(parsedRhythm.measures.lastIndex)
-                                            }
-                                            parsedRhythm = Rhythm(measures)
-                                            mainTrack.setRhythm(parsedRhythm)
-                                        },
-                                        enabled = parsedRhythm.measures.size > 1
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(R.drawable.baseline_remove_24),
-                                            contentDescription = getString(R.string.editor_measure_remove),
-                                            modifier = Modifier.align(Alignment.CenterVertically)
-                                        )
-                                        Text(
-                                            getString(R.string.editor_measure_remove),
-                                            modifier = Modifier.align(Alignment.CenterVertically)
-                                        )
-                                    }
-                                }
-                            }
-
-                            if (showTimeSignature) {
-                                var timeSignature by remember {
-                                    mutableStateOf(
-                                        parsedRhythm.measures.lastOrNull()?.timeSig ?: (4 to 4)
-                                    )
-                                }
-                                AlertDialog(
-                                    onDismissRequest = { showTimeSignature = false },
-                                    title = { Text(getString(R.string.editor_set_time_signature)) },
-                                    text = {
-                                        Column(
-                                            modifier = Modifier.aspectRatio(1f)
-                                                .background(
-                                                    MaterialTheme.colorScheme.surfaceContainer,
-                                                    MaterialShapes.Bun.toShape(0)
-                                                )
-                                        ) {
-                                            Row(
-                                                modifier = Modifier.weight(1f)
-                                                    .padding(horizontal = 32.dp),
-                                                verticalAlignment = Alignment.CenterVertically,
-                                            ) {
-                                                IconButton(
-                                                    onClick = {
-                                                        timeSignature = Pair(
-                                                            (timeSignature.first - 1).coerceIn(1..32),
-                                                            timeSignature.second
-                                                        )
-                                                    }
-                                                ) {
-                                                    Icon(
-                                                        imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft,
-                                                        contentDescription = getString(R.string.generic_subtract),
-                                                        tint = MaterialTheme.colorScheme.tertiary
-                                                    )
-                                                }
-                                                Box(
-                                                    modifier = Modifier.weight(1f)
-                                                        .fillMaxHeight(0.8f)
-                                                        .align(Alignment.CenterVertically),
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    MusicFont.Number.TimeSignatureLine(
-                                                        timeSignature.first,
-                                                        MaterialTheme.colorScheme.onSurface
-                                                    )
-                                                }
-                                                IconButton(
-                                                    onClick = {
-                                                        timeSignature = Pair(
-                                                            (timeSignature.first + 1).coerceIn(1..32),
-                                                            timeSignature.second
-                                                        )
-                                                    }
-                                                ) {
-                                                    Icon(
-                                                        imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
-                                                        contentDescription = getString(R.string.generic_add),
-                                                        tint = MaterialTheme.colorScheme.tertiary
-                                                    )
-                                                }
-                                            }
-                                            Row(
-                                                modifier = Modifier.weight(1f)
-                                                    .padding(horizontal = 32.dp),
-                                                verticalAlignment = Alignment.CenterVertically,
-                                            ) {
-                                                IconButton(
-                                                    onClick = {
-                                                        timeSignature = Pair(
-                                                            timeSignature.first,
-                                                            (timeSignature.second / 2).coerceIn(1..32)
-                                                        )
-                                                    }
-                                                ) {
-                                                    Icon(
-                                                        imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft,
-                                                        contentDescription = getString(R.string.generic_subtract),
-                                                        tint = MaterialTheme.colorScheme.tertiary
-                                                    )
-                                                }
-                                                Box(
-                                                    modifier = Modifier.weight(1f)
-                                                        .fillMaxHeight(0.8f)
-                                                        .align(Alignment.CenterVertically),
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    MusicFont.Number.TimeSignatureLine(
-                                                        timeSignature.second,
-                                                        MaterialTheme.colorScheme.onSurface
-                                                    )
-                                                }
-                                                IconButton(
-                                                    onClick = {
-                                                        timeSignature = Pair(
-                                                            timeSignature.first,
-                                                            (timeSignature.second * 2).coerceIn(1..32)
-                                                        )
-                                                    }
-                                                ) {
-                                                    Icon(
-                                                        imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
-                                                        contentDescription = getString(R.string.generic_add),
-                                                        tint = MaterialTheme.colorScheme.tertiary
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    },
-                                    confirmButton = {
-                                        TextButton(onClick = {
-                                            val measures = parsedRhythm.measures.toMutableList()
-                                            val elements = mutableListOf<RhythmElement>().apply {
-                                                repeat(timeSignature.first) {
-                                                    add(RhythmRest(
-                                                        baseDuration = 1.0 / timeSignature.second,
-                                                        dots = 0
-                                                    ))
-                                                }
-                                            }
-                                            measures.add(Measure(
-                                                timeSig = timeSignature,
-                                                elements = elements
-                                            ))
-                                            parsedRhythm = Rhythm(measures)
-                                            mainTrack.setRhythm(parsedRhythm)
-                                            showTimeSignature = false
-                                        }) {
-                                            Text(getString(R.string.editor_measure_add))
-                                        }
-                                    },
-                                    dismissButton = {
-                                        TextButton(onClick = { showTimeSignature = false }) {
-                                            Text(getString(R.string.generic_cancel))
-                                        }
-                                    }
-                                )
-                            }
-                        }
-                    }
-
-                    Row(modifier = Modifier.fillMaxSize()) {
-                        Box(
-                            modifier = Modifier.align(Alignment.CenterVertically)
-                                .fillMaxHeight(0.8f)
-                                .width(1.dp)
-                                .background(MaterialTheme.colorScheme.onSurfaceVariant)
-                        )
-                        Box(
-                            modifier = Modifier.align(Alignment.CenterVertically)
-                                .weight(1f)
-                                .height(1.dp)
-                                .background(MaterialTheme.colorScheme.onSurfaceVariant)
-                        )
-                        Box(
-                            modifier = Modifier.align(Alignment.CenterVertically)
-                                .fillMaxHeight(0.8f)
-                                .width(1.dp)
-                                .background(MaterialTheme.colorScheme.onSurfaceVariant)
-                        )
-                    }
-                }
+                )
 
                 var atom: RhythmAtom? = null
                 var isTuplet = false
@@ -551,15 +328,11 @@ class RhythmEditorActivity : ComponentActivity() {
                 }
 
                 // bottom row
-                Row(
+                BottomRow(
                     modifier = Modifier.fillMaxWidth()
                         .weight(2f)
-                        .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(
-                            topStart = 16.dp,
-                            topEnd = 16.dp,
-                            bottomStart = 0.dp,
-                            bottomEnd = 0.dp
-                        ))
+                        .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                        .background(MaterialTheme.colorScheme.surfaceContainerLow)
                         .padding(
                             top = 0.dp,
                             start = innerPadding.calculateStartPadding(LocalLayoutDirection.current),
@@ -567,207 +340,7 @@ class RhythmEditorActivity : ComponentActivity() {
                             bottom = innerPadding.calculateBottomPadding()
                         )
                         .padding(16.dp, 0.dp)
-                ) {
-                    val scope = rememberCoroutineScope()
-                    MaterialTheme(
-                        colorScheme = MaterialTheme.colorScheme.copy(surfaceContainer = MaterialTheme.colorScheme.surfaceContainerHigh),
-                        shapes = MaterialTheme.shapes.copy(
-                            extraSmall = RoundedCornerShape(
-                                16.dp
-                            )
-                        )
-                    ) {
-                        DropdownMenu(
-                            expanded = backDropdown,
-                            onDismissRequest = { backDropdown = false },
-                        ) {
-                            DropdownMenuItem(
-                                leadingIcon = {
-                                    Icon(
-                                        painter = painterResource(R.drawable.outline_save_24),
-                                        contentDescription = getString(R.string.generic_save_exit)
-                                    )
-                                },
-                                text = { Text(getString(R.string.generic_save_exit)) },
-                                onClick = {
-                                    backDropdown = false
-                                    appMetronome.bpm = metronome.bpm
-                                    appTrack.beatValue = mainTrack.beatValue
-
-                                    Settings.METRONOME_STATE.set(MetronomeState(
-                                        bpm = appMetronome.bpm,
-                                        beatValuePrimary = appTrack.beatValue,
-                                        beatValueSecondary = appTrack.beatValue,
-                                        secondaryEnabled = !isPrimary && appMetronome.getTrack(1).enabled
-                                    ))
-
-                                    if (isPrimary) {
-                                        Settings.METRONOME_RHYTHM.set(parsedRhythm.serialize())
-                                        Settings.METRONOME_SIMPLE_RHYTHM.set(SimpleRhythm(0 to 0, 0, 0))
-                                    } else {
-                                        Settings.METRONOME_RHYTHM_SECONDARY.set(parsedRhythm.serialize())
-                                        Settings.METRONOME_SIMPLE_RHYTHM_SECONDARY.set(SimpleRhythm(0 to 0, 0, 0))
-                                    }
-                                    scope.launch {
-                                        Setting.saveAll()
-                                        appTrack.setRhythm(parsedRhythm)
-                                        finish()
-                                    }
-                                },
-                                enabled = errors.isEmpty()
-                            )
-                            DropdownMenuItem(
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Delete,
-                                        contentDescription = getString(R.string.generic_exit_discard)
-                                    )
-                                },
-                                text = { Text(getString(R.string.generic_exit_discard)) },
-                                onClick = {
-                                    backDropdown = false
-                                    finish()
-                                }
-                            )
-                            DropdownMenuItem(
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Close,
-                                        contentDescription = getString(R.string.generic_cancel)
-                                    )
-                                },
-                                text = { Text(getString(R.string.generic_cancel)) },
-                                onClick = {
-                                    backDropdown = false
-                                }
-                            )
-                        }
-                    }
-                    IconButton(
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                            .padding(8.dp, 0.dp),
-                        onClick = {
-                            backDropdown = true
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                            contentDescription = getString(R.string.generic_back),
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                    Row(
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                            .weight(1f),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-//                        IconButton(
-//                            enabled = false,
-//                            onClick = {
-//                                // TODO undo
-//                            }
-//                        ) {
-//                            Icon(
-//                                painter = painterResource(R.drawable.outline_undo_24),
-//                                contentDescription = getString(R.string.editor_undo),
-//                                tint = MaterialTheme.colorScheme.onSurface
-//                            )
-//                        }
-//                        IconButton(
-//                            enabled = false,
-//                            onClick = {
-//                                // TODO redo
-//                            }
-//                        ) {
-//                            Icon(
-//                                painter = painterResource(R.drawable.outline_redo_24),
-//                                contentDescription = getString(R.string.editor_redo),
-//                                tint = MaterialTheme.colorScheme.onSurface
-//                            )
-//                        }
-                    }
-                    Row(
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                            .clickable {
-                                showBpm = true
-                            }
-                            .padding(24.dp, 8.dp)
-                    ) {
-                        MusicFont.Notation.NoteCentered(
-                            note = MusicFont.Notation.getBeatValue(mainTrack.beatValue).first,
-                            dots = if(MusicFont.Notation.getBeatValue(mainTrack.beatValue).second) 1 else 0,
-                            modifier = Modifier.align(Alignment.CenterVertically),
-                            color = MaterialTheme.colorScheme.onSurface,
-                            size = 32.dp,
-                        )
-                        Spacer(
-                            modifier = Modifier.width(8.dp)
-                        )
-                        Text(
-                            "= ${metronome.bpm.toInt()}",
-                            modifier = Modifier.align(Alignment.CenterVertically),
-                            color = MaterialTheme.colorScheme.onSurface,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                    Box(
-                        modifier = Modifier.padding(start = 8.dp)
-                            .align(Alignment.CenterVertically)
-                            .fillMaxHeight(0.8f)
-                            .aspectRatio(1.5f)
-                    ) {
-                        val animatedColor by animateColorAsState(
-                            targetValue = if (isPlaying) MaterialTheme.colorScheme.tertiaryContainer
-                            else if (errors.isNotEmpty()) MaterialTheme.colorScheme.errorContainer
-                            else MaterialTheme.colorScheme.primaryContainer,
-                            animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
-                            label = "animatedColor"
-                        )
-
-                        Box(
-                            modifier = Modifier.aspectRatio(animatedRatio, true)
-                                .clip(CircleShape)
-                                .background(animatedColor)
-                                .clickable {
-                                    if (errors.isNotEmpty()) {
-                                        shownError = false
-                                        return@clickable
-                                    }
-                                    isPlaying = !isPlaying
-                                    mainTrack.setRhythm(parsedRhythm)
-                                    if (isPlaying) {
-                                        metronome.start()
-                                    } else {
-                                        metronome.stop()
-                                    }
-                                }
-                                .align(Alignment.Center),
-                        ) {
-                            Box(
-                                modifier = Modifier.fillMaxHeight(0.5f)
-                                    .aspectRatio(1f, true)
-                                    .align(Alignment.Center)
-                            ) {
-                                if (errors.isEmpty()) {
-                                    PlayPauseIcon(
-                                        !isPlaying,
-                                        modifier = Modifier.fillMaxSize(),
-                                        pauseColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                        playColor = MaterialTheme.colorScheme.onTertiaryContainer
-                                    )
-                                } else {
-                                    Icon(
-                                        painter = painterResource(R.drawable.outline_warning_24),
-                                        contentDescription = getString(R.string.generic_error),
-                                        tint = MaterialTheme.colorScheme.onErrorContainer
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
+                )
             }
             if (errors.isNotEmpty() && !shownError) {
                 AlertDialog(
@@ -827,6 +400,467 @@ class RhythmEditorActivity : ComponentActivity() {
         }
         if(showTimeSignature != -1) {
             TimeSignatureDialog(showTimeSignature)
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
+    @Composable
+    fun TopRow(
+        modifier: Modifier = Modifier
+    ) {
+        val ltr = LocalLayoutDirection.current == LayoutDirection.Ltr
+        Box(
+            modifier = modifier
+        ) {
+            LazyRow(
+                modifier = Modifier.fillMaxSize()
+                    .padding(1.dp, 0.dp),
+                reverseLayout = !ltr // always display ltr
+            ) {
+                item {
+                    DrawRhythm(parsedRhythm, updateBackup = true)
+                }
+                item {
+                    var showTimeSignature by remember { mutableStateOf(false) }
+
+                    Box(
+                        modifier = Modifier.fillMaxHeight()
+                            .background(MaterialTheme.colorScheme.surfaceContainer)
+                    ) {
+                        Column(modifier = Modifier.align(Alignment.Center)) {
+                            Button(
+                                modifier = Modifier.padding(16.dp, 4.dp)
+                                    .align(Alignment.CenterHorizontally),
+                                onClick = {
+                                    showTimeSignature = true
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = getString(R.string.editor_measure_add),
+                                    modifier = Modifier.align(Alignment.CenterVertically)
+                                )
+                                Text(
+                                    getString(R.string.editor_measure_add),
+                                    modifier = Modifier.align(Alignment.CenterVertically)
+                                )
+                            }
+                            FilledTonalButton(
+                                modifier = Modifier.padding(16.dp, 4.dp)
+                                    .align(Alignment.CenterHorizontally),
+                                onClick = {
+                                    val measures = parsedRhythm.measures.toMutableList()
+                                    if (measures.size > 1) {
+                                        measures.removeAt(parsedRhythm.measures.lastIndex)
+                                    }
+                                    parsedRhythm = Rhythm(measures)
+                                    mainTrack.setRhythm(parsedRhythm)
+                                },
+                                enabled = parsedRhythm.measures.size > 1
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.baseline_remove_24),
+                                    contentDescription = getString(R.string.editor_measure_remove),
+                                    modifier = Modifier.align(Alignment.CenterVertically)
+                                )
+                                Text(
+                                    getString(R.string.editor_measure_remove),
+                                    modifier = Modifier.align(Alignment.CenterVertically)
+                                )
+                            }
+                        }
+                    }
+
+                    if (showTimeSignature) {
+                        var timeSignature by remember {
+                            mutableStateOf(
+                                parsedRhythm.measures.lastOrNull()?.timeSig ?: (4 to 4)
+                            )
+                        }
+                        AlertDialog(
+                            onDismissRequest = { showTimeSignature = false },
+                            title = { Text(getString(R.string.editor_set_time_signature)) },
+                            text = {
+                                Column(
+                                    modifier = Modifier.aspectRatio(1f)
+                                        .background(
+                                            MaterialTheme.colorScheme.surfaceContainer,
+                                            MaterialShapes.Bun.toShape(0)
+                                        )
+                                ) {
+                                    Row(
+                                        modifier = Modifier.weight(1f)
+                                            .padding(horizontal = 32.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        IconButton(
+                                            onClick = {
+                                                timeSignature = Pair(
+                                                    (timeSignature.first - 1).coerceIn(1..32),
+                                                    timeSignature.second
+                                                )
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft,
+                                                contentDescription = getString(R.string.generic_subtract),
+                                                tint = MaterialTheme.colorScheme.tertiary
+                                            )
+                                        }
+                                        Box(
+                                            modifier = Modifier.weight(1f)
+                                                .fillMaxHeight(0.8f)
+                                                .align(Alignment.CenterVertically),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            MusicFont.Number.TimeSignatureLine(
+                                                timeSignature.first,
+                                                MaterialTheme.colorScheme.onSurface
+                                            )
+                                        }
+                                        IconButton(
+                                            onClick = {
+                                                timeSignature = Pair(
+                                                    (timeSignature.first + 1).coerceIn(1..32),
+                                                    timeSignature.second
+                                                )
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
+                                                contentDescription = getString(R.string.generic_add),
+                                                tint = MaterialTheme.colorScheme.tertiary
+                                            )
+                                        }
+                                    }
+                                    Row(
+                                        modifier = Modifier.weight(1f)
+                                            .padding(horizontal = 32.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        IconButton(
+                                            onClick = {
+                                                timeSignature = Pair(
+                                                    timeSignature.first,
+                                                    (timeSignature.second / 2).coerceIn(1..32)
+                                                )
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft,
+                                                contentDescription = getString(R.string.generic_subtract),
+                                                tint = MaterialTheme.colorScheme.tertiary
+                                            )
+                                        }
+                                        Box(
+                                            modifier = Modifier.weight(1f)
+                                                .fillMaxHeight(0.8f)
+                                                .align(Alignment.CenterVertically),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            MusicFont.Number.TimeSignatureLine(
+                                                timeSignature.second,
+                                                MaterialTheme.colorScheme.onSurface
+                                            )
+                                        }
+                                        IconButton(
+                                            onClick = {
+                                                timeSignature = Pair(
+                                                    timeSignature.first,
+                                                    (timeSignature.second * 2).coerceIn(1..32)
+                                                )
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
+                                                contentDescription = getString(R.string.generic_add),
+                                                tint = MaterialTheme.colorScheme.tertiary
+                                            )
+                                        }
+                                    }
+                                }
+                            },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    val measures = parsedRhythm.measures.toMutableList()
+                                    val elements = mutableListOf<RhythmElement>().apply {
+                                        repeat(timeSignature.first) {
+                                            add(RhythmRest(
+                                                baseDuration = 1.0 / timeSignature.second,
+                                                dots = 0
+                                            ))
+                                        }
+                                    }
+                                    measures.add(Measure(
+                                        timeSig = timeSignature,
+                                        elements = elements
+                                    ))
+                                    parsedRhythm = Rhythm(measures)
+                                    mainTrack.setRhythm(parsedRhythm)
+                                    showTimeSignature = false
+                                }) {
+                                    Text(getString(R.string.editor_measure_add))
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showTimeSignature = false }) {
+                                    Text(getString(R.string.generic_cancel))
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+
+            Row(modifier = Modifier.fillMaxSize()) {
+                Box(
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                        .fillMaxHeight(0.8f)
+                        .width(1.dp)
+                        .background(MaterialTheme.colorScheme.onSurfaceVariant)
+                )
+                Box(
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                        .weight(1f)
+                        .height(1.dp)
+                        .background(MaterialTheme.colorScheme.onSurfaceVariant)
+                )
+                Box(
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                        .fillMaxHeight(0.8f)
+                        .width(1.dp)
+                        .background(MaterialTheme.colorScheme.onSurfaceVariant)
+                )
+            }
+        }
+    }
+
+    @Composable
+    fun BottomRow(modifier: Modifier = Modifier) {
+        var backDropdown by remember { mutableStateOf(false) }
+        val animatedRatio by animateFloatAsState(
+            targetValue = if (isPlaying) 1.5f else 1f,
+            animationSpec = MotionScheme.expressive().fastSpatialSpec(),
+            label = "animatedRatio"
+        )
+
+        Row(
+            modifier = modifier,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val scope = rememberCoroutineScope()
+            MaterialTheme(
+                colorScheme = MaterialTheme.colorScheme.copy(surfaceContainer = MaterialTheme.colorScheme.surfaceContainerHigh),
+                shapes = MaterialTheme.shapes.copy(
+                    extraSmall = RoundedCornerShape(
+                        16.dp
+                    )
+                )
+            ) {
+                DropdownMenu(
+                    expanded = backDropdown,
+                    onDismissRequest = { backDropdown = false },
+                ) {
+                    DropdownMenuItem(
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(R.drawable.outline_save_24),
+                                contentDescription = getString(R.string.generic_save_exit)
+                            )
+                        },
+                        text = { Text(getString(R.string.generic_save_exit)) },
+                        onClick = {
+                            backDropdown = false
+                            appMetronome.bpm = metronome.bpm
+                            appTrack.beatValue = mainTrack.beatValue
+                            Settings.METRONOME_CONFIG.set(
+                                Settings.METRONOME_CONFIG.get().copy(bpm = appMetronome.bpm)
+                            )
+
+                            appTrack.simpleRhythm = SimpleRhythm.DISABLED
+                            Settings.setTrack(trackIndex) {
+                                it.copy(
+                                    rhythm = parsedRhythm.serialize(),
+                                    beatValue = appTrack.beatValue,
+                                    enabled = appTrack.enabled,
+                                    simpleRhythm = appTrack.simpleRhythm
+                                )
+                            }
+                            scope.launch {
+                                Setting.saveAll()
+                                appTrack.setRhythm(parsedRhythm)
+                                finish()
+                            }
+                        },
+                        enabled = errors.isEmpty()
+                    )
+                    DropdownMenuItem(
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Outlined.Delete,
+                                contentDescription = getString(R.string.generic_exit_discard)
+                            )
+                        },
+                        text = { Text(getString(R.string.generic_exit_discard)) },
+                        onClick = {
+                            backDropdown = false
+                            finish()
+                        }
+                    )
+                    DropdownMenuItem(
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Outlined.Close,
+                                contentDescription = getString(R.string.generic_cancel)
+                            )
+                        },
+                        text = { Text(getString(R.string.generic_cancel)) },
+                        onClick = {
+                            backDropdown = false
+                        }
+                    )
+                }
+            }
+            IconButton(
+                modifier = Modifier.align(Alignment.CenterVertically)
+                    .padding(8.dp, 0.dp),
+                onClick = {
+                    backDropdown = true
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                    contentDescription = getString(R.string.generic_back),
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            UndoRedo(
+                modifier = Modifier.weight(1f)
+            )
+            Row(
+                modifier = Modifier.align(Alignment.CenterVertically)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                    .clickable {
+                        showBpm = true
+                    }
+                    .padding(24.dp, 8.dp)
+            ) {
+                MusicFont.Notation.NoteCentered(
+                    note = MusicFont.Notation.getBeatValue(mainTrack.beatValue).first,
+                    dots = if(MusicFont.Notation.getBeatValue(mainTrack.beatValue).second) 1 else 0,
+                    modifier = Modifier.align(Alignment.CenterVertically),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    size = 32.dp,
+                )
+                Spacer(
+                    modifier = Modifier.width(8.dp)
+                )
+                Text(
+                    "= ${metronome.bpm.toInt()}",
+                    modifier = Modifier.align(Alignment.CenterVertically),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+            Box(
+                modifier = Modifier.padding(start = 8.dp)
+                    .align(Alignment.CenterVertically)
+                    .fillMaxHeight(0.8f)
+                    .aspectRatio(1.5f)
+            ) {
+                val animatedColor by animateColorAsState(
+                    targetValue = if (isPlaying) MaterialTheme.colorScheme.tertiaryContainer
+                    else if (errors.isNotEmpty()) MaterialTheme.colorScheme.errorContainer
+                    else MaterialTheme.colorScheme.primaryContainer,
+                    animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
+                    label = "animatedColor"
+                )
+
+                Box(
+                    modifier = Modifier.aspectRatio(animatedRatio, true)
+                        .clip(CircleShape)
+                        .background(animatedColor)
+                        .clickable {
+                            if (errors.isNotEmpty()) {
+                                shownError = false
+                                return@clickable
+                            }
+                            isPlaying = !isPlaying
+                            mainTrack.setRhythm(parsedRhythm)
+                            if (isPlaying) {
+                                metronome.start()
+                            } else {
+                                metronome.stop()
+                            }
+                        }
+                        .align(Alignment.Center),
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxHeight(0.5f)
+                            .aspectRatio(1f, true)
+                            .align(Alignment.Center)
+                    ) {
+                        if (errors.isEmpty()) {
+                            PlayPauseIcon(
+                                !isPlaying,
+                                modifier = Modifier.fillMaxSize(),
+                                pauseColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                playColor = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                        } else {
+                            Icon(
+                                painter = painterResource(R.drawable.outline_warning_24),
+                                contentDescription = getString(R.string.generic_error),
+                                tint = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        }
+                    }
+                }
+            }
+            IconButton(
+                modifier = Modifier.padding(horizontal = 4.dp),
+                onClick = {
+                    // TODO
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.MoreVert,
+                    contentDescription = getString(R.string.editor_settings)
+                )
+            }
+        }
+    }
+
+    @Composable
+    fun UndoRedo(modifier: Modifier = Modifier) {
+        Row(
+            modifier = modifier
+        ) {
+//            IconButton(
+//                enabled = false,
+//                onClick = {
+//                    // TODO undo
+//                }
+//            ) {
+//                Icon(
+//                    painter = painterResource(R.drawable.outline_undo_24),
+//                    contentDescription = getString(R.string.editor_undo),
+//                    tint = MaterialTheme.colorScheme.onSurface
+//                )
+//            }
+//            IconButton(
+//                enabled = false,
+//                onClick = {
+//                    // TODO redo
+//                }
+//            ) {
+//                Icon(
+//                    painter = painterResource(R.drawable.outline_redo_24),
+//                    contentDescription = getString(R.string.editor_redo),
+//                    tint = MaterialTheme.colorScheme.onSurface
+//                )
+//            }
         }
     }
 

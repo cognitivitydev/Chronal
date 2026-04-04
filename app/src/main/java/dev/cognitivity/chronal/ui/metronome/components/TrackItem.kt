@@ -41,9 +41,6 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,8 +50,15 @@ import dev.cognitivity.chronal.metronome.MetronomeTrack
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun TrackItem(track: MetronomeTrack, index: Int, topRounded: Boolean, bottomRounded: Boolean, onClick: () -> Unit = {}) {
-    var enabled by remember { mutableStateOf(track.enabled) }
+fun TrackItem(
+    track: MetronomeTrack,
+    index: Int,
+    topRounded: Boolean,
+    bottomRounded: Boolean,
+    onCheckedChanged: (Boolean) -> Unit = {},
+    onClick: () -> Unit = {}
+) {
+    val enabled = track.enabled
     val shape = RoundedCornerShape(
         topStart = if (topRounded) 12.dp else 6.dp,
         topEnd = if (topRounded) 12.dp else 6.dp,
@@ -105,9 +109,7 @@ fun TrackItem(track: MetronomeTrack, index: Int, topRounded: Boolean, bottomRoun
             checked = enabled,
             onCheckedChange = {
                 if(index == 0) return@Switch
-                enabled = it
-                track.enabled = it
-                // TODO
+                onCheckedChanged(it)
             },
             colors = SwitchDefaults.colors( // TODO
                 checkedThumbColor = if(topRounded) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onTertiary,

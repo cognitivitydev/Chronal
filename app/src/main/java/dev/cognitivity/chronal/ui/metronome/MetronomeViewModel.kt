@@ -29,7 +29,6 @@ import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.activity.vibratorManager
 import dev.cognitivity.chronal.settings.Settings
-import dev.cognitivity.chronal.settings.types.json.MetronomeState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -51,6 +50,9 @@ class MetronomeViewModel: ViewModel() {
 
     private val _bpm = MutableStateFlow(0f)
     val bpm: StateFlow<Float> = _bpm.asStateFlow()
+
+    private val _tracks = MutableStateFlow<List<MetronomeTrack>>(emptyList())
+    val tracks: StateFlow<List<MetronomeTrack>> = _tracks.asStateFlow()
 
     private val _settingsExpanded = MutableStateFlow(false)
     val settingsExpanded: StateFlow<Boolean> = _settingsExpanded.asStateFlow()
@@ -82,6 +84,15 @@ class MetronomeViewModel: ViewModel() {
     private val _lastTapTime = MutableStateFlow(0L)
     val lastTapTime: StateFlow<Long> = _lastTapTime.asStateFlow()
 
+    init {
+        syncMetronomeState()
+    }
+
+    fun syncMetronomeState() {
+        _bpm.value = metronome.bpm
+        _tracks.value = metronome.tracks.toList()
+    }
+
     fun setPlaying(newValue: Boolean) {
         _playing.value = newValue
         if(newValue) metronome.start() else metronome.stop()
@@ -91,18 +102,12 @@ class MetronomeViewModel: ViewModel() {
     fun setBpm(newValue: Float, vibrate: Boolean = true) {
         if(bpm.value == newValue) return
         _bpm.value = newValue
-//        setPlaying(false)
 
         metronome.bpm = newValue
 
-        val primaryTrack = metronome.getTrack(0)
-        val secondaryTrack = metronome.getTrack(1)
-
         CoroutineScope(Dispatchers.Main).launch {
-            Settings.METRONOME_STATE.save(MetronomeState(
-                bpm = newValue, beatValuePrimary = primaryTrack.beatValue,
-                beatValueSecondary = secondaryTrack.beatValue, secondaryEnabled = secondaryTrack.enabled,
-            ))
+            Settings.setBpm(newValue)
+            Settings.METRONOME_CONFIG.save()
         }
 
         if(!vibrate) return
@@ -134,6 +139,19 @@ class MetronomeViewModel: ViewModel() {
                 vibrator.vibrate(5)
             }
         }
+    }
+
+    fun addTrack(track: MetronomeTrack): Int {
+        metronome.tracks.add(track)
+        _tracks.value = metronome.tracks.toList()
+        return metronome.tracks.lastIndex
+    }
+
+    fun setTrackEnabled(index: Int, enabled: Boolean) {
+        val track = metronome.tracks.getOrNull(index) ?: return
+        if (index == 0) return
+        track.enabled = enabled
+        _tracks.value = metronome.tracks.toList()
     }
 
     fun setSettingsExpanded(newValue: Boolean) { _settingsExpanded.value = newValue }

@@ -31,10 +31,8 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
@@ -64,6 +62,7 @@ import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.metronome.Metronome
+import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.vibratorManager
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmAtom
@@ -80,15 +79,14 @@ import kotlin.math.abs
 // TODO
 //   - separate versions for different time signatures (5/4, 6/8...)
 @Composable
-fun ConductorDisplay(viewModel: MetronomeViewModel, metronome: Metronome, modifier: Modifier = Modifier) {
-    val tracks = metronome.getTracks()
-    val displayTrack = tracks[0]
+fun ConductorDisplay(viewModel: MetronomeViewModel, metronome: Metronome, tracks: List<MetronomeTrack>, modifier: Modifier = Modifier) {
+    val displayTrack = tracks.firstOrNull() ?: return
 
     val flipped by viewModel.flipConductor.collectAsState()
 
     val coroutineScope = rememberCoroutineScope()
     var loopIndex by remember { mutableIntStateOf(0) }
-    var currentTimeSignature by remember { mutableStateOf(displayTrack.getRhythm().measures[0].timeSig) }
+    var currentTimeSignature by remember(displayTrack) { mutableStateOf(displayTrack.getRhythm().measures[0].timeSig) }
     var (path, segments) = getConductorPath(currentTimeSignature.first)
     val currentBeat = remember { Animatable(0f) }
 
@@ -110,7 +108,7 @@ fun ConductorDisplay(viewModel: MetronomeViewModel, metronome: Metronome, modifi
         coroutineScope.launch {
             delay(Settings.VISUAL_LATENCY.get().toLong())
             if(!metronome.playing || timestamp != metronome.timestamp) return@launch
-            if(!Settings.METRONOME_VIBRATIONS.get()) return@launch
+            if(!displayTrack.vibrate) return@launch
             if(beat.duration >= 0f) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null) {
                     val vibration = if(beat.isHigh) VibrationEffect.createOneShot(10, 255) else VibrationEffect.createOneShot(3, 255)

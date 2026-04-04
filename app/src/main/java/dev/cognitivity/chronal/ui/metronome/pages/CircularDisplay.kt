@@ -29,15 +29,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.metronome.Metronome
+import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.toPx
 import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
 import dev.cognitivity.chronal.ui.metronome.components.CircularClock
 import dev.cognitivity.chronal.ui.metronome.components.TempoChanger
 
 @Composable
-fun CircularDisplay(viewModel: MetronomeViewModel, metronome: Metronome, modifier: Modifier = Modifier) {
-    val tracks = metronome.getTracks()
+fun CircularDisplay(viewModel: MetronomeViewModel, tracks: List<MetronomeTrack>, modifier: Modifier = Modifier) {
+    if(tracks.isEmpty()) return
     Box(
         modifier = modifier.fillMaxSize()
         ) {
@@ -53,7 +53,7 @@ fun CircularDisplay(viewModel: MetronomeViewModel, metronome: Metronome, modifie
                 trackSecondary = MaterialTheme.colorScheme.secondary
             )
         }
-        if (tracks.size > 1 && tracks[1].enabled) {
+        if(tracks.size > 1 && tracks[1].enabled) {
             Box(
                 modifier = Modifier.fillMaxHeight()
                     .padding(24.dp)
@@ -75,7 +75,6 @@ fun CircularDisplay(viewModel: MetronomeViewModel, metronome: Metronome, modifie
                 .align(Alignment.Center)
         ) {
             val metronome = ChronalApp.getInstance().metronome
-            val track = metronome.getTrack(0)
 
             TempoChanger(
                 modifier = Modifier.align(Alignment.Center),

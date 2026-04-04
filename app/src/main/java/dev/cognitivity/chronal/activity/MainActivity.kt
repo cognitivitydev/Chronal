@@ -170,6 +170,7 @@ class MainActivity : ComponentActivity() {
 
         val metronomeViewModel: MetronomeViewModel by viewModels()
         metronomeViewModel.setPlaying(ChronalApp.getInstance().metronome.playing)
+        metronomeViewModel.syncMetronomeState()
     }
 
     fun setKeepScreenOn(enabled: Boolean) {

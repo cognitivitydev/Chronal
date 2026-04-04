@@ -20,6 +20,12 @@ package dev.cognitivity.chronal.settings.types.json
 
 import com.google.gson.Gson
 import com.google.gson.JsonObject
+import dev.cognitivity.chronal.rhythm.metronome.Measure
+import dev.cognitivity.chronal.rhythm.metronome.Rhythm
+import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmElement
+import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
+import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
+import dev.cognitivity.chronal.rhythm.metronome.elements.StemDirection
 
 data class SimpleRhythm(
     val timeSignature: Pair<Int, Int>,
@@ -27,6 +33,8 @@ data class SimpleRhythm(
     val emphasis: Int
 ) {
     companion object {
+        val DISABLED = SimpleRhythm(0 to 0, 0, 0)
+
         fun fromJson(jsonObject: JsonObject): SimpleRhythm {
             return SimpleRhythm(
                 timeSignature = Pair(
@@ -51,5 +59,61 @@ data class SimpleRhythm(
             addProperty("subdivision", subdivision)
             addProperty("emphasis", emphasis)
         }
+    }
+
+    fun asRhythm(): Rhythm {
+        val timeSignature = if(timeSignature.second == 0) (timeSignature.first to 4) else timeSignature
+        val subdivision = if(subdivision == 0) timeSignature.second else subdivision
+        val isTuplet = (subdivision and (subdivision - 1)) != 0
+        val duration = 1.0 / subdivision
+        val baseDuration = if(!isTuplet) duration else 1.0 / (subdivision * 2 / 3.0)
+        val measureDuration = timeSignature.first / timeSignature.second.toDouble()
+
+        var remaining = measureDuration
+        var emphasizeNext = emphasis != 1
+        val newMeasure = Measure(timeSignature, arrayListOf<RhythmElement>().apply {
+            while(remaining > 1e-6) {
+                if(isTuplet) {
+                    add(RhythmTuplet(
+                        ratio = 3 to 2,
+                        notes = ArrayList<RhythmNote>().apply {
+                            repeat(3) {
+                                if (remaining <= 0) return@repeat
+                                add(RhythmNote(
+                                    stemDirection = if(emphasizeNext) StemDirection.UP else StemDirection.DOWN,
+                                    baseDuration = baseDuration,
+                                    tupletRatio = 3 to 2,
+                                    dots = 0
+                                ))
+                                remaining -= duration
+                                emphasizeNext = when (emphasis) {
+                                    0 -> true
+                                    3 -> !emphasizeNext
+                                    else -> false
+                                }
+                            }
+                        }
+                    ))
+                } else {
+                    add(RhythmNote(
+                        stemDirection = if(emphasizeNext) StemDirection.UP else StemDirection.DOWN,
+                        baseDuration = duration,
+                        dots = 0
+                    ))
+                    remaining -= duration
+                    emphasizeNext = when (emphasis) {
+                        0 -> true
+                        3 -> !emphasizeNext
+                        else -> false
+                    }
+                }
+            }
+        })
+
+        if(remaining < -1e-6) {
+            throw IllegalStateException("Generated rhythm exceeds measure by ${-remaining} beats")
+        }
+
+        return Rhythm(listOf(newMeasure))
     }
 }

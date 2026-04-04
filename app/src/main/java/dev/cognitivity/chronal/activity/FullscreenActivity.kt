@@ -72,7 +72,7 @@ import kotlin.math.abs
 
 class FullscreenActivity : ComponentActivity() {
     val metronome = ChronalApp.getInstance().metronome
-    val mainTrack = metronome.getTrack(0)
+    val mainTrack = metronome.tracks[0]
 
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {

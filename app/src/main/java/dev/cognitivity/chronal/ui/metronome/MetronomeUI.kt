@@ -41,7 +41,6 @@ import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.MainActivity
-import dev.cognitivity.chronal.metronome.MetronomeModifier
 import dev.cognitivity.chronal.ui.metronome.components.BottomSheet
 import dev.cognitivity.chronal.ui.metronome.components.MetronomeDisplay
 import dev.cognitivity.chronal.ui.metronome.components.PlayButton
@@ -56,8 +55,8 @@ import dev.cognitivity.chronal.ui.metronome.sheets.TapTempo
 @Composable
 fun MetronomePageMain(mainActivity: MainActivity, viewModel: MetronomeViewModel, padding: PaddingValues) {
     val metronome = ChronalApp.getInstance().metronome
-    val tracks = metronome.getTracks()
     val playing by viewModel.playing.collectAsState()
+    val tracks by viewModel.tracks.collectAsState()
 
     BoxWithConstraints(
         modifier = Modifier.fillMaxSize()
@@ -91,7 +90,7 @@ fun MetronomePageMain(mainActivity: MainActivity, viewModel: MetronomeViewModel,
                 Column(
                     Modifier.weight(1f),
                 ) {
-                    TrackList(tracks,
+                    TrackList(viewModel,
                         modifier = Modifier
                             .heightIn(max = this@BoxWithConstraints.maxHeight * 0.67f)
                             .fillMaxHeight()
@@ -115,7 +114,7 @@ fun MetronomePageMain(mainActivity: MainActivity, viewModel: MetronomeViewModel,
                 Modifier.fillMaxSize()
                     .padding(16.dp),
             ) {
-                TrackList(tracks,
+                TrackList(viewModel,
                     modifier = Modifier.heightIn(min = 24.dp, max = min(180.dp, this@BoxWithConstraints.maxHeight * 0.35f))
                         .clip(RoundedCornerShape(16.dp))
                         .background(MaterialTheme.colorScheme.surfaceContainerLow)
@@ -165,9 +164,9 @@ fun MetronomePageMain(mainActivity: MainActivity, viewModel: MetronomeViewModel,
                         )
                 ) {
                     when(viewModel.displayMode.collectAsState().value) {
-                        DisplayMode.CLOCK -> CircularDisplay(viewModel, metronome)
-                        DisplayMode.CONDUCTOR -> ConductorDisplay(viewModel, metronome)
-                        DisplayMode.GRID -> CircularDisplay(viewModel, metronome)
+                        DisplayMode.CLOCK -> CircularDisplay(viewModel, tracks)
+                        DisplayMode.CONDUCTOR -> ConductorDisplay(viewModel, metronome, tracks)
+                        DisplayMode.GRID -> CircularDisplay(viewModel, tracks)
                     }
                     IconButton(
                         onClick = { viewModel.setFullscreenMode(false) },
