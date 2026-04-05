@@ -73,7 +73,8 @@ data class MetronomePreset(
                             vibrate = true,
                             rhythm = "{2/4}Q;Q;",
                             beatValue = 4f,
-                            simpleRhythm = SimpleRhythm(2 to 4, 4, 0)
+                            simpleRhythm = SimpleRhythm(2 to 4, 4, 0),
+                            color = TrackColor.Primary
                         ),
                         MetronomeConfigTrack(
                             name = "Secondary track",
@@ -81,7 +82,8 @@ data class MetronomePreset(
                             vibrate = true,
                             rhythm = "{2/4}3:2[q:q:q];",
                             beatValue = 4f,
-                            simpleRhythm = SimpleRhythm(2 to 4, 6, 1)
+                            simpleRhythm = SimpleRhythm(2 to 4, 6, 1),
+                            color = TrackColor.Secondary
                         )
                     )
                 )

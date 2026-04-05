@@ -36,6 +36,7 @@ import dev.cognitivity.chronal.settings.types.json.MetronomeConfig
 import dev.cognitivity.chronal.settings.types.json.MetronomeConfigTrack
 import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
 import dev.cognitivity.chronal.settings.types.json.TempoMarking
+import dev.cognitivity.chronal.settings.types.json.TrackColor
 import kotlinx.coroutines.flow.first
 
 abstract class Setting<T>(
@@ -205,7 +206,8 @@ abstract class Setting<T>(
                                     } catch (_: Exception) {
                                         SimpleRhythm(4 to 4, 4, 2)
                                     }
-                                } ?: SimpleRhythm(4 to 4, 4, 2)
+                                } ?: SimpleRhythm(4 to 4, 4, 2),
+                                color = TrackColor.Primary
                             ),
                             MetronomeConfigTrack(
                                 name = "Secondary track",
@@ -219,7 +221,8 @@ abstract class Setting<T>(
                                     } catch (_: Exception) {
                                         SimpleRhythm(4 to 4, 4, 2)
                                     }
-                                } ?: SimpleRhythm(4 to 4, 4, 2)
+                                } ?: SimpleRhythm(4 to 4, 4, 2),
+                                color = TrackColor.Secondary
                             )
                         )
                     )
@@ -256,7 +259,8 @@ abstract class Setting<T>(
                                 vibrate = true,
                                 rhythm = primaryRhythm,
                                 beatValue = primaryBeatValue,
-                                simpleRhythm = SimpleRhythm.fromJson(primarySimpleRhythm)
+                                simpleRhythm = SimpleRhythm.fromJson(primarySimpleRhythm),
+                                color = TrackColor.Primary
                             ),
                             MetronomeConfigTrack(
                                 name = "Secondary track",
@@ -264,7 +268,8 @@ abstract class Setting<T>(
                                 vibrate = true,
                                 rhythm = secondaryRhythm,
                                 beatValue = secondaryBeatValue,
-                                simpleRhythm = SimpleRhythm.fromJson(secondarySimpleRhythm)
+                                simpleRhythm = SimpleRhythm.fromJson(secondarySimpleRhythm),
+                                color = TrackColor.Secondary
                             )
                         )
                     )

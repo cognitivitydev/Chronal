@@ -28,7 +28,8 @@ data class MetronomeConfigTrack(
     val vibrate: Boolean,
     val rhythm: String,
     val simpleRhythm: SimpleRhythm,
-    val beatValue: Float
+    val beatValue: Float,
+    val color: TrackColor
 ) {
     companion object {
         fun fromJson(jsonObject: JsonObject): MetronomeConfigTrack {
@@ -44,7 +45,8 @@ data class MetronomeConfigTrack(
                         SimpleRhythm(4 to 4, 4, 2)
                     }
                 } ?: SimpleRhythm(4 to 4, 4, 2),
-                beatValue = jsonObject.get("beatValue")?.asFloat ?: 4f
+                beatValue = jsonObject.get("beatValue")?.asFloat ?: 4f,
+                color = TrackColor.fromJson(jsonObject.get("color").asJsonObject)
             )
         }
     }
@@ -57,6 +59,37 @@ data class MetronomeConfigTrack(
             addProperty("rhythm", rhythm)
             add("simpleRhythm", simpleRhythm.toJson())
             addProperty("beatValue", beatValue)
+            add("color", color.toJson())
+        }
+    }
+}
+
+sealed class TrackColor {
+    object Primary : TrackColor()
+    object Secondary : TrackColor()
+    data class Custom(val value: Int) : TrackColor()
+
+    companion object {
+        fun fromJson(jsonObject: JsonObject): TrackColor {
+            return when(jsonObject.get("type").asString) {
+                "Primary" -> Primary
+                "Secondary" -> Secondary
+                "Custom" -> Custom(jsonObject.get("value").asInt)
+                else -> throw IllegalArgumentException("Unknown TrackColor type")
+            }
+        }
+    }
+
+    fun toJson(): JsonObject {
+        return JsonObject().apply {
+            when(this@TrackColor) {
+                is Primary -> addProperty("type", "Primary")
+                is Secondary -> addProperty("type", "Secondary")
+                is Custom -> {
+                    addProperty("type", "Custom")
+                    addProperty("value", value)
+                }
+            }
         }
     }
 }
@@ -77,7 +110,8 @@ data class MetronomeConfig(
                         vibrate = true,
                         rhythm = "{4/4}Q;q;q;q;",
                         simpleRhythm = SimpleRhythm(4 to 4, 4, 2),
-                        beatValue = 4f
+                        beatValue = 4f,
+                        color = TrackColor.Primary
                     ),
                     MetronomeConfigTrack(
                         name = "Secondary track",
@@ -85,7 +119,8 @@ data class MetronomeConfig(
                         vibrate = true,
                         rhythm = "{4/4}Q;q;q;q;",
                         simpleRhythm = SimpleRhythm(4 to 4, 4, 2),
-                        beatValue = 4f
+                        beatValue = 4f,
+                        color = TrackColor.Secondary
                     )
                 )
             )
