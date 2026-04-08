@@ -107,6 +107,7 @@ dependencies {
     implementation(libs.androidx.runtime.rxjava2)
     implementation(libs.material)
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.materialKolor)
 }
 
 val changelogSourceDir = file("${rootDir}/metadata/en-US/changelogs/")
