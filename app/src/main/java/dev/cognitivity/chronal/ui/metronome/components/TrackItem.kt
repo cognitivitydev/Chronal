@@ -105,15 +105,16 @@ fun TrackItem(
                 .height(40.dp)
                 .background(MaterialTheme.colorScheme.outline)
         )
+        val palette = track.color.getPalette()
         Switch(
             checked = enabled,
             onCheckedChange = {
                 if(index == 0) return@Switch
                 onCheckedChanged(it)
             },
-            colors = SwitchDefaults.colors( // TODO
-                checkedThumbColor = if(topRounded) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onTertiary,
-                checkedTrackColor = if(topRounded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = palette.onColor,
+                checkedTrackColor = palette.color,
             ),
             modifier = Modifier.padding(start = 12.dp, end = 16.dp)
         )
