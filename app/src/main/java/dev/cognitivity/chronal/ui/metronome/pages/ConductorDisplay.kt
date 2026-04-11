@@ -80,8 +80,8 @@ import kotlin.math.abs
 //   - separate versions for different time signatures (5/4, 6/8...)
 @Composable
 fun ConductorDisplay(viewModel: MetronomeViewModel, metronome: Metronome, tracks: List<MetronomeTrack>, modifier: Modifier = Modifier) {
-    val displayTrack = tracks.firstOrNull() ?: return
-
+    val displayTrack = tracks.firstOrNull { it.enabled } ?: return
+    val palette = displayTrack.color.getPalette()
     val flipped by viewModel.flipConductor.collectAsState()
 
     val coroutineScope = rememberCoroutineScope()
@@ -103,7 +103,6 @@ fun ConductorDisplay(viewModel: MetronomeViewModel, metronome: Metronome, tracks
     displayTrack.setUpdateListener(4) { beat ->
         val rhythm = displayTrack.getRhythm()
         val timestamp = metronome.timestamp
-
 
         coroutineScope.launch {
             delay(Settings.VISUAL_LATENCY.get().toLong())
@@ -142,13 +141,13 @@ fun ConductorDisplay(viewModel: MetronomeViewModel, metronome: Metronome, tracks
                     when(element) {
                         is RhythmAtom -> {
                             globalIndex++
-                            currentDuration += abs(element.baseDuration)
+                            currentDuration += abs(element.getDuration())
                         }
                         is RhythmTuplet -> {
                             for(tuple in element.notes) {
                                 if(globalIndex >= beat.index) break
                                 globalIndex++
-                                currentDuration += abs(tuple.baseDuration)
+                                currentDuration += abs(tuple.getDuration())
                             }
                         }
                     }
@@ -211,7 +210,7 @@ fun ConductorDisplay(viewModel: MetronomeViewModel, metronome: Metronome, tracks
                     )
                 }
             } else {
-                DrawPath(flipped, path.copy(), 0f, 0f, color = MaterialTheme.colorScheme.onPrimary, style = Stroke(width = 3.dp.toPx()))
+                DrawPath(flipped, path.copy(), 0f, 0f, color = palette.onColor, style = Stroke(width = 4.dp.toPx()))
                 if(!metronome.playing && currentBeat.value == 0f) {
                     return@Box
                 }
@@ -234,10 +233,10 @@ fun ConductorDisplay(viewModel: MetronomeViewModel, metronome: Metronome, tracks
                     val selectedStart = selectedEnd - remaining
 
                     if (selectedStart <= 0f) {
-                        DrawPath(flipped, path.copy(), 0f, selectedEnd, color = MaterialTheme.colorScheme.primary)
+                        DrawPath(flipped, path.copy(), 0f, selectedEnd, color = palette.color)
                         remaining -= abs(selectedEnd)
                     } else {
-                        DrawPath(flipped, path.copy(), selectedStart, selectedEnd, color = MaterialTheme.colorScheme.primary)
+                        DrawPath(flipped, path.copy(), selectedStart, selectedEnd, color = palette.color)
                         remaining = 0f
                     }
                 }
@@ -259,10 +258,10 @@ fun ConductorDisplay(viewModel: MetronomeViewModel, metronome: Metronome, tracks
                         val selectedStart = selectedEnd - remaining
 
                         if (selectedStart <= 0) {
-                            DrawPath(flipped, path.copy(), 0f, selectedEnd, color = MaterialTheme.colorScheme.primary)
+                            DrawPath(flipped, path.copy(), 0f, selectedEnd, color = palette.color)
                             remaining -= abs(selectedEnd)
                         } else {
-                            DrawPath(flipped, path.copy(), selectedStart, selectedEnd, color = MaterialTheme.colorScheme.primary)
+                            DrawPath(flipped, path.copy(), selectedStart, selectedEnd, color = palette.color)
                             remaining = 0f
                         }
                     }
@@ -294,7 +293,7 @@ fun ConductorDisplay(viewModel: MetronomeViewModel, metronome: Metronome, tracks
 }
 
 @Composable
-fun BoxScope.DrawPath(flipped: Boolean, path: Path, start: Float, end: Float, color: Color, style: DrawStyle = Stroke(width = 4.dp.toPx())) {
+fun BoxScope.DrawPath(flipped: Boolean, path: Path, start: Float, end: Float, color: Color, style: DrawStyle = Stroke(width = 6.dp.toPx())) {
     Canvas(
         modifier = Modifier.aspectRatio(1f)
             .fillMaxSize()

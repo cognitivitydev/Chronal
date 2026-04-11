@@ -47,7 +47,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
@@ -56,6 +55,7 @@ import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.activity.vibratorManager
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.settings.types.json.TrackColorPalette
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -64,7 +64,7 @@ import kotlin.math.sin
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun BoxScope.CircularClock(track: MetronomeTrack, trackSize: Float, trackOff: Color, trackPrimary: Color, trackSecondary: Color) {
+fun BoxScope.CircularClock(track: MetronomeTrack, trackSize: Float, trackPalette: TrackColorPalette) {
     val metronome = ChronalApp.getInstance().metronome
 
     var rhythm by remember(track) { mutableStateOf(track.getRhythm()) }
@@ -185,14 +185,14 @@ fun BoxScope.CircularClock(track: MetronomeTrack, trackSize: Float, trackOff: Co
         val surface = MaterialTheme.colorScheme.surface
 
         val trackColor = when(trackColorType) {
-            0 -> trackOff
-            1 -> trackPrimary
-            else -> trackSecondary
+            0 -> trackPalette.onColor
+            1 -> trackPalette.color
+            else -> trackPalette.colorContainer
         }
         val progressColor = when(progressColorType) {
-            0 -> trackOff
-            1 -> trackPrimary
-            else -> trackSecondary
+            0 -> trackPalette.onColor
+            1 -> trackPalette.color
+            else -> trackPalette.colorContainer
         }
 
         Canvas(

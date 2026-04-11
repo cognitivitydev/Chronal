@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,7 +36,9 @@ import dev.cognitivity.chronal.ui.metronome.components.TempoChanger
 
 @Composable
 fun CircularDisplay(viewModel: MetronomeViewModel, tracks: List<MetronomeTrack>, modifier: Modifier = Modifier) {
-    if(tracks.isEmpty()) return
+    val displayTracks = tracks.filter { it.enabled }
+    if (displayTracks.isEmpty()) return
+
     Box(
         modifier = modifier.fillMaxSize()
     ) {
@@ -46,25 +47,21 @@ fun CircularDisplay(viewModel: MetronomeViewModel, tracks: List<MetronomeTrack>,
                 .aspectRatio(1f)
                 .align(Alignment.Center)
         ) {
-            CircularClock(tracks[0],
+            CircularClock(displayTracks[0],
                 trackSize = 6.dp.toPx(),
-                trackOff = MaterialTheme.colorScheme.onPrimary,
-                trackPrimary = MaterialTheme.colorScheme.primary,
-                trackSecondary = MaterialTheme.colorScheme.secondary
+                trackPalette = displayTracks[0].color.getPalette()
             )
         }
-        if(tracks.size > 1 && tracks[1].enabled) {
+        if(displayTracks.size > 1 && displayTracks[1].enabled) {
             Box(
                 modifier = Modifier.fillMaxHeight()
                     .padding(24.dp)
                     .aspectRatio(1f)
                     .align(Alignment.Center)
             ) {
-                CircularClock(tracks[1],
+                CircularClock(displayTracks[1],
                     trackSize = 4.dp.toPx(),
-                    trackOff = MaterialTheme.colorScheme.onTertiary,
-                    trackPrimary = MaterialTheme.colorScheme.tertiary,
-                    trackSecondary = MaterialTheme.colorScheme.secondary
+                    trackPalette = displayTracks[1].color.getPalette()
                 )
             }
         }
