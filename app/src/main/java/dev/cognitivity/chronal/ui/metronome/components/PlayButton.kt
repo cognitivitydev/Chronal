@@ -20,12 +20,11 @@ package dev.cognitivity.chronal.ui.metronome.components
 
 import android.content.Intent
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -46,6 +45,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -68,6 +68,7 @@ import dev.cognitivity.chronal.activity.FullscreenActivity
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.ui.MorphedShape
 import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
+import androidx.compose.runtime.collectAsState
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -81,26 +82,32 @@ fun PlayButton(mainActivity: MainActivity, viewModel: MetronomeViewModel, onClic
     val morph = remember {
         Morph(shapeA, shapeB)
     }
+    val playing by viewModel.playing.collectAsState()
+    val settingsExpanded by viewModel.settingsExpanded.collectAsState()
 
     val morphProgress by animateFloatAsState(
-        targetValue = if(viewModel.playing.value) 0.6f else 1f,
+        targetValue = if(playing) 0.6f else 1f,
         animationSpec = MotionScheme.expressive().defaultSpatialSpec(),
         label = "morphProgress"
     )
 
-    val infiniteTransition = rememberInfiniteTransition("infiniteTransition")
-    val animatedRotation = infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            tween(6000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "animatedRotation"
-    )
+    val animatedRotation = remember { Animatable(0f) }
+    LaunchedEffect(playing) {
+        if(playing) {
+            animatedRotation.animateTo(
+                targetValue = 360f,
+                animationSpec = infiniteRepeatable(
+                    tween(6000, easing = LinearEasing),
+                    repeatMode = RepeatMode.Restart
+                )
+            )
+        } else {
+            animatedRotation.snapTo(0f)
+        }
+    }
 
     val animatedColor by animateColorAsState(
-        targetValue = if (!viewModel.playing.value) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primary,
+        targetValue = if (!playing) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primary,
         animationSpec = MotionScheme.expressive().defaultSpatialSpec(),
         label = "animatedColor"
     )
@@ -126,7 +133,7 @@ fun PlayButton(mainActivity: MainActivity, viewModel: MetronomeViewModel, onClic
                     )
             ) {
                 DropdownMenu(
-                    expanded = viewModel.settingsExpanded.value,
+                    expanded = settingsExpanded,
                     onDismissRequest = {
                         viewModel.setSettingsExpanded(false)
                     },
@@ -183,7 +190,7 @@ fun PlayButton(mainActivity: MainActivity, viewModel: MetronomeViewModel, onClic
                     .clip(CircleShape)
                     .background(
                         animateColorAsState(
-                            targetValue = if(viewModel.settingsExpanded.value) MaterialTheme.colorScheme.surfaceContainerHigh
+                            targetValue = if(settingsExpanded) MaterialTheme.colorScheme.surfaceContainerHigh
                             else MaterialTheme.colorScheme.surfaceContainer,
                             animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
                             label = "dropdownBackground"
@@ -191,7 +198,7 @@ fun PlayButton(mainActivity: MainActivity, viewModel: MetronomeViewModel, onClic
                     )
                     .align(Alignment.Center)
                     .clickable {
-                        viewModel.setSettingsExpanded(!viewModel.settingsExpanded.value)
+                        viewModel.setSettingsExpanded(!settingsExpanded)
                     }
             ) {
                 Icon(
@@ -216,12 +223,12 @@ fun PlayButton(mainActivity: MainActivity, viewModel: MetronomeViewModel, onClic
                     )
                     .background(animatedColor)
                     .clickable {
-                        onClick(!viewModel.playing.value)
+                        onClick(!playing)
                     }
                     .zIndex(2f)
             ) {
                 PlayPauseIcon(
-                    paused = !viewModel.playing.value,
+                    paused = !playing,
                     modifier = Modifier.size(48.dp)
                         .align(Alignment.Center)
                 )

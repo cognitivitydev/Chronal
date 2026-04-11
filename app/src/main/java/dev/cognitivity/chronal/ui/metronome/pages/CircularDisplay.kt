@@ -40,7 +40,7 @@ fun CircularDisplay(viewModel: MetronomeViewModel, tracks: List<MetronomeTrack>,
     if(tracks.isEmpty()) return
     Box(
         modifier = modifier.fillMaxSize()
-        ) {
+    ) {
         Box(
             modifier = Modifier.fillMaxHeight()
                 .aspectRatio(1f)

@@ -18,8 +18,13 @@
 
 package dev.cognitivity.chronal.settings.types.json
 
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import com.materialkolor.dynamicColorScheme
 import dev.cognitivity.chronal.settings.Settings
 
 data class MetronomeConfigTrack(
@@ -92,7 +97,48 @@ sealed class TrackColor {
             }
         }
     }
+
+    @Composable
+    fun getPalette(): TrackColorPalette {
+        val theme = Settings.COLOR_SCHEME.get().theme
+        val isDark = if(theme == ColorScheme.Theme.SYSTEM) isSystemInDarkTheme() else theme == ColorScheme.Theme.DARK
+
+        return when(this) {
+            is Custom -> {
+                val seedColor = Color(value)
+                val colorScheme = dynamicColorScheme(
+                    seedColor = seedColor,
+                    isDark = isDark
+                )
+                TrackColorPalette(
+                    color = colorScheme.primary,
+                    onColor = colorScheme.onPrimary,
+                    colorContainer = colorScheme.primaryContainer,
+                    onColorContainer = colorScheme.onPrimaryContainer
+                )
+            }
+
+            is Primary -> {
+                TrackColorPalette(
+                    color = MaterialTheme.colorScheme.primary,
+                    onColor = MaterialTheme.colorScheme.onPrimary,
+                    colorContainer = MaterialTheme.colorScheme.primaryContainer,
+                    onColorContainer = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+
+            is Secondary -> {
+                TrackColorPalette(
+                    color = MaterialTheme.colorScheme.tertiary,
+                    onColor = MaterialTheme.colorScheme.onTertiary,
+                    colorContainer = MaterialTheme.colorScheme.tertiaryContainer,
+                    onColorContainer = MaterialTheme.colorScheme.onTertiaryContainer
+                )
+            }
+        }
+    }
 }
+data class TrackColorPalette(val color: Color, val onColor: Color, val colorContainer: Color, val onColorContainer: Color)
 
 data class MetronomeConfig(
     val version: Int = Settings.getCurrentVersionCode(),

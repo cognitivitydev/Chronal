@@ -49,6 +49,7 @@ import dev.cognitivity.chronal.ui.metronome.components.TrackList
 import dev.cognitivity.chronal.ui.metronome.components.verticalBPMGesture
 import dev.cognitivity.chronal.ui.metronome.pages.CircularDisplay
 import dev.cognitivity.chronal.ui.metronome.pages.ConductorDisplay
+import dev.cognitivity.chronal.ui.metronome.pages.GridDisplay
 import dev.cognitivity.chronal.ui.metronome.sheets.TapTempo
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -166,7 +167,7 @@ fun MetronomePageMain(mainActivity: MainActivity, viewModel: MetronomeViewModel,
                     when(viewModel.displayMode.collectAsState().value) {
                         DisplayMode.CLOCK -> CircularDisplay(viewModel, tracks)
                         DisplayMode.CONDUCTOR -> ConductorDisplay(viewModel, metronome, tracks)
-                        DisplayMode.GRID -> CircularDisplay(viewModel, tracks)
+                        DisplayMode.GRID -> GridDisplay(viewModel, tracks)
                     }
                     IconButton(
                         onClick = { viewModel.setFullscreenMode(false) },

@@ -40,6 +40,7 @@ import dev.cognitivity.chronal.ui.metronome.DisplayMode
 import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
 import dev.cognitivity.chronal.ui.metronome.pages.CircularDisplay
 import dev.cognitivity.chronal.ui.metronome.pages.ConductorDisplay
+import dev.cognitivity.chronal.ui.metronome.pages.GridDisplay
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -57,7 +58,7 @@ fun MetronomeDisplay(
         when(displayMode) {
             DisplayMode.CLOCK -> CircularDisplay(viewModel, tracks)
             DisplayMode.CONDUCTOR -> ConductorDisplay(viewModel, metronome, tracks)
-            DisplayMode.GRID -> CircularDisplay(viewModel, tracks)
+            DisplayMode.GRID -> GridDisplay(viewModel, tracks)
         }
 
         Row(
@@ -152,7 +153,6 @@ fun DisplaySelector(viewModel: MetronomeViewModel) {
                         checked = displayMode.ordinal == index,
                         onCheckedChange = { viewModel.setDisplayMode(DisplayMode.entries[index]) },
                         shapes = MenuDefaults.itemShape(index, modes.size),
-                        enabled = index != 2 // TODO
                     )
                 }
             }
