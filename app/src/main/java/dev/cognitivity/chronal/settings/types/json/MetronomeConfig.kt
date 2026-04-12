@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.materialkolor.dynamicColorScheme
+import dev.cognitivity.chronal.metronome.sound.SoundPack
 import dev.cognitivity.chronal.settings.Settings
 
 data class MetronomeConfigTrack(
@@ -34,7 +35,8 @@ data class MetronomeConfigTrack(
     val rhythm: String,
     val simpleRhythm: SimpleRhythm,
     val beatValue: Float,
-    val color: TrackColor
+    val color: TrackColor,
+    val soundPackId: String = SoundPack.DEFAULT_ID,
 ) {
     companion object {
         fun fromJson(jsonObject: JsonObject): MetronomeConfigTrack {
@@ -51,7 +53,10 @@ data class MetronomeConfigTrack(
                     }
                 } ?: SimpleRhythm(4 to 4, 4, 2),
                 beatValue = jsonObject.get("beatValue")?.asFloat ?: 4f,
-                color = TrackColor.fromJson(jsonObject.get("color").asJsonObject)
+                color = TrackColor.fromJson(jsonObject.get("color").asJsonObject),
+                soundPackId = jsonObject.get("soundPackId")?.asString
+                    ?.takeIf { SoundPack.byId(it) != null }
+                    ?: SoundPack.DEFAULT_ID,
             )
         }
     }
@@ -65,6 +70,7 @@ data class MetronomeConfigTrack(
             add("simpleRhythm", simpleRhythm.toJson())
             addProperty("beatValue", beatValue)
             add("color", color.toJson())
+            addProperty("soundPackId", soundPackId)
         }
     }
 }

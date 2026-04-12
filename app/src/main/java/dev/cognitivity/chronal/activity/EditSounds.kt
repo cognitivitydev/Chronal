@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
 
 package dev.cognitivity.chronal.activity
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.media.AudioAttributes
 import android.media.SoundPool
@@ -33,10 +32,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -50,24 +49,32 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.metronome.sound.Sound
+import dev.cognitivity.chronal.metronome.sound.SoundPack
+import dev.cognitivity.chronal.settings.Setting
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.launch
 
-// not implemented
 class EditSounds: ComponentActivity() {
-    private val sounds = listOf(
-        R.string.sound_click to (R.raw.click_hi to R.raw.click_lo),
-        R.string.sound_sine to (R.raw.sine_hi to R.raw.sine_lo),
-        R.string.sound_square to (R.raw.square_hi to R.raw.square_lo),
-        R.string.sound_clap to (R.raw.clap_hi to R.raw.clap_lo),
-        R.string.sound_bell to (R.raw.bell_hi to R.raw.bell_lo),
-        R.string.sound_tambourine to (R.raw.tambourine_hi to R.raw.tambourine_lo),
-        R.string.sound_block to (R.raw.block_hi to R.raw.block_lo),
+    private data class SoundOption(
+        val packId: String,
+        val label: String,
+        val highRes: Int,
+        val lowRes: Int,
     )
 
-    @SuppressLint("SourceLockedOrientationActivity")
+    private val sounds = SoundPack.builtins().mapNotNull { pack ->
+        val label = pack.name
+        val high = (pack.getSound(1) as? Sound.Resource)?.resId
+        val low = (pack.getSound(0) as? Sound.Resource)?.resId
+        if(high != null && low != null) {
+            SoundOption(pack.id, label, high, low)
+        } else null
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -82,7 +89,6 @@ class EditSounds: ComponentActivity() {
     @Composable
     fun MainContent() {
         val scope = rememberCoroutineScope()
-        val setting = Settings.METRONOME_SOUNDS
         val soundPool = SoundPool.Builder()
             .setMaxStreams(1)
             .setAudioAttributes(
@@ -93,10 +99,27 @@ class EditSounds: ComponentActivity() {
             )
             .build()
 
+        DisposableEffect(Unit) {
+            onDispose {
+                soundPool.release()
+            }
+        }
+
         var showAttribution by remember { mutableStateOf(false) }
 
-        var selectedSound by remember { mutableStateOf(setting.get()) }
+        var selectedPackId by remember {
+            mutableStateOf(ChronalApp.getInstance().metronome.tracks[0].soundPack.id)
+        }
         var selection by remember { mutableIntStateOf(0) }
+
+        fun playResource(resId: Int) {
+            val soundId = soundPool.load(this@EditSounds, resId, 1)
+            soundPool.setOnLoadCompleteListener { sp, sampleId, status ->
+                if (status == 0 && sampleId == soundId) {
+                    sp.play(sampleId, 1f, 1f, 1, 0, 1f)
+                }
+            }
+        }
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -140,20 +163,14 @@ class EditSounds: ComponentActivity() {
                     )
                     Spacer(Modifier.weight(1f))
 
-                    val highSelection = sounds[selectedSound.first]
-                    val highName = getString(highSelection.first)
+                    val selectedSound = sounds.firstOrNull { it.packId == selectedPackId } ?: sounds.first()
+                    val highName = selectedSound.label
                     FilledTonalButton(
                         modifier = Modifier.heightIn(ButtonDefaults.MinHeight)
                             .align(Alignment.CenterVertically),
                         contentPadding = ButtonDefaults.contentPaddingFor(ButtonDefaults.MinHeight),
                         onClick = {
-                            val soundId = soundPool.load(this@EditSounds, highSelection.second.first, 1)
-
-                            soundPool.setOnLoadCompleteListener { sp, sampleId, status ->
-                                if (status == 0 && sampleId == soundId) {
-                                    sp.play(sampleId, 1f, 1f, 1, 0, 1f)
-                                }
-                            }
+                            playResource(selectedSound.highRes)
                         }
                     ) {
                         Icon(
@@ -164,20 +181,13 @@ class EditSounds: ComponentActivity() {
                         Text(getString(R.string.edit_sounds_high, highName))
                     }
                     Spacer(Modifier.width(8.dp))
-                    val lowSelection = sounds[selectedSound.second]
-                    val lowName = getString(lowSelection.first)
+                    val lowName = selectedSound.label
                     FilledTonalButton(
                         modifier = Modifier.heightIn(ButtonDefaults.MinHeight)
                             .align(Alignment.CenterVertically),
                         contentPadding = ButtonDefaults.contentPaddingFor(ButtonDefaults.MinHeight),
                         onClick = {
-                            val soundId = soundPool.load(this@EditSounds, lowSelection.second.second, 1)
-
-                            soundPool.setOnLoadCompleteListener { sp, sampleId, status ->
-                                if (status == 0 && sampleId == soundId) {
-                                    sp.play(sampleId, 1f, 1f, 1, 0, 1f)
-                                }
-                            }
+                            playResource(selectedSound.lowRes)
                         }
                     ) {
                         Icon(
@@ -222,8 +232,6 @@ class EditSounds: ComponentActivity() {
                 }
                 items(sounds.size) { i ->
                     val sound = sounds[i]
-                    val name = sound.first
-                    val (high, low) = sound.second
                     Row(
                         modifier = Modifier.fillMaxWidth()
                             .clip(RoundedCornerShape(16.dp))
@@ -234,7 +242,7 @@ class EditSounds: ComponentActivity() {
                             .padding(horizontal = 16.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(getString(name),
+                        Text(sound.label,
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -242,38 +250,26 @@ class EditSounds: ComponentActivity() {
                         IconButton(
                             onClick = {
                                 selection = i
-                                val soundId = soundPool.load(this@EditSounds, high, 1)
-
-                                soundPool.setOnLoadCompleteListener { sp, sampleId, status ->
-                                    if (status == 0 && sampleId == soundId) {
-                                        sp.play(sampleId, 1f, 1f, 1, 0, 1f)
-                                    }
-                                }
+                                playResource(sound.highRes)
                             }
                         ) {
                             Icon(
-                                painter = painterResource(if(selectedSound.first == i) R.drawable.baseline_volume_up_24 else R.drawable.outline_volume_up_24),
+                                painter = painterResource(if(selectedPackId == sound.packId) R.drawable.baseline_volume_up_24 else R.drawable.outline_volume_up_24),
                                 contentDescription = getString(R.string.generic_selected),
-                                tint = if(selectedSound.first == i) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                tint = if(selectedPackId == sound.packId) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         Spacer(modifier = Modifier.width(8.dp))
                         IconButton(
                             onClick = {
                                 selection = i
-                                val soundId = soundPool.load(this@EditSounds, low, 1)
-
-                                soundPool.setOnLoadCompleteListener { sp, sampleId, status ->
-                                    if (status == 0 && sampleId == soundId) {
-                                        sp.play(sampleId, 1f, 1f, 1, 0, 1f)
-                                    }
-                                }
+                                playResource(sound.lowRes)
                             }
                         ) {
                             Icon(
-                                painter = painterResource(if(selectedSound.second == i) R.drawable.baseline_volume_up_24 else R.drawable.outline_volume_up_24),
+                                painter = painterResource(if(selectedPackId == sound.packId) R.drawable.baseline_volume_up_24 else R.drawable.outline_volume_up_24),
                                 contentDescription = getString(R.string.generic_selected),
-                                tint = if(selectedSound.second == i) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant
+                                tint = if(selectedPackId == sound.packId) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -295,74 +291,29 @@ class EditSounds: ComponentActivity() {
                             .padding(horizontal = 16.dp, vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(getString(sounds[selection].first),
+                        Text(sounds[selection].label,
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.weight(1f))
-                        Column(
-                            modifier = Modifier.padding(horizontal = 32.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = getString(R.string.edit_sounds_set_as),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)
-                            ) {
-                                ToggleButton(
-                                    checked = selectedSound.first == selection,
-                                    onCheckedChange = {
-                                        selectedSound = selection to selectedSound.second
-                                        scope.launch {
-                                            setting.save(selectedSound)
-                                        }
-                                    },
-                                    shapes = ButtonGroupDefaults.connectedLeadingButtonShapes(),
-                                    colors = ToggleButtonDefaults.toggleButtonColors(
-                                        checkedContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                        checkedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-                                    ),
-                                    contentPadding = ButtonDefaults.ContentPadding
-                                ) {
-                                    if(selectedSound.first == selection) {
-                                        Icon(
-                                            imageVector = Icons.Default.Check,
-                                            contentDescription = getString(R.string.generic_selected),
-                                        )
-                                        Spacer(modifier = Modifier.width(ToggleButtonDefaults.IconSpacing))
-                                    }
-                                    Text(getString(R.string.editor_emphasis_high))
-                                }
-                                ToggleButton(
-                                    checked = selectedSound.second == selection,
-                                    onCheckedChange = {
-                                        selectedSound = selectedSound.first to selection
-                                        scope.launch {
-                                            setting.save(selectedSound)
-                                        }
-                                    },
-                                    shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
-                                    colors = ToggleButtonDefaults.toggleButtonColors(
-                                        checkedContentColor = MaterialTheme.colorScheme.onTertiaryContainer,
-                                        checkedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-                                    ),
-                                    contentPadding = ButtonDefaults.ContentPadding
-                                ) {
-                                    if(selectedSound.second == selection) {
-                                        Icon(
-                                            imageVector = Icons.Default.Check,
-                                            contentDescription = getString(R.string.generic_selected),
-                                        )
-                                        Spacer(modifier = Modifier.width(ToggleButtonDefaults.IconSpacing))
-                                    }
-                                    Text(getString(R.string.editor_emphasis_low))
-                                }
+                        FilledTonalButton(onClick = {
+                            val selected = sounds[selection].packId
+                            selectedPackId = selected
+                            val pack = SoundPack.byId(selected) ?: SoundPack.default()
+                            val metronome = ChronalApp.getInstance().metronome
+                            metronome.tracks.forEach { track ->
+                                track.soundPack = pack
                             }
+
+                            val config = Settings.METRONOME_CONFIG.get()
+                            Settings.METRONOME_CONFIG.set(
+                                config.copy(tracks = config.tracks.map { it.copy(soundPackId = pack.id) })
+                            )
+                            scope.launch {
+                                Setting.saveAll()
+                            }
+                        }) {
+                            Text(getString(R.string.generic_confirm))
                         }
                     }
                 }

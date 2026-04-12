@@ -95,7 +95,7 @@ class Metronome(
     private var handlerThread: HandlerThread
     private var handler: Handler
 
-    private val tickSoundCache = mutableMapOf<Int, FloatArray>()
+    private val tickSoundCache = mutableMapOf<String, FloatArray>()
 
     private val frameSize = 256
     private var writeHeadSample = 0L
@@ -211,7 +211,7 @@ class Metronome(
     }
 
     private fun mixTracks(outputBuffer: FloatArray, frameStartSample: Long, frameEndSample: Long) {
-        for(track in tracks) {
+        for((trackIndex, track) in tracks.withIndex()) {
             if (!track.enabled) continue
 
             val pattern = track.getIntervals()
@@ -227,7 +227,7 @@ class Metronome(
                 track.index = beatIndex
 
                 if (beat.duration >= 0) {
-                    mixTick(outputBuffer, frameStartSample, track.nextBeatSample, beat.isHigh)
+                    mixTick(outputBuffer, frameStartSample, track.nextBeatSample, trackIndex, beat.isHigh)
                 }
                 track.onUpdate(beat)
 
@@ -238,8 +238,8 @@ class Metronome(
         }
     }
 
-    private fun mixTick(outputBuffer: FloatArray, frameStartSample: Long, beatSample: Long, isHigh: Boolean) {
-        val tickSamples = getTickSound(isHigh)
+    private fun mixTick(outputBuffer: FloatArray, frameStartSample: Long, beatSample: Long, trackIndex: Int, isHigh: Boolean) {
+        val tickSamples = getTickSound(trackIndex, isHigh)
         if (tickSamples.isEmpty()) return
 
         val frameOffset = (beatSample - frameStartSample).toInt()
@@ -297,31 +297,19 @@ class Metronome(
         }
     }
 
-    private fun getTickSound(high: Boolean): FloatArray {
-        val setting = Settings.METRONOME_SOUNDS.get()
-        val id = if (high) setting.first else setting.second
-        val soundRes = when (id) {
-            0 -> if (high) R.raw.click_hi else R.raw.click_lo
-            1 -> if (high) R.raw.sine_hi else R.raw.sine_lo
-            2 -> if (high) R.raw.square_hi else R.raw.square_lo
-            3 -> if (high) R.raw.clap_hi else R.raw.clap_lo
-            4 -> if (high) R.raw.bell_hi else R.raw.bell_lo
-            5 -> if (high) R.raw.tambourine_hi else R.raw.tambourine_lo
-            6 -> if (high) R.raw.block_hi else R.raw.block_lo
-            else -> null
-        }
-        if (soundRes == null) {
-            return FloatArray(0)
-        }
+    private fun getTickSound(trackIndex: Int, high: Boolean): FloatArray {
+        val pack = tracks[trackIndex].soundPack
+        val pitch = if (high) 1 else 0
+        val sound = pack.getSound(pitch) ?: return FloatArray(0)
+        tickSoundCache[sound.key]?.let { return it }
 
-        tickSoundCache[soundRes]?.let { return it }
-
-        try {
-            val data = context.resources.openRawResource(soundRes).use { stream ->
-                readWavStream(stream)
+        val stream = sound.openStream(context) ?: return FloatArray(0)
+        return try {
+            val data = stream.use { input ->
+                readWavStream(input)
             }
-            tickSoundCache[soundRes] = data
-            return data
+            tickSoundCache[sound.key] = data
+            data
         } catch (e: IOException) {
             throw RuntimeException(e)
         }

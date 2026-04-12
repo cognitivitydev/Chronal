@@ -32,6 +32,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import dev.cognitivity.chronal.metronome.sound.SoundPack
 import dev.cognitivity.chronal.settings.types.json.MetronomeConfig
 import dev.cognitivity.chronal.settings.types.json.MetronomeConfigTrack
 import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
@@ -99,8 +100,6 @@ abstract class Setting<T>(
             val versionCode = Settings.getCurrentVersionCode()
 
             suspend fun load() {
-                Settings // initialize objects
-
                 val prefs = dataStore.data.first()
                 SETTINGS.forEach { it.load(prefs) }
                 Settings.VERSION.set(version)
@@ -178,8 +177,30 @@ abstract class Setting<T>(
             // > Split rhythms into tracks
             // > Combined metronome settings into a single JSON object
             // > Moved presets to the new MetronomeConfig structure
+            // > Moved sounds to track-based sound packs
             if(fromVersion < 13) {
                 val configKey = stringPreferencesKey(Settings.METRONOME_CONFIG.key)
+
+                // convert legacy sound
+                val newSoundPack = prefs[stringPreferencesKey("metronome_sounds")]?.let { raw ->
+                    try {
+                        val json = Gson().fromJson(raw, JsonArray::class.java)
+                        val highId = if (json.size() > 0) json[0].asInt else 0
+                        when (highId) {
+                            0 -> SoundPack.BUILTIN_CLICK.id
+                            1 -> SoundPack.BUILTIN_SINE.id
+                            2 -> SoundPack.BUILTIN_SQUARE.id
+                            3 -> SoundPack.BUILTIN_CLAP.id
+                            4 -> SoundPack.BUILTIN_BELL.id
+                            5 -> SoundPack.BUILTIN_TAMBOURINE.id
+                            6 -> SoundPack.BUILTIN_BLOCK.id
+                            else -> SoundPack.DEFAULT_ID
+                        }
+                    } catch (_: Exception) {
+                        SoundPack.DEFAULT_ID
+                    }
+                } ?: SoundPack.DEFAULT_ID
+
                 // update rhythm
                 if(prefs[configKey] == null) {
                     val bpm = prefs[stringPreferencesKey("metronome_state")]?.let {
@@ -207,7 +228,8 @@ abstract class Setting<T>(
                                         SimpleRhythm(4 to 4, 4, 2)
                                     }
                                 } ?: SimpleRhythm(4 to 4, 4, 2),
-                                color = TrackColor.Primary
+                                color = TrackColor.Primary,
+                                soundPackId = newSoundPack,
                             ),
                             MetronomeConfigTrack(
                                 name = "Secondary track",
@@ -222,7 +244,8 @@ abstract class Setting<T>(
                                         SimpleRhythm(4 to 4, 4, 2)
                                     }
                                 } ?: SimpleRhythm(4 to 4, 4, 2),
-                                color = TrackColor.Secondary
+                                color = TrackColor.Secondary,
+                                soundPackId = newSoundPack,
                             )
                         )
                     )
@@ -260,7 +283,8 @@ abstract class Setting<T>(
                                 rhythm = primaryRhythm,
                                 beatValue = primaryBeatValue,
                                 simpleRhythm = SimpleRhythm.fromJson(primarySimpleRhythm),
-                                color = TrackColor.Primary
+                                color = TrackColor.Primary,
+                                soundPackId = newSoundPack,
                             ),
                             MetronomeConfigTrack(
                                 name = "Secondary track",
@@ -269,7 +293,8 @@ abstract class Setting<T>(
                                 rhythm = secondaryRhythm,
                                 beatValue = secondaryBeatValue,
                                 simpleRhythm = SimpleRhythm.fromJson(secondarySimpleRhythm),
-                                color = TrackColor.Secondary
+                                color = TrackColor.Secondary,
+                                soundPackId = newSoundPack,
                             )
                         )
                     )

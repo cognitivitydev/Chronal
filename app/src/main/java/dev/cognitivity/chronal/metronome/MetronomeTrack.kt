@@ -27,6 +27,7 @@ import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import dev.cognitivity.chronal.metronome.sound.SoundPack
 import dev.cognitivity.chronal.settings.types.json.TrackColor
 
 class MetronomeTrack(
@@ -36,7 +37,8 @@ class MetronomeTrack(
     var vibrate: Boolean = true,
     enabled: Boolean = true,
     var simpleRhythm: SimpleRhythm = SimpleRhythm(4 to 4, 4, 2),
-    var color: TrackColor = TrackColor.Primary
+    var color: TrackColor = TrackColor.Primary,
+    var soundPack: SoundPack = SoundPack.default(),
 ) {
     companion object {
         const val MIN_BPM = 1f
@@ -50,7 +52,8 @@ class MetronomeTrack(
                 beatValue = setting.beatValue,
                 vibrate = setting.vibrate,
                 enabled = setting.enabled,
-                color = setting.color
+                color = setting.color,
+                soundPack = SoundPack.byId(setting.soundPackId) ?: SoundPack.default(),
             )
         }
     }

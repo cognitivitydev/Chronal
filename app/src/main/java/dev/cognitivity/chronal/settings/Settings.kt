@@ -97,20 +97,6 @@ object Settings {
         serializer = { it.toJson() },
         deserializer = { MetronomeConfig.fromJson(it.asJsonObject) }
     )
-    val METRONOME_SOUNDS = JsonSetting(
-        key = "metronome_sounds",
-        defaultValue = 0 to 0,
-        serializer = {
-            JsonArray().apply {
-                add(it.first)
-                add(it.second)
-            }
-        },
-        deserializer = { json ->
-            val arr = json.asJsonArray
-            (arr[0].asInt to arr[1].asInt)
-        }
-    )
     val METRONOME_PRESETS = JsonSetting(
         key = "metronome_presets",
         defaultValue = mutableListOf(
