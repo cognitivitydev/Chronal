@@ -41,7 +41,6 @@ import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.MainActivity
-import dev.cognitivity.chronal.ui.metronome.components.BottomSheet
 import dev.cognitivity.chronal.ui.metronome.components.MetronomeDisplay
 import dev.cognitivity.chronal.ui.metronome.components.PlayButton
 import dev.cognitivity.chronal.ui.metronome.components.TempoControlsDialog
@@ -50,7 +49,6 @@ import dev.cognitivity.chronal.ui.metronome.components.verticalBPMGesture
 import dev.cognitivity.chronal.ui.metronome.pages.CircularDisplay
 import dev.cognitivity.chronal.ui.metronome.pages.ConductorDisplay
 import dev.cognitivity.chronal.ui.metronome.pages.GridDisplay
-import dev.cognitivity.chronal.ui.metronome.sheets.TapTempo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,7 +66,8 @@ fun MetronomePageMain(mainActivity: MainActivity, viewModel: MetronomeViewModel,
                     mainActivity.setKeepScreenOn(!playing)
                 },
                 onHold = {
-                    viewModel.setShowTapTempo(true)
+                    viewModel.setShowBpmDialog(true)
+                    viewModel.setBpmDialogTab(1)
                 },
                 onSwipe = { amount ->
                     viewModel.setBpm(metronome.bpm + amount)
@@ -157,7 +156,8 @@ fun MetronomePageMain(mainActivity: MainActivity, viewModel: MetronomeViewModel,
                                 mainActivity.setKeepScreenOn(!playing)
                             },
                             onHold = {
-                                viewModel.setShowTapTempo(true)
+                                viewModel.setShowBpmDialog(true)
+                                viewModel.setBpmDialogTab(1)
                             },
                             onSwipe = { amount ->
                                 viewModel.setBpm(metronome.bpm + amount)
@@ -183,17 +183,6 @@ fun MetronomePageMain(mainActivity: MainActivity, viewModel: MetronomeViewModel,
         }
     }
 
-    if(viewModel.showTapTempo.collectAsState().value) {
-        BottomSheet(
-            onDismissRequest = {
-                viewModel.setShowTapTempo(false)
-                viewModel.setIntervals(emptyList())
-                viewModel.setLastTapTime(0L)
-            },
-        ) {
-            TapTempo(viewModel)
-        }
-    }
     if(viewModel.showBpmDialog.collectAsState().value) {
         TempoControlsDialog(
             metronome, viewModel,

@@ -75,9 +75,6 @@ class MetronomeViewModel: ViewModel() {
     private val _bpmDialogTab = MutableStateFlow(0)
     val bpmDialogTab: StateFlow<Int> = _bpmDialogTab.asStateFlow()
 
-    private val _showTapTempo  = MutableStateFlow(false)
-    val showTapTempo: StateFlow<Boolean> = _showTapTempo.asStateFlow()
-
     private val _intervals = MutableStateFlow(listOf<Long>())
     val intervals: StateFlow<List<Long>> = _intervals.asStateFlow()
 
@@ -165,7 +162,6 @@ class MetronomeViewModel: ViewModel() {
     fun setFlipConductor(newValue: Boolean) { _flipConductor.value = newValue }
     fun setShowBpmDialog(newValue: Boolean) { _showBpmDialog.value = newValue }
     fun setBpmDialogTab(newValue: Int) { _bpmDialogTab.value = newValue }
-    fun setShowTapTempo(newValue: Boolean) { _showTapTempo.value = newValue }
     fun setIntervals(newValue: List<Long>) { _intervals.value = newValue }
     fun addInterval(newValue: Long) { _intervals.value += newValue }
     fun setLastTapTime(newValue: Long) { _lastTapTime.value = newValue }

@@ -145,7 +145,8 @@ fun PlayButton(mainActivity: MainActivity, viewModel: MetronomeViewModel, onClic
                         mainActivity.runActivity(BeatDetectorActivity::class.java)
                     }
                     DropdownItem(viewModel, R.string.metronome_option_tap_tempo, painterResource(R.drawable.outline_timer_24)) {
-                        viewModel.setShowTapTempo(true)
+                        viewModel.setShowBpmDialog(true)
+                        viewModel.setBpmDialogTab(1)
                     }
                     DropdownItem(viewModel, R.string.metronome_option_change_sounds, painterResource(R.drawable.outline_volume_up_24)) {
                         mainActivity.runActivity(EditSounds::class.java)
@@ -171,7 +172,8 @@ fun PlayButton(mainActivity: MainActivity, viewModel: MetronomeViewModel, onClic
                     .background(MaterialTheme.colorScheme.surfaceContainer)
                     .align(Alignment.Center)
                     .clickable {
-                        viewModel.setShowTapTempo(true)
+                        viewModel.setShowBpmDialog(true)
+                        viewModel.setBpmDialogTab(1)
                     }
             ) {
                 Icon(
