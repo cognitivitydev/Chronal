@@ -102,15 +102,15 @@ class MainActivity : ComponentActivity() {
         microphoneEnabled = permission
         showMicrophoneDialog = !permission
     }
-    val fileActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        if(it.resultCode == RESULT_OK) {
-            startActivity(
-                Intent(this, AudioPlayerActivity::class.java).apply {
-                    putExtra("file", it.data?.data.toString())
-                }
-            )
-        }
-    }
+//    val fileActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+//        if(it.resultCode == RESULT_OK) {
+//            startActivity(
+//                Intent(this, AudioPlayerActivity::class.java).apply {
+//                    putExtra("file", it.data?.data.toString())
+//                }
+//            )
+//        }
+//    }
 
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {

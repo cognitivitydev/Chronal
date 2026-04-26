@@ -93,22 +93,6 @@
             android:theme="@style/Theme.Chronal">
         </activity>
         <activity
-            android:name=".activity.AudioPlayerActivity"
-            android:exported="true"
-            android:theme="@style/Theme.Chronal">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <action android:name="android.intent.action.OPEN_DOCUMENT" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.OPENABLE" />
-
-                <data android:host="*" />
-                <data android:scheme="content" />
-                <data android:scheme="file" />
-                <data android:mimeType="audio/*" />
-            </intent-filter>
-        </activity>
-        <activity
             android:name=".activity.PresetActivity"
             android:exported="false"
             android:theme="@style/Theme.Chronal">

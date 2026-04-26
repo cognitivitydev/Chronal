@@ -18,7 +18,6 @@
 
 package dev.cognitivity.chronal.ui.metronome.components
 
-import android.content.Intent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
@@ -151,13 +150,13 @@ fun PlayButton(mainActivity: MainActivity, viewModel: MetronomeViewModel, onClic
                     DropdownItem(viewModel, R.string.metronome_option_change_sounds, painterResource(R.drawable.outline_volume_up_24)) {
                         mainActivity.runActivity(EditSounds::class.java)
                     }
-                    DropdownItem(viewModel, R.string.metronome_option_play_audio, painterResource(R.drawable.outline_audio_file_24)) {
-                        mainActivity.fileActivity.launch(Intent().apply {
-                            action = Intent.ACTION_GET_CONTENT
-                            type = "audio/*"
-                            addCategory(Intent.CATEGORY_OPENABLE)
-                        })
-                    }
+//                    DropdownItem(viewModel, R.string.metronome_option_play_audio, painterResource(R.drawable.outline_audio_file_24)) {
+//                        mainActivity.fileActivity.launch(Intent().apply {
+//                            action = Intent.ACTION_GET_CONTENT
+//                            type = "audio/*"
+//                            addCategory(Intent.CATEGORY_OPENABLE)
+//                        })
+//                    }
                 }
             }
         }
