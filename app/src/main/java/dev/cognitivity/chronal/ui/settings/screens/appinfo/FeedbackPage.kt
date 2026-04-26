@@ -24,7 +24,7 @@ import dev.cognitivity.chronal.ui.settings.items.SettingItem
 import dev.cognitivity.chronal.ui.settings.items.SettingMeta
 import dev.cognitivity.chronal.ui.settings.data.SettingsPage
 
-private val GITHUB_ISSUES_URI = "https://github.com/cognitivity/chronal/issues".toUri()
+private val GITHUB_ISSUES_URI = "https://github.com/cognitivitydev/chronal/issues".toUri()
 private val CROWDIN_URI = "https://crowdin.com/project/chronal".toUri()
 private val REVIEW_URI = "https://play.google.com/store/apps/details?id=dev.cognitivity.chronal&reviewId=0".toUri()
 private val EMAIL_URI = "mailto:cognitivitydev@gmail.com".toUri()
