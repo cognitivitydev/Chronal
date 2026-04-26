@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.materialkolor.dynamicColorScheme
+import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.metronome.sound.SoundPack
 import dev.cognitivity.chronal.settings.Settings
 
@@ -57,6 +58,18 @@ data class MetronomeConfigTrack(
                 soundPackId = jsonObject.get("soundPackId")?.asString
                     ?.takeIf { SoundPack.byId(it) != null }
                     ?: SoundPack.DEFAULT_ID,
+            )
+        }
+        fun fromTrack(track: MetronomeTrack): MetronomeConfigTrack {
+            return MetronomeConfigTrack(
+                name = track.name,
+                enabled = track.enabled,
+                vibrate = track.vibrate,
+                rhythm = track.getRhythm().serialize(),
+                simpleRhythm = track.simpleRhythm,
+                beatValue = track.beatValue,
+                color = track.color,
+                soundPackId = track.soundPack.id,
             )
         }
     }

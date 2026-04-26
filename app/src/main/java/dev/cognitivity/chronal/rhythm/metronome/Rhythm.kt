@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -159,7 +159,8 @@ data class Rhythm(
             for (element in measure.elements) {
                 when (element) {
                     is RhythmAtom -> {
-                        val symbol = MusicFont.Notation.toLetter(element.getDisplay().first())
+                        val symbol = if(element is RhythmNote) baseDurationToChar(element.baseDuration, element.stemDirection == StemDirection.UP)
+                            else baseDurationToChar(element.baseDuration, false)
                         val dot = when(element.dots) {
                             1 -> "."
                             2 -> ","
@@ -173,7 +174,8 @@ data class Rhythm(
 
                     is RhythmTuplet -> {
                         val content = element.notes.joinToString(":") { note ->
-                            val symbol = MusicFont.Notation.toLetter(note.getDisplay().first())
+                            val symbol = if(note is RhythmNote) baseDurationToChar(note.baseDuration, note.stemDirection == StemDirection.UP)
+                                else baseDurationToChar(note.baseDuration, false)
                             val dot = when(note.dots) {
                                 1 -> "."
                                 2 -> ","
@@ -198,6 +200,27 @@ data class Rhythm(
 
     fun getNoteAt(index: Int): RhythmAtom? {
         return this.atoms().firstOrNull { it.index == index }?.value
+    }
+
+    fun baseDurationToChar(baseDuration: Double, emphasized: Boolean): Char {
+        val char = when(abs(baseDuration)) {
+            1/1.0 -> 'w'
+            1/2.0 -> 'h'
+            1/4.0 -> 'q'
+            1/8.0 -> 'e'
+            1/16.0 -> 's'
+            1/32.0 -> 't'
+            1/64.0 -> 'x'
+            1/128.0 -> 'o'
+            1/256.0 -> 'z'
+            1/512.0 -> 'f'
+            1/1024.0 -> 'm'
+            else -> '?'
+        }
+        if(emphasized) {
+            return char.uppercaseChar()
+        }
+        return char
     }
 
     private fun fillRests(

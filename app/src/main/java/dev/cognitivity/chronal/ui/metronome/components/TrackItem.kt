@@ -109,7 +109,6 @@ fun TrackItem(
         Switch(
             checked = enabled,
             onCheckedChange = {
-                if(index == 0) return@Switch
                 onCheckedChanged(it)
             },
             colors = SwitchDefaults.colors(

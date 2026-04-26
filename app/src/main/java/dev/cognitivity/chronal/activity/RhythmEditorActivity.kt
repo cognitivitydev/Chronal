@@ -31,6 +31,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -71,6 +75,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.metronome.Metronome
 import dev.cognitivity.chronal.metronome.MetronomeTrack
@@ -87,8 +95,11 @@ import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.rhythm.metronome.elements.StemDirection
 import dev.cognitivity.chronal.settings.Setting
 import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.settings.types.json.MetronomeConfigTrack
 import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
+import dev.cognitivity.chronal.ui.metronome.components.TrackSettingsPage
 import dev.cognitivity.chronal.ui.metronome.components.PlayPauseIcon
+import dev.cognitivity.chronal.ui.metronome.components.TrackSettingsDropdown
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -113,7 +124,7 @@ class RhythmEditorActivity : ComponentActivity() {
     private var noteInputTuplet by mutableStateOf(false)
     private var noteInputDots by mutableIntStateOf(0)
     private var noteInputState by mutableStateOf(NoteInputState.UP)
-    private var noteInputDuration by mutableStateOf(4)
+    private var noteInputDuration by mutableIntStateOf(4)
 
     private var rhythm by mutableStateOf("{4/4}Q;q;q;q;")
     private var parsedRhythm by mutableStateOf(Rhythm.deserialize(rhythm))
@@ -158,6 +169,7 @@ class RhythmEditorActivity : ComponentActivity() {
         this.rhythm = track.rhythm
 
         appTrack = appMetronome.tracks[trackIndex]
+        mainTrack = appMetronome.tracks[trackIndex]
         parsedRhythm = Rhythm.deserialize(rhythm)
 
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
@@ -239,6 +251,38 @@ class RhythmEditorActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
     fun MainContent() {
+        val navController = rememberNavController()
+        NavHost(
+            navController = navController,
+            startDestination = "editor",
+        ) {
+            composable("editor") {
+                EditorPage(navController)
+            }
+            composable("track_settings",
+                enterTransition = { scaleIn() + fadeIn() },
+                exitTransition = { scaleOut() + fadeOut() }
+            ) {
+                TrackSettingsPage(
+                    track = Settings.getTrack(trackIndex) ?: MetronomeConfigTrack.fromTrack(appTrack),
+                    onDismiss = {
+                        navController.popBackStack()
+                    },
+                    onSave = {
+                        navController.popBackStack()
+                    },
+                    canDelete = appMetronome.tracks.count { it != appTrack && it.enabled } != 0,
+                    onDelete = {
+                        finish()
+                    }
+                )
+            }
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
+    @Composable
+    private fun EditorPage(navController: NavHostController) {
         Scaffold(
             modifier = Modifier.fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface),
@@ -329,6 +373,7 @@ class RhythmEditorActivity : ComponentActivity() {
 
                 // bottom row
                 BottomRow(
+                    navController = navController,
                     modifier = Modifier.fillMaxWidth()
                         .weight(2f)
                         .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
@@ -636,8 +681,9 @@ class RhythmEditorActivity : ComponentActivity() {
     }
 
     @Composable
-    fun BottomRow(modifier: Modifier = Modifier) {
+    fun BottomRow(navController: NavHostController, modifier: Modifier = Modifier) {
         var backDropdown by remember { mutableStateOf(false) }
+        var settingsDropdown by remember { mutableStateOf(false) }
         val animatedRatio by animateFloatAsState(
             targetValue = if (isPlaying) 1.5f else 1f,
             animationSpec = MotionScheme.expressive().fastSpatialSpec(),
@@ -821,12 +867,25 @@ class RhythmEditorActivity : ComponentActivity() {
             IconButton(
                 modifier = Modifier.padding(horizontal = 4.dp),
                 onClick = {
-                    // TODO
+                    settingsDropdown = true
                 }
             ) {
                 Icon(
                     imageVector = Icons.Outlined.MoreVert,
                     contentDescription = getString(R.string.editor_settings)
+                )
+                TrackSettingsDropdown(
+                    track = mainTrack,
+                    expanded = settingsDropdown,
+                    canDelete = appMetronome.tracks.count { it != appTrack && it.enabled } != 0,
+                    onDismissRequest = { settingsDropdown = false },
+                    onEdit = {
+                        navController.navigate("track_settings")
+                    },
+                    onDeleteFinish = {
+                        finish()
+                    },
+                    onSwitchEditor = {}
                 )
             }
         }

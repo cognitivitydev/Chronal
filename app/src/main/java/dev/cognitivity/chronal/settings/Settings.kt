@@ -20,7 +20,9 @@ package dev.cognitivity.chronal.settings
 
 import android.os.Build
 import com.google.gson.JsonArray
+import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
+import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.settings.types.BooleanSetting
 import dev.cognitivity.chronal.settings.types.FloatSetting
 import dev.cognitivity.chronal.settings.types.IntSetting
@@ -148,5 +150,29 @@ object Settings {
         val track = tracks.getOrNull(index) ?: return
         tracks[index] = update(track)
         METRONOME_CONFIG.set(config.copy(tracks = tracks))
+    }
+
+    fun updateTrack(index: Int, update: (MetronomeConfigTrack) -> MetronomeConfigTrack): Boolean {
+        val config = METRONOME_CONFIG.get()
+        val tracks = config.tracks.toMutableList()
+        val track = tracks.getOrNull(index) ?: return false
+        tracks[index] = update(track)
+        METRONOME_CONFIG.set(config.copy(tracks = tracks))
+        return true
+    }
+
+    fun removeTrack(metronomeConfigTrack: MetronomeConfigTrack): Boolean {
+        val config = METRONOME_CONFIG.get()
+        val tracks = config.tracks.toMutableList()
+        // ensure at least 1 active track
+        if(tracks.count { it != metronomeConfigTrack && it.enabled } == 0) return false
+
+        if(!tracks.contains(metronomeConfigTrack)) return false
+
+        tracks.remove(metronomeConfigTrack)
+        METRONOME_CONFIG.set(config.copy(tracks = tracks))
+
+        ChronalApp.getInstance().metronome.tracks = config.tracks.map { MetronomeTrack.fromSetting(it) }.toMutableList()
+        return true
     }
 }

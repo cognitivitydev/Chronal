@@ -149,9 +149,13 @@ class MetronomeViewModel: ViewModel() {
 
     fun setTrackEnabled(index: Int, enabled: Boolean) {
         val track = metronome.tracks.getOrNull(index) ?: return
-        if (index == 0) return
+        if(!enabled && metronome.tracks.count { it.enabled } <= 1) return
         track.enabled = enabled
         _tracks.value = metronome.tracks.toList()
+        Settings.updateTrack(index) { it.copy(enabled = enabled) }
+        CoroutineScope(Dispatchers.Main).launch {
+            Settings.METRONOME_CONFIG.save()
+        }
     }
 
     fun setSettingsExpanded(newValue: Boolean) { _settingsExpanded.value = newValue }

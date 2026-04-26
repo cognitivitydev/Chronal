@@ -19,6 +19,7 @@
 package dev.cognitivity.chronal.activity
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -26,6 +27,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
@@ -47,6 +52,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -54,6 +60,7 @@ import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -82,15 +89,18 @@ import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.settings.Setting
 import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.settings.types.json.MetronomeConfigTrack
 import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
 import dev.cognitivity.chronal.toPx
 import dev.cognitivity.chronal.ui.metronome.components.ClockBeats
+import dev.cognitivity.chronal.ui.metronome.components.TrackSettingsDropdown
+import dev.cognitivity.chronal.ui.metronome.components.TrackSettingsPage
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 class SimpleEditorActivity : ComponentActivity() {
-    private var trackIndex by mutableStateOf(0)
+    private var trackIndex by mutableIntStateOf(0)
     private var error by mutableStateOf(false)
     private var previewRhythm by mutableStateOf<Rhythm?>(null)
     private lateinit var rhythm: MutableState<SimpleRhythm>
@@ -118,9 +128,8 @@ class SimpleEditorActivity : ComponentActivity() {
     )
     @Composable
     fun MainContent() {
+        val rootNavController = rememberNavController()
         val scope = rememberCoroutineScope()
-        val navController = rememberNavController()
-        var backDropdown by remember { mutableStateOf(false) }
         val selectedTrack = ChronalApp.getInstance().metronome.tracks[trackIndex]
         val initialValue = selectedTrack.simpleRhythm
         rhythm = remember { mutableStateOf(initialValue) }
@@ -130,149 +139,74 @@ class SimpleEditorActivity : ComponentActivity() {
 
         try {
             previewRhythm = rhythm.value.asRhythm()
+            error = false
         } catch(_: Exception) {
             error = true
         }
 
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text(selectedTrack.name) },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                    ),
-                    navigationIcon = {
-                        MaterialTheme(
-                            colorScheme = MaterialTheme.colorScheme.copy(surfaceContainer = MaterialTheme.colorScheme.surfaceContainerHigh),
-                            shapes = MaterialTheme.shapes.copy(
-                                extraSmall = RoundedCornerShape(
-                                    16.dp
-                                )
-                            )
-                        ) {
-                            DropdownMenu(
-                                expanded = backDropdown,
-                                onDismissRequest = { backDropdown = false },
-                            ) {
-                                DropdownMenuItem(
-                                    leadingIcon = {
-                                        Icon(
-                                            painter = painterResource(R.drawable.outline_save_24),
-                                            contentDescription = getString(R.string.generic_save_exit)
-                                        )
-                                    },
-                                    text = { Text(getString(R.string.generic_save_exit)) },
-                                    onClick = {
-                                        backDropdown = false
-                                        if(!error) {
-                                            val parsedRhythm: Rhythm
-                                            try {
-                                                parsedRhythm = rhythm.value.asRhythm()
-                                            } catch(_: Exception) {
-                                                error = true
-                                                return@DropdownMenuItem
-                                            }
-                                            val metronome = ChronalApp.getInstance().metronome
-                                            val selectedTrack = metronome.tracks[trackIndex]
-                                            selectedTrack.simpleRhythm = rhythm.value
-                                            selectedTrack.setRhythm(parsedRhythm)
-                                            Settings.setTrack(trackIndex) {
-                                                it.copy(
-                                                    rhythm = parsedRhythm.serialize(),
-                                                    simpleRhythm = selectedTrack.simpleRhythm
-                                                )
-                                            }
-                                            metronome.tracks[trackIndex] = selectedTrack
-                                            scope.launch {
-                                                Setting.saveAll()
-                                                selectedTrack.setRhythm(parsedRhythm)
-                                                finish()
-                                            }
-                                        }
-                                    },
-                                    enabled = !error
-                                )
-                                DropdownMenuItem(
-                                    leadingIcon = {
-                                        Icon(
-                                            imageVector = Icons.Outlined.Delete,
-                                            contentDescription = getString(R.string.generic_exit_discard)
-                                        )
-                                    },
-                                    text = { Text(getString(R.string.generic_exit_discard)) },
-                                    onClick = {
-                                        backDropdown = false
-                                        rhythm.value = initialValue
-                                        val updatedRhythm: Rhythm
-                                        try {
-                                            updatedRhythm = rhythm.value.asRhythm()
-                                        } catch(_: Exception) {
-                                            error = true
-                                            return@DropdownMenuItem
-                                        }
-                                        val metronome = ChronalApp.getInstance().metronome
-                                        val selectedTrack = metronome.tracks[trackIndex]
-                                        selectedTrack.simpleRhythm = initialValue
-                                        selectedTrack.setRhythm(updatedRhythm)
-                                        Settings.setTrack(trackIndex) {
-                                            it.copy(
-                                                rhythm = updatedRhythm.serialize(),
-                                                simpleRhythm = selectedTrack.simpleRhythm
-                                            )
-                                        }
-                                        metronome.tracks[trackIndex] = selectedTrack
-                                        scope.launch {
-                                            Setting.saveAll()
-                                            selectedTrack.setRhythm(updatedRhythm)
-                                            finish()
-                                        }
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    leadingIcon = {
-                                        Icon(
-                                            imageVector = Icons.Outlined.Close,
-                                            contentDescription = getString(R.string.generic_cancel)
-                                        )
-                                    },
-                                    text = { Text(getString(R.string.generic_cancel)) },
-                                    onClick = {
-                                        backDropdown = false
-                                    }
-                                )
-                            }
-                        }
-                        IconButton(
-                            onClick = {
-                                if(rhythm == initialValue) {
-                                    finish()
-                                } else {
-                                    backDropdown = true
-                                }
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                                contentDescription = getString(R.string.generic_back)
-                            )
+        NavHost(
+            navController = rootNavController,
+            startDestination = "editor",
+        ) {
+            composable("editor") {
+                EditorPage(
+                    onEditTrack = {
+                        rootNavController.navigate("track_settings")
+                    },
+                    expanded = expanded,
+                    startPage = startPage,
+                )
+            }
+            composable("track_settings",
+                enterTransition = { scaleIn() + fadeIn() },
+                exitTransition = { scaleOut() + fadeOut() }
+            ) {
+                val metronome = ChronalApp.getInstance().metronome
+                val track = metronome.tracks[trackIndex]
+                val configTrack = Settings.getTrack(trackIndex)
+                    ?: MetronomeConfigTrack.fromTrack(track)
+                TrackSettingsPage(
+                    track = configTrack,
+                    canDelete = metronome.tracks.count { it != track && it.enabled } != 0,
+                    onDismiss = {
+                        rootNavController.popBackStack()
+                    },
+                    onSave = { updated ->
+                        rootNavController.popBackStack()
+                        scope.launch {
+                            Setting.saveAll()
                         }
                     },
+                    onDelete = {
+                        finish()
+                    }
                 )
-            },
+            }
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun EditorPage(onEditTrack: () -> Unit, expanded: Boolean, startPage: String) {
+        val editorNavController = rememberNavController()
+        val navBackStackEntry by editorNavController.currentBackStackEntryAsState()
+        val currentRoute = navBackStackEntry?.destination?.route
+
+        Scaffold(
+            topBar = { TopBar(onEditTrack = onEditTrack) },
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
         ) { innerPadding ->
             Column(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
                     .padding(innerPadding)
             ) {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentRoute = navBackStackEntry?.destination?.route
-
-                TabRow(navController)
+                TabRow(editorNavController)
                 if(expanded) {
                     Row {
                         Row(
-                            modifier = Modifier.fillMaxHeight()
+                            modifier = Modifier
+                                .fillMaxHeight()
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                                 .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp)),
                             verticalAlignment = Alignment.CenterVertically
@@ -282,7 +216,8 @@ class SimpleEditorActivity : ComponentActivity() {
                             ) {
                                 ClockPreview {
                                     Box(
-                                        modifier = Modifier.fillMaxHeight(0.5f)
+                                        modifier = Modifier
+                                            .fillMaxHeight(0.5f)
                                             .align(Alignment.Center)
                                     ) {
                                         if (currentRoute == "beat") {
@@ -302,8 +237,9 @@ class SimpleEditorActivity : ComponentActivity() {
                             }
                             EmphasisSwitcher()
                         }
-                        NavigationHost(navController,
-                            modifier = Modifier.fillMaxHeight()
+                        NavigationHost(editorNavController,
+                            modifier = Modifier
+                                .fillMaxHeight()
                                 .weight(1f),
                             expanded = true, startPage
                         )
@@ -311,19 +247,22 @@ class SimpleEditorActivity : ComponentActivity() {
                 } else {
                     Column {
                         Row(
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                                 .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp)),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Box(
-                                modifier = Modifier.height(IntrinsicSize.Min)
+                                modifier = Modifier
+                                    .height(IntrinsicSize.Min)
                                     .weight(1f)
                                     .aspectRatio(1f),
                             ) {
                                 ClockPreview {
                                     Box(
-                                        modifier = Modifier.fillMaxHeight(0.5f)
+                                        modifier = Modifier
+                                            .fillMaxHeight(0.5f)
                                             .align(Alignment.Center)
                                     ) {
                                         if (currentRoute == "beat") {
@@ -343,8 +282,9 @@ class SimpleEditorActivity : ComponentActivity() {
                             }
                             EmphasisSwitcher()
                         }
-                        NavigationHost(navController,
-                            modifier = Modifier.fillMaxWidth()
+                        NavigationHost(editorNavController,
+                            modifier = Modifier
+                                .fillMaxWidth()
                                 .weight(1f),
                             expanded = false, startPage
                         )
@@ -352,6 +292,160 @@ class SimpleEditorActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun TopBar(onEditTrack: () -> Unit) {
+        val scope = rememberCoroutineScope()
+        val selectedTrack = ChronalApp.getInstance().metronome.tracks[trackIndex]
+        val initialValue = remember(trackIndex) { selectedTrack.simpleRhythm }
+        var backDropdown by remember { mutableStateOf(false) }
+        var settingsDropdown by remember { mutableStateOf(false) }
+        val track = ChronalApp.getInstance().metronome.tracks[trackIndex]
+
+        TopAppBar(
+            title = { Text(selectedTrack.name) },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            ),
+            navigationIcon = {
+                MaterialTheme(
+                    colorScheme = MaterialTheme.colorScheme.copy(surfaceContainer = MaterialTheme.colorScheme.surfaceContainerHigh),
+                    shapes = MaterialTheme.shapes.copy(
+                        extraSmall = RoundedCornerShape(
+                            16.dp
+                        )
+                    )
+                ) {
+                    DropdownMenu(
+                        expanded = backDropdown,
+                        onDismissRequest = { backDropdown = false },
+                    ) {
+                        DropdownMenuItem(
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(R.drawable.outline_save_24),
+                                    contentDescription = getString(R.string.generic_save_exit)
+                                )
+                            },
+                            text = { Text(getString(R.string.generic_save_exit)) },
+                            onClick = {
+                                backDropdown = false
+                                if(!error) {
+                                    val parsedRhythm: Rhythm
+                                    try {
+                                        parsedRhythm = rhythm.value.asRhythm()
+                                    } catch(_: Exception) {
+                                        error = true
+                                        return@DropdownMenuItem
+                                    }
+                                    val metronome = ChronalApp.getInstance().metronome
+                                    val selectedTrack = metronome.tracks[trackIndex]
+                                    selectedTrack.simpleRhythm = rhythm.value
+                                    selectedTrack.setRhythm(parsedRhythm)
+                                    Settings.setTrack(trackIndex) {
+                                        it.copy(
+                                            rhythm = parsedRhythm.serialize(),
+                                            simpleRhythm = selectedTrack.simpleRhythm
+                                        )
+                                    }
+                                    metronome.tracks[trackIndex] = selectedTrack
+                                    scope.launch {
+                                        Setting.saveAll()
+                                        selectedTrack.setRhythm(parsedRhythm)
+                                        finish()
+                                    }
+                                }
+                            },
+                            enabled = !error
+                        )
+                        DropdownMenuItem(
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.Delete,
+                                    contentDescription = getString(R.string.generic_exit_discard)
+                                )
+                            },
+                            text = { Text(getString(R.string.generic_exit_discard)) },
+                            onClick = {
+                                backDropdown = false
+                                rhythm.value = initialValue
+                                val updatedRhythm: Rhythm
+                                try {
+                                    updatedRhythm = rhythm.value.asRhythm()
+                                } catch(_: Exception) {
+                                    error = true
+                                    return@DropdownMenuItem
+                                }
+                                val metronome = ChronalApp.getInstance().metronome
+                                val selectedTrack = metronome.tracks[trackIndex]
+                                selectedTrack.simpleRhythm = initialValue
+                                selectedTrack.setRhythm(updatedRhythm)
+                                Settings.setTrack(trackIndex) {
+                                    it.copy(
+                                        rhythm = updatedRhythm.serialize(),
+                                        simpleRhythm = selectedTrack.simpleRhythm
+                                    )
+                                }
+                                metronome.tracks[trackIndex] = selectedTrack
+                                scope.launch {
+                                    Setting.saveAll()
+                                    selectedTrack.setRhythm(updatedRhythm)
+                                    finish()
+                                }
+                            }
+                        )
+                        DropdownMenuItem(
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.Close,
+                                    contentDescription = getString(R.string.generic_cancel)
+                                )
+                            },
+                            text = { Text(getString(R.string.generic_cancel)) },
+                            onClick = {
+                                backDropdown = false
+                            }
+                        )
+                    }
+                }
+                IconButton(
+                    onClick = {
+                        if(rhythm.value == initialValue) {
+                            finish()
+                        } else {
+                            backDropdown = true
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                        contentDescription = getString(R.string.generic_back)
+                    )
+                }
+            },
+            actions = {
+                IconButton(onClick = { settingsDropdown = true }) {
+                    Icon(
+                        imageVector = Icons.Outlined.MoreVert,
+                        contentDescription = getString(R.string.editor_settings)
+                    )
+                }
+                val metronome = ChronalApp.getInstance().metronome
+                TrackSettingsDropdown(
+                    track = track,
+                    expanded = settingsDropdown,
+                    canDelete = metronome.tracks.count { it != track && it.enabled } != 0,
+                    onDismissRequest = { settingsDropdown = false },
+                    onEdit = onEditTrack,
+                    onDeleteFinish = {
+                        finish()
+                    },
+                    onSwitchEditor = {}
+                )
+            }
+        )
     }
 
     @Composable

@@ -120,7 +120,7 @@ fun DisplaySelector(viewModel: MetronomeViewModel) {
             onDismissRequest = { viewModel.setModesExpanded(false) },
         ) {
             DropdownMenuGroup(
-                shapes = MenuDefaults.groupShape(displayMode.ordinal, modes.size),
+                shapes = MenuDefaults.groupShape(0, 1),
             ) {
                 MenuDefaults.Label {
                     Text(
