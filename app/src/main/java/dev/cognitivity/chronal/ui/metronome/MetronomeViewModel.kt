@@ -90,6 +90,15 @@ class MetronomeViewModel: ViewModel() {
         _tracks.value = metronome.tracks.toList()
     }
 
+    fun reloadMetronomeState() {
+        val config = Settings.METRONOME_CONFIG.get()
+        val tracks = config.tracks.map { MetronomeTrack.fromSetting(it) }
+        metronome.bpm = config.bpm
+        _tracks.value = tracks.toMutableList()
+        metronome.tracks = tracks.toMutableList()
+        setPlaying(ChronalApp.getInstance().metronome.playing)
+    }
+
     fun setPlaying(newValue: Boolean) {
         _playing.value = newValue
         if(newValue) metronome.start() else metronome.stop()

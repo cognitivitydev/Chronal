@@ -267,11 +267,22 @@ class RhythmEditorActivity : ComponentActivity() {
             ) {
                 TrackSettingsPage(
                     track = Settings.getTrack(trackIndex) ?: MetronomeConfigTrack.fromTrack(appTrack),
-                    onDismiss = {
+                    onSave = { updated ->
                         navController.popBackStack()
-                    },
-                    onSave = {
-                        navController.popBackStack()
+                        appTrack.name = updated.name
+                        appTrack.enabled = updated.enabled
+                        appTrack.vibrate = updated.vibrate
+                        appTrack.color = updated.color
+
+                        Settings.updateTrack(trackIndex) {
+                            it.copy(
+                                name = it.name,
+                                enabled = it.enabled,
+                                vibrate = it.vibrate,
+                                color = it.color,
+                            )
+                        }
+                        lifecycleScope.launch { Setting.saveAll() }
                     },
                     canDelete = appMetronome.tracks.count { it != appTrack && it.enabled } != 0,
                     onDelete = {

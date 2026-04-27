@@ -34,11 +34,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -83,7 +82,6 @@ data class TrackSettingsResult(
 @Composable
 fun TrackSettingsPage(
     track: MetronomeConfigTrack,
-    onDismiss: () -> Unit,
     onSave: (TrackSettingsResult) -> Unit,
     canDelete: Boolean,
     onDelete: () -> Unit,
@@ -111,15 +109,7 @@ fun TrackSettingsPage(
             TopAppBar(
                 title = { Text(stringResource(R.string.track_settings_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onDismiss) {
-                        Icon(
-                            imageVector = Icons.Outlined.Close,
-                            contentDescription = stringResource(R.string.generic_back),
-                        )
-                    }
-                },
-                actions = {
-                    Button(
+                    IconButton(
                         onClick = {
                             onSave(
                                 TrackSettingsResult(
@@ -129,10 +119,12 @@ fun TrackSettingsPage(
                                     color = color,
                                 )
                             )
-                        },
-                        modifier = Modifier.padding(horizontal = 16.dp)
+                        }
                     ) {
-                        Text(stringResource(R.string.generic_save))
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                            contentDescription = stringResource(R.string.generic_back),
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -147,7 +139,7 @@ fun TrackSettingsPage(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 32.dp, vertical = 16.dp),
+                .padding(16.dp),
         ) {
             TrackSettingsToggle(track, enabled) { enabled = !enabled }
 

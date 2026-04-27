@@ -54,6 +54,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun TrackSettingsDropdown(track: MetronomeTrack, expanded: Boolean, canDelete: Boolean,
+                          isOutsideEditor: Boolean = false,
                           onDismissRequest: () -> Unit,
                           onEdit: () -> Unit,
                           onDeleteFinish: () -> Unit,
@@ -67,7 +68,7 @@ fun TrackSettingsDropdown(track: MetronomeTrack, expanded: Boolean, canDelete: B
         onDismissRequest = onDismissRequest,
     ) {
         DropdownMenuGroup(
-            shapes = MenuDefaults.groupShape(0, 2),
+            shapes = MenuDefaults.groupShape(0, if(!isOutsideEditor) 2 else 1),
         ) {
             MenuDefaults.Label {
                 Text(track.name)
@@ -76,10 +77,12 @@ fun TrackSettingsDropdown(track: MetronomeTrack, expanded: Boolean, canDelete: B
                 modifier = Modifier.padding(MenuDefaults.HorizontalDividerPadding)
             )
             DropdownMenuItem(
-                text = { Text(stringResource(R.string.track_settings_edit)) },
+                text = {
+                    Text(stringResource(if(isOutsideEditor) R.string.generic_edit else R.string.track_settings_edit))
+                },
                 leadingIcon = {
                     Icon(
-                        imageVector = Icons.Outlined.Edit,
+                        imageVector = if(isOutsideEditor) Icons.Outlined.Build else Icons.Outlined.Edit,
                         modifier = Modifier.size(MenuDefaults.LeadingIconSize),
                         contentDescription = null
                     )
@@ -107,27 +110,29 @@ fun TrackSettingsDropdown(track: MetronomeTrack, expanded: Boolean, canDelete: B
                 enabled = canDelete
             )
         }
-        Spacer(modifier = Modifier.height(MenuDefaults.GroupSpacing))
-        DropdownMenuGroup(
-            shapes = MenuDefaults.groupShape(1, 2),
-            containerColor = MenuDefaults.groupVibrantContainerColor
-        ) {
-            val isAdvanced = track.simpleRhythm == SimpleRhythm.DISABLED
-            DropdownMenuItem(
-                text = { Text(stringResource(if(isAdvanced) R.string.track_settings_switch_simple else R.string.track_settings_switch_advanced)) },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Outlined.Build,
-                        modifier = Modifier.size(MenuDefaults.LeadingIconSize),
-                        contentDescription = null
-                    )
-                },
-                shape = MenuDefaults.itemShape(0, 1).shape,
-                colors = MenuDefaults.selectableItemVibrantColors(),
-                onClick = {
-                    onSwitchEditor()
-                }
-            )
+        if(!isOutsideEditor) {
+            Spacer(modifier = Modifier.height(MenuDefaults.GroupSpacing))
+            DropdownMenuGroup(
+                shapes = MenuDefaults.groupShape(1, 2),
+                containerColor = MenuDefaults.groupVibrantContainerColor
+            ) {
+                val isAdvanced = track.simpleRhythm == SimpleRhythm.DISABLED
+                DropdownMenuItem(
+                    text = { Text(stringResource(if(isAdvanced) R.string.track_settings_switch_simple else R.string.track_settings_switch_advanced)) },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Outlined.Build,
+                            modifier = Modifier.size(MenuDefaults.LeadingIconSize),
+                            contentDescription = null
+                        )
+                    },
+                    shape = MenuDefaults.itemShape(0, 1).shape,
+                    colors = MenuDefaults.selectableItemVibrantColors(),
+                    onClick = {
+                        onSwitchEditor()
+                    }
+                )
+            }
         }
     }
 

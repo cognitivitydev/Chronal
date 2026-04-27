@@ -84,7 +84,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
-import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
 
 lateinit var audioManager: AudioManager
@@ -169,13 +168,8 @@ class MainActivity : ComponentActivity() {
             Settings.LAST_OPEN.save(System.currentTimeMillis())
         }
 
-        val metronome = ChronalApp.getInstance().metronome
-        val tracks = Settings.METRONOME_CONFIG.get().tracks.map { MetronomeTrack.fromSetting(it) }
-        metronome.tracks = tracks.toMutableList()
-
         val metronomeViewModel: MetronomeViewModel by viewModels()
-        metronomeViewModel.setPlaying(ChronalApp.getInstance().metronome.playing)
-        metronomeViewModel.syncMetronomeState()
+        metronomeViewModel.reloadMetronomeState()
     }
 
     fun setKeepScreenOn(enabled: Boolean) {

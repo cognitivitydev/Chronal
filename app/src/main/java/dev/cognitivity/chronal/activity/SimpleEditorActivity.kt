@@ -169,14 +169,24 @@ class SimpleEditorActivity : ComponentActivity() {
                 TrackSettingsPage(
                     track = configTrack,
                     canDelete = metronome.tracks.count { it != track && it.enabled } != 0,
-                    onDismiss = {
-                        rootNavController.popBackStack()
-                    },
                     onSave = { updated ->
                         rootNavController.popBackStack()
-                        scope.launch {
-                            Setting.saveAll()
+                        val metronome = ChronalApp.getInstance().metronome
+                        track.name = updated.name
+                        track.enabled = updated.enabled
+                        track.vibrate = updated.vibrate
+                        track.color = updated.color
+                        metronome.tracks[trackIndex] = track
+
+                        Settings.updateTrack(trackIndex) {
+                            it.copy(
+                                name = updated.name,
+                                enabled = updated.enabled,
+                                vibrate = updated.vibrate,
+                                color = updated.color,
+                            )
                         }
+                        scope.launch { Setting.saveAll() }
                     },
                     onDelete = {
                         finish()

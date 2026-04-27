@@ -21,7 +21,7 @@ package dev.cognitivity.chronal.ui.metronome.components
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -52,11 +52,11 @@ import dev.cognitivity.chronal.metronome.MetronomeTrack
 @Composable
 fun TrackItem(
     track: MetronomeTrack,
-    index: Int,
     topRounded: Boolean,
     bottomRounded: Boolean,
     onCheckedChanged: (Boolean) -> Unit = {},
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    onLongClick: () -> Unit = {}
 ) {
     val enabled = track.enabled
     val shape = RoundedCornerShape(
@@ -80,9 +80,10 @@ fun TrackItem(
         modifier = Modifier.fillMaxWidth()
             .clip(shape)
             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-            .clickable {
-                onClick()
-            }
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
             .padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
