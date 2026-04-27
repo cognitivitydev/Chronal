@@ -18,8 +18,8 @@
 
 package dev.cognitivity.chronal.activity
 
+import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -95,6 +95,7 @@ import dev.cognitivity.chronal.toPx
 import dev.cognitivity.chronal.ui.metronome.components.ClockBeats
 import dev.cognitivity.chronal.ui.metronome.components.TrackSettingsDropdown
 import dev.cognitivity.chronal.ui.metronome.components.TrackSettingsPage
+import dev.cognitivity.chronal.ui.metronome.components.TrackSettingsSwitchDialog
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -302,6 +303,7 @@ class SimpleEditorActivity : ComponentActivity() {
         val initialValue = remember(trackIndex) { selectedTrack.simpleRhythm }
         var backDropdown by remember { mutableStateOf(false) }
         var settingsDropdown by remember { mutableStateOf(false) }
+        var showSwitchDialog by remember { mutableStateOf(false) }
         val track = ChronalApp.getInstance().metronome.tracks[trackIndex]
 
         TopAppBar(
@@ -442,10 +444,26 @@ class SimpleEditorActivity : ComponentActivity() {
                     onDeleteFinish = {
                         finish()
                     },
-                    onSwitchEditor = {}
+                    onSwitchEditor = {
+                        showSwitchDialog = true
+                    }
                 )
             }
         )
+        if(showSwitchDialog) {
+            selectedTrack.simpleRhythm = rhythm.value
+            TrackSettingsSwitchDialog(trackIndex, selectedTrack,
+                onDismissRequest = { showSwitchDialog = false },
+                onConfirm = {
+                    finish()
+                    startActivity(
+                        Intent(this, RhythmEditorActivity::class.java)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP)
+                            .putExtra("trackIndex", trackIndex)
+                    )
+                }
+            )
+        }
     }
 
     @Composable

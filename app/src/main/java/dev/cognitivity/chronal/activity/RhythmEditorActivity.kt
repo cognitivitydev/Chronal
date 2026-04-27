@@ -18,6 +18,7 @@
 
 package dev.cognitivity.chronal.activity
 
+import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Build
 import android.os.Bundle
@@ -100,6 +101,7 @@ import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
 import dev.cognitivity.chronal.ui.metronome.components.TrackSettingsPage
 import dev.cognitivity.chronal.ui.metronome.components.PlayPauseIcon
 import dev.cognitivity.chronal.ui.metronome.components.TrackSettingsDropdown
+import dev.cognitivity.chronal.ui.metronome.components.TrackSettingsSwitchDialog
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -684,6 +686,7 @@ class RhythmEditorActivity : ComponentActivity() {
     fun BottomRow(navController: NavHostController, modifier: Modifier = Modifier) {
         var backDropdown by remember { mutableStateOf(false) }
         var settingsDropdown by remember { mutableStateOf(false) }
+        var showSwitchDialog by remember { mutableStateOf(false) }
         val animatedRatio by animateFloatAsState(
             targetValue = if (isPlaying) 1.5f else 1f,
             animationSpec = MotionScheme.expressive().fastSpatialSpec(),
@@ -885,9 +888,24 @@ class RhythmEditorActivity : ComponentActivity() {
                     onDeleteFinish = {
                         finish()
                     },
-                    onSwitchEditor = {}
+                    onSwitchEditor = {
+                        showSwitchDialog = true
+                    }
                 )
             }
+        }
+        if(showSwitchDialog) {
+            TrackSettingsSwitchDialog(trackIndex, mainTrack,
+                onDismissRequest = { showSwitchDialog = false },
+                onConfirm = {
+                    finish()
+                    startActivity(
+                        Intent(this, SimpleEditorActivity::class.java)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            .putExtra("trackIndex", trackIndex)
+                    )
+                }
+            )
         }
     }
 

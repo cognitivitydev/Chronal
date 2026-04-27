@@ -139,10 +139,6 @@
     <string name="simple_editor_primary_enabled">Primary rhythm enabled</string>
     <string name="simple_editor_secondary">Edit secondary rhythm</string>
     <string name="simple_editor_secondary_enable">Enable secondary rhythm</string>
-    <string name="simple_editor_simple_warning_title">Switch to Simple Editor?</string>
-    <string name="simple_editor_simple_warning_text">Switching to the simple editor wil reset all changes made in the editor. This cannot be undone.</string>
-    <string name="simple_editor_switch_advanced">Switch to Advanced Editor</string>
-    <string name="simple_editor_switch_simple">Switch to Simple Editor</string>
     <string name="simple_editor_time_signature">Time signature</string>
     <string name="simple_editor_vibration">Vibration</string>
     <string name="simple_editor_view_presets">View presets</string>
@@ -197,6 +193,10 @@
     <string name="track_settings_delete_dialog_title">Delete track?</string>
     <string name="track_settings_delete_dialog_text">Are you sure you want to delete "%1$s"? This cannot be undone.</string>
     <string name="track_settings_delete_failed">Failed to delete track.</string>
+    <string name="track_settings_switch_title">Switch editors?</string>
+    <string name="track_settings_switch_text">Switching editors wil reset all changes made in the editor. This cannot be undone.</string>
+    <string name="track_settings_switch_simple">Switch to Simple Editor</string>
+    <string name="track_settings_switch_advanced">Switch to Advanced Editor</string>
 
     <string name="tuner_concert_pitch">Concert</string>
     <string name="tuner_concert_pitch_short">Con.</string>

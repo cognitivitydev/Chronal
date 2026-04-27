@@ -114,7 +114,7 @@ fun TrackSettingsDropdown(track: MetronomeTrack, expanded: Boolean, canDelete: B
         ) {
             val isAdvanced = track.simpleRhythm == SimpleRhythm.DISABLED
             DropdownMenuItem(
-                text = { Text(stringResource(if(isAdvanced) R.string.simple_editor_switch_simple else R.string.simple_editor_switch_advanced)) },
+                text = { Text(stringResource(if(isAdvanced) R.string.track_settings_switch_simple else R.string.track_settings_switch_advanced)) },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Outlined.Build,
