@@ -101,10 +101,6 @@
     <string name="simple_editor_primary_enabled">Primární rytmus zapnut</string>
     <string name="simple_editor_secondary">Editace sekundárního rytmu</string>
     <string name="simple_editor_secondary_enable">Zapnout sekundární rytmus</string>
-    <string name="simple_editor_simple_warning_title">Přepnout na jednoduchý editor?</string>
-    <string name="simple_editor_simple_warning_text">Přepnutím na jednoduchý editor se resetují všechny provedené změny. Tuto akci nelze vrátit zpět.</string>
-    <string name="simple_editor_switch_advanced">Přepnout na pokročilý editor</string>
-    <string name="simple_editor_switch_simple">Přepnout na jednoduchý editor</string>
     <string name="simple_editor_time_signature">Takt</string>
     <string name="simple_editor_vibration">Vibrace</string>
     <string name="simple_editor_view_presets">Zobrazit předvolby</string>
