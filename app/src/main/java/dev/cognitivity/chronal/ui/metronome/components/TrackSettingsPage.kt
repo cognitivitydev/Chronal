@@ -82,7 +82,8 @@ data class TrackSettingsResult(
 @Composable
 fun TrackSettingsPage(
     track: MetronomeConfigTrack,
-    onSave: (TrackSettingsResult) -> Unit,
+    onBack: () -> Unit,
+    onTrackChange: (TrackSettingsResult) -> Unit,
     canDelete: Boolean,
     onDelete: () -> Unit,
 ) {
@@ -97,6 +98,17 @@ fun TrackSettingsPage(
     var showColorDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
+    fun update() {
+        onTrackChange(
+            TrackSettingsResult(
+                name = name.trim().ifBlank { track.name },
+                enabled = enabled,
+                vibrate = vibrate,
+                color = color,
+            )
+        )
+    }
+
     val previewColor = when(color) {
         TrackColor.Primary -> MaterialTheme.colorScheme.primary
         TrackColor.Secondary -> MaterialTheme.colorScheme.tertiary
@@ -110,16 +122,7 @@ fun TrackSettingsPage(
                 title = { Text(stringResource(R.string.track_settings_title)) },
                 navigationIcon = {
                     IconButton(
-                        onClick = {
-                            onSave(
-                                TrackSettingsResult(
-                                    name = name.trim().ifBlank { track.name },
-                                    enabled = enabled,
-                                    vibrate = vibrate,
-                                    color = color,
-                                )
-                            )
-                        }
+                        onClick = onBack
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Default.ArrowBack,
@@ -141,7 +144,14 @@ fun TrackSettingsPage(
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
         ) {
-            TrackSettingsToggle(track, enabled) { enabled = !enabled }
+            TrackSettingsToggle(track, enabled) {
+                if(!canDelete && enabled) {
+                    Toast.makeText(ChronalApp.getInstance(), R.string.track_settings_disable_failed, Toast.LENGTH_SHORT).show()
+                    return@TrackSettingsToggle
+                }
+                enabled = !enabled
+                update()
+            }
 
             val vibrationInteractionSource = remember { MutableInteractionSource() }
             TrackSettingsButton(
@@ -157,7 +167,10 @@ fun TrackSettingsPage(
                 trailingContent = {
                     Switch(
                         checked = vibrate,
-                        onCheckedChange = { vibrate = it },
+                        onCheckedChange = {
+                            vibrate = it
+                            update()
+                        },
                         interactionSource = vibrationInteractionSource,
                     )
                 },
@@ -165,6 +178,7 @@ fun TrackSettingsPage(
                 bottomRounded = false,
                 onClick = {
                     vibrate = !vibrate
+                    update()
                 }
             )
 
@@ -259,6 +273,7 @@ fun TrackSettingsPage(
                     onClick = {
                         name = draftName.trim().ifBlank { name }
                         showNameDialog = false
+                        update()
                     }
                 ) {
                     Text(stringResource(R.string.generic_confirm))
@@ -279,6 +294,7 @@ fun TrackSettingsPage(
             onColorChange = {
                 color = it
                 showColorDialog = false
+                update()
             }
         )
     }

@@ -23,9 +23,11 @@ import android.os.Build
 import android.os.CombinedVibration
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
+import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.activity.vibratorManager
 import dev.cognitivity.chronal.settings.Settings
@@ -155,7 +157,10 @@ class MetronomeViewModel: ViewModel() {
 
     fun setTrackEnabled(index: Int, enabled: Boolean) {
         val track = metronome.tracks.getOrNull(index) ?: return
-        if(!enabled && metronome.tracks.count { it.enabled } <= 1) return
+        if(!enabled && metronome.tracks.count { it.enabled } <= 1) {
+            Toast.makeText(ChronalApp.getInstance(), R.string.track_settings_disable_failed, Toast.LENGTH_SHORT).show()
+            return
+        }
         track.enabled = enabled
         _tracks.value = metronome.tracks.toList()
         Settings.updateTrack(index) { it.copy(enabled = enabled) }

@@ -97,7 +97,6 @@ import dev.cognitivity.chronal.rhythm.metronome.elements.StemDirection
 import dev.cognitivity.chronal.settings.Setting
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.MetronomeConfigTrack
-import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
 import dev.cognitivity.chronal.ui.metronome.components.TrackSettingsPage
 import dev.cognitivity.chronal.ui.metronome.components.PlayPauseIcon
 import dev.cognitivity.chronal.ui.metronome.components.TrackSettingsDropdown
@@ -142,8 +141,8 @@ class RhythmEditorActivity : ComponentActivity() {
         )
     )
     private var appMetronome by mutableStateOf(ChronalApp.getInstance().metronome)
-    private var mainTrack = metronome.tracks[0]
-    private var appTrack = appMetronome.tracks[0]
+    private lateinit var mainTrack: MetronomeTrack
+    private lateinit var initialTrack: MetronomeConfigTrack
 
     var isPlaying by mutableStateOf(false)
 
@@ -170,7 +169,6 @@ class RhythmEditorActivity : ComponentActivity() {
         }
         this.rhythm = track.rhythm
 
-        appTrack = appMetronome.tracks[trackIndex]
         mainTrack = appMetronome.tracks[trackIndex]
         parsedRhythm = Rhythm.deserialize(rhythm)
 
@@ -193,9 +191,9 @@ class RhythmEditorActivity : ComponentActivity() {
 
         appMetronome = ChronalApp.getInstance().metronome
         metronome.bpm = appMetronome.bpm
-        mainTrack.beatValue = appTrack.beatValue
 
         mainTrack.setRhythm(parsedRhythm)
+        initialTrack = MetronomeConfigTrack.fromTrack(mainTrack)
         mainTrack.setUpdateListener(2) { beat ->
             val timestamp = metronome.timestamp
             lifecycleScope.launch {
@@ -250,6 +248,33 @@ class RhythmEditorActivity : ComponentActivity() {
         }
     }
 
+    fun saveAndExit() {
+        appMetronome.bpm = metronome.bpm
+        Settings.METRONOME_CONFIG.set(
+            Settings.METRONOME_CONFIG.get().copy(bpm = appMetronome.bpm)
+        )
+
+        Settings.setTrack(trackIndex) {
+            it.copy(
+                name = mainTrack.name,
+                enabled = mainTrack.enabled,
+                vibrate = mainTrack.vibrate,
+                color = mainTrack.color,
+                rhythm = parsedRhythm.serialize(),
+                beatValue = mainTrack.beatValue,
+                simpleRhythm = mainTrack.simpleRhythm
+            )
+        }
+        lifecycleScope.launch {
+            Setting.saveAll()
+            finish()
+        }
+    }
+
+    fun exitWithoutSaving() {
+        finish()
+    }
+
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
     fun MainContent() {
@@ -266,25 +291,17 @@ class RhythmEditorActivity : ComponentActivity() {
                 exitTransition = { scaleOut() + fadeOut() }
             ) {
                 TrackSettingsPage(
-                    track = Settings.getTrack(trackIndex) ?: MetronomeConfigTrack.fromTrack(appTrack),
-                    onSave = { updated ->
+                    track = MetronomeConfigTrack.fromTrack(mainTrack),
+                    onBack = {
                         navController.popBackStack()
-                        appTrack.name = updated.name
-                        appTrack.enabled = updated.enabled
-                        appTrack.vibrate = updated.vibrate
-                        appTrack.color = updated.color
-
-                        Settings.updateTrack(trackIndex) {
-                            it.copy(
-                                name = it.name,
-                                enabled = it.enabled,
-                                vibrate = it.vibrate,
-                                color = it.color,
-                            )
-                        }
-                        lifecycleScope.launch { Setting.saveAll() }
                     },
-                    canDelete = appMetronome.tracks.count { it != appTrack && it.enabled } != 0,
+                    onTrackChange = { updated ->
+                        mainTrack.name = updated.name
+                        mainTrack.enabled = updated.enabled
+                        mainTrack.vibrate = updated.vibrate
+                        mainTrack.color = updated.color
+                    },
+                    canDelete = appMetronome.tracks.count { it != mainTrack && it.enabled } != 0,
                     onDelete = {
                         finish()
                     }
@@ -708,7 +725,6 @@ class RhythmEditorActivity : ComponentActivity() {
             modifier = modifier,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val scope = rememberCoroutineScope()
             MaterialTheme(
                 colorScheme = MaterialTheme.colorScheme.copy(surfaceContainer = MaterialTheme.colorScheme.surfaceContainerHigh),
                 shapes = MaterialTheme.shapes.copy(
@@ -731,26 +747,7 @@ class RhythmEditorActivity : ComponentActivity() {
                         text = { Text(getString(R.string.generic_save_exit)) },
                         onClick = {
                             backDropdown = false
-                            appMetronome.bpm = metronome.bpm
-                            appTrack.beatValue = mainTrack.beatValue
-                            Settings.METRONOME_CONFIG.set(
-                                Settings.METRONOME_CONFIG.get().copy(bpm = appMetronome.bpm)
-                            )
-
-                            appTrack.simpleRhythm = SimpleRhythm.DISABLED
-                            Settings.setTrack(trackIndex) {
-                                it.copy(
-                                    rhythm = parsedRhythm.serialize(),
-                                    beatValue = appTrack.beatValue,
-                                    enabled = appTrack.enabled,
-                                    simpleRhythm = appTrack.simpleRhythm
-                                )
-                            }
-                            scope.launch {
-                                Setting.saveAll()
-                                appTrack.setRhythm(parsedRhythm)
-                                finish()
-                            }
+                            saveAndExit()
                         },
                         enabled = errors.isEmpty()
                     )
@@ -764,7 +761,7 @@ class RhythmEditorActivity : ComponentActivity() {
                         text = { Text(getString(R.string.generic_exit_discard)) },
                         onClick = {
                             backDropdown = false
-                            finish()
+                            exitWithoutSaving()
                         }
                     )
                     DropdownMenuItem(
@@ -785,6 +782,10 @@ class RhythmEditorActivity : ComponentActivity() {
                 modifier = Modifier.align(Alignment.CenterVertically)
                     .padding(8.dp, 0.dp),
                 onClick = {
+                    if(initialTrack == MetronomeConfigTrack.fromTrack(mainTrack)) {
+                        finish()
+                        return@IconButton
+                    }
                     backDropdown = true
                 }
             ) {
@@ -891,7 +892,7 @@ class RhythmEditorActivity : ComponentActivity() {
                 TrackSettingsDropdown(
                     track = mainTrack,
                     expanded = settingsDropdown,
-                    canDelete = appMetronome.tracks.count { it != appTrack && it.enabled } != 0,
+                    canDelete = appMetronome.tracks.count { it != mainTrack && it.enabled } != 0,
                     onDismissRequest = { settingsDropdown = false },
                     onEdit = {
                         navController.navigate("track_settings")

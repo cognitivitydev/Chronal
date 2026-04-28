@@ -63,7 +63,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,6 +75,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.graphics.shapes.CornerRounding
 import androidx.graphics.shapes.RoundedPolygon
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -86,6 +86,7 @@ import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.MusicFont
 import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.settings.Setting
 import dev.cognitivity.chronal.settings.Settings
@@ -104,7 +105,10 @@ class SimpleEditorActivity : ComponentActivity() {
     private var trackIndex by mutableIntStateOf(0)
     private var error by mutableStateOf(false)
     private var previewRhythm by mutableStateOf<Rhythm?>(null)
+    private var appMetronome by mutableStateOf(ChronalApp.getInstance().metronome)
     private lateinit var rhythm: MutableState<SimpleRhythm>
+    private lateinit var mainTrack: MetronomeTrack
+    private lateinit var initialTrack: MetronomeConfigTrack
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -114,8 +118,10 @@ class SimpleEditorActivity : ComponentActivity() {
             finish()
             return
         }
+        appMetronome = ChronalApp.getInstance().metronome
         trackIndex = intent.getIntExtra("trackIndex", 0)
-
+        mainTrack = appMetronome.tracks[trackIndex]
+        initialTrack = MetronomeConfigTrack.fromTrack(mainTrack)
 
         setContent {
             MetronomeTheme {
@@ -124,15 +130,48 @@ class SimpleEditorActivity : ComponentActivity() {
         }
     }
 
+    fun saveAndExit() {
+        if(!error) {
+            val parsedRhythm: Rhythm
+            try {
+                parsedRhythm = rhythm.value.asRhythm()
+            } catch(_: Exception) {
+                error = true
+                return
+            }
+            val metronome = ChronalApp.getInstance().metronome
+            mainTrack.simpleRhythm = rhythm.value
+            mainTrack.setRhythm(parsedRhythm)
+            Settings.setTrack(trackIndex) {
+                it.copy(
+                    name = mainTrack.name,
+                    enabled = mainTrack.enabled,
+                    vibrate = mainTrack.vibrate,
+                    color = mainTrack.color,
+                    rhythm = parsedRhythm.serialize(),
+                    simpleRhythm = mainTrack.simpleRhythm
+                )
+            }
+            metronome.tracks[trackIndex] = mainTrack
+            lifecycleScope.launch {
+                Setting.saveAll()
+                mainTrack.setRhythm(parsedRhythm)
+                finish()
+            }
+        }
+    }
+
+    fun exitWithoutSaving() {
+        finish()
+    }
+
     @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class,
         ExperimentalMaterial3WindowSizeClassApi::class
     )
     @Composable
     fun MainContent() {
         val rootNavController = rememberNavController()
-        val scope = rememberCoroutineScope()
-        val selectedTrack = ChronalApp.getInstance().metronome.tracks[trackIndex]
-        val initialValue = selectedTrack.simpleRhythm
+        val initialValue = mainTrack.simpleRhythm
         rhythm = remember { mutableStateOf(initialValue) }
         val startPage = if(initialValue.timeSignature.first != 0 && initialValue.timeSignature.second == 0) "beat" else "time_signature"
         val sizeClass = calculateWindowSizeClass(this)
@@ -163,31 +202,19 @@ class SimpleEditorActivity : ComponentActivity() {
                 exitTransition = { scaleOut() + fadeOut() }
             ) {
                 val metronome = ChronalApp.getInstance().metronome
-                val track = metronome.tracks[trackIndex]
-                val configTrack = Settings.getTrack(trackIndex)
-                    ?: MetronomeConfigTrack.fromTrack(track)
+                val configTrack = MetronomeConfigTrack.fromTrack(mainTrack)
                 TrackSettingsPage(
                     track = configTrack,
-                    canDelete = metronome.tracks.count { it != track && it.enabled } != 0,
-                    onSave = { updated ->
+                    onBack = {
                         rootNavController.popBackStack()
-                        val metronome = ChronalApp.getInstance().metronome
-                        track.name = updated.name
-                        track.enabled = updated.enabled
-                        track.vibrate = updated.vibrate
-                        track.color = updated.color
-                        metronome.tracks[trackIndex] = track
-
-                        Settings.updateTrack(trackIndex) {
-                            it.copy(
-                                name = updated.name,
-                                enabled = updated.enabled,
-                                vibrate = updated.vibrate,
-                                color = updated.color,
-                            )
-                        }
-                        scope.launch { Setting.saveAll() }
                     },
+                    onTrackChange = { updated ->
+                        mainTrack.name = updated.name
+                        mainTrack.enabled = updated.enabled
+                        mainTrack.vibrate = updated.vibrate
+                        mainTrack.color = updated.color
+                    },
+                    canDelete = metronome.tracks.count { it != mainTrack && it.enabled } != 0,
                     onDelete = {
                         finish()
                     }
@@ -308,16 +335,12 @@ class SimpleEditorActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun TopBar(onEditTrack: () -> Unit) {
-        val scope = rememberCoroutineScope()
-        val selectedTrack = ChronalApp.getInstance().metronome.tracks[trackIndex]
-        val initialValue = remember(trackIndex) { selectedTrack.simpleRhythm }
         var backDropdown by remember { mutableStateOf(false) }
         var settingsDropdown by remember { mutableStateOf(false) }
         var showSwitchDialog by remember { mutableStateOf(false) }
-        val track = ChronalApp.getInstance().metronome.tracks[trackIndex]
 
         TopAppBar(
-            title = { Text(selectedTrack.name) },
+            title = { Text(mainTrack.name) },
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
             ),
@@ -344,31 +367,7 @@ class SimpleEditorActivity : ComponentActivity() {
                             text = { Text(getString(R.string.generic_save_exit)) },
                             onClick = {
                                 backDropdown = false
-                                if(!error) {
-                                    val parsedRhythm: Rhythm
-                                    try {
-                                        parsedRhythm = rhythm.value.asRhythm()
-                                    } catch(_: Exception) {
-                                        error = true
-                                        return@DropdownMenuItem
-                                    }
-                                    val metronome = ChronalApp.getInstance().metronome
-                                    val selectedTrack = metronome.tracks[trackIndex]
-                                    selectedTrack.simpleRhythm = rhythm.value
-                                    selectedTrack.setRhythm(parsedRhythm)
-                                    Settings.setTrack(trackIndex) {
-                                        it.copy(
-                                            rhythm = parsedRhythm.serialize(),
-                                            simpleRhythm = selectedTrack.simpleRhythm
-                                        )
-                                    }
-                                    metronome.tracks[trackIndex] = selectedTrack
-                                    scope.launch {
-                                        Setting.saveAll()
-                                        selectedTrack.setRhythm(parsedRhythm)
-                                        finish()
-                                    }
-                                }
+                                saveAndExit()
                             },
                             enabled = !error
                         )
@@ -382,30 +381,7 @@ class SimpleEditorActivity : ComponentActivity() {
                             text = { Text(getString(R.string.generic_exit_discard)) },
                             onClick = {
                                 backDropdown = false
-                                rhythm.value = initialValue
-                                val updatedRhythm: Rhythm
-                                try {
-                                    updatedRhythm = rhythm.value.asRhythm()
-                                } catch(_: Exception) {
-                                    error = true
-                                    return@DropdownMenuItem
-                                }
-                                val metronome = ChronalApp.getInstance().metronome
-                                val selectedTrack = metronome.tracks[trackIndex]
-                                selectedTrack.simpleRhythm = initialValue
-                                selectedTrack.setRhythm(updatedRhythm)
-                                Settings.setTrack(trackIndex) {
-                                    it.copy(
-                                        rhythm = updatedRhythm.serialize(),
-                                        simpleRhythm = selectedTrack.simpleRhythm
-                                    )
-                                }
-                                metronome.tracks[trackIndex] = selectedTrack
-                                scope.launch {
-                                    Setting.saveAll()
-                                    selectedTrack.setRhythm(updatedRhythm)
-                                    finish()
-                                }
+                                exitWithoutSaving()
                             }
                         )
                         DropdownMenuItem(
@@ -424,11 +400,11 @@ class SimpleEditorActivity : ComponentActivity() {
                 }
                 IconButton(
                     onClick = {
-                        if(rhythm.value == initialValue) {
+                        if(initialTrack == MetronomeConfigTrack.fromTrack(mainTrack) && initialTrack.simpleRhythm == rhythm.value) {
                             finish()
-                        } else {
-                            backDropdown = true
+                            return@IconButton
                         }
+                        backDropdown = true
                     }
                 ) {
                     Icon(
@@ -446,9 +422,9 @@ class SimpleEditorActivity : ComponentActivity() {
                 }
                 val metronome = ChronalApp.getInstance().metronome
                 TrackSettingsDropdown(
-                    track = track,
+                    track = mainTrack,
                     expanded = settingsDropdown,
-                    canDelete = metronome.tracks.count { it != track && it.enabled } != 0,
+                    canDelete = metronome.tracks.count { it != mainTrack && it.enabled } != 0,
                     onDismissRequest = { settingsDropdown = false },
                     onEdit = onEditTrack,
                     onDeleteFinish = {
@@ -461,8 +437,8 @@ class SimpleEditorActivity : ComponentActivity() {
             }
         )
         if(showSwitchDialog) {
-            selectedTrack.simpleRhythm = rhythm.value
-            TrackSettingsSwitchDialog(trackIndex, selectedTrack,
+            mainTrack.simpleRhythm = rhythm.value
+            TrackSettingsSwitchDialog(trackIndex, mainTrack,
                 onDismissRequest = { showSwitchDialog = false },
                 onConfirm = {
                     finish()
@@ -538,8 +514,6 @@ class SimpleEditorActivity : ComponentActivity() {
                 )
             }
         } else {
-            val metronome = ChronalApp.getInstance().metronome
-            val selectedTrack = metronome.tracks[trackIndex]
             val trackColor = MaterialTheme.colorScheme.primaryContainer
 
             Box(
@@ -560,7 +534,7 @@ class SimpleEditorActivity : ComponentActivity() {
                         style = Stroke(width = trackSize)
                     )
                 }
-                ClockBeats(selectedTrack.calculateIntervals(previewRhythm!!).filter { it.measure == 0 },
+                ClockBeats(mainTrack.calculateIntervals(previewRhythm!!).filter { it.measure == 0 },
                     progress = remember { Animatable(-1f) },
                     trackSize = 4.dp.toPx(),
                     offColor = MaterialTheme.colorScheme.onPrimary,
