@@ -161,6 +161,15 @@ object Settings {
         return true
     }
 
+    fun addTrack(metronomeConfigTrack: MetronomeConfigTrack): Int {
+        val config = METRONOME_CONFIG.get()
+        val tracks = config.tracks.toMutableList()
+        tracks.add(metronomeConfigTrack)
+        METRONOME_CONFIG.set(config.copy(tracks = tracks))
+        ChronalApp.getInstance().metronome.tracks = tracks.map { MetronomeTrack.fromSetting(it) }.toMutableList()
+        return tracks.size - 1
+    }
+
     fun removeTrack(metronomeConfigTrack: MetronomeConfigTrack): Boolean {
         val config = METRONOME_CONFIG.get()
         val tracks = config.tracks.toMutableList()

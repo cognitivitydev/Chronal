@@ -54,8 +54,13 @@ import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.PresetActivity
 import dev.cognitivity.chronal.activity.RhythmEditorActivity
 import dev.cognitivity.chronal.activity.SimpleEditorActivity
+import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.settings.types.json.MetronomeConfigTrack
 import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
 import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -129,13 +134,16 @@ fun TrackList(viewModel: MetronomeViewModel, modifier: Modifier = Modifier) {
                             simpleRhythm = simpleRhythm,
                             beatValue = primaryTrack.beatValue
                         )
-                        val trackIndex = viewModel.addTrack(newTrack)
+                        val trackIndex = Settings.addTrack(MetronomeConfigTrack.fromTrack(newTrack))
+                        CoroutineScope(Dispatchers.Main).launch {
+                            Settings.METRONOME_CONFIG.save()
+                            ChronalApp.getInstance().startActivity(
+                                Intent(context, SimpleEditorActivity::class.java)
+                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    .putExtra("trackIndex", trackIndex)
+                            )
+                        }
 
-                        ChronalApp.getInstance().startActivity(
-                            Intent(context, SimpleEditorActivity::class.java)
-                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                .putExtra("trackIndex", trackIndex)
-                        )
                     }
                 ) {
                     Icon(

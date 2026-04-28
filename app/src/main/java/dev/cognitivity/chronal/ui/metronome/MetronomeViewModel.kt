@@ -149,12 +149,6 @@ class MetronomeViewModel: ViewModel() {
         }
     }
 
-    fun addTrack(track: MetronomeTrack): Int {
-        metronome.tracks.add(track)
-        _tracks.value = metronome.tracks.toList()
-        return metronome.tracks.lastIndex
-    }
-
     fun setTrackEnabled(index: Int, enabled: Boolean) {
         val track = metronome.tracks.getOrNull(index) ?: return
         if(!enabled && metronome.tracks.count { it.enabled } <= 1) {
