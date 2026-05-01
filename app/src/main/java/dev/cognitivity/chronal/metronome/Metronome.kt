@@ -33,9 +33,6 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.util.Log
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -69,21 +66,41 @@ class Metronome(
 ) : BroadcastReceiver() {
 
     private val sampleRate = 48000
-
     private var audioTrack = getAudioTrack()
+    private val frameSize = 256
+    private var writeHeadSample = 0L
+
+    private var handlerThread = HandlerThread("metronome")
+    private var handler: Handler
 
     var playing = false
     var active = true
     var timestamp = 0L
 
+    private val tickSoundCache = mutableMapOf<String, FloatArray>()
+
+    private class OngoingSound(var samples: FloatArray, var pos: Int)
+    private val ongoingSounds = mutableListOf<OngoingSound>()
+
+    private val schedulerLock = Any()
+
     private var _bpm = mutableFloatStateOf(bpm.coerceIn(MIN_BPM, MAX_BPM))
     var bpm: Float
-        get() = _bpm.floatValue
+        get() = synchronized(schedulerLock) { _bpm.floatValue }
         set(value) {
-            _bpm.floatValue = value.round(2).coerceIn(MIN_BPM, MAX_BPM)
+            val newValue = value.round(2).coerceIn(MIN_BPM, MAX_BPM)
+            synchronized(schedulerLock) {
+                val oldValue = _bpm.floatValue
+                if (oldValue == newValue) return
+
+                _bpm.floatValue = newValue
+                if (playing) {
+                    resyncTempo(oldValue, newValue)
+                }
+            }
         }
 
-    private var _tracks by mutableStateOf(tracks.toMutableStateList())
+    private var _tracks = tracks.toMutableStateList()
     var tracks: MutableList<MetronomeTrack>
         get() = _tracks
         set(value) {
@@ -92,19 +109,7 @@ class Metronome(
 
     var modifiers: MutableSet<MetronomeModifier> = mutableSetOf()
 
-    private var handlerThread: HandlerThread
-    private var handler: Handler
-
-    private val tickSoundCache = mutableMapOf<String, FloatArray>()
-
-    private val frameSize = 256
-    private var writeHeadSample = 0L
-
-    private class OngoingSound(var samples: FloatArray, var pos: Int)
-    private val ongoingSounds = mutableListOf<OngoingSound>()
-
     init {
-        handlerThread = HandlerThread("metronome")
         handlerThread.start()
         handler = Handler(handlerThread.looper)
 
@@ -118,17 +123,21 @@ class Metronome(
         if (playing || !active) return
 
         CoroutineScope(Dispatchers.IO).launch {
-            timestamp = System.currentTimeMillis()
-            playing = true
+            synchronized(schedulerLock) {
+                timestamp = System.currentTimeMillis()
+                playing = true
+                writeHeadSample = 0L
 
-            val currentSamplePos = 0L
-            tracks.forEach { track ->
-                track.index = -1
-                track.nextBeatSample = currentSamplePos
-                track.sampleRemainder = 0.0
+                val currentSamplePos = 0L
+                tracks.forEach { track ->
+                    track.index = -1
+                    track.nextBeatSample = currentSamplePos
+                    track.sampleRemainder = 0.0
+                }
+
+                ongoingSounds.clear()
             }
 
-            ongoingSounds.clear()
             audioTrack.play()
             handler.post(audioRunnable)
 
@@ -172,21 +181,24 @@ class Metronome(
     }
 
     private val audioRunnable: Runnable = Runnable {
-        if (!playing) return@Runnable
-
         val outputBuffer = FloatArray(frameSize)
 
-        val played = audioTrack.playbackHeadPosition.toLong()
-        if (writeHeadSample < played) writeHeadSample = played
+        synchronized(schedulerLock) {
+            if(!playing) return@Runnable
 
-        val frameStartSample = writeHeadSample
-        val frameEndSample = frameStartSample + frameSize
+            val played = audioTrack.playbackHeadPosition.toLong()
+            if (writeHeadSample < played) writeHeadSample = played
 
-        mixOngoingSounds(outputBuffer)
-        mixTracks(outputBuffer, frameStartSample, frameEndSample)
+            val frameStartSample = writeHeadSample
+            val frameEndSample = frameStartSample + frameSize
+
+            mixOngoingSounds(outputBuffer)
+            mixTracks(outputBuffer, frameStartSample, frameEndSample)
+
+            writeHeadSample += frameSize
+        }
+
         writeAudio(outputBuffer)
-
-        writeHeadSample += frameSize
         handler.post(audioRunnable)
     }
 
@@ -274,6 +286,37 @@ class Metronome(
 
         track.sampleRemainder = exactSamples - roundedSamples
         track.nextBeatSample += max(1L, roundedSamples)
+    }
+
+    private fun resyncTempo(oldBpm: Float, newBpm: Float) {
+        tracks.forEach { track ->
+            val pattern = track.getIntervals()
+            if(pattern.isEmpty()) return@forEach
+
+            val currentBeatIndex = track.index.coerceAtLeast(0).coerceAtMost(pattern.lastIndex)
+            val currentBeat = pattern[currentBeatIndex]
+
+            val oldBeatSamples = beatLengthToSamples(currentBeat, track.beatValue, oldBpm)
+            val newBeatSamples = beatLengthToSamples(currentBeat, track.beatValue, newBpm)
+
+            if(oldBeatSamples <= 0.0 || newBeatSamples <= 0.0) {
+                track.nextBeatSample = writeHeadSample + 1
+                track.sampleRemainder = 0.0
+                return@forEach
+            }
+
+            val currentBeatStart = track.nextBeatSample.toDouble() - oldBeatSamples
+            val elapsedSamples = (writeHeadSample.toDouble() - currentBeatStart).coerceIn(0.0, oldBeatSamples)
+            val remainingFraction = 1.0 - (elapsedSamples / oldBeatSamples)
+            val remainingSamples = max(1.0, newBeatSamples * remainingFraction)
+
+            track.nextBeatSample = writeHeadSample + round(remainingSamples).toLong()
+            track.sampleRemainder = 0.0
+        }
+    }
+
+    private fun beatLengthToSamples(beat: Beat, beatValue: Float, bpm: Float): Double {
+        return abs(beat.duration) * beatValue * 60.0 / bpm.toDouble() * sampleRate
     }
 
     private fun writeAudio(buffer: FloatArray) {
