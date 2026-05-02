@@ -195,7 +195,7 @@
     <string name="track_settings_delete_dialog_text">Are you sure you want to delete "%1$s"? This cannot be undone.</string>
     <string name="track_settings_delete_failed">Failed to delete track.</string>
     <string name="track_settings_switch_title">Switch editors?</string>
-    <string name="track_settings_switch_text">Switching editors wil reset all changes made in the editor. This cannot be undone.</string>
+    <string name="track_settings_switch_text">Switching editors will reset all changes made in the editor. This cannot be undone.</string>
     <string name="track_settings_switch_simple">Switch to Simple Editor</string>
     <string name="track_settings_switch_advanced">Switch to Advanced Editor</string>
 

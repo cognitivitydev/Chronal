@@ -128,6 +128,8 @@
     <string name="editor_tuplet_remove">Odebrat tuplet</string>
     <string name="editor_undo">Vrátit zpět</string>
     <string name="editor_redo">Provést znovu</string>
+    <string name="track_settings_switch_simple">Přepnout na jednoduchý editor</string>
+    <string name="track_settings_switch_advanced">Přepnout na pokročilý editor</string>
     <string name="tuner_concert_pitch">Komorní</string>
     <string name="tuner_concert_pitch_short">Kom.</string>
     <string name="tuner_microphone_disabled">Přístup k mikrofonu je zakázán</string>
