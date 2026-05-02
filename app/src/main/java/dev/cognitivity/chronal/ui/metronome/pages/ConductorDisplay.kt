@@ -40,6 +40,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -93,93 +94,100 @@ fun ConductorDisplay(viewModel: MetronomeViewModel, metronome: Metronome, tracks
 
     var lastBeatId: Pair<Int, Int>? = null // measure index and beat index
 
-    displayTrack.setEditListener(4) {
-        currentTimeSignature = displayTrack.getRhythm().measures[0].timeSig
-        val newPath = getConductorPath(currentTimeSignature.first)
-        path = newPath.first
-        segments = newPath.second
+    LaunchedEffect(displayTrack) {
+        displayTrack.editEvents.collect { _ ->
+            currentTimeSignature = displayTrack.getRhythm().measures[0].timeSig
+            val newPath = getConductorPath(currentTimeSignature.first)
+            path = newPath.first
+            segments = newPath.second
+        }
     }
 
-    displayTrack.setUpdateListener(4) { beat ->
-        val rhythm = displayTrack.getRhythm()
-        val timestamp = metronome.timestamp
+    LaunchedEffect(displayTrack) {
+        displayTrack.updateEvents.collect { beat ->
+            val rhythm = displayTrack.getRhythm()
+            val timestamp = metronome.timestamp
 
-        coroutineScope.launch {
-            delay(Settings.VISUAL_LATENCY.get().toLong())
-            if(!metronome.playing || timestamp != metronome.timestamp) return@launch
-            if(!displayTrack.vibrate) return@launch
-            if(beat.duration >= 0f) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null) {
-                    val vibration = if(beat.isHigh) VibrationEffect.createOneShot(10, 255) else VibrationEffect.createOneShot(3, 255)
-                    vibratorManager!!.vibrate(CombinedVibration.createParallel(vibration))
-                } else {
-                    val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                    vibrator.vibrate(if(beat.isHigh) 10 else 3)
+            coroutineScope.launch {
+                delay(Settings.VISUAL_LATENCY.get().toLong())
+                if(!metronome.playing || timestamp != metronome.timestamp) return@launch
+                if(!displayTrack.vibrate) return@launch
+                if(beat.duration >= 0f) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null) {
+                        val vibration = if(beat.isHigh) VibrationEffect.createOneShot(10, 255) else VibrationEffect.createOneShot(3, 255)
+                        vibratorManager!!.vibrate(CombinedVibration.createParallel(vibration))
+                    } else {
+                        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                        vibrator.vibrate(if(beat.isHigh) 10 else 3)
+                    }
                 }
             }
-        }
 
-        coroutineScope.launch {
-            delay(Settings.VISUAL_LATENCY.get().toLong())
-            if (!metronome.playing || timestamp != metronome.timestamp) return@launch
+            coroutineScope.launch {
+                delay(Settings.VISUAL_LATENCY.get().toLong())
+                if (!metronome.playing || timestamp != metronome.timestamp) return@launch
 
-            if (beat.measure == 0 && beat.index == 0) loopIndex++
+                if (beat.measure == 0 && beat.index == 0) loopIndex++
 
-            val measure = rhythm.measures[beat.measure]
-            currentTimeSignature = measure.timeSig
+                val measure = rhythm.measures[beat.measure]
+                currentTimeSignature = measure.timeSig
 
-            val beatDuration = 1f / currentTimeSignature.second.toFloat()
-            val beatId = Pair(beat.measure, beat.index)
+                val beatDuration = 1f / currentTimeSignature.second.toFloat()
+                val beatId = Pair(beat.measure, beat.index)
 
-            if (lastBeatId != beatId) {
-                lastBeatId = beatId
+                if (lastBeatId != beatId) {
+                    lastBeatId = beatId
 
-                var globalIndex = 0
-                var currentDuration = 0.0
-                for(element in measure.elements) {
-                    if(globalIndex >= beat.index) break
-                    when(element) {
-                        is RhythmAtom -> {
-                            globalIndex++
-                            currentDuration += abs(element.getDuration())
-                        }
-                        is RhythmTuplet -> {
-                            for(tuple in element.notes) {
-                                if(globalIndex >= beat.index) break
+                    var globalIndex = 0
+                    var currentDuration = 0.0
+                    for(element in measure.elements) {
+                        if(globalIndex >= beat.index) break
+                        when(element) {
+                            is RhythmAtom -> {
                                 globalIndex++
-                                currentDuration += abs(tuple.getDuration())
+                                currentDuration += abs(element.getDuration())
+                            }
+                            is RhythmTuplet -> {
+                                for(tuple in element.notes) {
+                                    if(globalIndex >= beat.index) break
+                                    globalIndex++
+                                    currentDuration += abs(tuple.getDuration())
+                                }
                             }
                         }
                     }
-                }
-                if(currentDuration.round(6).mod(beatDuration) != 0.0) {
-                    return@launch
-                }
+                    if(currentDuration.round(6).mod(beatDuration) != 0.0) {
+                        return@launch
+                    }
 
-                val startAnimation = beatId
-                var currentAnimation = currentDuration
-                while(startAnimation == lastBeatId) {
-                    val startValue = currentAnimation
-                    val endValue = currentAnimation + beatDuration
+                    val startAnimation = beatId
+                    var currentAnimation = currentDuration
+                    while(startAnimation == lastBeatId) {
+                        val startValue = currentAnimation
+                        val endValue = currentAnimation + beatDuration
 
-                    currentBeat.snapTo(startValue.toFloat())
-                    currentBeat.animateTo(
-                        targetValue = endValue.toFloat(),
-                        animationSpec = tween(
-                            durationMillis = (beatDuration * 60000 / metronome.bpm * displayTrack.beatValue).toInt(),
-                            easing = CubicBezierEasing(0f, 0f, 0.5f, 0.75f)
+                        currentBeat.snapTo(startValue.toFloat())
+                        currentBeat.animateTo(
+                            targetValue = endValue.toFloat(),
+                            animationSpec = tween(
+                                durationMillis = (beatDuration * 60000 / metronome.bpm * displayTrack.beatValue).toInt(),
+                                easing = CubicBezierEasing(0f, 0f, 0.5f, 0.75f)
+                            )
                         )
-                    )
-                    currentAnimation += beatDuration
+                        currentAnimation += beatDuration
+                    }
                 }
             }
         }
     }
-    displayTrack.setPauseListener(4) { playing ->
-        if(!playing) return@setPauseListener
-        coroutineScope.launch {
-            currentBeat.snapTo(0f)
-            loopIndex = 0
+
+    LaunchedEffect(displayTrack) {
+        displayTrack.pauseEvents.collect { playing ->
+            if(!playing) return@collect
+            coroutineScope.launch {
+                currentBeat.snapTo(0f)
+                loopIndex = 0
+            }
         }
     }
 

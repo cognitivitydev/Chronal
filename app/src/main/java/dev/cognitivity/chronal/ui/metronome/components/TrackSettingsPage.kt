@@ -142,7 +142,7 @@ fun TrackSettingsPage(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+                .padding(vertical = 16.dp),
         ) {
             TrackSettingsToggle(track, enabled) {
                 if(!canDelete && enabled) {

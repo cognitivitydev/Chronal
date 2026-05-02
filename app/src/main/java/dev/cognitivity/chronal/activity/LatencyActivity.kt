@@ -75,6 +75,7 @@ class LatencyActivity : ComponentActivity() {
             )
         )
     )
+    val track = metronome.tracks[0]
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -108,30 +109,32 @@ class LatencyActivity : ComponentActivity() {
 
         val scope = rememberCoroutineScope()
 
-        metronome.tracks[0].setUpdateListener(0) {
-            lastTick = System.currentTimeMillis()
+        LaunchedEffect(track) {
+            track.updateEvents.collect {
+                lastTick = System.currentTimeMillis()
 
-            scope.launch {
-                delay(average.toLong())
-                metronomeColor.snapTo(tertiary)
-                metronomeColor.animateTo(
-                    targetValue = tertiaryTransparent,
-                    animationSpec = tween(
-                        durationMillis = 500,
-                        easing = EaseOutCubic
+                scope.launch {
+                    delay(average.toLong())
+                    metronomeColor.snapTo(tertiary)
+                    metronomeColor.animateTo(
+                        targetValue = tertiaryTransparent,
+                        animationSpec = tween(
+                            durationMillis = 500,
+                            easing = EaseOutCubic
+                        )
                     )
-                )
-            }
-            scope.launch {
-                delay(average.toLong())
-                metronomeSize.snapTo(100f)
-                metronomeSize.animateTo(
-                    targetValue = 0f,
-                    animationSpec = tween(
-                        durationMillis = 500,
-                        easing = EaseOutCubic
+                }
+                scope.launch {
+                    delay(average.toLong())
+                    metronomeSize.snapTo(100f)
+                    metronomeSize.animateTo(
+                        targetValue = 0f,
+                        animationSpec = tween(
+                            durationMillis = 500,
+                            easing = EaseOutCubic
+                        )
                     )
-                )
+                }
             }
         }
         metronome.start()

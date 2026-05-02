@@ -193,38 +193,44 @@ class RhythmEditorActivity : ComponentActivity() {
         metronome.bpm = appMetronome.bpm
 
         mainTrack.setRhythm(parsedRhythm)
+        metronome.tracks[0] = mainTrack
         initialTrack = MetronomeConfigTrack.fromTrack(mainTrack)
-        mainTrack.setUpdateListener(2) { beat ->
-            val timestamp = metronome.timestamp
-            lifecycleScope.launch {
-                delay(Settings.VISUAL_LATENCY.get().toLong())
-                if(metronome.playing && timestamp == metronome.timestamp) {
-                    if(beat.measure == 0) {
-                        musicSelected = beat.index
-                    } else {
-                        //calc the index of the note in the measure
-                        var index = 0
-                        for (i in 0 until beat.measure) {
-                            for(element in parsedRhythm.measures[i].elements) {
-                                index += when (element) {
-                                    is RhythmAtom -> 1
-                                    is RhythmTuplet -> element.notes.size
+
+        lifecycleScope.launch {
+            mainTrack.updateEvents.collect { beat ->
+                val timestamp = metronome.timestamp
+                launch {
+                    delay(Settings.VISUAL_LATENCY.get().toLong())
+                    if(metronome.playing && timestamp == metronome.timestamp) {
+                        if(beat.measure == 0) {
+                            musicSelected = beat.index
+                        } else {
+                            //calc the index of the note in the measure
+                            var index = 0
+                            for (i in 0 until beat.measure) {
+                                for(element in parsedRhythm.measures[i].elements) {
+                                    index += when (element) {
+                                        is RhythmAtom -> 1
+                                        is RhythmTuplet -> element.notes.size
+                                    }
                                 }
                             }
+                            index += beat.index
+                            musicSelected = index
                         }
-                        index += beat.index
-                        musicSelected = index
                     }
                 }
             }
         }
-        mainTrack.setPauseListener(2) { isPaused ->
-            val timestamp = metronome.timestamp
-            isPlaying = !isPaused
-            if(isPaused) musicSelected = -1
-            lifecycleScope.launch {
-                delay(Settings.VISUAL_LATENCY.get().toLong())
-                if(timestamp == metronome.timestamp) musicSelected = if(isPaused) -1 else 0
+        lifecycleScope.launch {
+            mainTrack.pauseEvents.collect { isPaused ->
+                val timestamp = metronome.timestamp
+                isPlaying = !isPaused
+                if(isPaused) musicSelected = -1
+                launch {
+                    delay(Settings.VISUAL_LATENCY.get().toLong())
+                    if(timestamp == metronome.timestamp) musicSelected = if (isPaused) -1 else 0
+                }
             }
         }
     }

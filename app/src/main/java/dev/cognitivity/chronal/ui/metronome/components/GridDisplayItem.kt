@@ -30,6 +30,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -70,33 +71,35 @@ fun GridDisplayItem(index: Int, track: MetronomeTrack, modifier: Modifier = Modi
     val animationSpec = MaterialTheme.motionScheme.slowSpatialSpec<Float>()
     val colorSpec = MaterialTheme.motionScheme.slowSpatialSpec<Color>()
 
-    track.setUpdateListener(2) { beat ->
-        if(beat.duration < 0) return@setUpdateListener
+    LaunchedEffect(track) {
+        track.updateEvents.collect { beat ->
+            if(beat.duration < 0) return@collect
 
-        coroutineScope.launch {
-            delay(Settings.VISUAL_LATENCY.get().toLong())
-            if(!track.vibrate) return@launch
-            if(beat.duration >= 0f) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null) {
-                    val vibration = if(beat.isHigh) VibrationEffect.createOneShot(10, 255) else VibrationEffect.createOneShot(3, 255)
-                    vibratorManager!!.vibrate(CombinedVibration.createParallel(vibration))
-                } else {
-                    val vibrator = ChronalApp.context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                    vibrator.vibrate(if(beat.isHigh) 10 else 3)
+            coroutineScope.launch {
+                delay(Settings.VISUAL_LATENCY.get().toLong())
+                if(!track.vibrate) return@launch
+                if(beat.duration >= 0f) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null) {
+                        val vibration = if(beat.isHigh) VibrationEffect.createOneShot(10, 255) else VibrationEffect.createOneShot(3, 255)
+                        vibratorManager!!.vibrate(CombinedVibration.createParallel(vibration))
+                    } else {
+                        val vibrator = ChronalApp.context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                        vibrator.vibrate(if(beat.isHigh) 10 else 3)
+                    }
                 }
+
+                baseScale.snapTo(0.9f)
+                baseMorph.snapTo(1f)
+                baseColor.snapTo(activeColor)
+                highlightScale.snapTo(1.25f)
+                highlightAlpha.snapTo(0.5f)
+
+                launch { baseScale.animateTo(0.67f, animationSpec) }
+                launch { baseMorph.animateTo(0f, animationSpec) }
+                launch { baseColor.animateTo(color, colorSpec) }
+                launch { highlightScale.animateTo(0.5f, animationSpec) }
+                launch { highlightAlpha.animateTo(0f, animationSpec) }
             }
-
-            baseScale.snapTo(0.9f)
-            baseMorph.snapTo(1f)
-            baseColor.snapTo(activeColor)
-            highlightScale.snapTo(1.25f)
-            highlightAlpha.snapTo(0.5f)
-
-            launch { baseScale.animateTo(0.67f, animationSpec) }
-            launch { baseMorph.animateTo(0f, animationSpec) }
-            launch { baseColor.animateTo(color, colorSpec) }
-            launch { highlightScale.animateTo(0.5f, animationSpec) }
-            launch { highlightAlpha.animateTo(0f, animationSpec) }
         }
     }
 

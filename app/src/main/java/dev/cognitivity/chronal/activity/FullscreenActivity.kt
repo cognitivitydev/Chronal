@@ -127,44 +127,48 @@ class FullscreenActivity : ComponentActivity() {
         val color = MaterialTheme.colorScheme.surface
         val invertColor = if(highContrast) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.surfaceVariant
 
-        mainTrack.setUpdateListener(3) { beat ->
-            val timestamp = metronome.timestamp
-            val measure = mainTrack.getRhythm().measures[beat.measure]
-            if (beat.index == 0) {
-                repeat(measure.timeSig.first) { index ->
-                    coroutineScope.launch {
-                        val beatDelay = ((1f / measure.timeSig.second) * 60000 / metronome.bpm * mainTrack.beatValue).toInt() * index
-                        delay(Settings.VISUAL_LATENCY.get().toLong() + beatDelay)
-                        if(!metronome.playing || timestamp != metronome.timestamp) return@launch
+        LaunchedEffect(mainTrack) {
+            mainTrack.updateEvents.collect { beat ->
+                val timestamp = metronome.timestamp
+                val measure = mainTrack.getRhythm().measures[beat.measure]
+                if (beat.index == 0) {
+                    repeat(measure.timeSig.first) { index ->
+                        coroutineScope.launch {
+                            val beatDelay = ((1f / measure.timeSig.second) * 60000 / metronome.bpm * mainTrack.beatValue).toInt() * index
+                            delay(Settings.VISUAL_LATENCY.get().toLong() + beatDelay)
+                            if(!metronome.playing || timestamp != metronome.timestamp) return@launch
 
-                        i = index + 1
-                        if(progress.value != 0f || noAnimations) invert = !invert
-                        progress.snapTo(0f)
-                        if(!noAnimations) {
-                            progress.animateTo(
-                                targetValue = 1f,
-                                animationSpec = tween(
-                                    durationMillis = ((1f / measure.timeSig.second) * 60000 / metronome.bpm * mainTrack.beatValue).toInt(),
-                                    easing = LinearEasing
+                            i = index + 1
+                            if(progress.value != 0f || noAnimations) invert = !invert
+                            progress.snapTo(0f)
+                            if(!noAnimations) {
+                                progress.animateTo(
+                                    targetValue = 1f,
+                                    animationSpec = tween(
+                                        durationMillis = ((1f / measure.timeSig.second) * 60000 / metronome.bpm * mainTrack.beatValue).toInt(),
+                                        easing = LinearEasing
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
                 }
             }
         }
-        mainTrack.setPauseListener(5) { paused ->
-            if(paused) {
-                i = mainTrack.getRhythm().measures[0].timeSig.first
-                coroutineScope.launch {
-                    progress.animateTo(
-                        targetValue = if(invert) 1f else 0f,
-                        animationSpec = MotionScheme.expressive().slowEffectsSpec(),
-                    )
-                    progress.snapTo(0f)
-                    invert = false
-                }
-            } else invert = false
+        LaunchedEffect(mainTrack) {
+            mainTrack.pauseEvents.collect { paused ->
+                if(paused) {
+                    i = mainTrack.getRhythm().measures[0].timeSig.first
+                    coroutineScope.launch {
+                        progress.animateTo(
+                            targetValue = if(invert) 1f else 0f,
+                            animationSpec = MotionScheme.expressive().slowEffectsSpec(),
+                        )
+                        progress.snapTo(0f)
+                        invert = false
+                    }
+                } else invert = false
+            }
         }
 
         Scaffold(

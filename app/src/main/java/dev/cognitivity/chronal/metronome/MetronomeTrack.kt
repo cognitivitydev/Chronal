@@ -29,6 +29,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import dev.cognitivity.chronal.metronome.sound.SoundPack
 import dev.cognitivity.chronal.settings.types.json.TrackColor
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class MetronomeTrack(
     var name: String = "New track",
@@ -102,15 +107,22 @@ class MetronomeTrack(
         return list
     }
 
-    private val listenerUpdate = mutableMapOf<Int, (Beat) -> Unit>()
-    private val listenerPause = mutableMapOf<Int, (Boolean) -> Unit>()
-    private val listenerEdit = mutableMapOf<Int, (Rhythm) -> Unit>()
+    private val _updateEvents = MutableSharedFlow<Beat>(replay = 1)
+    val updateEvents: SharedFlow<Beat> = _updateEvents.asSharedFlow()
 
-    fun setUpdateListener(id: Int, listener: (Beat) -> Unit) { listenerUpdate[id] = listener }
-    fun setPauseListener(id: Int, listener: (Boolean) -> Unit) { listenerPause[id] = listener }
-    fun setEditListener(id: Int, listener: (Rhythm) -> Unit) { listenerEdit[id] = listener }
+    private val _pauseEvents = MutableStateFlow(false)
+    val pauseEvents: SharedFlow<Boolean> = _pauseEvents.asStateFlow()
 
-    fun onUpdate(beat: Beat) { for (l in listenerUpdate.values) l(beat) }
-    fun onPause(paused: Boolean) { for (l in listenerPause.values) l(paused) }
-    fun onEdit(rhythm: Rhythm) { for (l in listenerEdit.values) l(rhythm) }
+    private val _editEvents = MutableSharedFlow<Rhythm>(replay = 1)
+    val editEvents: SharedFlow<Rhythm> = _editEvents.asSharedFlow()
+
+    fun onUpdate(beat: Beat) {
+        _updateEvents.tryEmit(beat)
+    }
+    fun onPause(paused: Boolean) {
+        _pauseEvents.tryEmit(paused)
+    }
+    fun onEdit(rhythm: Rhythm) {
+        _editEvents.tryEmit(rhythm)
+    }
 }

@@ -36,6 +36,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MotionScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -53,7 +54,6 @@ import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.activity.vibratorManager
-import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.TrackColorPalette
 import kotlinx.coroutines.delay
@@ -69,9 +69,11 @@ fun BoxScope.CircularClock(track: MetronomeTrack, trackSize: Float, trackPalette
 
     var rhythm by remember(track) { mutableStateOf(track.getRhythm()) }
     var intervals by remember(track) { mutableStateOf(track.getIntervals()) }
-    track.setEditListener(1) {
-        rhythm = it
-        intervals = track.getIntervals()
+    LaunchedEffect(track) {
+        track.editEvents.collect {
+            rhythm = it
+            intervals = track.getIntervals()
+        }
     }
 
     val progress = remember { Animatable(0f) }
@@ -84,98 +86,99 @@ fun BoxScope.CircularClock(track: MetronomeTrack, trackSize: Float, trackPalette
     var loopIndex by remember { mutableIntStateOf(0) }
     var currentMeasure by remember { mutableIntStateOf(0) }
 
-    val updateListener = { beat: Beat ->
-        val timestamp = metronome.timestamp
+    LaunchedEffect(track) {
+        track.updateEvents.collect { beat ->
+            val timestamp = metronome.timestamp
 
-        coroutineScope.launch {
-            delay(Settings.VISUAL_LATENCY.get().toLong())
-            if(!metronome.playing || timestamp != metronome.timestamp) return@launch
-            if(!track.vibrate) return@launch
-            if(beat.duration >= 0f) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null) {
-                    val vibration = if(beat.isHigh) VibrationEffect.createOneShot(10, 255) else VibrationEffect.createOneShot(3, 255)
-                    vibratorManager!!.vibrate(CombinedVibration.createParallel(vibration))
-                } else {
-                    val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                    vibrator.vibrate(if(beat.isHigh) 10 else 3)
+            coroutineScope.launch {
+                delay(Settings.VISUAL_LATENCY.get().toLong())
+                if(!metronome.playing || timestamp != metronome.timestamp) return@launch
+                if(!track.vibrate) return@launch
+                if(beat.duration >= 0f) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null) {
+                        val vibration = if(beat.isHigh) VibrationEffect.createOneShot(10, 255) else VibrationEffect.createOneShot(3, 255)
+                        vibratorManager!!.vibrate(CombinedVibration.createParallel(vibration))
+                    } else {
+                        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                        vibrator.vibrate(if(beat.isHigh) 10 else 3)
+                    }
                 }
             }
-        }
-        coroutineScope.launch {
-            delay(Settings.VISUAL_LATENCY.get().toLong())
-            if(!metronome.playing || timestamp != metronome.timestamp) return@launch
+            coroutineScope.launch {
+                delay(Settings.VISUAL_LATENCY.get().toLong())
+                if(!metronome.playing || timestamp != metronome.timestamp) return@launch
 
-            if(beat.measure == 0 && beat.index == 0) loopIndex++
-            currentMeasure = beat.measure
-            if(beat.index == 0) currentMeasureDuration = 0f
-            val measure = rhythm.measures[beat.measure]
-            val measureDuration = measure.timeSig.first / measure.timeSig.second.toFloat()
-            val next = currentMeasureDuration + abs(beat.duration).toFloat()
+                if(beat.measure == 0 && beat.index == 0) loopIndex++
+                currentMeasure = beat.measure
+                if(beat.index == 0) currentMeasureDuration = 0f
+                val measure = rhythm.measures[beat.measure]
+                val measureDuration = measure.timeSig.first / measure.timeSig.second.toFloat()
+                val next = currentMeasureDuration + abs(beat.duration).toFloat()
 
-            progress.snapTo(currentMeasureDuration / measureDuration)
+                progress.snapTo(currentMeasureDuration / measureDuration)
 
-            if(rhythm.measures.size == 1) {
-                if(loopIndex % 2 == 1) {
-                    trackColorType = 0
-                    progressColorType = 1
-                } else {
-                    trackColorType = 1
-                    progressColorType = 0
-                }
-            } else {
-                if(beat.measure == 0) {
-                    trackColorType = 0
-                    progressColorType = 1
-                } else if(beat.measure == rhythm.measures.size - 1) {
-                    if(beat.measure % 2 != 0) {
+                if(rhythm.measures.size == 1) {
+                    if(loopIndex % 2 == 1) {
+                        trackColorType = 0
+                        progressColorType = 1
+                    } else {
                         trackColorType = 1
                         progressColorType = 0
+                    }
+                } else {
+                    if(beat.measure == 0) {
+                        trackColorType = 0
+                        progressColorType = 1
+                    } else if(beat.measure == rhythm.measures.size - 1) {
+                        if(beat.measure % 2 != 0) {
+                            trackColorType = 1
+                            progressColorType = 0
+                        } else {
+                            trackColorType = 2
+                            progressColorType = 0
+                        }
+                    } else if(beat.measure % 2 != 0) {
+                        trackColorType = 1
+                        progressColorType = 2
                     } else {
                         trackColorType = 2
-                        progressColorType = 0
+                        progressColorType = 1
                     }
-                } else if(beat.measure % 2 != 0) {
-                    trackColorType = 1
-                    progressColorType = 2
-                } else {
-                    trackColorType = 2
+                }
+
+                currentMeasureDuration += abs(beat.duration).toFloat()
+
+                progress.animateTo(
+                    targetValue = next / measureDuration,
+                    animationSpec = tween(
+                        durationMillis = (abs(beat.duration) * 60000 / metronome.bpm * track.beatValue).toInt(),
+                        easing = LinearEasing
+                    )
+                )
+            }
+        }
+    }
+    LaunchedEffect(track) {
+        track.pauseEvents.collect { paused ->
+            loopIndex = 0
+            currentMeasure = 0
+            if(paused) {
+                currentMeasureDuration = 0f
+
+                if(trackColorType != 0 && progressColorType != 0) trackColorType = 0
+                val animateForward = trackColorType != 0
+                coroutineScope.launch {
+                    progress.animateTo(
+                        targetValue = if(animateForward) 1f else 0f,
+                        animationSpec = MotionScheme.expressive().slowEffectsSpec(),
+                    )
+                    progress.snapTo(0f)
+                    trackColorType = 0
                     progressColorType = 1
                 }
             }
-
-            currentMeasureDuration += abs(beat.duration).toFloat()
-
-            progress.animateTo(
-                targetValue = next / measureDuration,
-                animationSpec = tween(
-                    durationMillis = (abs(beat.duration) * 60000 / metronome.bpm * track.beatValue).toInt(),
-                    easing = LinearEasing
-                )
-            )
         }
     }
-    track.setUpdateListener(0) { updateListener(it) }
-
-    val pauseListener = { paused: Boolean ->
-        loopIndex = 0
-        currentMeasure = 0
-        if(paused) {
-            currentMeasureDuration = 0f
-
-            if(trackColorType != 0 && progressColorType != 0) trackColorType = 0
-            val animateForward = trackColorType != 0
-            coroutineScope.launch {
-                progress.animateTo(
-                    targetValue = if(animateForward) 1f else 0f,
-                    animationSpec = MotionScheme.expressive().slowEffectsSpec(),
-                )
-                progress.snapTo(0f)
-                trackColorType = 0
-                progressColorType = 1
-            }
-        }
-    }
-    track.setPauseListener(0) { pauseListener(it) }
 
     Box(
         modifier = Modifier.aspectRatio(1f)
