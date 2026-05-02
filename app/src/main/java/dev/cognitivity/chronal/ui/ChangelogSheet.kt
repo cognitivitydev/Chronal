@@ -18,13 +18,11 @@
 
 package dev.cognitivity.chronal.ui
 
-import android.R.attr.onClick
 import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -97,9 +95,27 @@ fun ChangelogSheet(onDismissRequest: () -> Unit,
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(vertical = 16.dp),
-            overscrollEffect = null,
-            reverseLayout = true
+            overscrollEffect = null
         ) {
+            val reversed = entries.reversed()
+            items(reversed.size) { index ->
+                val changelog = reversed[index]
+                val version = changelog.lines()[0].removePrefix("# ").trim()
+                val content = changelog.replace("# $version\n\n", "")
+
+                Column {
+                    Text(
+                        text = version,
+                        style = MaterialTheme.typography.titleLargeEmphasized,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = content,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
             item {
                 FlowRow(
                     modifier = Modifier.fillMaxWidth(),
@@ -135,24 +151,6 @@ fun ChangelogSheet(onDismissRequest: () -> Unit,
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(context.getString(R.string.page_settings_feedback))
                     }
-                }
-            }
-            items(entries.size) { index ->
-                val changelog = entries[index]
-                val version = changelog.lines()[0].removePrefix("# ").trim()
-                val content = changelog.replace("# $version\n\n", "")
-
-                Column {
-                    Text(
-                        text = version,
-                        style = MaterialTheme.typography.titleLargeEmphasized,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = content,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
                 }
             }
         }
