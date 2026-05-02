@@ -256,7 +256,7 @@ abstract class Setting<T>(
 
                 // update presets
                 val presetsString = prefs[stringPreferencesKey(Settings.METRONOME_PRESETS.key)]
-                val presetsJson = Gson().fromJson(presetsString, JsonArray::class.java)
+                val presetsJson = Gson().fromJson(presetsString, JsonArray::class.java) ?: JsonArray()
                 val newPresets = JsonArray()
 
                 for(preset in presetsJson.map { it.asJsonObject} ) {
