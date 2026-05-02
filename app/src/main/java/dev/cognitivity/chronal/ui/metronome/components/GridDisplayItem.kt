@@ -18,11 +18,6 @@
 
 package dev.cognitivity.chronal.ui.metronome.components
 
-import android.content.Context
-import android.os.Build
-import android.os.CombinedVibration
-import android.os.VibrationEffect
-import android.os.Vibrator
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.Canvas
@@ -43,8 +38,6 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.graphics.shapes.Morph
 import androidx.graphics.shapes.RoundedPolygon
 import androidx.graphics.shapes.toPath
-import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.activity.vibratorManager
 import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.settings.Settings
 import kotlinx.coroutines.delay
@@ -77,16 +70,7 @@ fun GridDisplayItem(index: Int, track: MetronomeTrack, modifier: Modifier = Modi
 
             coroutineScope.launch {
                 delay(Settings.VISUAL_LATENCY.get().toLong())
-                if(!track.vibrate) return@launch
-                if(beat.duration >= 0f) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null) {
-                        val vibration = if(beat.isHigh) VibrationEffect.createOneShot(10, 255) else VibrationEffect.createOneShot(3, 255)
-                        vibratorManager!!.vibrate(CombinedVibration.createParallel(vibration))
-                    } else {
-                        val vibrator = ChronalApp.context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                        vibrator.vibrate(if(beat.isHigh) 10 else 3)
-                    }
-                }
+                track.vibrate(beat)
 
                 baseScale.snapTo(0.9f)
                 baseMorph.snapTo(1f)

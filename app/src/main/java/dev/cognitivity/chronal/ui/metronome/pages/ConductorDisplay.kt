@@ -18,12 +18,7 @@
 
 package dev.cognitivity.chronal.ui.metronome.pages
 
-import android.content.Context
 import android.graphics.Matrix
-import android.os.Build
-import android.os.CombinedVibration
-import android.os.VibrationEffect
-import android.os.Vibrator
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
@@ -65,7 +60,6 @@ import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.metronome.Metronome
 import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.activity.vibratorManager
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmAtom
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.round
@@ -110,22 +104,8 @@ fun ConductorDisplay(viewModel: MetronomeViewModel, metronome: Metronome, tracks
 
             coroutineScope.launch {
                 delay(Settings.VISUAL_LATENCY.get().toLong())
-                if(!metronome.playing || timestamp != metronome.timestamp) return@launch
-                if(!displayTrack.vibrate) return@launch
-                if(beat.duration >= 0f) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null) {
-                        val vibration = if(beat.isHigh) VibrationEffect.createOneShot(10, 255) else VibrationEffect.createOneShot(3, 255)
-                        vibratorManager!!.vibrate(CombinedVibration.createParallel(vibration))
-                    } else {
-                        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                        vibrator.vibrate(if(beat.isHigh) 10 else 3)
-                    }
-                }
-            }
-
-            coroutineScope.launch {
-                delay(Settings.VISUAL_LATENCY.get().toLong())
                 if (!metronome.playing || timestamp != metronome.timestamp) return@launch
+                displayTrack.vibrate(beat)
 
                 if (beat.measure == 0 && beat.index == 0) loopIndex++
 

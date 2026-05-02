@@ -18,11 +18,6 @@
 
 package dev.cognitivity.chronal.ui.metronome.components
 
-import android.content.Context
-import android.os.Build
-import android.os.CombinedVibration
-import android.os.VibrationEffect
-import android.os.Vibrator
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
@@ -51,9 +46,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.metronome.MetronomeTrack
-import dev.cognitivity.chronal.activity.vibratorManager
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.TrackColorPalette
 import kotlinx.coroutines.delay
@@ -93,20 +86,7 @@ fun BoxScope.CircularClock(track: MetronomeTrack, trackSize: Float, trackPalette
             coroutineScope.launch {
                 delay(Settings.VISUAL_LATENCY.get().toLong())
                 if(!metronome.playing || timestamp != metronome.timestamp) return@launch
-                if(!track.vibrate) return@launch
-                if(beat.duration >= 0f) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null) {
-                        val vibration = if(beat.isHigh) VibrationEffect.createOneShot(10, 255) else VibrationEffect.createOneShot(3, 255)
-                        vibratorManager!!.vibrate(CombinedVibration.createParallel(vibration))
-                    } else {
-                        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                        vibrator.vibrate(if(beat.isHigh) 10 else 3)
-                    }
-                }
-            }
-            coroutineScope.launch {
-                delay(Settings.VISUAL_LATENCY.get().toLong())
-                if(!metronome.playing || timestamp != metronome.timestamp) return@launch
+                track.vibrate(beat)
 
                 if(beat.measure == 0 && beat.index == 0) loopIndex++
                 currentMeasure = beat.measure

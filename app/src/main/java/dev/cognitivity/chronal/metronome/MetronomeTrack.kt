@@ -18,6 +18,12 @@
 
 package dev.cognitivity.chronal.metronome
 
+import android.content.Context
+import android.os.Build
+import android.os.CombinedVibration
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmAtom
@@ -27,6 +33,7 @@ import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.metronome.sound.SoundPack
 import dev.cognitivity.chronal.settings.types.json.TrackColor
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -124,5 +131,29 @@ class MetronomeTrack(
     }
     fun onEdit(rhythm: Rhythm) {
         _editEvents.tryEmit(rhythm)
+    }
+
+    fun vibrate(beat: Beat) {
+        if(!this.vibrate || beat.duration < 0f) return
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibration = if(beat.isHigh) {
+                VibrationEffect.createOneShot(10, 255)
+            } else {
+                VibrationEffect.createOneShot(3, 255)
+            }
+
+            val vibratorManager = ChronalApp.getInstance().getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vibratorManager.vibrate(CombinedVibration.createParallel(vibration))
+        } else {
+            val milliseconds = if(beat.isHigh) {
+                10L
+            } else {
+                3L
+            }
+
+            val vibrator = ChronalApp.getInstance().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+            vibrator.vibrate(milliseconds)
+        }
     }
 }
