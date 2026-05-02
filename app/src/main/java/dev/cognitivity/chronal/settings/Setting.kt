@@ -108,14 +108,15 @@ abstract class Setting<T>(
 
             if(dataStore.data.first().asMap().isEmpty()) { // first launch
                 load()
+                saveAll()
                 return
             }
 
             // check for updates
             dataStore.edit { prefs ->
                 val prevVersion = prefs[intPreferencesKey("version_code")] ?: -1
-                if (prevVersion <= versionCode) {
-                    Log.i("Setting", "App has been updated ($prevVersion > $versionCode), attempting migration")
+                if (prevVersion < versionCode) {
+                    Log.i("Setting", "App has been updated ($prevVersion -> $versionCode), attempting migration")
                     migrate(prefs, prevVersion)
                     prefs[intPreferencesKey("version_code")] = versionCode
                 }
@@ -306,6 +307,7 @@ abstract class Setting<T>(
 
                     newPresets.add(newPreset)
                 }
+                prefs[stringPreferencesKey(Settings.METRONOME_PRESETS.key)] = newPresets.toString()
                 Log.d("Setting", "(v13) Migrated presets to MetronomeConfig format")
             }
         }
