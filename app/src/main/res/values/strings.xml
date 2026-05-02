@@ -188,6 +188,7 @@
     <string name="track_settings_name_dialog_title">Edit track name</string>
     <string name="track_settings_color_dialog_title">Edit color</string>
     <string name="track_settings_enabled">Enable %1$s</string>
+    <string name="track_settings_disable_failed">At least one track must be enabled.</string>
     <string name="track_settings_vibrations">Vibrations</string>
     <string name="track_settings_delete">Delete track</string>
     <string name="track_settings_delete_dialog_title">Delete track?</string>
