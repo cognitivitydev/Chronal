@@ -1,0 +1,13 @@
+# v1.1.0
+
+ • Added Metronome Tracks as a replacement for primary and secondary rhythms.
+   ◦ Supports custom names, custom colors, infinite tracks, and more!
+ • Added new display mode to metronome: Grid
+ • Added fullscreen option for metronome displays
+ • Redesigned layout for metronome UI
+ • Updated tempo changer design
+ • Added BPM input field to tempo changer
+ • Redesigned Tap Tempo button
+ • Added Tap Tempo widget
+ • Temporarily removed non-functional Audio Player
+ • Various bug fixes
