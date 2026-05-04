@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ Chronal: Metronome app for Android
   ~ Copyright (C) 2026  cognitivity
@@ -16,8 +15,10 @@
   ~ You should have received a copy of the GNU General Public License
   ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
   -->
+
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="app_name">Chronal</string>
+
     <string name="generic_add">Add</string>
     <string name="generic_back">Back</string>
     <string name="generic_cancel">Cancel</string>
@@ -71,6 +72,7 @@
     <string name="generic_unknown">Unknown</string>
     <string name="generic_warning">Warning</string>
     <string name="generic_website">Website</string>
+
     <string name="page_metronome">Metronome</string>
     <string name="page_settings">Settings</string>
     <string name="page_settings_gestures">Gestures</string>
@@ -84,8 +86,10 @@
     <string name="page_settings_notifications">Notifications</string>
     <string name="page_settings_practice_reminder">Practice reminder</string>
     <string name="page_tuner">Tuner</string>
+
     <string name="changelog_title">Changelog</string>
     <string name="changelog_updated">Updated: %1$s → %2$s</string>
+
     <string name="metronome_bpm">bpm</string>
     <string name="metronome_track_list">Tracks (%1$d)</string>
     <string name="metronome_track_add">Add track</string>
@@ -100,10 +104,12 @@
     <string name="metronome_input_tap_precision_0">0</string>
     <string name="metronome_input_tap_precision_1">1</string>
     <string name="metronome_input_tap_precision_2">2</string>
+
     <string name="metronome_display_clock">Clock</string>
     <string name="metronome_display_conductor">Conductor</string>
     <string name="metronome_display_grid">Grid</string>
     <string name="metronome_switch_display_mode">Switch display modes</string>
+
     <string name="metronome_conductor_not_supported">Current time signature is not yet supported.</string>
     <string name="metronome_conductor_flip">Flip horizontally</string>
     <string name="metronome_increase_tempo">Increase tempo</string>
@@ -118,6 +124,7 @@
     <string name="metronome_option_fullscreen_mode">Fullscreen mode</string>
     <string name="metronome_option_play_audio">Play audio</string>
     <string name="metronome_option_tap_tempo">Tap tempo</string>
+
     <string name="simple_editor_beat">Beat</string>
     <string name="simple_editor_beat_count">Beat count</string>
     <string name="simple_editor_beat_auto">Auto</string>
@@ -139,6 +146,7 @@
     <string name="simple_editor_emphasis_alternate">Alternate</string>
     <string name="simple_editor_emphasis_first">First only</string>
     <string name="simple_editor_emphasis_none">None</string>
+
     <string name="editor_bpm_decrease">Decrease BPM</string>
     <string name="editor_bpm_increase">Increase BPM</string>
     <string name="editor_bpm_set">Set BPM</string>
@@ -190,6 +198,7 @@
     <string name="track_settings_switch_text">Switching editors will reset all changes made in the editor. This cannot be undone.</string>
     <string name="track_settings_switch_simple">Switch to Simple Editor</string>
     <string name="track_settings_switch_advanced">Switch to Advanced Editor</string>
+
     <string name="tuner_concert_pitch">Concert</string>
     <string name="tuner_concert_pitch_short">Con.</string>
     <string name="tuner_microphone_disabled">Microphone access is disabled</string>
@@ -200,6 +209,7 @@
     <string name="tuner_hz">%d Hz</string>
     <string name="tuner_hz_decimal">%.2f Hz</string>
     <string name="tuner_tuning_at">Tuning at %s</string>
+
     <string name="instrument_title">Choose an instrument</string>
     <string name="instrument_add">Add instrument</string>
     <string name="instrument_create_name">Name</string>
@@ -220,6 +230,7 @@
     <string name="instrument_tune_key_octave">Tuned in %s, %s. C4 = Concert %s%d</string>
     <string name="instrument_tune_octave">Tuned %s. C4 = Concert C%d</string>
     <string name="instrument_tune_unknown">C4 = ???</string>
+
     <string name="audio_player_title">Audio Player</string>
     <string name="audio_player_back_5">Back 5 seconds</string>
     <string name="audio_player_forward_5">Forward 5 seconds</string>
@@ -247,12 +258,14 @@
     <string name="audio_player_element_error_tempo">Invalid tempo</string>
     <string name="audio_player_element_error_duration">Invalid duration</string>
     <string name="audio_player_element_error_beats">Invalid beats</string>
+
     <string name="beat_detector_title">Beat Detector</string>
     <string name="beat_detector_disabled">Disabled</string>
     <string name="beat_detector_listening">Listening…</string>
     <string name="beat_detector_permission_title">Missing permission</string>
     <string name="beat_detector_permission_text">Microphone access is required to use this feature.</string>
     <string name="beat_detector_reset_notification">Reset!</string>
+
     <string name="settings_feedback_send">Send feedback</string>
     <string name="settings_feedback_email_title">Send an email</string>
     <string name="settings_feedback_email_text">For any other inquiries</string>
@@ -270,18 +283,22 @@
     <string name="settings_notifications_no_permission">Notification permission required</string>
     <string name="settings_notifications_no_permission_description">To use notifications, the permission needs to be granted. Tap to grant it.</string>
     <string name="settings_notifications_no_permission_grant">Grant permission</string>
+
     <string name="settings_menu_help">Help</string>
     <string name="settings_menu_open_source_credits">Open source credits</string>
     <string name="settings_menu_send_feedback">Send feedback</string>
     <string name="settings_menu_view_source">View source code</string>
     <string name="settings_menu_reveal_developer">Show developer options</string>
+
     <string name="setting_category_general">General</string>
     <string name="setting_category_internal">Internal</string>
     <string name="setting_category_metronome">Metronome</string>
     <string name="setting_category_tuner">Tuner</string>
+
     <string name="settings_header_beat_display">Beat display</string>
     <string name="settings_header_note_display">Note display</string>
     <string name="settings_header_practice_snooze">Snooze timer</string>
+
     <string name="setting_name_color_scheme">Color scheme</string>
     <string name="setting_name_primary_instrument">Primary instrument</string>
     <string name="setting_name_visual_latency">Visual latency</string>
@@ -329,6 +346,7 @@
     <string name="notification_practice_reminder_snooze_60">Snooze 1h</string>
     <string name="setting_name_practice_reminder_snooze_90">1 hour 30 minutes</string>
     <string name="notification_practice_reminder_snooze_90">Snooze 1h30</string>
+
     <string name="setting_description_feedback">Bug reports, feature requests, reviews</string>
     <string name="setting_description_color_scheme">Color, dark mode, contrast</string>
     <string name="setting_description_primary_instrument">Changes the primary instrument for transpositions and other features.</string>
@@ -362,7 +380,9 @@
     <string name="setting_description_version">Last installed version.</string>
     <string name="setting_description_raw">Shows all settings in its raw format.</string>
     <string name="setting_description_practice_reminder_notification">Sends a reminder at the specified time if you have not opened the app in the past day.</string>
+
     <string name="setting_info_recommended_value">Recommended value:\ </string>
+
     <string name="setting_color_scheme_title">Color</string>
     <string name="setting_color_theme_title">Theme</string>
     <string name="setting_color_theme_system">System</string>
@@ -375,11 +395,13 @@
     <string name="setting_color_contrast_high">High</string>
     <string name="setting_color_contrast_unavailable">Custom contrast is unavailable with a dynamic color scheme.</string>
     <string name="setting_color_save_reload">Save and reload</string>
+
     <string name="setting_accidental_flats">Flats</string>
     <string name="setting_accidental_sharps">Sharps</string>
     <string name="setting_accidentals_sharps_flats">Sharps and flats</string>
     <string name="setting_action_navigate_menu">Navigate to setting</string>
     <string name="setting_action_test_latency">Test latency</string>
+
     <string name="setting_note_name_english">English</string>
     <string name="setting_note_name_german">German</string>
     <string name="setting_note_name_nashville">Nashville Numbers</string>
@@ -392,6 +414,7 @@
     <string name="setting_note_example_solfege_chromatic" translatable="false">Do, Di/Ra, Re, …, Ti</string>
     <string name="setting_note_example_solfege_english" translatable="false">Do, Do♯/Re♭, Re, …, Ti</string>
     <string name="setting_note_example_solfege_latin" translatable="false">Do, Do♯/Re♭, Re, …, Si</string>
+
     <string name="help_title">Help</string>
     <string name="help_metronome_delay_title">Why is the metronome delayed?</string>
     <string name="help_metronome_delay">The metronome audio may be delayed due to hardware or bluetooth latencies. You can adjust the visual latency in the settings to correct for this. There is also a latency tester available in the settings to help you find the optimal value.</string>
@@ -405,6 +428,7 @@
     <string name="help_tuner_detection">The tuner uses the device\'s microphone to detect notes. Make sure that you have granted microphone access to the app. Additionally, the tuner tries to remove background noise by filtering out quieter sounds. You can change the audio threshold in the settings to make it more or less sensitive. When the tuner hears a note, it will display the minimum threshold. You can use this value to adjust the audio threshold in the settings.</string>
     <string name="help_tuner_transpose_title">How can I transpose to my instrument?</string>
     <string name="help_tuner_transpose">By default, the tuner shows the concert pitch of the note being played. In settings, you can enable transposition and change your primary instrument. If you cannot find your instrument in the list, you can create a new instrument with the + button at the top. There, you can change the key of the instrument and the octave difference from Concert C4.</string>
+
     <string name="credits_title">Credits</string>
     <string name="credits_contributors">Contributors</string>
     <string name="credits_ludwig" translatable="false">Ludwig Peter Müller</string>
@@ -413,6 +437,7 @@
     <string name="credits_joren" translatable="false">Joren Six</string>
     <string name="credits_tarsos_contributors_other">\ and 19 other contributors</string>
     <string name="credits_tarsos_description">Audio processing library for Java, used for the tuner.</string>
+
     <string name="fullscreen_setting_description_animation">May be hard to watch at higher tempos, but better at a distance.</string>
     <string name="fullscreen_setting_description_contrast">Increases contrast of background for better visibility.</string>
     <string name="fullscreen_setting_name_animation">Disable animations</string>
@@ -420,9 +445,11 @@
     <string name="fullscreen_warning_title">Photosensitivity warning</string>
     <string name="fullscreen_warning_text">The display may be difficult to look at with higher tempos, especially with higher contrast settings or disabled animations.</string>
     <string name="fullscreen_warning_hide">Do not show again</string>
+
     <string name="latency_title">Test Latency</string>
     <string name="latency_average">Average: %d ms</string>
     <string name="latency_info">Continuously click anywhere in time with the beat.</string>
+
     <string name="edit_sounds_title">Change sounds</string>
     <string name="edit_sounds_attribution">Attribution</string>
     <string name="edit_sounds_attribution_title">Sounds</string>
@@ -437,6 +464,7 @@
     <string name="edit_sounds_play_high">Play %s (high)</string>
     <string name="edit_sounds_play_low">Play %s (low)</string>
     <string name="edit_sounds_set_as">Set as…</string>
+
     <string name="presets_title">Presets</string>
     <string name="presets_new_name">New preset</string>
     <string name="presets_bpm">%d BPM</string>
@@ -458,9 +486,11 @@
     <string name="presets_rename_hint">New name</string>
     <string name="presets_rhythm_primary">Primary rhythm</string>
     <string name="presets_rhythm_secondary">Secondary rhythm</string>
+
     <string name="import_preset_title">Import preset</string>
     <string name="import_preset_button">Import</string>
     <string name="import_preset_malformed">The preset you are trying to import is malformed.</string>
+
     <string name="tempo_markings_title">Set tempo markers</string>
     <string name="tempo_marking_range">"%d–%d BPM"</string>
     <string name="tempo_markings_add_title">Add tempo marking</string>
@@ -475,6 +505,8 @@
     <string name="tempo_markings_add_error_high">Value must be at most %d BPM.</string>
     <string name="tempo_markings_reset_title">Reset to default</string>
     <string name="tempo_markings_reset_text">Are you sure you want to reset all tempo markings to their default values? This cannot be undone.</string>
+
+
     <string name="sound_click">Click</string>
     <string name="sound_sine">Sine</string>
     <string name="sound_square">Square</string>
@@ -482,15 +514,18 @@
     <string name="sound_bell">Bell</string>
     <string name="sound_tambourine">Tambourine</string>
     <string name="sound_block">Block</string>
+
     <string name="widget_list_title">Presets</string>
     <string name="widget_list_description">Quickly access all of your metronome presets</string>
     <string name="widget_list_reload">Reload list</string>
     <string name="widget_list_none">No presets available</string>
+
     <string name="widget_tuner_title">Tuner</string>
     <string name="widget_tuner_start">Tap to start/stop</string>
     <string name="widget_tuner_graph_unavailable">Graph unavailable</string>
     <string name="widget_tuner_notification_title">Tuner active</string>
     <string name="widget_tuner_notification_text">The tuner is currently running in the background.</string>
+
     <string name="widget_tap_title">Tap tempo</string>
     <string name="widget_tap_description">Shortcut to access the Tap Tempo tool</string>
 </resources>
