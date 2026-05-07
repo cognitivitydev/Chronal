@@ -51,80 +51,116 @@ import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 
 class TunerWidgetService : Service() {
+    private val timeoutMs = 300000L // 5 minutes
+    private val notificationChannelId = "tuner_widget_service"
+    private val foregroundNotificationId = 1
+    private val disabledNotificationId = 2
+
     val hzKey = floatPreferencesKey("tuner_hz")
     val bitmapKey = stringPreferencesKey("tuner_bitmap")
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if(ChronalApp.getInstance().tuner != null) {
-            ChronalApp.getInstance().tuner!!.stop()
-
-            CoroutineScope(Dispatchers.IO).launch {
-                val context = applicationContext
-                val glanceManager = GlanceAppWidgetManager(context)
-
-                val glanceIds = glanceManager.getGlanceIds(TunerWidget::class.java)
-                for (glanceId in glanceIds) {
-                    updateAppWidgetState(context, PreferencesGlanceStateDefinition, glanceId) { prefs ->
-                        prefs.toMutablePreferences().apply {
-                            this[hzKey] = 0f
-                            this[bitmapKey] = ""
-                        }
-                    }
-                    TunerWidget().update(context, glanceId)
-                }
-            }
-
-            stopSelf()
-
+            stop()
             return START_NOT_STICKY
         }
 
-        startForeground(1, createNotification())
+        startForeground(foregroundNotificationId, createActiveNotification())
 
         val tuner = Tuner()
-
         CoroutineScope(Dispatchers.IO).launch {
-            val context = applicationContext
-            val glanceManager = GlanceAppWidgetManager(context)
-
-            while(ChronalApp.getInstance().tuner != null) {
-                val glanceIds = glanceManager.getGlanceIds(TunerWidget::class.java)
-
-                val hz = tuner.hz
-
-                val bitmap = drawPitchGraphBitmap(tuner.history.toList().takeLast(50)) // half of history
-                val output = ByteArrayOutputStream()
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)
-                val base64 = Base64.encodeToString(output.toByteArray(), Base64.DEFAULT)
-
-                for (glanceId in glanceIds) {
-                    updateAppWidgetState(context, PreferencesGlanceStateDefinition, glanceId) { prefs ->
-                        prefs.toMutablePreferences().apply {
-                            this[hzKey] = hz
-                            this[bitmapKey] = base64
-                        }
-                    }
-                    TunerWidget().update(context, glanceId)
-                }
-
-                delay(50)
-            }
+            updateLoop(tuner)
         }
 
         return START_STICKY
     }
 
-    private fun createNotification(): Notification {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel("tuner_widget_service", "Tuner widget", NotificationManager.IMPORTANCE_LOW)
-            getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
-        }
+    private fun stop() {
+        ChronalApp.getInstance().tuner!!.stop()
+        ChronalApp.getInstance().tuner = null
 
-        return NotificationCompat.Builder(this, "tuner_widget_service")
+        CoroutineScope(Dispatchers.IO).launch {
+            val context = applicationContext
+            val glanceManager = GlanceAppWidgetManager(context)
+
+            val glanceIds = glanceManager.getGlanceIds(TunerWidget::class.java)
+            for (glanceId in glanceIds) {
+                updateAppWidgetState(context, PreferencesGlanceStateDefinition, glanceId) { prefs ->
+                    prefs.toMutablePreferences().apply {
+                        this[hzKey] = 0f
+                        this[bitmapKey] = ""
+                    }
+                }
+                TunerWidget().update(context, glanceId)
+            }
+        }
+        stopSelf()
+    }
+
+    private suspend fun updateLoop(tuner: Tuner) {
+        val start = System.currentTimeMillis()
+        val context = applicationContext
+        val glanceManager = GlanceAppWidgetManager(context)
+
+        val glanceIds = glanceManager.getGlanceIds(TunerWidget::class.java)
+        while(ChronalApp.getInstance().tuner != null) {
+            if(System.currentTimeMillis() - start > timeoutMs) { // disable tuner to prevent excessive background usage
+                stop()
+                sendDisabledNotification()
+                return
+            }
+
+            val hz = tuner.hz
+
+            val bitmap = drawPitchGraphBitmap(tuner.history.toList().takeLast(50)) // half of history
+            val output = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)
+            val base64 = Base64.encodeToString(output.toByteArray(), Base64.DEFAULT)
+
+            for (glanceId in glanceIds) {
+                updateAppWidgetState(context, PreferencesGlanceStateDefinition, glanceId) { prefs ->
+                    prefs.toMutablePreferences().apply {
+                        this[hzKey] = hz
+                        this[bitmapKey] = base64
+                    }
+                }
+                TunerWidget().update(context, glanceId)
+            }
+
+            delay(50)
+        }
+    }
+
+    private fun createActiveNotification(): Notification {
+        createNotificationChannel()
+
+        return NotificationCompat.Builder(this, notificationChannelId)
             .setContentTitle(getString(R.string.widget_tuner_notification_title))
             .setContentText(getString(R.string.widget_tuner_notification_text))
             .setSmallIcon(R.drawable.baseline_graphic_eq_24)
             .build()
+    }
+
+    private fun sendDisabledNotification() {
+        createNotificationChannel()
+
+        val notification = NotificationCompat.Builder(this, notificationChannelId)
+            .setContentTitle(getString(R.string.widget_tuner_notification_disabled_title))
+            .setContentText(getString(R.string.widget_tuner_notification_disabled_text))
+            .setSmallIcon(R.drawable.baseline_graphic_eq_24)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .build()
+
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(disabledNotificationId, notification)
+    }
+
+    private fun createNotificationChannel() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(notificationChannelId, "Tuner widget", NotificationManager.IMPORTANCE_LOW)
+            getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
+        }
     }
 
     fun drawPitchGraphBitmap(history: List<Pair<Long, Float>>, width: Int = 250, height: Int = 250): Bitmap {

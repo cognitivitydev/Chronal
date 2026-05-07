@@ -525,6 +525,8 @@
     <string name="widget_tuner_graph_unavailable">Graph unavailable</string>
     <string name="widget_tuner_notification_title">Tuner active</string>
     <string name="widget_tuner_notification_text">The tuner is currently running in the background.</string>
+    <string name="widget_tuner_notification_disabled_title">Tuner disabled</string>
+    <string name="widget_tuner_notification_disabled_text">The tuner was automatically disabled after 5 minutes</string>
 
     <string name="widget_tap_title">Tap tempo</string>
     <string name="widget_tap_description">Shortcut to access the Tap Tempo tool</string>
