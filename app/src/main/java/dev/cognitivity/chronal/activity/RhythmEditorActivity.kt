@@ -81,10 +81,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.metronome.Metronome
-import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.MusicFont
 import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.metronome.Metronome
+import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.rhythm.metronome.Measure
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.rhythm.metronome.atoms
@@ -97,9 +97,9 @@ import dev.cognitivity.chronal.rhythm.metronome.elements.StemDirection
 import dev.cognitivity.chronal.settings.Setting
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.MetronomeConfigTrack
-import dev.cognitivity.chronal.ui.metronome.components.TrackSettingsPage
 import dev.cognitivity.chronal.ui.metronome.components.PlayPauseIcon
 import dev.cognitivity.chronal.ui.metronome.components.TrackSettingsDropdown
+import dev.cognitivity.chronal.ui.metronome.components.TrackSettingsPage
 import dev.cognitivity.chronal.ui.metronome.components.TrackSettingsSwitchDialog
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.delay
@@ -536,6 +536,8 @@ class RhythmEditorActivity : ComponentActivity() {
                                     }
                                     parsedRhythm = Rhythm(measures)
                                     mainTrack.setRhythm(parsedRhythm)
+                                    val size = parsedRhythm.atoms().count()
+                                    if(selectedNote >= size) selectedNote = size - 1
                                 },
                                 enabled = parsedRhythm.measures.size > 1
                             ) {
@@ -1576,7 +1578,9 @@ class RhythmEditorActivity : ComponentActivity() {
     @Composable
     fun TupletDialog(onDismiss: () -> Unit = {}) {
         var numerator by remember { mutableIntStateOf(3) }
-        var tuplet by remember { mutableStateOf(parsedRhythm.createTupletAt(selectedNote, numerator)!!) }
+        val initialTuplet = parsedRhythm.createTupletAt(selectedNote, numerator)
+        if(initialTuplet == null) { onDismiss() }
+        var tuplet by remember { mutableStateOf(initialTuplet!!) }
 
         Dialog(
             onDismissRequest = {
