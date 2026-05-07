@@ -79,12 +79,12 @@ import androidx.graphics.shapes.star
 import androidx.graphics.shapes.toPath
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.tuner.Tuner
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.Instrument
 import dev.cognitivity.chronal.toSp
 import dev.cognitivity.chronal.tuner.Pitch
+import dev.cognitivity.chronal.tuner.Tuner
 import dev.cognitivity.chronal.ui.MorphedShape
 import dev.cognitivity.chronal.ui.tuner.AudioDialog
 import dev.cognitivity.chronal.ui.tuner.TunerGraph
@@ -408,7 +408,10 @@ fun PitchPointerHorizontal(cents: Float, tuner: Tuner?) {
             val lineOffset = this.maxWidth / 21
             val maxWidth = this.maxWidth - lineOffset
             val xOffset = maxWidth * animatedPosition.value + lineOffset / 2
-            val xOffsetPadded = xOffset.coerceIn(40.dp, maxWidth - 40.dp)
+
+            val xMin = minOf(40.dp, maxWidth - 40.dp)
+            val xMax = maxOf(40.dp, maxWidth - 40.dp)
+            val xOffsetPadded = xOffset.coerceIn(xMin, xMax)
 
             Box(
                 modifier = Modifier.offset(x = xOffsetPadded - 80.dp, y = -(80).dp)
