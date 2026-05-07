@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package dev.cognitivity.chronal
+package dev.cognitivity.chronal.tuner
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -29,6 +29,7 @@ import be.tarsos.dsp.AudioProcessor
 import be.tarsos.dsp.io.android.AudioDispatcherFactory
 import be.tarsos.dsp.pitch.PitchDetectionHandler
 import be.tarsos.dsp.pitch.PitchProcessor
+import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.settings.Settings
 
 class Tuner {
@@ -39,7 +40,7 @@ class Tuner {
     var threshold = Settings.AUDIO_THRESHOLD.get()
 
     private val dispatcher: AudioDispatcher
-    private val pitchDetectionHandler = PitchDetectionHandler { res, event ->
+    private val pitchDetectionHandler = PitchDetectionHandler { res, _ ->
         if (res.pitch <= -1) return@PitchDetectionHandler
         if(res.pitch < 25 || res.pitch > 10000) return@PitchDetectionHandler
 
@@ -92,7 +93,7 @@ class Tuner {
         }
     }
 
-    fun normalizeThreshold(threshold: Float): Float {
+    private fun normalizeThreshold(threshold: Float): Float {
         return (threshold-0.8f)/0.2f
     }
 }

@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -67,11 +67,9 @@ import com.google.gson.JsonObject
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.Instrument
+import dev.cognitivity.chronal.tuner.NoteSystem
 import dev.cognitivity.chronal.ui.WavyHorizontalLine
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
-import dev.cognitivity.chronal.ui.tuner.windows.keyToSemitones
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
@@ -203,7 +201,6 @@ class InstrumentActivity : ComponentActivity() {
                     onDismissRequest = { },
                     confirmButton = @Composable {
                         TextButton(onClick = {
-//                            editPopup = false
                             nameError = name.isEmpty()
                             shortenedError = shortened.isEmpty()
                             keyError = key.isEmpty()
@@ -212,11 +209,9 @@ class InstrumentActivity : ComponentActivity() {
                             if(!nameError && !shortenedError && !keyError && !octaveError
                                 && octave.toIntOrNull() != null && abs(octave.toInt()) <= 4
                             ) {
-                                CoroutineScope(Dispatchers.Default).launch {
-                                    setting.name = name
-                                    setting.shortened = shortened
-                                    setting.transposition = keyToSemitones(key, octave.toInt())
-                                }
+                                setting.name = name
+                                setting.shortened = shortened
+                                setting.transposition = keyToSemitones(key, octave.toInt())
                                 editPopup = false
                             }
                         }) {
@@ -502,6 +497,9 @@ class InstrumentActivity : ComponentActivity() {
 
                             InstrumentItem(instrument, setting) { newSetting ->
                                 setting = newSetting
+                                scope.launch {
+                                    Settings.PRIMARY_INSTRUMENT.save(newSetting)
+                                }
                             }
                         }
                     }
@@ -592,4 +590,8 @@ class InstrumentActivity : ComponentActivity() {
             is ContextWrapper -> baseContext.getActivityWindow()
             else -> null
         }
+
+    private fun keyToSemitones(key: String, octave: Int): Int {
+        return NoteSystem.ENGLISH.getPitch(key)?.toSemitones(octave) ?: 0
+    }
 }

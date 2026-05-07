@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.Tuner
+import dev.cognitivity.chronal.tuner.Tuner
 import dev.cognitivity.chronal.ui.tuner.removeOutliers
 import dev.cognitivity.chronal.widgets.TunerWidget
 import kotlinx.coroutines.CoroutineScope

@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,11 +68,12 @@ import androidx.graphics.shapes.star
 import androidx.graphics.shapes.toPath
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.Tuner
+import dev.cognitivity.chronal.tuner.Tuner
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.Instrument
 import dev.cognitivity.chronal.toSp
+import dev.cognitivity.chronal.tuner.Pitch
 import dev.cognitivity.chronal.ui.MorphedShape
 import dev.cognitivity.chronal.ui.tuner.AudioDialog
 import kotlinx.coroutines.launch
@@ -89,11 +90,7 @@ fun TunerPageCompact(
     var showTuningDialog by remember { mutableStateOf(false) }
     var tuningNote by remember { mutableIntStateOf(-1) }
     val hz = tuner?.hz ?: -1f
-    val tune: Pair<String, Float> = if (tuner != null && hz != 0f) {
-        frequencyToNote(tuner.hz)
-    } else {
-        context.getString(R.string.generic_not_applicable) to Float.NaN
-    }
+    val pitch = Pitch.fromFrequency(hz)
     val instrument = Settings.PRIMARY_INSTRUMENT.get()
 
     BoxWithConstraints(
@@ -121,7 +118,7 @@ fun TunerPageCompact(
                         .padding(vertical = 40.dp)
                         .fillMaxHeight()
                 ) {
-                    PitchGraph(tune.second, tuner)
+                    PitchGraph(pitch.centsOff, tuner)
                     FilledIconToggleButton(
                         checked = playing,
                         onCheckedChange = {
@@ -154,7 +151,7 @@ fun TunerPageCompact(
                             .padding(vertical = 40.dp)
                             .align(Alignment.Center)
                     ) {
-                        PitchGraph(tune.second, tuner)
+                        PitchGraph(pitch.centsOff, tuner)
                     }
                     FilledIconToggleButton(
                         checked = playing,
@@ -178,7 +175,7 @@ fun TunerPageCompact(
                 onChange = {
                     tuningNote = it
                     scope.launch {
-                        player.setFrequency(transposeFrequency(getA4().toFloat(), it - 69).toDouble())
+                        player.setFrequency(Pitch.midiToFrequency(Pitch.getA4().toFloat(), it - 69).toDouble())
                     }
                 },
                 onConfirm = {
@@ -265,7 +262,7 @@ fun TopBar(tuner: Tuner?, hz: Float, instrument: Instrument, wide: Boolean) {
                                 modifier = Modifier.weight(1f)
                             ) {
                                 DrawName(instrument.name, instrument.shortened)
-                                DrawNote(transposeFrequency(hz, -instrument.transposition))
+                                DrawNote(Pitch.midiToFrequency(hz, -instrument.transposition))
                             }
                         }
                     }
@@ -296,7 +293,7 @@ fun TopBar(tuner: Tuner?, hz: Float, instrument: Instrument, wide: Boolean) {
                                     .weight(1f)
                             ) {
                                 DrawName(instrument.name, instrument.shortened)
-                                DrawNote(transposeFrequency(hz, -instrument.transposition))
+                                DrawNote(Pitch.midiToFrequency(hz, -instrument.transposition))
                             }
                         }
                     }

@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,20 +52,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.toSp
-import dev.cognitivity.chronal.ui.tuner.windows.A4Midi
-import dev.cognitivity.chronal.ui.tuner.windows.getA4
-import dev.cognitivity.chronal.ui.tuner.windows.getEnharmonics
-import dev.cognitivity.chronal.ui.tuner.windows.getNoteNames
+import dev.cognitivity.chronal.tuner.NoteSystem
+import dev.cognitivity.chronal.tuner.Pitch
 import dev.cognitivity.chronal.ui.tuner.windows.playing
-import dev.cognitivity.chronal.ui.tuner.windows.transposeFrequency
 import kotlin.math.PI
 import kotlin.math.sin
 
 @Composable
 fun AudioDialog(expanded: Boolean, midi: Int, onChange: (Int) -> Unit, onConfirm: () -> Unit, onStop: () -> Unit, onDismiss: () -> Unit) {
-    var frequency by remember { mutableFloatStateOf(transposeFrequency(getA4().toFloat(),
-        semitones = if(midi == -1) 0 else (midi - A4Midi))) }
+    var frequency by remember { mutableFloatStateOf(Pitch.midiToFrequency(midi)) }
 
     val phase = remember { Animatable(0f) }
     LaunchedEffect(playing) {
@@ -91,11 +88,11 @@ fun AudioDialog(expanded: Boolean, midi: Int, onChange: (Int) -> Unit, onConfirm
             modifier = waveModifier.clip(CircleShape)
                 .background(MaterialTheme.colorScheme.surface)
         ) {
-
             val noteIndex = if(midi == -1) 9 else midi.mod(12)
-            val noteName = getNoteNames()[noteIndex]
-            val octave = if(midi == -1) 4 else midi / 12 - 1
-            Text("$noteName$octave",
+            val locale = Settings.NOTE_NAMES.get()
+            val noteSystem = NoteSystem.entries[locale]
+            val noteName = noteSystem.names.toList()[noteIndex].second
+            Text(noteName.name,
                 modifier = Modifier.align(Alignment.TopCenter)
                     .padding(top = 8.dp),
                 style = MaterialTheme.typography.labelMedium,
@@ -140,7 +137,7 @@ fun AudioDialog(expanded: Boolean, midi: Int, onChange: (Int) -> Unit, onConfirm
         ) {
             PianoDisplay(midi) {
                 onChange(it)
-                frequency = transposeFrequency(getA4().toFloat(), it - A4Midi)
+                frequency = Pitch.midiToFrequency(it)
             }
         }
     }
@@ -195,6 +192,7 @@ fun BoxScope.PianoDisplay(midi: Int, onChange: (Int) -> Unit) {
     var selected by remember { mutableStateOf(midi != -1) }
     var note by remember { mutableIntStateOf(if(midi == -1) 9 else midi.mod(12)) }
     var octave by remember { mutableIntStateOf(if(midi == -1) 4 else midi / 12 - 1) }
+    val locale = Settings.NOTE_NAMES.get()
 
     val whiteKey = MaterialTheme.colorScheme.surfaceVariant
     val onWhiteKey = MaterialTheme.colorScheme.onSurfaceVariant
@@ -268,11 +266,12 @@ fun BoxScope.PianoDisplay(midi: Int, onChange: (Int) -> Unit) {
         val keyHeight = maxHeight
         val keyShape = RoundedCornerShape(10, 10, 50, 50)
 
-        val allKeys = getNoteNames()
-        val blackKeys = getEnharmonics()
-        val whiteKeys = allKeys.filter { it !in blackKeys.map { enharmonic -> enharmonic.first } }
+        val noteSystem = NoteSystem.entries[locale]
+        val allKeys = noteSystem.names
+        val blackKeys = allKeys.filter { it.value.enharmonic != null }.toList()
+        val whiteKeys = allKeys.filter { it.value.enharmonic == null }.toList()
         whiteKeys.forEachIndexed { index, key ->
-            val noteIndex = allKeys.indexOf(key)
+            val noteIndex = allKeys.toList().indexOf(key)
             Column(
                 modifier = Modifier.size(keyWidth, keyHeight)
                     .padding(3.dp)
@@ -290,7 +289,7 @@ fun BoxScope.PianoDisplay(midi: Int, onChange: (Int) -> Unit) {
                 verticalArrangement = Arrangement.Bottom,
             ) {
                 Text(
-                    text = key,
+                    text = key.second.name,
                     fontSize = minOf(keyWidth, keyHeight).toSp() * 0.5f,
                     color = if(note == noteIndex && selected) onWhiteKeySelected else onWhiteKey,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -306,7 +305,7 @@ fun BoxScope.PianoDisplay(midi: Int, onChange: (Int) -> Unit) {
             }
         }
         blackKeys.forEachIndexed { index, key ->
-            val noteIndex = allKeys.indexOf(key.first)
+            val noteIndex = allKeys.toList().indexOf(key)
 
             val blackKeyWidth = keyWidth * 0.9f
             val blackKeyHeight = keyHeight * 0.67f
@@ -327,14 +326,14 @@ fun BoxScope.PianoDisplay(midi: Int, onChange: (Int) -> Unit) {
                 verticalArrangement = Arrangement.Bottom,
             ) {
                 Text(
-                    text = key.first,
+                    text = key.second.name,
                     fontSize = minOf(blackKeyWidth, blackKeyHeight).toSp() * 0.5f,
                     color = if(note == noteIndex && selected) onBlackKeySelected else onBlackKey,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                         .padding(bottom = 4.dp)
                 )
                 Text(
-                    text = key.second,
+                    text = key.second.enharmonic ?: "",
                     fontSize = minOf(blackKeyWidth, blackKeyHeight).toSp() * 0.5f,
                     color = if(note == noteIndex && selected) onBlackKeySelected else onBlackKey,
                     modifier = Modifier.align(Alignment.CenterHorizontally)

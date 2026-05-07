@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,15 +52,13 @@ import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.Tuner
+import dev.cognitivity.chronal.tuner.Tuner
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.toSp
+import dev.cognitivity.chronal.tuner.Pitch
 import dev.cognitivity.chronal.ui.tuner.SineWavePlayer
 import kotlin.math.abs
-import kotlin.math.log2
-import kotlin.math.pow
-import kotlin.math.round
 
 val flatOffset = (-3).dp
 val sharpOffset = (-4).dp
@@ -214,9 +212,8 @@ fun DrawNoteWithSize(
 
 @Composable
 fun ColumnScope.DrawNote(frequency: Float) {
-    val tune = frequencyToNote(frequency)
-    val note = if(tune.first == context.getString(R.string.generic_not_applicable)) "-" else tune.first
-    val enharmonic = getEnharmonic(note)
+    val pitch = Pitch.fromFrequency(frequency)
+    val displayName = pitch.toDisplayName()
     val accidentals = Settings.ACCIDENTALS.get()
 
     Row(
@@ -225,14 +222,14 @@ fun ColumnScope.DrawNote(frequency: Float) {
         val showSharp = accidentals == 0 || accidentals == 2
         val showFlat = accidentals == 1 || accidentals == 2
 
-        val primaryNote = if(enharmonic != note && !showSharp) enharmonic else note
-        val secondaryNote = if(enharmonic != note && showFlat && primaryNote != enharmonic) enharmonic else null
+        val primaryNote = if(displayName.enharmonic != null && !showSharp) displayName.enharmonic else displayName.name
+        val secondaryNote = if(displayName.enharmonic != null && showFlat && primaryNote != displayName.enharmonic) displayName.enharmonic else null
         Box(
             modifier = Modifier.weight(1f)
                 .align(Alignment.CenterVertically),
             contentAlignment = Alignment.Center
         ) {
-            DrawNoteWithSize(toDisplayNote(primaryNote))
+            DrawNoteWithSize(primaryNote)
         }
         if(secondaryNote != null) {
             Box(
@@ -246,7 +243,7 @@ fun ColumnScope.DrawNote(frequency: Float) {
                     .align(Alignment.CenterVertically),
                 contentAlignment = Alignment.Center
             ) {
-                DrawNoteWithSize(toDisplayNote(secondaryNote))
+                DrawNoteWithSize(secondaryNote)
             }
         }
     }
@@ -383,70 +380,4 @@ fun getColors(mono: Boolean, number: Int): Pair<Color, Color> {
         in 30..39 -> return MaterialTheme.colorScheme.secondary to MaterialTheme.colorScheme.secondaryContainer
         else -> return MaterialTheme.colorScheme.outline to MaterialTheme.colorScheme.outlineVariant
     }
-}
-
-fun getNoteNames(): List<String> {
-    val system = Settings.NOTE_NAMES.get()
-    return when(system) {
-        0 -> listOf("C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B")
-        1 -> listOf("Do", "Do♯", "Re", "Re♯", "Mi", "Fa", "Fa♯", "Sol", "Sol♯", "La", "La♯", "Ti")
-        2 -> listOf("Do", "Di", "Re", "Ri", "Mi", "Fa", "Fi", "Sol", "Si", "La", "Li", "Ti")
-        3 -> listOf("Do", "Do♯", "Re", "Re♯", "Mi", "Fa", "Fa♯", "Sol", "Sol♯", "La", "La♯", "Si")
-        4 -> listOf("C", "Cis", "D", "Dis", "E", "F", "Fis", "G", "Gis", "A", "Ais", "H")
-        5 -> listOf("1", "♯1", "2", "♯2", "3", "4", "♯4", "5", "♯5", "6", "♯6", "7")
-        else -> emptyList()
-    }
-}
-fun getEnharmonics(): List<Pair<String, String>> {
-    val system = Settings.NOTE_NAMES.get()
-    return when(system) {
-        0 -> listOf("C♯" to "D♭", "D♯" to "E♭", "F♯" to "G♭", "G♯" to "A♭", "A♯" to "B♭")
-        1 -> listOf("Do♯" to "Re♭", "Re♯" to "Mi♭", "Fa♯" to "Sol♭", "Sol♯" to "La♭", "La♯" to "Ti♭")
-        2 -> listOf("Di" to "Ra", "Ri" to "Mi", "Fi" to "Sol", "Si" to "La", "Li" to "Ti")
-        3 -> listOf("Do♯" to "Re♭", "Re♯" to "Mi♭", "Fa♯" to "Sol♭", "Sol♯" to "La♭", "La♯" to "Si♭")
-        4 -> listOf("Cis" to "Des", "Dis" to "Es", "Fis" to "Ges", "Gis" to "As", "Ais" to "B")
-        5 -> listOf("♯1" to "♭2", "♯2" to "♭3", "♯4" to "♭5", "♯5" to "♭6", "♯6" to "♭7")
-        else -> emptyList()
-    }
-}
-
-fun getA4(): Int {
-    return Settings.TUNER_FREQUENCY.get()
-}
-const val A4Midi = 69
-
-fun frequencyToNote(frequency: Float): Pair<String, Float> {
-    if(frequency <= 0) return context.getString(R.string.generic_not_applicable) to Float.NaN
-    val a4 = getA4()
-    val nearestMidi = round(69 + 12 * log2(frequency / a4)).toInt()
-    val nearestFrequency = a4 * 2.0.pow((nearestMidi - A4Midi) / 12.0)
-    val centsOff = 1200 * log2(frequency / nearestFrequency).toFloat()
-    val noteName = getNoteNames()[nearestMidi.mod(12)]
-    val octave = (nearestMidi / 12) - 1
-    val fullNoteName = "$noteName$octave"
-    return fullNoteName to centsOff
-}
-
-fun transposeFrequency(frequency: Float, semitones: Int): Float {
-    return frequency * 2.0.pow(semitones / 12.0).toFloat()
-}
-
-fun keyToSemitones(key: String, octave: Int): Int {
-    val normalizedKey = getEnharmonics().firstOrNull { it.second == key }?.first ?: key
-    val noteIndex = getNoteNames().indexOf(normalizedKey)
-    if(noteIndex == -1) return 0
-    return noteIndex + (octave * 12)
-}
-
-fun getEnharmonic(note: String): String {
-    val octave = (note.last().digitToIntOrNull() ?: "").toString()
-    val name = note.replace(Regex("\\d$"), "")
-    return (getEnharmonics().firstOrNull { it.first == name }?.second ?: name) + octave
-}
-
-fun toDisplayNote(note: String): String {
-    if(Settings.SHOW_OCTAVE.get()) {
-        return note
-    }
-    return note.replace(Regex("\\d$"), "")
 }

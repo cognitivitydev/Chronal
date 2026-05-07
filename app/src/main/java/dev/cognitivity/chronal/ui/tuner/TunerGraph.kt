@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,11 +37,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.Tuner
+import dev.cognitivity.chronal.tuner.Tuner
 import dev.cognitivity.chronal.round
-import dev.cognitivity.chronal.ui.tuner.windows.frequencyToNote
-import dev.cognitivity.chronal.ui.tuner.windows.getA4
-import dev.cognitivity.chronal.ui.tuner.windows.transposeFrequency
+import dev.cognitivity.chronal.tuner.Pitch
+import dev.cognitivity.chronal.tuner.Pitch.Companion.midiToFrequency
 import kotlin.math.abs
 
 @Composable
@@ -70,7 +69,7 @@ fun BoxScope.TunerGraph(
         val yRange = maxFreq - minFreq
 
         val noteFreqs = generateSequence(0) { it + 1 }
-            .map { transposeFrequency(getA4().toFloat(), it - 69) }
+            .map { midiToFrequency(it) }
             .takeWhile { it <= maxFreq }
             .filter { it >= minFreq }
             .toList()
@@ -99,7 +98,7 @@ fun BoxScope.TunerGraph(
             if (lastPoint != null && lastTime != null) {
                 val timeDiff = pair.first - lastTime
                 if (timeDiff <= 250) { // within roughly 5 updates
-                    val centsOff = frequencyToNote(pair.second).second
+                    val centsOff = Pitch.fromFrequency(pair.second).centsOff
                     val color = when {
                         abs(centsOff) >= 40 -> outline
                         abs(centsOff) >= 30 -> secondary
@@ -120,16 +119,16 @@ fun BoxScope.TunerGraph(
         }
     }
 
-    val max = frequencyToNote(maxFreq)
-    val min = frequencyToNote(minFreq)
-    val showCents = maxFreq - minFreq < 100f && !max.second.isNaN() && !min.second.isNaN()
+    val max = Pitch.fromFrequency(maxFreq)
+    val min = Pitch.fromFrequency(minFreq)
+    val showCents = maxFreq - minFreq < 100f && !max.centsOff.isNaN() && !min.centsOff.isNaN()
     Box(
         modifier = Modifier.align(Alignment.TopStart)
             .background(MaterialTheme.colorScheme.surfaceContainer, CircleShape)
             .padding(horizontal = 4.dp)
     ) {
-        val string = if(showCents) "${max.first}, ${if(max.second >= 0) "+" else ""}${max.second.round(1)}"
-        else max.first
+        val string = if(showCents) "${max.toDisplayName().name}, ${if(max.centsOff >= 0) "+" else ""}${max.centsOff.round(1)}"
+            else max.toDisplayName().name
         Text(
             text = string,
             style = MaterialTheme.typography.labelSmall,
@@ -141,8 +140,8 @@ fun BoxScope.TunerGraph(
             .background(MaterialTheme.colorScheme.surfaceContainer, CircleShape)
             .padding(horizontal = 4.dp)
     ) {
-        val string = if(showCents) "${min.first}, ${if(min.second >= 0) "+" else ""}${min.second.round(1)}"
-        else min.first
+        val string = if(showCents) "${min.toDisplayName().name}, ${if(min.centsOff >= 0) "+" else ""}${min.centsOff.round(1)}"
+            else min.toDisplayName().name
         Text(
             text = string,
             style = MaterialTheme.typography.labelSmall,

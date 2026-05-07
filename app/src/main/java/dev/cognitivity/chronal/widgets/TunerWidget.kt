@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,10 +57,8 @@ import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.services.TunerWidgetService
 import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.tuner.Pitch
 import dev.cognitivity.chronal.ui.theme.colors.AquaGlanceTheme
-import dev.cognitivity.chronal.ui.tuner.windows.frequencyToNote
-import dev.cognitivity.chronal.ui.tuner.windows.toDisplayNote
-import dev.cognitivity.chronal.ui.tuner.windows.transposeFrequency
 import kotlin.math.abs
 
 
@@ -277,7 +275,7 @@ class TunerWidget : GlanceAppWidget() {
 
         @Composable
         fun ColumnScope.TuningInstrument(name: String, hz: Float, color: ColorProvider, colorContainer: ColorProvider, onColorContainer: ColorProvider) {
-            val note = frequencyToNote(hz).first
+            val pitch = Pitch.fromFrequency(hz)
 
             Column(
                 modifier = GlanceModifier.fillMaxSize()
@@ -295,7 +293,7 @@ class TunerWidget : GlanceAppWidget() {
                     )
                 )
                 Text(
-                    text = toDisplayNote(note),
+                    text = pitch.toDisplayName().name,
                     style = TextStyle(
                         fontSize = 32.sp,
                         color = onColorContainer,
@@ -321,7 +319,7 @@ class TunerWidget : GlanceAppWidget() {
                     onColorContainer = GlanceTheme.colors.onSecondaryContainer
                 )
                 if(transpose) {
-                    val transposedHz = transposeFrequency(hz, instrument.transposition)
+                    val transposedHz = Pitch.midiToFrequency(hz, instrument.transposition)
                     Spacer(modifier = GlanceModifier.size(8.dp))
                     TuningInstrument(instrument.name, transposedHz,
                         color = GlanceTheme.colors.onPrimaryContainer,
@@ -335,7 +333,7 @@ class TunerWidget : GlanceAppWidget() {
 
     @Composable
     fun CentsDisplay(horizontal: Boolean, hz: Float, modifier: GlanceModifier = GlanceModifier) {
-        val cents = frequencyToNote(hz).second
+        val cents = Pitch.fromFrequency(hz).centsOff
 
         @Composable
         fun CentsText(textColor1: ColorProvider, textColor2: ColorProvider) {
