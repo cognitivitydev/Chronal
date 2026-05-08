@@ -1,0 +1,6 @@
+# v1.1.1
+
+ • Improved note handling with the tuner.
+ • Added an automatic stop when the tuner widget is inactive to prevent background drain.
+ • Fixed various crashes in the advanced editor and tuner.
+ • Added a warning dialog when the tuner fails to fetch audio.
