@@ -209,6 +209,7 @@
     <string name="tuner_hz">%d Hz</string>
     <string name="tuner_hz_decimal">%.2f Hz</string>
     <string name="tuner_tuning_at">Tuning at %s</string>
+    <string name="tuner_microphone_failed">Failed to fetch device audio; try restarting the app.</string>
 
     <string name="instrument_title">Choose an instrument</string>
     <string name="instrument_add">Add instrument</string>
