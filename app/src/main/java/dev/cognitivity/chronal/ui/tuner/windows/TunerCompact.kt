@@ -132,6 +132,12 @@ fun TunerPageCompact(
                             contentDescription = mainActivity.getString(R.string.tuner_play_frequency),
                         )
                     }
+                    if(hz.isNaN()) {
+                        MicrophoneErrorDialog(
+                            modifier = Modifier.align(Alignment.BottomCenter)
+                                .padding(16.dp)
+                        )
+                    }
                 }
             }
         } else {
@@ -164,6 +170,12 @@ fun TunerPageCompact(
                         Icon(
                             painter = painterResource(id = R.drawable.outline_volume_up_24),
                             contentDescription = mainActivity.getString(R.string.tuner_play_frequency),
+                        )
+                    }
+                    if(hz.isNaN()) {
+                        MicrophoneErrorDialog(
+                            modifier = Modifier.align(Alignment.BottomCenter)
+                                .padding(16.dp)
                         )
                     }
                 }

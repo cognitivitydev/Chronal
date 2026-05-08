@@ -20,6 +20,7 @@ package dev.cognitivity.chronal.tuner
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.setValue
@@ -30,6 +31,7 @@ import be.tarsos.dsp.io.android.AudioDispatcherFactory
 import be.tarsos.dsp.pitch.PitchDetectionHandler
 import be.tarsos.dsp.pitch.PitchProcessor
 import dev.cognitivity.chronal.ChronalApp
+import dev.cognitivity.chronal.round
 import dev.cognitivity.chronal.settings.Settings
 
 class Tuner {
@@ -40,9 +42,13 @@ class Tuner {
     var threshold = Settings.AUDIO_THRESHOLD.get()
 
     private val dispatcher: AudioDispatcher
-    private val pitchDetectionHandler = PitchDetectionHandler { res, _ ->
+    private val pitchDetectionHandler = PitchDetectionHandler { res, event ->
+        if(event.getdBSPL() == Double.NEGATIVE_INFINITY) { // mic access failure
+            hz = Float.NaN
+            Log.w("Tuner", "Failed to access microphone. elapsed=${event.timeStamp.round(2)}s pitch=${res.pitch.round(2)}Hz")
+        }
         if (res.pitch <= -1) return@PitchDetectionHandler
-        if(res.pitch < 25 || res.pitch > 10000) return@PitchDetectionHandler
+        if(res.pitch !in 25.0..10000.0) return@PitchDetectionHandler
 
         history.add(Pair(System.currentTimeMillis(), res.pitch))
         if(history.size > 100) history = history.subList(history.size - 100, history.size)

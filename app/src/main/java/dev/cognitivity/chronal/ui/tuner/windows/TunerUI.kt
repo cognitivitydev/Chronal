@@ -21,6 +21,7 @@ package dev.cognitivity.chronal.ui.tuner.windows
 import android.Manifest
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -52,11 +53,11 @@ import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.tuner.Tuner
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.toSp
 import dev.cognitivity.chronal.tuner.Pitch
+import dev.cognitivity.chronal.tuner.Tuner
 import dev.cognitivity.chronal.ui.tuner.SineWavePlayer
 import kotlin.math.abs
 
@@ -379,5 +380,30 @@ fun getColors(mono: Boolean, number: Int): Pair<Color, Color> {
         in 20..29 -> return MaterialTheme.colorScheme.tertiary to MaterialTheme.colorScheme.tertiaryContainer
         in 30..39 -> return MaterialTheme.colorScheme.secondary to MaterialTheme.colorScheme.secondaryContainer
         else -> return MaterialTheme.colorScheme.outline to MaterialTheme.colorScheme.outlineVariant
+    }
+}
+
+@Composable
+fun MicrophoneErrorDialog(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier.fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.errorContainer)
+            .border(1.dp, MaterialTheme.colorScheme.error, RoundedCornerShape(16.dp))
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.outline_mic_off_24),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onErrorContainer
+        )
+        Spacer(Modifier.width(16.dp))
+        Text(
+            context.getString(R.string.tuner_microphone_failed),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onErrorContainer
+        )
     }
 }

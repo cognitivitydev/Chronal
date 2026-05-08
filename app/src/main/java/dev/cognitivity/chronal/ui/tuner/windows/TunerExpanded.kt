@@ -190,6 +190,13 @@ fun TunerPageExpanded(
                 if(ContextCompat.checkSelfPermission(mainActivity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
                     PermissionWarning(innerPadding, mainActivity)
                 }
+
+                if(hz.isNaN()) {
+                    MicrophoneErrorDialog(
+                        modifier = Modifier.align(Alignment.BottomCenter)
+                            .padding(16.dp)
+                    )
+                }
             }
         }
     }
