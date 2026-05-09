@@ -17,6 +17,35 @@
   ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
   -->
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+    <string name="app_name">Chronal</string>
+    <string name="generic_add">Ajouter</string>
+    <string name="generic_back">Précédent</string>
+    <string name="generic_cancel">Annuler</string>
+    <string name="generic_close">Fermer</string>
+    <string name="generic_confirm">Confirmer</string>
+    <string name="generic_copy_clipboard">Copier dans le presse-papier</string>
+    <string name="generic_delete">Supprimer</string>
+    <string name="generic_discard">Abandonner</string>
+    <string name="generic_download">Télécharger</string>
+    <string name="generic_edit">Modifier</string>
+    <string name="generic_error">Erreur</string>
+    <string name="generic_exit">Quitter</string>
+    <string name="generic_exit_discard">Quitter sans sauvegarder</string>
+    <string name="generic_export">Exporter</string>
+    <string name="generic_fix">Corriger</string>
+    <string name="generic_fullscreen">Plein écran</string>
+    <string name="generic_ignore">Ignorer</string>
+    <string name="generic_import">Importer</string>
+    <string name="generic_info">Infos</string>
+    <string name="generic_menu_collapse">Réduire</string>
+    <string name="generic_menu_expand">Agrandir</string>
+    <string name="generic_menu_toggle">Afficher/Masquer le menu</string>
+    <string name="generic_microphone">Microphone</string>
+    <string name="generic_more_options">Plus d\'options</string>
+    <string name="generic_not_applicable">N/A</string>
+    <string name="generic_number_invalid">Numéro non valide</string>
+    <string name="generic_okay">Ok</string>
+    <string name="generic_pause">Pause</string>
     <string name="page_metronome">Métronome</string>
     <string name="page_settings">Paramètres</string>
     <string name="page_tuner">Accordeur</string>
