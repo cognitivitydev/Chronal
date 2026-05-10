@@ -49,8 +49,12 @@
     <string name="page_metronome">Métronome</string>
     <string name="page_settings">Paramètres</string>
     <string name="page_tuner">Accordeur</string>
+    <string name="metronome_input_tap_precision_0">0</string>
+    <string name="metronome_input_tap_precision_1">1</string>
+    <string name="metronome_input_tap_precision_2">2</string>
     <string name="metronome_increase_tempo">Augmenter le tempo</string>
     <string name="metronome_notification_title">%d BPM</string>
+    <string name="metronome_notification_playing">O lenn.</string>
     <string name="metronome_option_change_sounds">Changer de sons</string>
     <string name="metronome_option_fullscreen_mode">Mode plein écran</string>
 </resources>
