@@ -191,7 +191,10 @@
     <string name="instrument_create_name_shortened_text">Zkrácený název pro malé obrazovky</string>
     <string name="instrument_create_new">Vytvořit nový nástroj</string>
     <string name="instrument_create_octave">Oktáva</string>
+    <string name="instrument_create_octave_range">Musí být mezi -4 a 4</string>
+    <string name="instrument_create_octave_text">Rozdíl v oktávách od komorního C4</string>
     <string name="instrument_search">Hledat nástroje</string>
+    <string name="instrument_selected">Vybráno: %s</string>
     <string name="instrument_tune_concert">Laděno na komorní tón.</string>
     <string name="instrument_tune_key">Laděno v %s. C4 = komorní %s4</string>
     <string name="instrument_tune_key_octave">Laděno v %s, %s. C4 = komorní %s%d</string>
