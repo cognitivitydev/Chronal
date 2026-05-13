@@ -16,4 +16,34 @@
   ~ You should have received a copy of the GNU General Public License
   ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
   -->
-<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation"></resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+    <string name="app_name">Chronal</string>
+    <string name="generic_add">Adicionar</string>
+    <string name="generic_back">Voltar</string>
+    <string name="generic_cancel">Cancelar</string>
+    <string name="generic_close">Fechar</string>
+    <string name="generic_confirm">Confirmar</string>
+    <string name="generic_copy_clipboard">Copie para a área de transferência</string>
+    <string name="generic_delete">Deletar</string>
+    <string name="generic_discard">Descartar</string>
+    <string name="generic_download">Baixar</string>
+    <string name="generic_edit">Editar</string>
+    <string name="generic_error">Erro</string>
+    <string name="generic_exit">Sair</string>
+    <string name="generic_exit_discard">Sair sem salvar</string>
+    <string name="generic_export">Exportar</string>
+    <string name="generic_fix">Corrigir</string>
+    <string name="generic_fullscreen">Tela cheia</string>
+    <string name="generic_ignore">Ignorar</string>
+    <string name="generic_import">Importar</string>
+    <string name="generic_info">Informações</string>
+    <string name="generic_menu_collapse">Minimizar</string>
+    <string name="generic_menu_expand">Abrir</string>
+    <string name="generic_menu_toggle">Mudar menu</string>
+    <string name="generic_microphone">Microfone</string>
+    <string name="generic_more_options">Mais opções</string>
+    <string name="generic_not_applicable">Indisponível</string>
+    <string name="generic_number_invalid">Número inválido</string>
+    <string name="generic_okay">Ok</string>
+    <string name="generic_pause">Pausar</string>
+</resources>
