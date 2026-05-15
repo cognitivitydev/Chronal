@@ -18,23 +18,28 @@
 
 package dev.cognitivity.chronal.ui.settings.categories
 
+import android.content.Intent
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
+import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.CreditsActivity
 import dev.cognitivity.chronal.activity.HelpActivity
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.ui.ChangelogSheet
+import dev.cognitivity.chronal.ui.settings.data.SettingsCategory
 import dev.cognitivity.chronal.ui.settings.items.SettingItem
 import dev.cognitivity.chronal.ui.settings.items.SettingMeta
-import dev.cognitivity.chronal.ui.settings.data.SettingsCategory
 import dev.cognitivity.chronal.ui.settings.screens.appinfo.DeveloperOptionsPage
 import dev.cognitivity.chronal.ui.settings.screens.appinfo.FeedbackPage
 import dev.cognitivity.chronal.ui.settings.screens.appinfo.SchemePage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 private val PRIVACY_POLICY_URI = "https://chronal.cognitivity.dev/privacy".toUri()
 
@@ -116,6 +121,22 @@ object AppInfoCategory : SettingsCategory(
                 icon = R.drawable.outline_volunteer_activism_24
             ),
             uri = "https://ko-fi.com/cognitivity".toUri()
+        ),
+        SettingItem.TextElement(
+            meta = SettingMeta(R.string.settings_feedback_review_title, R.string.settings_feedback_review_text,
+                icon = R.drawable.baseline_star_24
+            ),
+            onClick = {
+                val uri = "https://play.google.com/store/apps/details?id=dev.cognitivity.chronal&reviewId=0".toUri()
+                ChronalApp.getInstance().startActivity(
+                    Intent(Intent.ACTION_VIEW, uri)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                )
+                CoroutineScope(Dispatchers.IO).launch {
+                    Settings.REVIEW_TIMESTAMP.save(-1)
+                    Settings.REVIEW_COUNT.save(-1)
+                }
+            }
         )
     )
 )

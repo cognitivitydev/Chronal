@@ -31,9 +31,9 @@ import dev.cognitivity.chronal.settings.types.LongSetting
 import dev.cognitivity.chronal.settings.types.StringSetting
 import dev.cognitivity.chronal.settings.types.json.ColorScheme
 import dev.cognitivity.chronal.settings.types.json.Instrument
-import dev.cognitivity.chronal.settings.types.json.MetronomePreset
-import dev.cognitivity.chronal.settings.types.json.MetronomeConfigTrack
 import dev.cognitivity.chronal.settings.types.json.MetronomeConfig
+import dev.cognitivity.chronal.settings.types.json.MetronomeConfigTrack
+import dev.cognitivity.chronal.settings.types.json.MetronomePreset
 import dev.cognitivity.chronal.settings.types.json.TempoMarking
 
 object Settings {
@@ -119,6 +119,8 @@ object Settings {
     val LAST_VERSION = StringSetting("last_version", "0.0.0")
     val LAST_VERSION_CODE = IntSetting("last_version_code", 0)
     val LAST_OPEN = LongSetting("last_open", 0L)
+    val REVIEW_TIMESTAMP = LongSetting("review_timestamp", System.currentTimeMillis() + (7 * 24 * 60 * 60 * 1000)) // 1 week
+    val REVIEW_COUNT = IntSetting("review_count", 0)
 
     fun getCurrentVersionCode(): Int {
         val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)

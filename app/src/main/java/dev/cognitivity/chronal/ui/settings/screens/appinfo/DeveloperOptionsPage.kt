@@ -56,9 +56,9 @@ import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.settings.Setting
 import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.ui.settings.data.SettingsPage
 import dev.cognitivity.chronal.ui.settings.items.SettingItem
 import dev.cognitivity.chronal.ui.settings.items.SettingMeta
-import dev.cognitivity.chronal.ui.settings.data.SettingsPage
 import dev.cognitivity.chronal.ui.settings.screens.appinfo.DeveloperOptionsPage.ImportExport
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
@@ -76,7 +76,15 @@ object DeveloperOptionsPage : SettingsPage(
         SettingItem.LongDescription(R.string.settings_developer_options_warning),
         SettingItem.Container {
             ImportExport()
-        }
+        },
+        SettingItem.Divider(),
+        SettingItem.TextElement(
+            meta = SettingMeta(R.string.setting_name_reveal_review),
+            onClick = {
+                Settings.REVIEW_COUNT.set(0)
+                Settings.REVIEW_TIMESTAMP.set(System.currentTimeMillis())
+            }
+        )
     )
 ) {
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)

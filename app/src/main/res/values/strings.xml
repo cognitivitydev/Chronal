@@ -347,6 +347,7 @@
     <string name="notification_practice_reminder_snooze_60">Snooze 1h</string>
     <string name="setting_name_practice_reminder_snooze_90">1 hour 30 minutes</string>
     <string name="notification_practice_reminder_snooze_90">Snooze 1h30</string>
+    <string name="setting_name_reveal_review">Reveal review button</string>
 
     <string name="setting_description_feedback">Bug reports, feature requests, reviews</string>
     <string name="setting_description_color_scheme">Color, dark mode, contrast</string>
