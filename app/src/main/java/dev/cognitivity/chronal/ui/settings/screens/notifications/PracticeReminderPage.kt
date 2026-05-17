@@ -1,8 +1,23 @@
+/*
+ * Chronal: Metronome app for Android
+ * Copyright (C) 2026  cognitivity
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package dev.cognitivity.chronal.ui.settings.screens.notifications
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.setValue
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.notifications.PracticeReminderScheduler
@@ -12,8 +27,6 @@ import dev.cognitivity.chronal.ui.settings.items.SettingItem
 import dev.cognitivity.chronal.ui.settings.items.SettingMeta
 import java.text.SimpleDateFormat
 import java.util.TimeZone
-
-private var time by mutableIntStateOf(Settings.PRACTICE_REMINDER_TIME.get())
 
 object PracticeReminderPage : SettingsPage(
     id = "practice_reminder",
@@ -29,10 +42,9 @@ object PracticeReminderPage : SettingsPage(
             meta = SettingMeta(R.string.setting_name_practice_reminder_time, description = {
                 val formatter = SimpleDateFormat.getTimeInstance(SimpleDateFormat.SHORT)
                 formatter.timeZone = TimeZone.getTimeZone("UTC")
-                formatter.format(time * 60 * 1000L)
+                formatter.format(Settings.PRACTICE_REMINDER_TIME.get() * 60 * 1000L)
             }),
             onTimeSelected = {
-                time = it
                 if(Settings.PRACTICE_REMINDER_NOTIFICATION.get()) {
                     PracticeReminderScheduler.scheduleDailyReminder(ChronalApp.context)
                 }

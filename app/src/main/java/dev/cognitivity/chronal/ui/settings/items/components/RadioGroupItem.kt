@@ -34,28 +34,29 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.ui.settings.items.SettingItem
+import kotlinx.coroutines.launch
 
 @Composable
 fun SettingRadioGroupRow(item: SettingItem.RadioGroupItem) {
-    var selection by remember { mutableIntStateOf(item.setting.get()) }
+    val scope = rememberCoroutineScope()
 
     for((index, option) in item.options.withIndex()) {
         RadioOptionItem(
             option = option,
-            selected = option.id == selection,
+            selected = option.id == item.setting.get(),
             onSelect = {
-                selection = option.id
                 item.setting.set(option.id)
                 item.onOptionSelected(option.id)
+                scope.launch {
+                    item.setting.save(option.id)
+                }
             },
             topRounded = index == 0,
             bottomRounded = index == item.options.size - 1

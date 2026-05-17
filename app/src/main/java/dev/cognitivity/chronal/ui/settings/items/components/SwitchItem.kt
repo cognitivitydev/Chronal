@@ -31,11 +31,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -47,14 +44,14 @@ import kotlinx.coroutines.launch
 @Composable
 fun SwitchItem(item: SettingItem.Switch, onNavigate: ((String) -> Unit)?) {
     val scope = rememberCoroutineScope()
-    var checked by remember { mutableStateOf(item.setting.get()) }
+    val checked = item.setting.get()
     val interactionSource = remember { MutableInteractionSource() }
 
     val onCheckedChange: () -> Unit = {
-        checked = !checked
-        item.onCheckedChange(checked)
+        item.setting.set(!checked)
+        item.onCheckedChange(!checked)
         scope.launch {
-            item.setting.save(checked)
+            item.setting.save(!checked)
         }
     }
 

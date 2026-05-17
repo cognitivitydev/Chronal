@@ -24,6 +24,7 @@ import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -56,9 +57,9 @@ import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.ui.settings.categories.NotificationsCategory.NotificationPermissionContent
+import dev.cognitivity.chronal.ui.settings.data.SettingsCategory
 import dev.cognitivity.chronal.ui.settings.items.SettingItem
 import dev.cognitivity.chronal.ui.settings.items.SettingMeta
-import dev.cognitivity.chronal.ui.settings.data.SettingsCategory
 import dev.cognitivity.chronal.ui.settings.screens.notifications.PracticeReminderPage
 
 private var showNotificationWarning by mutableStateOf(true)
@@ -103,7 +104,9 @@ object NotificationsCategory : SettingsCategory(
             }
         }
 
-        if (!notificationsEnabled && showNotificationWarning) {
+        AnimatedVisibility(
+            visible = !notificationsEnabled && showNotificationWarning,
+        ) {
             Column(
                 modifier = Modifier.padding(16.dp)
                     .clip(RoundedCornerShape(16.dp))

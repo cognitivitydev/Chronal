@@ -20,6 +20,9 @@ package dev.cognitivity.chronal.settings
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
@@ -44,7 +47,7 @@ abstract class Setting<T>(
     val key: String,
     val defaultValue: T
 ) {
-    protected var value: T = defaultValue
+    protected var value by mutableStateOf(defaultValue)
 
     init {
         if (SETTINGS.any { it.key == key }) {

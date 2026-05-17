@@ -31,12 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -69,32 +64,16 @@ fun SliderItem(item: SettingItem, onNavigate: ((String) -> Unit)?) {
             .width(IntrinsicSize.Max)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
+        Spacer(Modifier.height(4.dp))
+
         when (item) {
             is SettingItem.IntSlider -> {
-                var value by remember { mutableIntStateOf(item.setting.get()) }
+                val value = item.setting.get()
 
-                Spacer(Modifier.height(4.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(Modifier.weight(1f)) {
-                        Text(context.getString(item.meta.title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                        if(item.meta.description != null) {
-                            Text(item.meta.description.invoke(), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                    }
-                    Text(
-                        text = item.valueLabel.invoke(value),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+                SliderText(item)
                 Slider(
-                    modifier = Modifier.height(IntrinsicSize.Min),
                     value = value.toFloat(),
                     onValueChange = {
-                        value = it.roundToInt()
                         item.setting.set(it.roundToInt())
                         item.onValueChange(it.roundToInt())
                     },
@@ -110,29 +89,12 @@ fun SliderItem(item: SettingItem, onNavigate: ((String) -> Unit)?) {
             }
 
             is SettingItem.FloatSlider -> {
-                var value by remember { mutableFloatStateOf(item.setting.get()) }
+                val value = item.setting.get()
 
-                Spacer(Modifier.height(4.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(Modifier.weight(1f)) {
-                        Text(context.getString(item.meta.title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                        if(item.meta.description != null) {
-                            Text(item.meta.description.invoke(), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                    }
-                    Text(
-                        text = item.valueLabel.invoke(value),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+                SliderText(item)
                 Slider(
                     value = value,
                     onValueChange = {
-                        value = it
                         item.setting.set(it)
                         item.onValueChange(it)
                     },
@@ -149,5 +111,35 @@ fun SliderItem(item: SettingItem, onNavigate: ((String) -> Unit)?) {
 
             else -> throw IllegalArgumentException("Unsupported item type for slider element")
         }
+    }
+}
+
+@Composable
+private fun SliderText(item: SettingItem) {
+    val value = when(item) {
+        is SettingItem.IntSlider -> item.setting.get()
+        is SettingItem.FloatSlider -> item.setting.get()
+        else -> throw IllegalArgumentException("Unsupported item type for slider element")
+    }
+    val valueLabel = when(item) {
+        is SettingItem.IntSlider -> item.valueLabel.invoke(value as Int)
+        is SettingItem.FloatSlider -> item.valueLabel.invoke(value as Float)
+    }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(context.getString(item.meta.title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+            if(item.meta.description != null) {
+                Text(item.meta.description!!.invoke(), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        Text(
+            text = valueLabel,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }

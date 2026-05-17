@@ -23,9 +23,9 @@ import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.InstrumentActivity
 import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.ui.settings.data.SettingsCategory
 import dev.cognitivity.chronal.ui.settings.items.SettingItem
 import dev.cognitivity.chronal.ui.settings.items.SettingMeta
-import dev.cognitivity.chronal.ui.settings.data.SettingsCategory
 import dev.cognitivity.chronal.ui.settings.screens.tuner.A4FrequencyPage
 import dev.cognitivity.chronal.ui.settings.screens.tuner.AccidentalsPage
 import dev.cognitivity.chronal.ui.settings.screens.tuner.NoteLocalePage
@@ -50,25 +50,29 @@ object TunerCategory : SettingsCategory(
         ),
         SettingItem.PageLink(
             meta = SettingMeta(R.string.page_settings_note_locale,
-                description = when(Settings.NOTE_NAMES.get()) {
-                    0 -> R.string.setting_note_name_english
-                    1 -> R.string.setting_note_name_solfege_english
-                    2 -> R.string.setting_note_name_solfege_chromatic
-                    3 -> R.string.setting_note_name_solfege_latin
-                    4 -> R.string.setting_note_name_german
-                    5 -> R.string.setting_note_name_nashville
-                    else -> R.string.generic_unknown
+                description = {
+                    when(Settings.NOTE_NAMES.get()) {
+                        0 -> context.getString(R.string.setting_note_name_english)
+                        1 -> context.getString(R.string.setting_note_name_solfege_english)
+                        2 -> context.getString(R.string.setting_note_name_solfege_chromatic)
+                        3 -> context.getString(R.string.setting_note_name_solfege_latin)
+                        4 -> context.getString(R.string.setting_note_name_german)
+                        5 -> context.getString(R.string.setting_note_name_nashville)
+                        else -> context.getString(R.string.generic_unknown)
+                    }
                 }
             ),
             pageId = NoteLocalePage.id
         ),
         SettingItem.PageLink(
             meta = SettingMeta(R.string.page_settings_accidentals,
-                description = when(Settings.ACCIDENTALS.get()) {
-                    0 -> R.string.setting_accidental_sharps
-                    1 -> R.string.setting_accidental_flats
-                    2 -> R.string.setting_accidentals_sharps_flats
-                    else -> R.string.generic_unknown
+                description = {
+                    when(Settings.ACCIDENTALS.get()) {
+                        0 -> context.getString(R.string.setting_accidental_sharps)
+                        1 -> context.getString(R.string.setting_accidental_flats)
+                        2 -> context.getString(R.string.setting_accidentals_sharps_flats)
+                        else -> context.getString(R.string.generic_unknown)
+                    }
                 }
             ),
             pageId = AccidentalsPage.id
