@@ -1,323 +1,275 @@
-{
-  "keyboard": {
-    "name": "Keyboard",
+[
+  {
+    "name": "Woodwinds",
     "instruments": [
       {
-        "name": "Piano",
-        "shortened": "Piano",
-        "transposition": {
-          "key": "C",
-          "octave": "0"
-        }
+        "name": "Piccolo",
+        "shortened": "Picc.",
+        "transposition": 12
       },
       {
-        "name": "Harpsichord",
-        "shortened": "",
-        "transposition": {
-          "key": "C",
-          "octave": "0"
-        }
+        "name": "Flute",
+        "shortened": "Fl.",
+        "transposition": 0
       },
       {
-        "name": "Organ",
-        "shortened": "Organ",
-        "transposition": {
-          "key": "C",
-          "octave": "0"
-        }
+        "name": "Oboe",
+        "shortened": "Ob.",
+        "transposition": 0
+      },
+      {
+        "name": "English Horn",
+        "shortened": "E. Hn",
+        "transposition": -7
+      },
+      {
+        "name": "B♭ Clarinet",
+        "shortened": "B♭ Cl.",
+        "transposition": -2
+      },
+      {
+        "name": "E♭ Clarinet",
+        "shortened": "E♭ Cl.",
+        "transposition": 3
+      },
+      {
+        "name": "Bass Clarinet",
+        "shortened": "B. Cl.",
+        "transposition": -14
+      },
+      {
+        "name": "Soprano Saxophone",
+        "shortened": "S. Sax.",
+        "transposition": -2
+      },
+      {
+        "name": "Alto Saxophone",
+        "shortened": "A. Sax.",
+        "transposition": -9
+      },
+      {
+        "name": "Tenor Saxophone",
+        "shortened": "T. Sax.",
+        "transposition": -14
+      },
+      {
+        "name": "Baritone Saxophone",
+        "shortened": "Bar. Sax.",
+        "transposition": -21
+      },
+      {
+        "name": "Bassoon",
+        "shortened": "Bsn.",
+        "transposition": 0
+      },
+      {
+        "name": "Contrabassoon",
+        "shortened": "Cbsn.",
+        "transposition": -12
       }
     ]
   },
-  "strings": {
+  {
+    "name": "Brass",
+    "instruments": [
+      {
+        "name": "French Horn",
+        "shortened": "F. Hn.",
+        "transposition": -7
+      },
+      {
+        "name": "B♭ Trumpet",
+        "shortened": "B♭ Tpt.",
+        "transposition": -2
+      },
+      {
+        "name": "Trombone",
+        "shortened": "Tbn.",
+        "transposition": 0
+      },
+      {
+        "name": "Bass Trombone",
+        "shortened": "B. Tbn.",
+        "transposition": 0
+      },
+      {
+        "name": "Tuba",
+        "shortened": "Tba.",
+        "transposition": 0
+      }
+    ]
+  },
+  {
     "name": "Strings",
     "instruments": [
       {
         "name": "Violin",
         "shortened": "Vln.",
-        "transposition": {
-          "key": "C",
-          "octave": "0"
-        }
+        "transposition": 0,
+        "strings": [ 76, 69, 62, 55 ]
       },
       {
         "name": "Viola",
         "shortened": "Vla.",
-        "transposition": {
-          "key": "C",
-          "octave": "0"
-        }
+        "transposition": 0,
+        "strings": [ 69, 62, 55, 48 ]
       },
       {
-        "name": "Cello",
+        "name": "Violoncello",
         "shortened": "Vc.",
-        "transposition": {
-          "key": "C",
-          "octave": "0"
-        }
+        "transposition": 0,
+        "strings": [ 57, 50, 43, 36 ]
       },
       {
         "name": "Contrabass",
         "shortened": "Cb.",
-        "transposition": {
-          "key": "C",
-          "octave": "-1"
-        }
+        "transposition": -12,
+        "strings": [ 43, 38, 33, 28 ]
+      },
+      {
+        "name": "Guitar",
+        "shortened": "Guit.",
+        "transposition": 0,
+        "strings": [ 64, 59, 55, 50, 45, 40 ]
+      },
+      {
+        "name": "Bass Guitar",
+        "shortened": "B. Guit.",
+        "transposition": -12,
+        "strings": [ 55, 50, 45, 40 ]
+      },
+      {
+        "name": "Banjo",
+        "shortened": "Bj.",
+        "transposition": 0,
+        "strings": [ 62, 59, 55, 50, 67 ]
+      },
+      {
+        "name": "Ukulele",
+        "shortened": "Uk.",
+        "transposition": 0,
+        "strings": [ 69, 64, 60, 67 ]
       },
       {
         "name": "Harp",
-        "shortened": "Harp",
-        "transposition": {
-          "key": "C",
-          "octave": "0"
-        }
+        "shortened": "Hrp.",
+        "transposition": 0
       }
     ]
   },
-  "brass": {
-    "name": "Brass",
+  {
+    "name": "Percussion",
     "instruments": [
       {
-        "name": "B♭ Trumpet",
-        "shortened": "B♭ Tpt.",
-        "transposition": {
-          "key": "B♭",
-          "octave": "-1"
-        }
+        "name": "Timpani",
+        "shortened": "Timp.",
+        "transposition": 0
       },
       {
-        "name": "French Horn",
-        "shortened": "F. Horn",
-        "transposition": {
-          "key": "F",
-          "octave": "-1"
-        }
+        "name": "Glockenspiel",
+        "shortened": "Glock.",
+        "transposition": 24
       },
       {
-        "name": "Trombone",
-        "shortened": "Tbn.",
-        "transposition": {
-          "key": "C",
-          "octave": "0"
-        }
+        "name": "Xylophone",
+        "shortened": "Xyl.",
+        "transposition": 12
       },
       {
-        "name": "Tuba",
-        "shortened": "Tuba",
-        "transposition": {
-          "key": "C",
-          "octave": "0"
-        }
+        "name": "Vibraphone",
+        "shortened": "Vib.",
+        "transposition": 0
+      },
+      {
+        "name": "Marimba",
+        "shortened": "Mrm.",
+        "transposition": 0
       }
     ]
   },
-  "woodwinds": {
-    "name": "Woodwind",
+  {
+    "name": "Keyboard",
     "instruments": [
       {
-        "name": "Piccolo",
-        "shortened": "Picc.",
-        "transposition": {
-          "key": "C",
-          "octave": "1"
-        }
+        "name": "Piano",
+        "shortened": "Pno.",
+        "transposition": 0
       },
       {
-        "name": "Flute",
-        "shortened": "Flute",
-        "transposition": {
-          "key": "C",
-          "octave": "0"
-        }
+        "name": "Harpsichord",
+        "shortened": "Hch.",
+        "transposition": 0
       },
       {
-        "name": "Oboe",
-        "shortened": "Oboe",
-        "transposition": {
-          "key": "C",
-          "octave": "0"
-        }
-      },
-      {
-        "name": "B♭ Clarinet",
-        "shortened": "B♭ Cl.",
-        "transposition": {
-          "key": "B♭",
-          "octave": "-1"
-        }
-      },
-      {
-        "name": "E♭ Clarinet",
-        "shortened": "E♭ Cl.",
-        "transposition": {
-          "key": "E♭",
-          "octave": "-1"
-        }
-      },
-      {
-        "name": "Bass Clarinet",
-        "shortened": "Bass Cl.",
-        "transposition": {
-          "key": "B♭",
-          "octave": "-2"
-        }
-      },
-      {
-        "name": "Soprano Saxophone",
-        "shortened": "S. Sax.",
-        "transposition": {
-          "key": "B♭",
-          "octave": "-1"
-        }
-      },
-      {
-        "name": "Alto Saxophone",
-        "shortened": "Alto Sax.",
-        "transposition": {
-          "key": "E♭",
-          "octave": "-1"
-        }
-      },
-      {
-        "name": "Tenor Saxophone",
-        "shortened": "Tenor Sax.",
-        "transposition": {
-          "key": "B♭",
-          "octave": "-2"
-        }
-      },
-      {
-        "name": "Baritone Saxophone",
-        "shortened": "Bar. Sax.",
-        "transposition": {
-          "key": "E♭",
-          "octave": "-3"
-        }
-      },
-      {
-        "name": "English Horn",
-        "shortened": "E. Horn",
-        "transposition": {
-          "key": "F",
-          "octave": "-1"
-        }
-      },
-      {
-        "name": "Bassoon",
-        "shortened": "Bsn.",
-        "transposition": {
-          "key": "C",
-          "octave": "0"
-        }
-      },
-      {
-        "name": "Contrabassoon",
-        "shortened": "Cbsn.",
-        "transposition": {
-          "key": "C",
-          "octave": "-1"
-        }
+        "name": "Organ",
+        "shortened": "Org.",
+        "transposition": 0
       }
     ]
   },
-  "generic": {
-    "name": "Other instruments",
+  {
+    "name": "Generic",
     "instruments": [
       {
         "name": "C Instrument",
         "shortened": "C Inst.",
-        "transposition": {
-          "key": "C",
-          "octave": "0"
-        }
+        "transposition": 0
       },
       {
         "name": "F Instrument",
         "shortened": "F Inst.",
-        "transposition": {
-          "key": "F",
-          "octave": "0"
-        }
+        "transposition": -7
       },
       {
         "name": "B♭ Instrument",
         "shortened": "B♭ Inst.",
-        "transposition": {
-          "key": "B♭",
-          "octave": "0"
-        }
+        "transposition": -2
       },
       {
         "name": "E♭ Instrument",
         "shortened": "E♭ Inst.",
-        "transposition": {
-          "key": "E♭",
-          "octave": "0"
-        }
+        "transposition": -9
       },
       {
         "name": "A♭ Instrument",
         "shortened": "A♭ Inst.",
-        "transposition": {
-          "key": "A♭",
-          "octave": "0"
-        }
+        "transposition": -4
       },
       {
         "name": "D♭ Instrument",
         "shortened": "D♭ Inst.",
-        "transposition": {
-          "key": "D♭",
-          "octave": "0"
-        }
+        "transposition": 1
       },
       {
         "name": "G♭ Instrument",
         "shortened": "G♭ Inst.",
-        "transposition": {
-          "key": "G♭",
-          "octave": "0"
-        }
+        "transposition": -6
       },
       {
         "name": "B Instrument",
         "shortened": "B Inst.",
-        "transposition": {
-          "key": "B",
-          "octave": "0"
-        }
+        "transposition": -1
       },
       {
         "name": "E Instrument",
         "shortened": "E Inst.",
-        "transposition": {
-          "key": "E",
-          "octave": "0"
-        }
+        "transposition": -8
       },
       {
         "name": "A Instrument",
         "shortened": "A Inst.",
-        "transposition": {
-          "key": "A",
-          "octave": "0"
-        }
+        "transposition": -3
       },
       {
         "name": "D Instrument",
         "shortened": "D Inst.",
-        "transposition": {
-          "key": "D",
-          "octave": "0"
-        }
+        "transposition": -10
       },
       {
         "name": "G Instrument",
         "shortened": "G Inst.",
-        "transposition": {
-          "key": "G",
-          "octave": "0"
-        }
+        "transposition": -5
       }
     ]
   }
-}
+]

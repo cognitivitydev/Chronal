@@ -31,6 +31,7 @@ import dev.cognitivity.chronal.settings.types.LongSetting
 import dev.cognitivity.chronal.settings.types.StringSetting
 import dev.cognitivity.chronal.settings.types.json.ColorScheme
 import dev.cognitivity.chronal.settings.types.json.Instrument
+import dev.cognitivity.chronal.settings.types.json.Instruments
 import dev.cognitivity.chronal.settings.types.json.MetronomeConfig
 import dev.cognitivity.chronal.settings.types.json.MetronomeConfigTrack
 import dev.cognitivity.chronal.settings.types.json.MetronomePreset
@@ -80,6 +81,12 @@ object Settings {
         defaultValue = Instrument("B♭ Trumpet", "B♭ Tpt.", -1),
         serializer = { it.toJson() },
         deserializer = { Instrument.fromJson(it.asJsonObject) }
+    )
+    val INSTRUMENTS = JsonSetting(
+        key = "instruments",
+        defaultValue = Instruments.default(),
+        serializer = { it.toJson() },
+        deserializer = { Instruments.fromJson(it.asJsonArray) }
     )
     val AUDIO_THRESHOLD = FloatSetting("audio_threshold", 0.5f)
     val ACCIDENTALS = IntSetting("accidentals", 2)
