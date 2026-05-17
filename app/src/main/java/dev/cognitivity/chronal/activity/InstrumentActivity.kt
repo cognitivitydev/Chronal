@@ -37,6 +37,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -70,6 +72,7 @@ import dev.cognitivity.chronal.settings.types.json.Instrument
 import dev.cognitivity.chronal.tuner.NoteSystem
 import dev.cognitivity.chronal.ui.WavyHorizontalLine
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
@@ -368,38 +371,7 @@ class InstrumentActivity : ComponentActivity() {
                 modifier = Modifier.padding(innerPadding)
                     .fillMaxSize()
             ) {
-                for ((_, value) in parsed.entrySet()) {
-                    val type = value.asJsonObject
-                    val name = type.get("name").asString
-                    val instruments = type.get("instruments").asJsonArray
-
-                    item {
-                        Text(
-                            text = name,
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.fillMaxWidth()
-                                .padding(20.dp, 8.dp)
-                        )
-                    }
-
-                    for (element in instruments) {
-                        val instrument = element.asJsonObject
-
-                        item {
-                            InstrumentItem(
-                                instrument = instrument,
-                                selected = setting,
-                                onSelect = { newInstrument ->
-                                    setting = newInstrument
-                                    scope.launch {
-                                        Settings.PRIMARY_INSTRUMENT.save(newInstrument)
-                                    }
-                                }
-                            )
-                        }
-                    }
-                }
+                instrumentList(parsed, setting, scope) { setting = it }
             }
 
             ExpandedFullScreenSearchBar(
@@ -448,60 +420,68 @@ class InstrumentActivity : ComponentActivity() {
                         interactionSource = null,
                     )
                 },
-                state = searchBarState,
-
+                state = searchBarState
             ) {
-                LazyColumn {
-                    val found = JsonObject()
-                    for ((key, value) in parsed.entrySet()) {
-                        val type = value.asJsonObject
-                        val name = type.get("name").asString
-                        val instruments = type.get("instruments").asJsonArray
+                val found = JsonObject()
+                for ((key, value) in parsed.entrySet()) {
+                    val type = value.asJsonObject
+                    val name = type.get("name").asString
+                    val instruments = type.get("instruments").asJsonArray
 
-                        found.add(key, JsonObject())
-                        val category = found.get(key).asJsonObject
-                        category.addProperty("name", name)
-                        category.add("instruments", JsonArray())
+                    found.add(key, JsonObject())
+                    val category = found.get(key).asJsonObject
+                    category.addProperty("name", name)
+                    category.add("instruments", JsonArray())
 
-                        if (search.isEmpty() || name.contains(search, true)) {
-                            category["instruments"].asJsonArray.addAll(instruments.map { it.asJsonObject })
-                        } else {
-                            category["instruments"].asJsonArray.addAll(instruments.map { it.asJsonObject }.filter {
-                                it.get("name").asString.contains(search, true)
-                                        || it.get("shortened").asString.contains(search, true)
-                                        || it.get("shortened").asString.replace(".", "")
-                                    .contains(search, true)
-                            })
-                        }
-
-                        if (category["instruments"].asJsonArray.size() == 0) {
-                            found.remove(key)
-                        }
+                    if (search.isEmpty() || name.contains(search, true)) {
+                        category["instruments"].asJsonArray.addAll(instruments.map { it.asJsonObject })
+                    } else {
+                        category["instruments"].asJsonArray.addAll(instruments.map { it.asJsonObject }.filter {
+                            it.get("name").asString.contains(search, true)
+                                    || it.get("shortened").asString.contains(search, true)
+                                    || it.get("shortened").asString.replace(".", "")
+                                .contains(search, true)
+                        })
                     }
 
-                    items(found.entrySet().size) { index ->
-                        val type = found.entrySet().elementAt(index).value.asJsonObject
-                        val name = type.get("name").asString
-                        val instruments = type.get("instruments").asJsonArray
+                    if (category["instruments"].asJsonArray.size() == 0) {
+                        found.remove(key)
+                    }
+                }
+                LazyColumn {
+                    instrumentList(found, setting, scope) { setting = it }
+                }
+            }
+        }
+    }
 
-                        Text(
-                            text = name,
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.fillMaxWidth()
-                                .padding(20.dp, 8.dp)
-                        )
+    fun LazyListScope.instrumentList(
+        elements: JsonObject,
+        selected: Instrument,
+        scope: CoroutineScope,
+        onSelect: (Instrument) -> Unit
+    ) {
+        items(elements.entrySet().toList()) { item ->
+            val category = item.value.asJsonObject
+            val name = category.get("name").asString
+            val instruments = category.get("instruments").asJsonArray
 
-                        for (element in instruments) {
-                            val instrument = element.asJsonObject
+            Text(
+                text = name,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.fillMaxWidth()
+                    .padding(20.dp, 8.dp)
+            )
 
-                            InstrumentItem(instrument, setting) { newSetting ->
-                                setting = newSetting
-                                scope.launch {
-                                    Settings.PRIMARY_INSTRUMENT.save(newSetting)
-                                }
-                            }
-                        }
+            for (element in instruments) {
+                val instrument = element.asJsonObject
+
+                InstrumentItem(instrument, selected) { newSetting ->
+                    onSelect(newSetting)
+                    scope.launch {
+                        Settings.PRIMARY_INSTRUMENT.save(newSetting)
+                        Settings.TRANSPOSE_NOTES.save(true)
                     }
                 }
             }
