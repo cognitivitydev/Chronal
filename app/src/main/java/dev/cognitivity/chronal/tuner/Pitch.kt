@@ -26,11 +26,13 @@ import kotlin.math.round
 data class Pitch(
     val pitch: PitchClass,
     val octave: Int,
-    val centsOff: Float
+    val centsOff: Float = 0f
 ) {
-    fun toDisplayName(): NoteName {
-        if(octave <= 0) return NoteName("-")
-        val showOctave = Settings.SHOW_OCTAVE.get()
+    fun toDisplayName(
+        octaveVisible: Boolean? = null
+    ): NoteName {
+        if(octave < 0) return NoteName("-")
+        val showOctave = octaveVisible ?: Settings.SHOW_OCTAVE.get()
 
         val locale = Settings.NOTE_NAMES.get()
         val noteName = NoteSystem.entries[locale].getName(pitch)
@@ -50,7 +52,7 @@ data class Pitch(
         fun fromFrequency(frequency: Float): Pitch {
             if(frequency <= 0) return Pitch(
                 pitch = PitchClass.C,
-                octave = 0,
+                octave = -1,
                 centsOff = Float.NaN
             )
             val a4 = getA4()

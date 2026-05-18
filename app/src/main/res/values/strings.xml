@@ -213,24 +213,27 @@
 
     <string name="instrument_title">Choose an instrument</string>
     <string name="instrument_add">Add instrument</string>
+    <string name="instrument_add_category">Add category</string>
+    <string name="instrument_create_new">Create new instrument</string>
+    <string name="instrument_edit">Edit instrument</string>
     <string name="instrument_create_name">Name</string>
+    <string name="instrument_create_name_text">Full instrument name</string>
     <string name="instrument_create_name_shortened">Shortened name</string>
     <string name="instrument_create_name_shortened_text">Abbreviated name for small screens</string>
-    <string name="instrument_create_new">Create new instrument</string>
+    <string name="instrument_create_category">Category</string>
+    <string name="instrument_create_category_text">Type of instrument</string>
+    <string name="instrument_create_key">Key</string>
+    <string name="instrument_create_key_text">Written key of instrument</string>
     <string name="instrument_create_octave">Octave</string>
     <string name="instrument_create_octave_range">Must be between -4 and 4</string>
     <string name="instrument_create_octave_text">Octave difference from Concert C4</string>
-    <string name="instrument_octave_down">down %d octave</string>
-    <string name="instrument_octave_up">up %d octave</string>
-    <string name="instrument_octaves_down">down %d octaves</string>
-    <string name="instrument_octaves_up">up %d octaves</string>
     <string name="instrument_search">Search instruments</string>
+    <string name="instrument_reset_instruments_title">Reset saved instruments?</string>
+    <string name="instrument_reset_instruments_text">Are you sure you want to delete all custom instruments and revert to default? This cannot be undone.</string>
     <string name="instrument_selected">Selected %s</string>
     <string name="instrument_tune_concert">Tuned to concert pitch.</string>
-    <string name="instrument_tune_key">Tuned in %s. C4 = Concert %s4</string>
-    <string name="instrument_tune_key_octave">Tuned in %s, %s. C4 = Concert %s%d</string>
-    <string name="instrument_tune_octave">Tuned %s. C4 = Concert C%d</string>
-    <string name="instrument_tune_unknown">C4 = ???</string>
+    <string name="instrument_tuning">%1$s = Concert %2$s</string>
+    <string name="instrument_tune_unknown">%1$s = ???</string>
 
     <string name="audio_player_title">Audio Player</string>
     <string name="audio_player_back_5">Back 5 seconds</string>
