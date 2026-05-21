@@ -106,49 +106,49 @@
         "name": "Violin",
         "shortened": "Vln.",
         "transposition": 0,
-        "strings": [ 76, 69, 62, 55 ]
+        "strings": [ 55, 62, 69, 76]
       },
       {
         "name": "Viola",
         "shortened": "Vla.",
         "transposition": 0,
-        "strings": [ 69, 62, 55, 48 ]
+        "strings": [ 48, 55, 62, 69 ]
       },
       {
         "name": "Violoncello",
         "shortened": "Vc.",
         "transposition": 0,
-        "strings": [ 57, 50, 43, 36 ]
+        "strings": [ 36, 43, 50, 57 ]
       },
       {
         "name": "Contrabass",
         "shortened": "Cb.",
         "transposition": -12,
-        "strings": [ 43, 38, 33, 28 ]
+        "strings": [ 28, 33, 38, 43 ]
       },
       {
         "name": "Guitar",
         "shortened": "Guit.",
         "transposition": 0,
-        "strings": [ 64, 59, 55, 50, 45, 40 ]
+        "strings": [ 40, 45, 50, 55, 59, 64 ]
       },
       {
         "name": "Bass Guitar",
         "shortened": "B. Guit.",
         "transposition": -12,
-        "strings": [ 55, 50, 45, 40 ]
+        "strings": [ 28, 33, 38, 43 ]
       },
       {
         "name": "Banjo",
         "shortened": "Bj.",
         "transposition": 0,
-        "strings": [ 62, 59, 55, 50, 67 ]
+        "strings": [ 67, 50, 55, 59, 62 ]
       },
       {
         "name": "Ukulele",
         "shortened": "Uk.",
         "transposition": 0,
-        "strings": [ 69, 64, 60, 67 ]
+        "strings": [ 67, 60, 64, 69 ]
       },
       {
         "name": "Harp",

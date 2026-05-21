@@ -32,12 +32,15 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -47,10 +50,13 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
 import androidx.compose.material3.SearchBarDefaults.InputField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -58,9 +64,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -78,6 +87,8 @@ import dev.cognitivity.chronal.tuner.PitchClass
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import sh.calvin.reorderable.ReorderableColumn
+import sh.calvin.reorderable.ReorderableListItemScope
 import kotlin.math.abs
 import kotlin.math.floor
 
@@ -422,8 +433,7 @@ class InstrumentActivity : ComponentActivity() {
         onDelete: () -> Unit,
     ) {
         val name = instrument.name
-        val transposition = instrument.transposition
-        val description = getDescription(transposition)
+        val description = getDescription(instrument)
 
         val context = LocalContext.current
         val isSelected = instrument == selected
@@ -541,9 +551,13 @@ class InstrumentActivity : ComponentActivity() {
         var octave: Int? by remember { mutableStateOf(editingInstrumentOctave ?: 0) }
         var octaveError by remember { mutableStateOf(false) }
 
+        var stringsEnabled by remember { mutableStateOf(editingInstrument?.strings?.isNotEmpty() ?: false) }
+        var strings by remember {
+            mutableStateOf(editingInstrument?.strings?.map { StringItem(it) }?.toList() ?: emptyList())
+        }
+
         Scaffold(
-            modifier = Modifier.fillMaxSize()
-                .nestedScroll(scrollBehavior.nestedScrollConnection),
+            modifier = Modifier.fillMaxSize(),
             topBar = {
                 LargeTopAppBar(
                     title = {
@@ -569,12 +583,22 @@ class InstrumentActivity : ComponentActivity() {
                                         editInstrument(
                                             category = editingInstrumentCategory ?: return@launch,
                                             oldInstrument = editingInstrument ?: return@launch,
-                                            newInstrument = Instrument(name, shortened, key.toSemitones(octave ?: 0))
+                                            newInstrument = Instrument(
+                                                name = name,
+                                                shortened = shortened,
+                                                transposition = key.toSemitones(octave ?: 0),
+                                                strings = if(stringsEnabled) strings.map { it.string } else emptyList()
+                                            )
                                         )
                                     } else {
                                         saveNewInstrument(
                                             category = category,
-                                            instrument = Instrument(name, shortened, key.toSemitones(octave ?: 0))
+                                            instrument = Instrument(
+                                                name = name,
+                                                shortened = shortened,
+                                                transposition = key.toSemitones(octave ?: 0),
+                                                strings = if(stringsEnabled) strings.map { it.string } else emptyList()
+                                            )
                                         )
                                     }
                                     onDismissRequest()
@@ -590,12 +614,16 @@ class InstrumentActivity : ComponentActivity() {
                             Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
                             Text(getString(R.string.generic_confirm))
                         }
-                    }
+                    },
+                    scrollBehavior = scrollBehavior
                 )
             }
         ) { innerPadding ->
             Column(
-                modifier = Modifier.padding(innerPadding)
+                modifier = Modifier.fillMaxSize()
+                    .padding(innerPadding)
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
+                    .verticalScroll(rememberScrollState())
                     .padding(horizontal = 24.dp, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
@@ -605,7 +633,7 @@ class InstrumentActivity : ComponentActivity() {
                         nameError = it.isBlank()
                     },
                     modifier = Modifier.fillMaxWidth()
-                        .clip(RoundedCornerShape(24.dp, 24.dp, 6.dp, 6.dp))
+                        .clip(RoundedCornerShape(20.dp, 20.dp, 6.dp, 6.dp))
                         .background(MaterialTheme.colorScheme.surfaceContainer)
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 )
@@ -635,28 +663,75 @@ class InstrumentActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxWidth()
                         .height(IntrinsicSize.Min)
                 ) {
-                    KeyField(key,
+                    KeyInputField(
+                        key = key,
                         onValueChange = { key = it },
                         modifier = Modifier.weight(1f)
                             .fillMaxHeight()
-                            .clip(RoundedCornerShape(6.dp, 6.dp, 6.dp, 24.dp))
+                            .clip(RoundedCornerShape(6.dp, 6.dp, 6.dp, 20.dp))
                             .background(MaterialTheme.colorScheme.surfaceContainer)
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                    )
-                    OctaveField(octaveString, octaveError,
-                        onValueChange = {
-                            octaveString = it.replace(Regex("[^\\d-]"), "")
-                            octave = octaveString.toIntOrNull()
-                            octaveError = octaveString.isBlank() || octave == null
-                                    || abs(octave ?: return@OctaveField) > 4
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        label = {
+                            Text(getString(R.string.instrument_create_key))
                         },
+                        supportingText = {
+                            Text(getString(R.string.instrument_create_key_text))
+                        },
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(R.drawable.baseline_music_note_24),
+                                contentDescription = null,
+                            )
+                        },
+                    )
+                    Box(
                         modifier = Modifier.weight(1f)
                             .fillMaxHeight()
-                            .clip(RoundedCornerShape(6.dp, 6.dp, 24.dp, 6.dp))
+                            .clip(RoundedCornerShape(6.dp, 6.dp, 20.dp, 6.dp))
                             .background(MaterialTheme.colorScheme.surfaceContainer)
                             .padding(horizontal = 16.dp, vertical = 8.dp)
-                    )
+                    ) {
+                        OctaveInputField(octaveString, octaveError,
+                            onValueChange = {
+                                octaveString = it.replace(Regex("[^\\d-]"), "")
+                                val newOctave = octaveString.toIntOrNull()
+                                octaveError = octaveString.isBlank() || newOctave == null || abs(newOctave) > 4
+                                if(!octaveError) octave = newOctave
+                            },
+                            label = {
+                                Text(getString(R.string.instrument_create_octave))
+                            },
+                            supportingText = {
+                                Text(getString(
+                                    if(octaveString.isEmpty()) {
+                                        if(octaveError) R.string.generic_required_field
+                                        else R.string.instrument_create_octave_text
+                                    }
+                                    else if(octaveString.toIntOrNull() == null) R.string.generic_number_invalid
+                                    else if(abs(octaveString.toInt()) > 4) R.string.instrument_create_octave_range
+                                    else R.string.instrument_create_octave_text
+                                ))
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(R.drawable.outline_swap_vert_24),
+                                    contentDescription = null,
+                                )
+                            }
+                        )
+                    }
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                StringField(stringsEnabled,
+                    transposition = key.toSemitones(octave ?: 0),
+                    strings = strings,
+                    onCheckedChange = { stringsEnabled = it },
+                    onStringsChanged = {
+                        strings = it
+                    },
+                )
             }
         }
     }
@@ -776,7 +851,10 @@ class InstrumentActivity : ComponentActivity() {
 
     @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
     @Composable
-    private fun KeyField(key: PitchClass, onValueChange: (PitchClass) -> Unit, modifier: Modifier = Modifier) {
+    private fun KeyInputField(
+        key: PitchClass, onValueChange: (PitchClass) -> Unit, modifier: Modifier = Modifier, chromaticOrdered: Boolean = false,
+        label: @Composable () -> Unit, supportingText: @Composable (() -> Unit)? = null, leadingIcon: @Composable (() -> Unit)? = null
+    ) {
         val noteSystem = NoteSystem.entries[Settings.NOTE_NAMES.get()]
         var expanded by remember { mutableStateOf(false) }
 
@@ -789,18 +867,9 @@ class InstrumentActivity : ComponentActivity() {
                 value = noteSystem.getName(key).enharmonic ?: noteSystem.getName(key).name,
                 onValueChange = { onValueChange(key) },
                 readOnly = true,
-                label = {
-                    Text(getString(R.string.instrument_create_key))
-                },
-                supportingText = {
-                    Text(getString(R.string.instrument_create_key_text))
-                },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(R.drawable.baseline_music_note_24),
-                        contentDescription = null,
-                    )
-                },
+                label = label,
+                supportingText = supportingText,
+                leadingIcon = leadingIcon,
                 trailingIcon = {
                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                 },
@@ -813,7 +882,8 @@ class InstrumentActivity : ComponentActivity() {
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
             ) {
-                val pitches = listOf(
+                val pitches = if(chromaticOrdered) PitchClass.entries
+                else listOf(
                     PitchClass.C, PitchClass.F, PitchClass.As, PitchClass.Ds, PitchClass.Gs, PitchClass.Cs,
                     PitchClass.Fs, PitchClass.B, PitchClass.E, PitchClass.A, PitchClass.D, PitchClass.G
                 )
@@ -837,39 +907,232 @@ class InstrumentActivity : ComponentActivity() {
             }
         }
     }
+
     @Composable
-    private fun OctaveField(octaveString: String, octaveError: Boolean, onValueChange: (String) -> Unit, modifier: Modifier = Modifier) {
-        Box(
+    private fun OctaveInputField(
+        octaveString: String, octaveError: Boolean, onValueChange: (String) -> Unit, modifier: Modifier = Modifier,
+        label: @Composable () -> Unit, supportingText: @Composable (() -> Unit)? = null, leadingIcon: @Composable (() -> Unit)? = null
+    ) {
+        OutlinedTextField(
+            value = octaveString,
+            onValueChange = onValueChange,
+            label = label,
+            supportingText = supportingText,
+            leadingIcon = leadingIcon,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            isError = octaveError,
             modifier = modifier,
+            singleLine = true
+        )
+    }
+
+    private data class StringItem(val id: Int, val string: Pitch) {
+        companion object { private var newId = 0 }
+        constructor(string: Pitch): this(newId++, string)
+    }
+
+    @Composable
+    private fun StringField(enabled: Boolean, transposition: Int, strings: List<StringItem>, onCheckedChange: (Boolean) -> Unit, onStringsChanged: (List<StringItem>) -> Unit) {
+        val interactionSource = remember { MutableInteractionSource() }
+        Row(
+            modifier = Modifier.fillMaxWidth()
+                .clip(if(!enabled) RoundedCornerShape(20.dp) else RoundedCornerShape(20.dp, 20.dp, 6.dp, 6.dp))
+                .background(MaterialTheme.colorScheme.surfaceContainer)
+                .clickable(interactionSource = interactionSource) {
+                    onCheckedChange(!enabled)
+                }
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            OutlinedTextField(
-                value = octaveString,
-                onValueChange = onValueChange,
-                label = {
-                    Text(getString(R.string.instrument_create_octave))
-                },
-                supportingText = {
-                    Text(getString(
-                        if(octaveString.isEmpty()) {
-                            if(octaveError) R.string.generic_required_field
-                            else R.string.instrument_create_octave_text
-                        }
-                        else if(octaveString.toIntOrNull() == null) R.string.generic_number_invalid
-                        else if(abs(octaveString.toInt()) > 4) R.string.instrument_create_octave_range
-                        else R.string.instrument_create_octave_text
-                    ))
-                },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(R.drawable.outline_swap_vert_24),
-                        contentDescription = null,
-                    )
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                isError = octaveError ||
-                        (octaveString.isNotEmpty() && (octaveString.toIntOrNull() == null || abs(octaveString.toInt()) > 4)),
-                singleLine = true
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = getString(R.string.instrument_create_strings_enable_name),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = getString(R.string.instrument_create_strings_enable_description),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Switch(
+                checked = enabled,
+                onCheckedChange = onCheckedChange,
+                interactionSource = interactionSource,
+                modifier = Modifier.padding(start = 16.dp)
             )
+        }
+        if(enabled) {
+            val hapticFeedback = LocalHapticFeedback.current
+
+            Column(
+                modifier = Modifier.fillMaxWidth()
+                    .clip(RoundedCornerShape(6.dp, 6.dp, 20.dp, 20.dp))
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                ReorderableColumn(
+                    list = strings,
+                    onSettle = { from, to ->
+                        val newStrings = strings.toMutableList()
+                        newStrings.add(to, newStrings.removeAt(from))
+                        onStringsChanged(newStrings)
+                    },
+                    onMove = {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                    }
+                ) { _, string, isDragging ->
+                    key(string.id) {
+                        ReorderableItem {
+                            StringItem(transposition, strings, string, onStringsChanged, isDragging)
+                        }
+                    }
+                }
+                Button(
+                    onClick = {
+                        onStringsChanged(strings + StringItem(Pitch(PitchClass.C, 4)))
+                    },
+                    modifier = Modifier.padding(top = 4.dp)
+                        .align(Alignment.CenterHorizontally)
+                ) {
+                    Text(getString(R.string.instrument_create_add_string))
+                }
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Info,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = stringResource(R.string.instrument_create_strings_info),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun ReorderableListItemScope.StringItem(transposition: Int, items: List<StringItem>, item: StringItem, onStringsChanged: (List<StringItem>) -> Unit, isDragging: Boolean) {
+        val hapticFeedback = LocalHapticFeedback.current
+        val elevation by animateDpAsState(if(isDragging) 4.dp else 0.dp)
+
+        var concertPitch by remember(item.id, transposition) { mutableStateOf(item.string) }
+        var transposedPitch by remember(item.id, transposition) { mutableStateOf(Pitch.fromMidi(item.string.toMidi() - transposition)) }
+        var key by remember(item.id, transposition) { mutableStateOf(transposedPitch.pitch) }
+        var octaveString by remember(item.id, transposition) { mutableStateOf(transposedPitch.octave.toString()) }
+        var octaveError by remember(item.id) { mutableStateOf(false) }
+
+        LaunchedEffect(transposition) {
+            concertPitch = item.string
+            transposedPitch = Pitch.fromMidi(item.string.toMidi() - transposition)
+            octaveString = transposedPitch.octave.toString()
+            octaveError = false
+        }
+
+        Surface(
+            shape = RoundedCornerShape(8.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerHighest,
+            modifier = Modifier.fillMaxWidth()
+                .padding(4.dp),
+            shadowElevation = elevation
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth()
+                    .padding(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    modifier = Modifier.draggableHandle(
+                        onDragStarted = {
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
+                        },
+                        onDragStopped = {
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureEnd)
+                        },
+                    ),
+                    onClick = {}
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.outline_drag_handle_24),
+                        contentDescription = getString(R.string.generic_drag_handle)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(4.dp))
+
+                KeyInputField(
+                    key = key,
+                    onValueChange = { new ->
+                        key = new
+                        transposedPitch = Pitch(new, transposedPitch.octave)
+                        concertPitch = Pitch.fromMidi(transposedPitch.toMidi() + transposition)
+
+                        val updated = items.map {
+                            if (it.id == item.id) {
+                                it.copy(string = concertPitch)
+                            } else {
+                                it
+                            }
+                        }
+                        onStringsChanged(updated)
+                    },
+                    modifier = Modifier.weight(1f),
+                    chromaticOrdered = true,
+                    label = {
+                        Text(getString(R.string.instrument_create_key))
+                    }
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                OctaveInputField(
+                    octaveString = octaveString,
+                    octaveError = octaveError,
+                    onValueChange = { new ->
+                        octaveString = new.replace(Regex("[^\\d-]"), "")
+                        val octave = octaveString.toIntOrNull()
+                        octaveError = octaveString.isBlank() || octave == null || octave !in 0..9
+                        if(!octaveError) {
+                            transposedPitch = Pitch(item.string.pitch, octaveString.toInt())
+                            concertPitch = Pitch.fromMidi(transposedPitch.toMidi() + transposition)
+
+                            val updated = items.map {
+                                if (it.id == item.id) {
+                                    it.copy(string = concertPitch)
+                                } else {
+                                    it
+                                }
+                            }
+                            onStringsChanged(updated)
+                        }
+                    },
+                    modifier = Modifier.weight(1f),
+                    label = {
+                        Text(getString(R.string.instrument_create_octave))
+                    }
+                )
+
+                Spacer(modifier = Modifier.width(4.dp))
+
+                IconButton(
+                    onClick = {
+                        onStringsChanged(items.filter { it.id != item.id })
+                    },
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Delete,
+                        contentDescription = getString(R.string.generic_delete)
+                    )
+                }
+            }
         }
     }
 
@@ -914,7 +1177,15 @@ class InstrumentActivity : ComponentActivity() {
         )
     }
 
-    private fun getDescription(transposition: Int): String {
+    private fun getDescription(instrument: Instrument): String {
+        if(instrument.strings.isNotEmpty()) {
+            return instrument.strings.joinToString(" ") {
+                val display = Pitch.fromMidi(it.toMidi() - instrument.transposition).toDisplayName(octaveVisible = true)
+                display.enharmonic ?: display.name
+            }
+        }
+
+        val transposition = instrument.transposition
         val pitch = semitonesToPitch(transposition)
 
         val c4 = Pitch(

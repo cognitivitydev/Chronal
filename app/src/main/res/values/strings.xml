@@ -28,6 +28,7 @@
     <string name="generic_delete">Delete</string>
     <string name="generic_discard">Discard</string>
     <string name="generic_download">Download</string>
+    <string name="generic_drag_handle">Drag handle</string>
     <string name="generic_edit">Edit</string>
     <string name="generic_error">Error</string>
     <string name="generic_exit">Exit</string>
@@ -227,6 +228,10 @@
     <string name="instrument_create_octave">Octave</string>
     <string name="instrument_create_octave_range">Must be between -4 and 4</string>
     <string name="instrument_create_octave_text">Octave difference from Concert C4</string>
+    <string name="instrument_create_strings_enable_name">Enable strings</string>
+    <string name="instrument_create_strings_enable_description">Define strings for use in the tuner</string>
+    <string name="instrument_create_strings_info">Strings are notated in written pitches and are ordered from left to right.</string>
+    <string name="instrument_create_add_string">Add string</string>
     <string name="instrument_search">Search instruments</string>
     <string name="instrument_reset_instruments_title">Reset saved instruments?</string>
     <string name="instrument_reset_instruments_text">Are you sure you want to delete all custom instruments and revert to default? This cannot be undone.</string>
@@ -510,7 +515,6 @@
     <string name="tempo_markings_add_error_high">Value must be at most %d BPM.</string>
     <string name="tempo_markings_reset_title">Reset to default</string>
     <string name="tempo_markings_reset_text">Are you sure you want to reset all tempo markings to their default values? This cannot be undone.</string>
-
 
     <string name="sound_click">Click</string>
     <string name="sound_sine">Sine</string>

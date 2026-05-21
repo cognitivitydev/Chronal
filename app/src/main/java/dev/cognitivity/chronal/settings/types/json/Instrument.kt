@@ -19,19 +19,23 @@
 package dev.cognitivity.chronal.settings.types.json
 
 import com.google.gson.Gson
+import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import dev.cognitivity.chronal.tuner.Pitch
 
 data class Instrument(
     var name: String,
     var shortened: String,
-    var transposition: Int
+    var transposition: Int,
+    var strings: List<Pitch> = emptyList(),
 ) {
     companion object {
         fun fromJson(jsonObject: JsonObject): Instrument {
             return Instrument(
                 name = jsonObject.get("name").asString,
                 shortened = jsonObject.get("shortened").asString,
-                transposition = jsonObject.get("transposition").asInt
+                transposition = jsonObject.get("transposition").asInt,
+                strings = jsonObject.getAsJsonArray("strings")?.map { Pitch.fromMidi(it.asInt) }?.toList() ?: emptyList(),
             )
         }
         fun fromJson(json: String): Instrument {
@@ -44,6 +48,9 @@ data class Instrument(
             addProperty("name", name)
             addProperty("shortened", shortened)
             addProperty("transposition", transposition)
+            if(strings.isNotEmpty()) add("strings", JsonArray().apply {
+                for(string in strings.map { it.toMidi() }) add(string)
+            })
         }
     }
 }

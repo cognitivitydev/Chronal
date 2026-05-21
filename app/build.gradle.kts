@@ -97,6 +97,7 @@ dependencies {
     implementation(libs.ui)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.foundation)
+    implementation(libs.reorderable)
     implementation(libs.rxjava)
     implementation(libs.rxkotlin)
     implementation(libs.rxandroid)

@@ -44,6 +44,9 @@ data class Pitch(
 
         return NoteName(name, enharmonic)
     }
+    fun toMidi(): Int {
+        return pitch.toSemitones(octave + 1)
+    }
 
     companion object {
         const val A4_MIDI = 69
@@ -68,6 +71,21 @@ data class Pitch(
                 pitch = pitchClass,
                 octave = octave,
                 centsOff = centsOff
+            )
+        }
+        fun fromMidi(midi: Int): Pitch {
+            if(midi < 0) return Pitch(
+                pitch = PitchClass.C,
+                octave = -1,
+                centsOff = Float.NaN
+            )
+
+            val pitchClass = PitchClass.fromSemitone(midi)
+            val octave = (midi / 12) - 1
+
+            return Pitch(
+                pitch = pitchClass,
+                octave = octave
             )
         }
 
