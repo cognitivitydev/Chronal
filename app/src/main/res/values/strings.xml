@@ -319,6 +319,7 @@
     <string name="setting_name_tuner_frequency">A4 Frequency</string>
     <string name="setting_name_show_octave">Show octave</string>
     <string name="setting_name_transpose_notes">Transpose notes</string>
+    <string name="setting_name_string_tuner">Use string tuner</string>
     <string name="setting_name_audio_threshold">Audio threshold</string>
     <string name="setting_name_accidentals">Accidentals</string>
     <string name="setting_name_note_names">Change note names</string>
@@ -369,6 +370,7 @@
     <string name="setting_description_tuner_frequency">Changes the reference frequency for tuning (A4).\n• Standard tuning: 440 Hz\n• Baroque tuning: 415 Hz\n• Classical tuning: 430 Hz</string>
     <string name="setting_description_show_octave">Shows the octave of the current played note (such as \"A4\").</string>
     <string name="setting_description_transpose_notes">Shows the transposed note for your primary instrument in addition to concert pitch.</string>
+    <string name="setting_description_string_tuner">Changes the tuner display when a string instrument is selected.</string>
     <string name="setting_description_audio_threshold">Edits the threshold for detecting notes. Decrease if notes are not being detected.</string>
     <string name="setting_description_accidentals">Changes which accidentals are displayed.</string>
     <string name="setting_description_note_names">Changes note names to their solfège name.</string>

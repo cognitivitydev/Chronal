@@ -26,7 +26,7 @@ import kotlin.math.round
 data class Pitch(
     val pitch: PitchClass,
     val octave: Int,
-    val centsOff: Float = 0f
+    val cents: Float = 0f
 ) {
     fun toDisplayName(
         octaveVisible: Boolean? = null
@@ -47,6 +47,12 @@ data class Pitch(
     fun toMidi(): Int {
         return pitch.toSemitones(octave + 1)
     }
+    fun toFrequency(): Float {
+        val a4Midi = 69
+        val a4 = getA4()
+
+        return a4 * 2.0.pow((toMidi() - a4Midi + (cents / 100)) / 12.0).toFloat()
+    }
 
     companion object {
         const val A4_MIDI = 69
@@ -56,7 +62,7 @@ data class Pitch(
             if(frequency <= 0) return Pitch(
                 pitch = PitchClass.C,
                 octave = -1,
-                centsOff = Float.NaN
+                cents = Float.NaN
             )
             val a4 = getA4()
 
@@ -70,14 +76,14 @@ data class Pitch(
             return Pitch(
                 pitch = pitchClass,
                 octave = octave,
-                centsOff = centsOff
+                cents = centsOff
             )
         }
         fun fromMidi(midi: Int): Pitch {
             if(midi < 0) return Pitch(
                 pitch = PitchClass.C,
                 octave = -1,
-                centsOff = Float.NaN
+                cents = Float.NaN
             )
 
             val pitchClass = PitchClass.fromSemitone(midi)
@@ -94,7 +100,7 @@ data class Pitch(
             val a4 = getA4()
 
             val frequency = if(midi == -1) a4.toFloat()
-            else (a4 * 2.0.pow((midi - a4Midi) / 12.0)).toFloat()
+                else (a4 * 2.0.pow((midi - a4Midi) / 12.0)).toFloat()
             return frequency
         }
         fun midiToFrequency(frequency: Float, semitones: Int): Float {

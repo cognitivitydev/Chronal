@@ -76,6 +76,7 @@ object Settings {
     val TUNER_FREQUENCY = IntSetting("tuner_frequency", 440)
     val SHOW_OCTAVE = BooleanSetting("show_octave", false)
     val TRANSPOSE_NOTES = BooleanSetting("transpose_notes", false)
+    val STRING_TUNER = BooleanSetting("string_tuner", false)
     val PRIMARY_INSTRUMENT = JsonSetting(
         key = "primary_instrument",
         defaultValue = Instrument("B♭ Trumpet", "B♭ Tpt.", -1),

@@ -23,7 +23,14 @@ import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
@@ -75,7 +82,7 @@ fun SwitchItem(item: SettingItem.Switch, onNavigate: ((String) -> Unit)?) {
             }
     ) {
         Column(
-            modifier = Modifier.width(IntrinsicSize.Max)
+            modifier = Modifier.weight(1f)
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             Text(context.getString(item.meta.title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
@@ -83,7 +90,6 @@ fun SwitchItem(item: SettingItem.Switch, onNavigate: ((String) -> Unit)?) {
                 Text(item.meta.description.invoke(), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-        Spacer(modifier = Modifier.weight(1f))
         if(clickable) {
             Icon(
                 imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,

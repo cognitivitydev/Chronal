@@ -333,7 +333,7 @@ class TunerWidget : GlanceAppWidget() {
 
     @Composable
     fun CentsDisplay(horizontal: Boolean, hz: Float, modifier: GlanceModifier = GlanceModifier) {
-        val cents = Pitch.fromFrequency(hz).centsOff
+        val cents = Pitch.fromFrequency(hz).cents
 
         @Composable
         fun CentsText(textColor1: ColorProvider, textColor2: ColorProvider) {

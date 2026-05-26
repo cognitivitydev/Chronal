@@ -92,6 +92,9 @@ fun TunerPageCompact(
     val hz = tuner?.hz ?: -1f
     val pitch = Pitch.fromFrequency(hz)
     val instrument = Settings.PRIMARY_INSTRUMENT.get()
+    val stringMode = Settings.STRING_TUNER.get() && instrument.strings.isNotEmpty()
+    val closestString = if(stringMode) instrument.strings.minByOrNull { abs(it.toFrequency() - pitch.toFrequency()) } ?: pitch
+        else null
 
     BoxWithConstraints(
         modifier = Modifier.padding(bottom = padding.calculateBottomPadding())
@@ -109,7 +112,7 @@ fun TunerPageCompact(
                     Modifier.fillMaxWidth(0.4f)
                         .fillMaxHeight()
                 ) {
-                    TopBar(tuner, hz, instrument, wide = true)
+                    TopBar(tuner, hz, instrument, wide = true, closestString)
                 }
 
                 // content
@@ -118,7 +121,7 @@ fun TunerPageCompact(
                         .padding(vertical = 40.dp)
                         .fillMaxHeight()
                 ) {
-                    PitchGraph(pitch.centsOff, tuner)
+                    PitchGraph(pitch, tuner, closestString)
                     FilledIconToggleButton(
                         checked = playing,
                         onCheckedChange = {
@@ -145,7 +148,7 @@ fun TunerPageCompact(
                 modifier = Modifier.fillMaxSize(),
                 containerColor = MaterialTheme.colorScheme.surface,
                 topBar = {
-                    TopBar(tuner, hz, instrument, wide = false)
+                    TopBar(tuner, hz, instrument, wide = false, closestString)
                 },
             ) { innerPadding ->
                 Box(
@@ -157,7 +160,7 @@ fun TunerPageCompact(
                             .padding(vertical = 40.dp)
                             .align(Alignment.Center)
                     ) {
-                        PitchGraph(pitch.centsOff, tuner)
+                        PitchGraph(pitch, tuner, closestString)
                     }
                     FilledIconToggleButton(
                         checked = playing,
@@ -211,7 +214,7 @@ fun TunerPageCompact(
 }
 
 @Composable
-fun TopBar(tuner: Tuner?, hz: Float, instrument: Instrument, wide: Boolean) {
+fun TopBar(tuner: Tuner?, hz: Float, instrument: Instrument, wide: Boolean, closestString: Pitch?) {
     Surface(
         color = if(wide) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.surfaceContainerLow,
         shape = if(wide) RoundedCornerShape(topEnd = 24.dp) else RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)
@@ -266,8 +269,12 @@ fun TopBar(tuner: Tuner?, hz: Float, instrument: Instrument, wide: Boolean) {
                         Column(
                             modifier = Modifier.weight(1f)
                         ) {
-                            DrawName(context.getString(R.string.tuner_concert_pitch), context.getString(R.string.tuner_concert_pitch_short))
-                            DrawNote(hz)
+                            if(closestString != null) {
+                                StringDisplay(tuner, hz, instrument, closestString)
+                            } else {
+                                DrawName(context.getString(R.string.tuner_concert_pitch), context.getString(R.string.tuner_concert_pitch_short))
+                                DrawNote(hz)
+                            }
                         }
                         if(showTransposition) {
                             Column(
@@ -296,8 +303,12 @@ fun TopBar(tuner: Tuner?, hz: Float, instrument: Instrument, wide: Boolean) {
                             Modifier.align(Alignment.CenterVertically)
                                 .then(if(showTransposition) Modifier.weight(1f) else Modifier.fillMaxWidth(0.5f))
                         ) {
-                            DrawName(context.getString(R.string.tuner_concert_pitch), context.getString(R.string.tuner_concert_pitch_short))
-                            DrawNote(hz)
+                            if(closestString != null) {
+                                StringDisplay(tuner, hz, instrument, closestString)
+                            } else {
+                                DrawName(context.getString(R.string.tuner_concert_pitch), context.getString(R.string.tuner_concert_pitch_short))
+                                DrawNote(hz)
+                            }
                         }
                         if(showTransposition) {
                             Column(
@@ -317,7 +328,10 @@ fun TopBar(tuner: Tuner?, hz: Float, instrument: Instrument, wide: Boolean) {
 }
 
 @Composable
-fun PitchGraph(cents: Float, tuner: Tuner?) {
+fun PitchGraph(pitch: Pitch, tuner: Tuner?, closestString: Pitch?) {
+    val cents = if(closestString == null || abs(closestString.toMidi() - pitch.toMidi()) > 1) pitch.cents
+        else pitch.cents - (closestString.toMidi() - pitch.toMidi()) * 100
+
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -376,7 +390,7 @@ fun PitchPointer(cents: Float, tuner: Tuner?, modifier: Modifier = Modifier) {
     val morphProgress = remember { Animatable(1f) }
     LaunchedEffect(cents) {
         morphProgress.animateTo(
-            targetValue = abs(if (cents.isNaN()) 0f else cents) / 50 * -0.75f + 1,
+            targetValue = abs(if (cents.isNaN()) 0f else cents.coerceIn(-50f..50f)) / 50 * -0.75f + 1,
             animationSpec = MotionScheme.expressive().fastEffectsSpec(),
         )
     }
@@ -384,7 +398,7 @@ fun PitchPointer(cents: Float, tuner: Tuner?, modifier: Modifier = Modifier) {
     val animatedPosition = remember { Animatable(0.5f) }
     LaunchedEffect(cents) {
         animatedPosition.animateTo(
-            targetValue = (if (cents.isNaN()) 0.5f else 0.5f + cents / 50 * -0.5f),
+            targetValue = (if (cents.isNaN()) 0.5f else 0.5f + cents.coerceIn(-50f..50f) / 50 * -0.5f),
             animationSpec = MotionScheme.expressive().fastEffectsSpec(),
         )
     }

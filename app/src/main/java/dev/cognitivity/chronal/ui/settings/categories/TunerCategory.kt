@@ -43,6 +43,10 @@ object TunerCategory : SettingsCategory(
             activity = InstrumentActivity::class.java,
             setting = Settings.TRANSPOSE_NOTES
         ),
+        SettingItem.Switch(
+            meta = SettingMeta(R.string.setting_name_string_tuner, R.string.setting_description_string_tuner),
+            setting = Settings.STRING_TUNER
+        ),
         SettingItem.SubCategoryHeader(R.string.settings_header_note_display),
         SettingItem.Switch(
             meta = SettingMeta(R.string.setting_name_show_octave),

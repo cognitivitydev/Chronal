@@ -109,6 +109,9 @@ fun TunerPageExpanded(
     val hz = tuner?.hz ?: -1f
     val pitch = Pitch.fromFrequency(hz)
     val instrument = Settings.PRIMARY_INSTRUMENT.get()
+    val stringMode = Settings.STRING_TUNER.get() && instrument.strings.isNotEmpty()
+    val closestString = if(stringMode) instrument.strings.minByOrNull { abs(it.toFrequency() - pitch.toFrequency()) } ?: pitch
+        else null
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -130,7 +133,7 @@ fun TunerPageExpanded(
             Box(
                 modifier = Modifier.weight(weight)
             ) {
-                NoteDisplay(tuner, hz, instrument)
+                NoteDisplay(tuner, hz, instrument, closestString)
             }
             VerticalDragHandle(
                 modifier = Modifier.align(Alignment.CenterVertically).draggable(
@@ -149,7 +152,7 @@ fun TunerPageExpanded(
             Box(
                 modifier = Modifier.weight(1f - weight)
             ) {
-                PitchGraphHorizontal(pitch.centsOff, tuner)
+                PitchGraphHorizontal(pitch, tuner, closestString)
 
                 FilledIconToggleButton(
                     checked = playing,
@@ -204,7 +207,7 @@ fun TunerPageExpanded(
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun NoteDisplay(tuner: Tuner?, hz: Float, instrument: Instrument) {
+fun NoteDisplay(tuner: Tuner?, hz: Float, instrument: Instrument, closestString: Pitch?) {
     var fullscreen by remember { mutableStateOf(false) }
 
     Column(
@@ -269,7 +272,10 @@ fun NoteDisplay(tuner: Tuner?, hz: Float, instrument: Instrument) {
                         fullscreen = !fullscreen
                     }
             ) {
-                TunerGraph(tuner, fullscreen)
+                TunerGraph(
+                    history = tuner?.history?.toMutableList()?.filter { System.currentTimeMillis() - it.first < 10000 } ?: emptyList(),
+                    fullscreen = fullscreen
+                )
             }
 
             if(noteWeight != 0.01f) {
@@ -280,9 +286,13 @@ fun NoteDisplay(tuner: Tuner?, hz: Float, instrument: Instrument) {
                         .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(16.dp))
                         .padding(4.dp),
                 ) {
-                    DrawName(context.getString(R.string.tuner_concert_pitch), context.getString(R.string.tuner_concert_pitch_short))
-                    Spacer(modifier = Modifier.height(8.dp))
-                    DrawNote(hz)
+                    if(closestString != null) {
+                        StringDisplay(tuner, hz, instrument, closestString)
+                    } else {
+                        DrawName(context.getString(R.string.tuner_concert_pitch), context.getString(R.string.tuner_concert_pitch_short))
+                        Spacer(modifier = Modifier.height(8.dp))
+                        DrawNote(hz)
+                    }
                 }
 
                 if(showTransposition) {
@@ -305,7 +315,7 @@ fun NoteDisplay(tuner: Tuner?, hz: Float, instrument: Instrument) {
 }
 
 @Composable
-fun PitchGraphHorizontal(cents: Float, tuner: Tuner?) {
+fun PitchGraphHorizontal(pitch: Pitch, tuner: Tuner?, closestString: Pitch?) {
     Box(
         Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface, RoundedCornerShape(18.dp))
     ) {
@@ -318,16 +328,19 @@ fun PitchGraphHorizontal(cents: Float, tuner: Tuner?) {
                     .fillMaxWidth().padding(bottom = 8.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                DrawLines(cents.isNaN())
+                DrawLines(pitch.cents.isNaN())
             }
-            PitchPointerHorizontal(cents, tuner)
+            PitchPointerHorizontal(pitch, tuner, closestString)
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun PitchPointerHorizontal(cents: Float, tuner: Tuner?) {
+fun PitchPointerHorizontal(pitch: Pitch, tuner: Tuner?, closestString: Pitch?) {
+    val cents = if(closestString == null || abs(closestString.toMidi() - pitch.toMidi()) > 1) pitch.cents
+        else pitch.cents - (closestString.toMidi() - pitch.toMidi()) * 100
+
     val shapeA = remember {
         RoundedPolygon.star(12, rounding = CornerRounding(0.2f), radius = 1.8f)
     }
@@ -364,7 +377,7 @@ fun PitchPointerHorizontal(cents: Float, tuner: Tuner?) {
     val morphProgress = remember { Animatable(1f) }
     LaunchedEffect(cents) {
         morphProgress.animateTo(
-            targetValue = abs(if (cents.isNaN()) 0f else cents) / 50 * -0.75f + 1,
+            targetValue = abs(if (cents.isNaN()) 0f else cents.coerceIn(-50f..50f)) / 50 * -0.75f + 1,
             animationSpec = MotionScheme.expressive().fastSpatialSpec(),
         )
     }
@@ -372,7 +385,7 @@ fun PitchPointerHorizontal(cents: Float, tuner: Tuner?) {
     val animatedPosition = remember { Animatable(0.5f) }
     LaunchedEffect(cents) {
         animatedPosition.animateTo(
-            targetValue = (if (cents.isNaN()) 0.5f else 0.5f + cents / 50 * 0.5f),
+            targetValue = (if (cents.isNaN()) 0.5f else 0.5f + cents.coerceIn(-50f..50f) / 50 * 0.5f),
             animationSpec = MotionScheme.expressive().fastSpatialSpec(),
         )
     }

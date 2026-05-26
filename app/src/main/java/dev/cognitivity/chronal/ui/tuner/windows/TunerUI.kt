@@ -20,6 +20,12 @@ package dev.cognitivity.chronal.ui.tuner.windows
 
 import android.Manifest
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.EaseInExpo
+import androidx.compose.animation.core.EaseOutExpo
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -34,6 +40,7 @@ import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -43,6 +50,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -55,11 +64,13 @@ import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.settings.types.json.Instrument
 import dev.cognitivity.chronal.toSp
 import dev.cognitivity.chronal.tuner.Pitch
 import dev.cognitivity.chronal.tuner.Tuner
 import dev.cognitivity.chronal.ui.tuner.SineWavePlayer
 import kotlin.math.abs
+import kotlin.math.sin
 
 val flatOffset = (-3).dp
 val sharpOffset = (-4).dp
@@ -405,5 +416,94 @@ fun MicrophoneErrorDialog(modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onErrorContainer
         )
+    }
+}
+
+@Composable
+fun StringDisplay(tuner: Tuner?, hz: Float, instrument: Instrument, closestString: Pitch) {
+    val strings = instrument.strings
+    val currentNote = Pitch.fromFrequency(hz)
+
+    val stringIndex = if(abs(closestString.toMidi() - currentNote.toMidi()) <= 1) strings.indexOf(closestString) else null
+
+    Row(
+        modifier = Modifier.fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+    ) {
+        for(string in strings) {
+            val isActive = stringIndex != null && stringIndex == strings.indexOf(string)
+            val color = animateColorAsState(
+                targetValue = if(isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimary,
+                animationSpec = MotionScheme.expressive().slowEffectsSpec(),
+                label = "color"
+            )
+
+            val maxAmplitude = 16f
+            val animationLength = 5000L
+            val amplitude = remember { Animatable(0f) }
+
+            LaunchedEffect(isActive, tuner?.lastUpdate) {
+                if(!isActive) {
+                    amplitude.animateTo(
+                        targetValue = 0f,
+                        animationSpec = MotionScheme.expressive().slowEffectsSpec()
+                    )
+                } else {
+                    amplitude.snapTo(maxAmplitude)
+                    amplitude.animateTo(
+                        targetValue = 0f,
+                        animationSpec = tween(
+                            durationMillis = animationLength.toInt(),
+                            easing = EaseOutExpo
+                        )
+                    )
+                }
+            }
+
+            val phase = remember { Animatable(0f) }
+            LaunchedEffect(Unit) {
+                while (true) {
+                    phase.snapTo(phase.value.mod(2 * Math.PI.toFloat()))
+                    val currentPhase = phase.value
+
+                    val next = if (tuner == null) currentPhase
+                    else {
+                        val elapsed = (System.currentTimeMillis() - tuner.lastUpdate).coerceIn(0, animationLength).toFloat() / animationLength
+                        val easing = EaseInExpo.transform(1f - elapsed)
+                        val change = easing * 2
+                        currentPhase + change
+                    }
+
+                    phase.animateTo(
+                        targetValue = next,
+                        animationSpec = tween(
+                            durationMillis = 50,
+                            easing = LinearEasing
+                        )
+                    )
+                }
+            }
+
+            Canvas(
+                modifier = Modifier.fillMaxHeight()
+                    .width(2.dp)
+            ) {
+                val wavelength = (343f * 100) / hz.coerceAtLeast(1f)
+
+                val path = Path().apply {
+                    moveTo(center.x, 0f)
+                    for(y in 0 until size.height.toInt()) {
+                        val x = center.x + amplitude.value * sin((2f * Math.PI * y / wavelength) + phase.value).toFloat()
+                        lineTo(x, y.toFloat())
+                    }
+                }
+                drawPath(
+                    path = path,
+                    color = color.value,
+                    style = Stroke(width = 2.dp.toPx())
+                )
+            }
+        }
     }
 }

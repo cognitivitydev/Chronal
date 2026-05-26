@@ -37,7 +37,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.tuner.Tuner
 import dev.cognitivity.chronal.round
 import dev.cognitivity.chronal.tuner.Pitch
 import dev.cognitivity.chronal.tuner.Pitch.Companion.midiToFrequency
@@ -45,17 +44,13 @@ import kotlin.math.abs
 
 @Composable
 fun BoxScope.TunerGraph(
-    tuner: Tuner?,
+    history: List<Pair<Long, Float>>,
     fullscreen: Boolean = false
 ) {
-    val unfilteredHistory: List<Pair<Long, Float>> =
-        tuner?.history?.toMutableList()?.filter { System.currentTimeMillis() - it.first < 10000 }
-            ?: emptyList()
+    val filteredHistory = removeOutliers(history)
 
-    val history = removeOutliers(unfilteredHistory)
-
-    val minFreq = if (history.isEmpty()) 0f else history.minOf { it.second }
-    val maxFreq = if (history.isEmpty()) 0f else history.maxOf { it.second }
+    val minFreq = if (filteredHistory.isEmpty()) 0f else filteredHistory.minOf { it.second }
+    val maxFreq = if (filteredHistory.isEmpty()) 0f else filteredHistory.maxOf { it.second }
 
     val outlineVariant = MaterialTheme.colorScheme.outlineVariant
     val outline = MaterialTheme.colorScheme.outline
@@ -64,7 +59,7 @@ fun BoxScope.TunerGraph(
     val primary = MaterialTheme.colorScheme.primary
     val onSurface = MaterialTheme.colorScheme.onSurface
     Canvas(Modifier.fillMaxSize()) {
-        if (history.isEmpty()) return@Canvas
+        if (filteredHistory.isEmpty()) return@Canvas
 
         val yRange = maxFreq - minFreq
 
@@ -89,16 +84,15 @@ fun BoxScope.TunerGraph(
         var lastPoint: Offset? = null
         var lastTime: Long? = null
 
-        for (pair in history) {
-            val x =
-                ((pair.first - history.first().first) / (history.last().first - history.first().first).toFloat() * size.width)
+        for (pair in filteredHistory) {
+            val x = ((pair.first - filteredHistory.first().first) / (filteredHistory.last().first - filteredHistory.first().first).toFloat() * size.width)
             val y = size.height - ((pair.second - minFreq) / yRange * size.height)
             val currentPoint = Offset(x, y)
 
             if (lastPoint != null && lastTime != null) {
                 val timeDiff = pair.first - lastTime
                 if (timeDiff <= 250) { // within roughly 5 updates
-                    val centsOff = Pitch.fromFrequency(pair.second).centsOff
+                    val centsOff = Pitch.fromFrequency(pair.second).cents
                     val color = when {
                         abs(centsOff) >= 40 -> outline
                         abs(centsOff) >= 30 -> secondary
@@ -121,13 +115,13 @@ fun BoxScope.TunerGraph(
 
     val max = Pitch.fromFrequency(maxFreq)
     val min = Pitch.fromFrequency(minFreq)
-    val showCents = maxFreq - minFreq < 100f && !max.centsOff.isNaN() && !min.centsOff.isNaN()
+    val showCents = maxFreq - minFreq < 100f && !max.cents.isNaN() && !min.cents.isNaN()
     Box(
         modifier = Modifier.align(Alignment.TopStart)
             .background(MaterialTheme.colorScheme.surfaceContainer, CircleShape)
             .padding(horizontal = 4.dp)
     ) {
-        val string = if(showCents) "${max.toDisplayName().name}, ${if(max.centsOff >= 0) "+" else ""}${max.centsOff.round(1)}"
+        val string = if(showCents) "${max.toDisplayName().name}, ${if(max.cents >= 0) "+" else ""}${max.cents.round(1)}"
             else max.toDisplayName().name
         Text(
             text = string,
@@ -140,7 +134,7 @@ fun BoxScope.TunerGraph(
             .background(MaterialTheme.colorScheme.surfaceContainer, CircleShape)
             .padding(horizontal = 4.dp)
     ) {
-        val string = if(showCents) "${min.toDisplayName().name}, ${if(min.centsOff >= 0) "+" else ""}${min.centsOff.round(1)}"
+        val string = if(showCents) "${min.toDisplayName().name}, ${if(min.cents >= 0) "+" else ""}${min.cents.round(1)}"
             else min.toDisplayName().name
         Text(
             text = string,

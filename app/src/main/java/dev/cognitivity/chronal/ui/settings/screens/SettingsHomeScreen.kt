@@ -118,5 +118,5 @@ private fun shouldShowReview(): Boolean {
     } else {
         packageManager.getInstallerPackageName(packageName)
     }
-    return installer == "com.android.vending" || installer == null
+    return installer == "com.android.vending"// || installer == null
 }
