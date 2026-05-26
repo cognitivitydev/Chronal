@@ -130,8 +130,7 @@ sealed class SettingItem(
      * A button that appears in the main category list and opens a category when tapped.
      */
     data class CategoryOption(
-        val iconColor: @Composable (() -> Color),
-        val iconContainer: @Composable (() -> Color),
+        val color: Color,
         val pageId: String,
         override val meta: SettingMeta
     ) : SettingItem(meta, true)
@@ -193,8 +192,6 @@ data class SettingMeta(
         title: Int,
         description: Int,
         icon: Int? = null,
-        iconColor: (@Composable () -> Color)? = null,
-        iconContainer: (@Composable () -> Color)? = null,
         visible: () -> Boolean = { true }
     ) : this(
         title,

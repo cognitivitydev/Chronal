@@ -18,22 +18,21 @@
 
 package dev.cognitivity.chronal.ui.settings.categories
 
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.Color
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.LatencyActivity
 import dev.cognitivity.chronal.activity.TempoMarkingsActivity
 import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.ui.settings.data.SettingsCategory
 import dev.cognitivity.chronal.ui.settings.items.SettingItem
 import dev.cognitivity.chronal.ui.settings.items.SettingMeta
-import dev.cognitivity.chronal.ui.settings.data.SettingsCategory
 import dev.cognitivity.chronal.ui.settings.screens.metronome.GesturesPage
 
 object MetronomeCategory : SettingsCategory(
     id = "metronome",
     title = R.string.page_metronome,
     icon = R.drawable.baseline_music_note_24,
-    iconColor = { MaterialTheme.colorScheme.onPrimaryContainer },
-    iconContainer = { MaterialTheme.colorScheme.primaryContainer },
+    color = Color(0xFFFF0059),
     items = listOf(
         SettingItem.ActivityLink(
             meta = SettingMeta(R.string.setting_name_visual_latency, description = { "${Settings.VISUAL_LATENCY.get()} ms" }),

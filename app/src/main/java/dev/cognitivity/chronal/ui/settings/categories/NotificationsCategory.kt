@@ -50,6 +50,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationManagerCompat
 import dev.cognitivity.chronal.ChronalApp
@@ -69,8 +70,7 @@ object NotificationsCategory : SettingsCategory(
     id = "notifications",
     title = R.string.page_settings_notifications,
     icon = R.drawable.baseline_notifications_24,
-    iconColor = { MaterialTheme.colorScheme.onPrimaryContainer },
-    iconContainer = { MaterialTheme.colorScheme.primaryContainer },
+    color = Color(0xFFFAF377),
     items = listOf(
         SettingItem.Element {
             NotificationPermissionContent()

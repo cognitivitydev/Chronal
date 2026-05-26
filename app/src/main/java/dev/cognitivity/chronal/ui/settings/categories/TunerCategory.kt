@@ -18,7 +18,7 @@
 
 package dev.cognitivity.chronal.ui.settings.categories
 
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.Color
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.InstrumentActivity
@@ -35,8 +35,7 @@ object TunerCategory : SettingsCategory(
     id = "tuner",
     title = R.string.page_tuner,
     icon = R.drawable.baseline_graphic_eq_24,
-    iconColor = { MaterialTheme.colorScheme.onPrimaryContainer },
-    iconContainer = { MaterialTheme.colorScheme.primaryContainer },
+    color = Color(0xFFFF9900),
     items = listOf(
         SettingItem.Switch(
             meta = SettingMeta(R.string.setting_name_transpose_notes, { Settings.PRIMARY_INSTRUMENT.get().name }),

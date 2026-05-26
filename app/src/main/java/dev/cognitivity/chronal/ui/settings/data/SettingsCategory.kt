@@ -18,7 +18,6 @@
 
 package dev.cognitivity.chronal.ui.settings.data
 
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import dev.cognitivity.chronal.ui.settings.items.SettingItem
 
@@ -26,7 +25,6 @@ open class SettingsCategory(
     val id: String,
     val title: Int,
     val icon: Int? = null,
-    val iconColor: (@Composable () -> Color),
-    val iconContainer: (@Composable () -> Color),
+    val color: Color,
     val items: List<SettingItem>
 )

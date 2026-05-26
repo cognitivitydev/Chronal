@@ -20,6 +20,7 @@ package dev.cognitivity.chronal.ui.settings.items.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,9 +34,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.materialkolor.dynamicColorScheme
 import dev.cognitivity.chronal.ChronalApp.Companion.context
+import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.settings.types.json.ColorScheme
 import dev.cognitivity.chronal.ui.settings.items.SettingItem
 
 @Composable
@@ -47,16 +52,23 @@ fun CategoryOptionItem(item: SettingItem.CategoryOption, onNavigate: ((String) -
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         if(item.meta.icon != null) {
+            val theme = Settings.COLOR_SCHEME.get().theme
+            val seedColor = Color(item.color.value)
+            val colorScheme = dynamicColorScheme(
+                seedColor = seedColor,
+                isDark = if(theme == ColorScheme.Theme.SYSTEM) isSystemInDarkTheme() else theme == ColorScheme.Theme.DARK
+            )
+
             Box(
                 modifier = Modifier.padding(end = 16.dp)
                     .size(40.dp)
-                    .background(color = item.iconContainer.invoke(), CircleShape),
+                    .background(color = colorScheme.primaryContainer, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     painter = painterResource(item.meta.icon),
                     contentDescription = null,
-                    tint = item.iconColor.invoke(),
+                    tint = colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(24.dp)
                 )
             }

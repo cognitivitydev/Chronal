@@ -83,8 +83,7 @@ fun SettingsHomeScreen(navController: NavController, expanded: Boolean) {
                                 title = category.title,
                                 icon = category.icon,
                             ),
-                            iconColor = category.iconColor,
-                            iconContainer = category.iconContainer,
+                            color = category.color,
                             pageId = category.id
                         ),
                         topRounded = index == 0,

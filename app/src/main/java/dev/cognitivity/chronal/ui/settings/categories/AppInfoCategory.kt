@@ -19,11 +19,11 @@
 package dev.cognitivity.chronal.ui.settings.categories
 
 import android.content.Intent
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import androidx.core.net.toUri
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
@@ -52,8 +52,7 @@ object AppInfoCategory : SettingsCategory(
     id = "app_info",
     title = R.string.page_settings_app_info,
     icon = R.drawable.baseline_info_24,
-    iconColor = { MaterialTheme.colorScheme.onPrimaryContainer },
-    iconContainer = { MaterialTheme.colorScheme.primaryContainer },
+    color = Color(0xFF00FF88),
     items = listOf(
         SettingItem.TextElement(
             onClick = {
