@@ -91,7 +91,7 @@
     <string name="metronome_display_conductor">Dirigent</string>
     <string name="metronome_display_grid">Mřížka</string>
     <string name="metronome_switch_display_mode">Přepnout režim zobrazení</string>
-    <string name="metronome_conductor_not_supported">Current time signature is not supported.</string>
+    <string name="metronome_conductor_not_supported">Nastavený takt není zatím podporován.</string>
     <string name="metronome_conductor_flip">Překlopit vodorovně</string>
     <string name="metronome_increase_tempo">Zvýšit tempo</string>
     <string name="metronome_notification_title">%d BPM</string>
