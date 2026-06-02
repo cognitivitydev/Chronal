@@ -37,7 +37,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.ui.settings.items.SettingItem
 import kotlinx.coroutines.launch
 
@@ -71,7 +70,7 @@ fun SwitchHeaderItem(item: SettingItem.SwitchHeader) {
             .padding(start = 32.dp, top = 8.dp, end = 16.dp, bottom = 8.dp)
     ) {
         Text(
-            text = context.getString(item.meta.title),
+            text = item.meta.title.invoke(),
             style = MaterialTheme.typography.titleMediumEmphasized,
             color = MaterialTheme.colorScheme.onPrimaryContainer,
             modifier = Modifier.weight(1f)

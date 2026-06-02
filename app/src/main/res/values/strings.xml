@@ -20,6 +20,7 @@
     <string name="app_name">Chronal</string>
 
     <string name="generic_add">Add</string>
+    <string name="generic_apply">Apply</string>
     <string name="generic_back">Back</string>
     <string name="generic_cancel">Cancel</string>
     <string name="generic_close">Close</string>
@@ -86,6 +87,7 @@
     <string name="page_settings_note_locale">Note locale</string>
     <string name="page_settings_notifications">Notifications</string>
     <string name="page_settings_practice_reminder">Practice reminder</string>
+    <string name="page_settings_language">Language</string>
     <string name="page_tuner">Tuner</string>
 
     <string name="changelog_title">Changelog</string>
@@ -292,6 +294,18 @@
     <string name="settings_notifications_no_permission">Notification permission required</string>
     <string name="settings_notifications_no_permission_description">To use notifications, the permission needs to be granted. Tap to grant it.</string>
     <string name="settings_notifications_no_permission_grant">Grant permission</string>
+
+    <string name="settings_translations_progress_none">%1$d%% • Not translated</string>
+    <string name="settings_translations_progress_few">%1$d%% • Slightly translated</string>
+    <string name="settings_translations_progress_partial">%1$d%% • Partially translated</string>
+    <string name="settings_translations_progress_most">%1$d%% • Mostly translated</string>
+    <string name="settings_translations_progress_complete">%1$d%% • Translated</string>
+    <string name="settings_translations_missing_header">Missing languages</string>
+    <string name="settings_translations_contribute">Contribute</string>
+    <string name="settings_translations_suggest">Suggest another language</string>
+    <string name="settings_translations_contributors">%1$s translators:</string>
+    <string name="settings_language_default_english">This language is incomplete. Text that has not been translated yet will default to English.</string>
+    <string name="settings_language_apply_error">Failed to select “$1%s”; reverting to “$2%s”…</string>
 
     <string name="settings_menu_help">Help</string>
     <string name="settings_menu_open_source_credits">Open source credits</string>

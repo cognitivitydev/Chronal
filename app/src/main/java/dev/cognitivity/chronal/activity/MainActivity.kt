@@ -20,8 +20,10 @@ package dev.cognitivity.chronal.activity
 
 import android.Manifest
 import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
@@ -48,17 +50,21 @@ import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSiz
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
+import androidx.glance.appwidget.updateAll
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -68,28 +74,43 @@ import androidx.navigation.compose.rememberNavController
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.ui.ChangelogSheet
+import dev.cognitivity.chronal.ui.metronome.MetronomePageMain
+import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
 import dev.cognitivity.chronal.ui.settings.SettingsPageMain
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import dev.cognitivity.chronal.ui.tuner.windows.TunerPageMain
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.material3.Text
-import androidx.glance.appwidget.updateAll
-import dev.cognitivity.chronal.ui.ChangelogSheet
-import dev.cognitivity.chronal.ui.metronome.MetronomePageMain
 import dev.cognitivity.chronal.widgets.PresetListWidget
 import dev.cognitivity.chronal.widgets.TunerWidget
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.dp
-import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import java.util.*
 
 lateinit var audioManager: AudioManager
 var vibratorManager: VibratorManager? = null
 
 class MainActivity : ComponentActivity() {
+    override fun attachBaseContext(newBase: Context?) {
+        if(newBase == null) {
+            super.attachBaseContext(newBase)
+            return
+        }
+
+        try {
+            val savedLanguage = Settings.APP_LANGUAGE.get()
+            val locale = Locale.forLanguageTag(savedLanguage)
+            Locale.setDefault(locale)
+            val config = Configuration(newBase.resources.configuration)
+            config.setLocale(locale)
+
+            super.attachBaseContext(newBase.createConfigurationContext(config))
+        } catch(_: Exception) {
+            super.attachBaseContext(newBase)
+        }
+    }
+
     fun runActivity(activity: Class<*>) {
         val k = Intent(this, activity)
         startActivity(k)
@@ -348,7 +369,7 @@ class MainActivity : ComponentActivity() {
                     notificationManager.cancel(1)
                 }
                 window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                SettingsPageMain(expanded, padding)
+                SettingsPageMain(expanded, padding, this@MainActivity)
                 ChronalApp.getInstance().tuner?.stop()
             }
         }

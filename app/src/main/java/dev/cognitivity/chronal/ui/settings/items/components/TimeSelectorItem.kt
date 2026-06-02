@@ -65,7 +65,7 @@ fun TimeSelectorItem(item: SettingItem.TimeSelector) {
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.Center,
     ) {
-        Text(context.getString(item.meta.title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+        Text(item.meta.title.invoke(), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
         if(item.meta.description != null) {
             Text(item.meta.description.invoke(), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }

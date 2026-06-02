@@ -19,6 +19,7 @@
 package dev.cognitivity.chronal.ui.settings.screens.appinfo
 
 import android.content.Intent
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -53,11 +54,11 @@ import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.ColorScheme
-import dev.cognitivity.chronal.ui.settings.items.SettingItem
 import dev.cognitivity.chronal.ui.settings.data.SettingsPage
+import dev.cognitivity.chronal.ui.settings.items.SettingItem
 import dev.cognitivity.chronal.ui.settings.screens.appinfo.SchemePage.Color
 import dev.cognitivity.chronal.ui.settings.screens.appinfo.SchemePage.Contrast
-import dev.cognitivity.chronal.ui.settings.screens.appinfo.SchemePage.Reload
+import dev.cognitivity.chronal.ui.settings.screens.appinfo.SchemePage.Save
 import dev.cognitivity.chronal.ui.settings.screens.appinfo.SchemePage.Theme
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.launch
@@ -66,31 +67,35 @@ object SchemePage : SettingsPage(
     id = "color_scheme",
     title = R.string.page_settings_color_scheme,
     items = listOf(
+        SettingItem.Element { Save() },
         SettingItem.SubCategoryHeader(R.string.setting_color_scheme_title),
         SettingItem.Container { Color() },
         SettingItem.SubCategoryHeader(R.string.setting_color_theme_title),
         SettingItem.Element { Theme() },
         SettingItem.SubCategoryHeader(R.string.setting_color_contrast_title),
-        SettingItem.Element { Contrast() },
-        SettingItem.Element { Reload() }
+        SettingItem.Element { Contrast() }
     )
 ) {
     val setting = Settings.COLOR_SCHEME
     var value by mutableStateOf(setting.get())
+    var originalValue by mutableStateOf(value)
 
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
     private fun Color() {
-        val scope = rememberCoroutineScope()
-
         val surfaceContainerLow = MaterialTheme.colorScheme.surfaceContainerLow
 
         @Composable
         fun ColorElement(color: ColorScheme.Color, selected: Boolean) {
+            val corner by animateDpAsState(
+                targetValue = if (selected) 16.dp else 24.dp,
+                animationSpec = MaterialTheme.motionScheme.slowEffectsSpec()
+            )
+
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .clip(RoundedCornerShape(if(selected) 16.dp else 24.dp))
+                    .clip(RoundedCornerShape(corner))
                     .background(MaterialTheme.colorScheme.primary)
                     .clickable {
                         value = value.copy(
@@ -99,16 +104,12 @@ object SchemePage : SettingsPage(
                                 else if (value.contrast == ColorScheme.Contrast.SYSTEM) ColorScheme.Contrast.LOW
                                 else value.contrast
                         )
-                        scope.launch {
-                            setting.save(value)
-                        }
                     }
                     .then(
-                        if(selected) Modifier.border(3.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(16.dp))
-                            .border(6.dp, surfaceContainerLow, RoundedCornerShape(16.dp))
+                        if(selected) Modifier.border(3.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(corner))
+                            .border(6.dp, surfaceContainerLow, RoundedCornerShape(corner))
                         else Modifier
                     )
-
             )
         }
         LazyRow(
@@ -127,8 +128,6 @@ object SchemePage : SettingsPage(
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
     private fun Theme() {
-        val scope = rememberCoroutineScope()
-
         Column {
             repeat(3) { i ->
                 val interactionSource = remember { MutableInteractionSource() }
@@ -151,9 +150,6 @@ object SchemePage : SettingsPage(
 
                 val onSelect = {
                     value = value.copy(theme = theme)
-                    scope.launch {
-                        setting.save(value)
-                    }
                 }
 
                 Surface(
@@ -190,8 +186,6 @@ object SchemePage : SettingsPage(
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
     private fun Contrast() {
-        val scope = rememberCoroutineScope()
-
         Column {
             repeat(4) { i ->
                 val interactionSource = remember { MutableInteractionSource() }
@@ -219,9 +213,6 @@ object SchemePage : SettingsPage(
 
                 val onSelect = {
                     value = value.copy(contrast = contrast)
-                    scope.launch {
-                        setting.save(value)
-                    }
                 }
 
                 Surface(
@@ -283,7 +274,9 @@ object SchemePage : SettingsPage(
 
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
-    private fun Reload() {
+    private fun Save() {
+        val scope = rememberCoroutineScope()
+
         Box(
             modifier = Modifier.fillMaxWidth().padding(24.dp)
         ) {
@@ -292,6 +285,10 @@ object SchemePage : SettingsPage(
                     .align(Alignment.Center),
                 contentPadding = ButtonDefaults.contentPaddingFor(ButtonDefaults.MediumContainerHeight),
                 onClick = {
+                    scope.launch {
+                        setting.save(value)
+                        originalValue = value
+                    }
                     context.startActivity(
                         Intent(context, MainActivity::class.java)
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)

@@ -32,7 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.ui.settings.items.SettingItem
 
 @Composable
@@ -53,7 +52,7 @@ fun TextItem(item: SettingItem.TextElement) {
             )
         }
         Column(modifier = Modifier.weight(1f)) {
-            Text(context.getString(item.meta.title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+            Text(item.meta.title.invoke(), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
             if(item.meta.description != null) {
                 Text(item.meta.description.invoke(), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }

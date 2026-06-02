@@ -77,6 +77,11 @@ fun SettingsHomeScreen(navController: NavController, expanded: Boolean) {
             ) {
                 val categories = SettingsLayout.categories.toList()
                 itemsIndexed(categories) { index, category ->
+                    if(category.id == "language") {
+                        SettingItemRenderer(
+                            item = SettingItem.Divider()
+                        )
+                    }
                     SettingItemRenderer(
                         item = SettingItem.CategoryOption(
                             meta = SettingMeta(
@@ -86,8 +91,8 @@ fun SettingsHomeScreen(navController: NavController, expanded: Boolean) {
                             color = category.color,
                             pageId = category.id
                         ),
-                        topRounded = index == 0,
-                        bottomRounded = index == categories.size - 1,
+                        topRounded = index == 0 || categories[index].id == "language",
+                        bottomRounded = index == categories.size - 1 || categories[index+1].id == "language",
                         onNavigate = { navController.navigate("category/$it") }
                     )
                 }

@@ -183,19 +183,31 @@ sealed class SettingItem(
 }
 
 data class SettingMeta(
-    val title: Int,
+    val title: (() -> String),
     val description: (() -> String)? = null,
     val icon: Int? = null,
     val visible: () -> Boolean = { true }
 ) {
     constructor(
         title: Int,
-        description: Int,
+        description: Int? = null,
         icon: Int? = null,
         visible: () -> Boolean = { true }
     ) : this(
-        title,
-        description = { ChronalApp.getInstance().getString(description) },
+        title = { ChronalApp.getInstance().getString(title) },
+        description = if(description != null) ({ ChronalApp.getInstance().getString(description) })
+            else null,
+        icon,
+        visible
+    )
+    constructor(
+        title: Int,
+        description: (() -> String),
+        icon: Int? = null,
+        visible: () -> Boolean = { true },
+    ) : this(
+        title = { ChronalApp.getInstance().getString(title) },
+        description = description,
         icon,
         visible
     )

@@ -1,0 +1,128 @@
+[
+  {
+    "key": "en",
+    "name": "English",
+    "progress": 1.0,
+    "contributors": [
+      "Chronal"
+    ]
+  },
+  {
+    "key": "ar",
+    "android": "ar-rSA",
+    "name": "العربية",
+    "progress": 0.0
+  },
+  {
+    "key": "zh-CN",
+    "android": "zh-rCN",
+    "name": "简体中文",
+    "progress": 0.0
+  },
+  {
+    "key": "zh-TW",
+    "android": "zh-rTW",
+    "name": "繁體中文",
+    "progress": 0.0
+  },
+  {
+    "key": "cs",
+    "android": "cs-rCZ",
+    "name": "Čeština",
+    "progress": 0.52,
+    "contributors": [
+      "Petr Kadlec (@mormegil-cz)"
+    ]
+  },
+  {
+    "key": "nl",
+    "android": "nl-rNL",
+    "name": "Nederlands",
+    "progress": 0.0
+  },
+  {
+    "key": "fr",
+    "android": "fr-rFR",
+    "name": "Français",
+    "progress": 0.15,
+    "contributors": [
+      "Pierre Morvan (@Iriep)",
+      "@Minos2020"
+    ]
+  },
+  {
+    "key": "de",
+    "android": "de-rDE",
+    "name": "Deutsch",
+    "progress": 0.0
+  },
+  {
+    "key": "it",
+    "android": "it-rIT",
+    "name": "Italiano",
+    "progress": 0.0
+  },
+  {
+    "key": "ja",
+    "android": "ja-rJP",
+    "name": "日本語",
+    "progress": 0.0
+  },
+  {
+    "key": "ko",
+    "android": "ko-rKR",
+    "name": "한국어",
+    "progress": 0.0
+  },
+  {
+    "key": "pl",
+    "android": "pl-rPL",
+    "name": "Polski",
+    "progress": 0.0
+  },
+  {
+    "key": "pt-PT",
+    "android": "pt-rPT",
+    "name": "Português (Portugal)",
+    "progress": 0.0
+  },
+  {
+    "key": "pt-BR",
+    "android": "pt-rBR",
+    "name": "Português (Brasil)",
+    "progress": 0.34,
+    "contributors": [
+      "Thaynara Miguel Lopes (@thaynara_ml)"
+    ]
+  },
+  {
+    "key": "ru",
+    "android": "ru-rRU",
+    "name": "Русский",
+    "progress": 0.0
+  },
+  {
+    "key": "es-ES",
+    "android": "es-rES",
+    "name": "Español",
+    "progress": 0.0
+  },
+  {
+    "key": "sv-SE",
+    "android": "sv-rSE",
+    "name": "Svenska",
+    "progress": 0.0
+  },
+  {
+    "key": "tr",
+    "android": "tr-rTR",
+    "name": "Türkçe",
+    "progress": 0.0
+  },
+  {
+    "key": "uk",
+    "android": "uk-rUA",
+    "name": "Українська",
+    "progress": 0.0
+  }
+]

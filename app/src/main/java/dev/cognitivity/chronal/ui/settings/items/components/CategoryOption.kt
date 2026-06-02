@@ -38,7 +38,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.materialkolor.dynamicColorScheme
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.ColorScheme
 import dev.cognitivity.chronal.ui.settings.items.SettingItem
@@ -74,7 +73,7 @@ fun CategoryOptionItem(item: SettingItem.CategoryOption, onNavigate: ((String) -
             }
         }
         Column(modifier = Modifier.fillMaxWidth()) {
-            Text(context.getString(item.meta.title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+            Text(item.meta.title.invoke(), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
             if(item.meta.description != null) {
                 Text(item.meta.description.invoke(), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }

@@ -18,6 +18,8 @@
 
 package dev.cognitivity.chronal.ui.settings
 
+import android.app.Activity
+import android.content.res.Configuration
 import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.slideIn
 import androidx.compose.animation.slideOut
@@ -26,6 +28,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MotionScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntOffset
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -35,12 +40,15 @@ import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.ui.settings.layout.SettingsLayout
 import dev.cognitivity.chronal.ui.settings.screens.SettingsHomeScreen
 import dev.cognitivity.chronal.ui.settings.screens.SettingsListScreen
+import dev.cognitivity.chronal.ui.settings.screens.language.LanguagePage
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsPageMain(
     expanded: Boolean,
-    padding: PaddingValues
+    padding: PaddingValues,
+    activity: Activity
 ) {
     val navController = rememberNavController()
 
@@ -48,7 +56,7 @@ fun SettingsPageMain(
         expanded = expanded,
         padding = padding
     ) {
-        SettingsNavHost(navController, expanded)
+        SettingsNavHost(navController, expanded, activity)
     }
 }
 
@@ -73,7 +81,8 @@ fun SettingsScaffold(
 @Composable
 fun SettingsNavHost(
     navController: NavHostController,
-    expanded: Boolean
+    expanded: Boolean,
+    activity: Activity
 ) {
     val spec: FiniteAnimationSpec<IntOffset> = MotionScheme.expressive().slowEffectsSpec()
 
@@ -109,11 +118,38 @@ fun SettingsNavHost(
                 )
             }
         }
+        composable("page/language/{lang}") { backStackEntry ->
+            val language = backStackEntry.arguments?.getString("lang") ?: "en"
+            val pageId = "language/$language"
+            val page = pageId.let { SettingsLayout.pageOf(it) }
+
+            if(page !is LanguagePage) return@composable
+
+            val localizedContext = remember {
+                val locale = Locale.forLanguageTag(language)
+
+                val config = context.resources.configuration
+                val newConfig = Configuration(config)
+                newConfig.setLocale(locale)
+                context.createConfigurationContext(newConfig)
+            }
+
+            CompositionLocalProvider(
+                LocalContext provides localizedContext
+            ) {
+                SettingsListScreen(
+                    title = page.title(language),
+                    items = page.items(language, activity),
+                    navController = navController,
+                    expanded = expanded
+                )
+            }
+        }
 
         composable("page/{id}") { backStackEntry ->
             val pageId = backStackEntry.arguments?.getString("id")
             val page = pageId?.let { SettingsLayout.pageOf(it) }
-            if (page != null) {
+            if(page != null) {
                 SettingsListScreen(
                     title = context.getString(page.title),
                     items = page.items,

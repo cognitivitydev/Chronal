@@ -35,7 +35,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.ui.settings.items.SettingItem
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -131,7 +130,7 @@ private fun SliderText(item: SettingItem) {
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(Modifier.weight(1f)) {
-            Text(context.getString(item.meta.title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+            Text(item.meta.title.invoke(), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
             if(item.meta.description != null) {
                 Text(item.meta.description!!.invoke(), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
