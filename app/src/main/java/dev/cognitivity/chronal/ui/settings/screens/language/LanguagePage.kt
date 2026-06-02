@@ -94,7 +94,7 @@ object LanguagePage : SettingsPage(
         items.add(
             SettingItem.Element { ApplyButton(language, activity) }
         )
-        if(language.progress < 1f) {
+        if(language.progress > 0f && language.progress < 1f) {
             items.add(
                 SettingItem.LongDescription(
                     text = R.string.settings_language_default_english
@@ -159,6 +159,7 @@ object LanguagePage : SettingsPage(
             Button(
                 modifier = Modifier.heightIn(ButtonDefaults.MediumContainerHeight),
                 contentPadding = ButtonDefaults.contentPaddingFor(ButtonDefaults.MediumContainerHeight),
+                enabled = language.progress > 0f && language.key != Settings.APP_LANGUAGE.get(),
                 onClick = {
                     val originalLanguage = Settings.APP_LANGUAGE.get()
                     Settings.APP_LANGUAGE.set(language.key)
@@ -189,7 +190,7 @@ object LanguagePage : SettingsPage(
                 )
                 Spacer(Modifier.size(ButtonDefaults.iconSpacingFor(ButtonDefaults.MediumContainerHeight)))
                 Text(
-                    text = stringResource(R.string.generic_apply),
+                    text = stringResource(if(language.key != Settings.APP_LANGUAGE.get()) R.string.generic_apply else R.string.generic_applied),
                     style = ButtonDefaults.textStyleFor(ButtonDefaults.MediumContainerHeight)
                 )
             }
@@ -206,6 +207,8 @@ object LanguagePage : SettingsPage(
             in 0.67f..0.95f -> R.string.settings_translations_progress_most
             else -> R.string.settings_translations_progress_complete
         }
+        val icon = if(language.key == Settings.APP_LANGUAGE.get()) R.drawable.outline_check_24
+            else if(language.progress == 0f) R.drawable.outline_globe_2_cancel_24 else R.drawable.outline_language_24
 
         var visible by remember { mutableStateOf(false) }
         LaunchedEffect(Unit) { visible = true }
@@ -241,7 +244,7 @@ object LanguagePage : SettingsPage(
                     )
                 }
                 Icon(
-                    painter = painterResource(R.drawable.outline_language_24),
+                    painter = painterResource(icon),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(56.dp)

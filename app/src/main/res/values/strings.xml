@@ -20,6 +20,7 @@
     <string name="app_name">Chronal</string>
 
     <string name="generic_add">Add</string>
+    <string name="generic_applied">Applied</string>
     <string name="generic_apply">Apply</string>
     <string name="generic_back">Back</string>
     <string name="generic_cancel">Cancel</string>

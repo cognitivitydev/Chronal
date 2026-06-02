@@ -123,6 +123,7 @@ sealed class SettingItem(
      */
     data class PageLink(
         val pageId: String,
+        val trailingContent: (@Composable () -> Unit) = {},
         override val meta: SettingMeta
     ) : SettingItem(meta, true)
 

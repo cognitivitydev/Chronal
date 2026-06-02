@@ -19,12 +19,18 @@
 package dev.cognitivity.chronal.ui.settings.categories
 
 import android.content.Intent
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
 import com.google.gson.Gson
 import com.google.gson.JsonArray
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.Language
 import dev.cognitivity.chronal.ui.settings.data.SettingsCategory
 import dev.cognitivity.chronal.ui.settings.items.SettingItem
@@ -63,7 +69,17 @@ private fun getItems(): List<SettingItem> {
                     description = { ChronalApp.getInstance().getString(progressString, (language.progress*100).toInt()) },
                     icon = icon
                 ),
-                pageId = "language/${language.key}"
+                pageId = "language/${language.key}",
+                trailingContent = {
+                    val selected = language.key == Settings.APP_LANGUAGE.get()
+                    if(selected) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = stringResource(R.string.generic_selected),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
             )
         )
     }

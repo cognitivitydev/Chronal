@@ -56,5 +56,6 @@ fun PageLinkItem(item: SettingItem.PageLink, onNavigate: ((String) -> Unit)?) {
                 Text(item.meta.description.invoke(), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
+        item.trailingContent.invoke()
     }
 }
