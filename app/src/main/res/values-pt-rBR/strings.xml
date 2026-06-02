@@ -196,24 +196,16 @@
     <string name="tuner_microphone_failed">Falha ao obter áudio do dispositivo; tente reiniciar o aplicativo.</string>
     <string name="instrument_title">Escolha um instrumento</string>
     <string name="instrument_add">Adicionar instrumento</string>
+    <string name="instrument_create_new">Criar novo instrumento</string>
     <string name="instrument_create_name">Título</string>
     <string name="instrument_create_name_shortened">Título curto</string>
     <string name="instrument_create_name_shortened_text">Nome abreviado para telas pequenas</string>
-    <string name="instrument_create_new">Criar novo instrumento</string>
     <string name="instrument_create_octave">Oitava</string>
     <string name="instrument_create_octave_range">Deve estar entre -4 e 4</string>
     <string name="instrument_create_octave_text">Diferença de oitavas em relação ao C4 de concerto</string>
-    <string name="instrument_octave_down">diminuir %d oitava</string>
-    <string name="instrument_octave_up">aumentar %d oitava</string>
-    <string name="instrument_octaves_down">diminuir %d oitavas</string>
-    <string name="instrument_octaves_up">aumentar %d oitavas</string>
     <string name="instrument_search">Ferramentas de busca</string>
     <string name="instrument_selected">Selecionado %s</string>
     <string name="instrument_tune_concert">Afinado para o tom de concerto.</string>
-    <string name="instrument_tune_key">Afinado em %s. C4 = Concerto %s4</string>
-    <string name="instrument_tune_key_octave">Afinado em %s, %s. C4 = Concerto %s%d</string>
-    <string name="instrument_tune_octave">Afinado %s. C4 = Concerto C%d</string>
-    <string name="instrument_tune_unknown">C4 = ???</string>
     <string name="audio_player_title">Player de áudio</string>
     <string name="audio_player_back_5">Voltar 5 segundos</string>
     <string name="audio_player_forward_5">Avançar 5 segundos</string>
