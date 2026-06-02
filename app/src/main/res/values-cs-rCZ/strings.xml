@@ -186,19 +186,16 @@
     <string name="tuner_tuning_at">Ladění na %s</string>
     <string name="instrument_title">Vyberte nástroj</string>
     <string name="instrument_add">Přidat nástroj</string>
+    <string name="instrument_create_new">Vytvořit nový nástroj</string>
     <string name="instrument_create_name">Název</string>
     <string name="instrument_create_name_shortened">Zkrácený název</string>
     <string name="instrument_create_name_shortened_text">Zkrácený název pro malé obrazovky</string>
-    <string name="instrument_create_new">Vytvořit nový nástroj</string>
     <string name="instrument_create_octave">Oktáva</string>
     <string name="instrument_create_octave_range">Musí být mezi -4 a 4</string>
     <string name="instrument_create_octave_text">Rozdíl v oktávách od komorního C4</string>
     <string name="instrument_search">Hledat nástroje</string>
     <string name="instrument_selected">Vybráno: %s</string>
     <string name="instrument_tune_concert">Laděno na komorní tón.</string>
-    <string name="instrument_tune_key">Laděno v %s. C4 = komorní %s4</string>
-    <string name="instrument_tune_key_octave">Laděno v %s, %s. C4 = komorní %s%d</string>
-    <string name="instrument_tune_octave">Laděno %s. C4 = komorní C%d</string>
     <string name="audio_player_back_5">O 5 sekund zpět</string>
     <string name="audio_player_forward_5">O 5 sekund vpřed</string>
     <string name="audio_player_skip_start">Přeskočit na začátek</string>
