@@ -111,6 +111,7 @@ dependencies {
     implementation(libs.materialKolor)
     implementation(libs.review)
     implementation(libs.review.ktx)
+    implementation(libs.tarsos.dsp.core)
 }
 
 val changelogSourceDir = file("${rootDir}/metadata/en-US/changelogs/")

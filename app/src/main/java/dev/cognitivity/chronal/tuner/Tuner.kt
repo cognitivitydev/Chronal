@@ -27,7 +27,6 @@ import androidx.compose.runtime.setValue
 import androidx.core.app.ActivityCompat
 import be.tarsos.dsp.AudioDispatcher
 import be.tarsos.dsp.AudioProcessor
-import be.tarsos.dsp.io.android.AudioDispatcherFactory
 import be.tarsos.dsp.pitch.PitchDetectionHandler
 import be.tarsos.dsp.pitch.PitchProcessor
 import dev.cognitivity.chronal.ChronalApp
@@ -35,6 +34,10 @@ import dev.cognitivity.chronal.round
 import dev.cognitivity.chronal.settings.Settings
 
 class Tuner {
+    private val sampleRate = 44100
+    private val bufferSize = 2048
+    private val bufferOverlap = (bufferSize * 0.5).toInt()
+
     var hz by mutableFloatStateOf(0f)
     var history = mutableListOf<Pair<Long, Float>>() // max 100
     var probability by mutableFloatStateOf(0f)
@@ -73,7 +76,7 @@ class Tuner {
     }
     private val pitchProcessor: AudioProcessor =
         PitchProcessor(
-            PitchProcessor.PitchEstimationAlgorithm.FFT_YIN, 22050F, 4096, pitchDetectionHandler
+            PitchProcessor.PitchEstimationAlgorithm.FFT_YIN, sampleRate.toFloat(), bufferSize, pitchDetectionHandler
         )
     private var audioThread: Thread
 
@@ -81,13 +84,19 @@ class Tuner {
         if (ActivityCompat.checkSelfPermission(ChronalApp.getInstance(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             throw IllegalStateException("Tuner is missing RECORD_AUDIO permission")
         }
-        dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(22050, 4096, 3072)
-        dispatcher.addAudioProcessor(pitchProcessor)
-        audioThread = Thread(dispatcher, "Audio Thread")
-        Thread({ dispatcher.run() }, "Audio Thread").start()
         if(ChronalApp.getInstance().tuner != null) {
             ChronalApp.getInstance().tuner!!.stop()
         }
+
+        val audioRecord = AndroidAudioInputStream.getAudioRecord(sampleRate, bufferSize)
+        val audioStream = AndroidAudioInputStream(audioRecord)
+        audioRecord.startRecording()
+
+        dispatcher = AudioDispatcher(audioStream, bufferSize, bufferOverlap)
+        dispatcher.addAudioProcessor(pitchProcessor)
+        audioThread = Thread(dispatcher, "Audio Thread")
+        audioThread.start()
+
         ChronalApp.getInstance().tuner = this
     }
 

@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,10 +58,10 @@ import androidx.graphics.shapes.circle
 import androidx.graphics.shapes.star
 import androidx.lifecycle.ViewModel
 import be.tarsos.dsp.AudioDispatcher
-import be.tarsos.dsp.io.android.AudioDispatcherFactory
 import be.tarsos.dsp.onsets.ComplexOnsetDetector
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.tuner.AndroidAudioInputStream
 import dev.cognitivity.chronal.ui.MorphedShape
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlin.math.round
@@ -368,7 +368,14 @@ class BeatDetectorViewModel : ViewModel() {
 
         if (ActivityCompat.checkSelfPermission(ChronalApp.getInstance(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) return
 
-        dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(22050, 4096, 3072)
+        val sampleRate = 22050
+        val bufferSize = 4096
+        val overlap = 3072
+        val audioRecord = AndroidAudioInputStream.getAudioRecord(sampleRate, bufferSize)
+        val audioStream = AndroidAudioInputStream(audioRecord)
+        audioRecord.startRecording()
+
+        dispatcher = AudioDispatcher(audioStream, bufferSize, overlap)
         onsetDetector = ComplexOnsetDetector(4096, peakThreshold, 0.07, silenceThreshold)
 
         onsetDetector!!.setHandler { time, salience ->

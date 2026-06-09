@@ -79,14 +79,14 @@ class ChronalApp : Application() {
     }
 }
 
-fun Double.floor(decimals: Int = 2): Double = floor(this * 10.0.pow(decimals)) / 10.0.pow(decimals)
-fun Float.floor(decimals: Int = 2): Float = floor(this * 10f.pow(decimals)) / 10f.pow(decimals)
+fun Double.floor(decimals: Int): Double = floor(this * 10.0.pow(decimals)) / 10.0.pow(decimals)
+fun Float.floor(decimals: Int): Float = floor(this * 10f.pow(decimals)) / 10f.pow(decimals)
 
-fun Double.ceil(decimals: Int = 2): Double = ceil(this * 10.0.pow(decimals)) / 10.0.pow(decimals)
-fun Float.ceil(decimals: Int = 2): Float = ceil(this * 10f.pow(decimals)) / 10f.pow(decimals)
+fun Double.ceil(decimals: Int): Double = ceil(this * 10.0.pow(decimals)) / 10.0.pow(decimals)
+fun Float.ceil(decimals: Int): Float = ceil(this * 10f.pow(decimals)) / 10f.pow(decimals)
 
-fun Double.round(decimals: Int = 2) = (this * 10.0.pow(decimals)).roundToInt() / 10.0.pow(decimals)
-fun Float.round(decimals: Int = 2) = (this * 10f.pow(decimals)).roundToInt() / 10f.pow(decimals)
+fun Double.round(decimals: Int) = (this * 10.0.pow(decimals)).roundToInt() / 10.0.pow(decimals)
+fun Float.round(decimals: Int) = (this * 10f.pow(decimals)).roundToInt() / 10f.pow(decimals)
 
 fun Dp.toPx(): Float {
     return TypedValue.applyDimension(
