@@ -19,6 +19,8 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="app_name">Chronal</string>
     <string name="generic_add">Adicionar</string>
+    <string name="generic_applied">Aplicado</string>
+    <string name="generic_apply">Aplicar</string>
     <string name="generic_back">Voltar</string>
     <string name="generic_cancel">Cancelar</string>
     <string name="generic_close">Fechar</string>
@@ -27,6 +29,7 @@
     <string name="generic_delete">Deletar</string>
     <string name="generic_discard">Descartar</string>
     <string name="generic_download">Baixar</string>
+    <string name="generic_drag_handle">Alça de arrastar</string>
     <string name="generic_edit">Editar</string>
     <string name="generic_error">Erro</string>
     <string name="generic_exit">Sair</string>
@@ -73,6 +76,7 @@
     <string name="page_settings">Configurações</string>
     <string name="page_settings_gestures">Gestos</string>
     <string name="page_settings_a4_frequency">Frequência A4</string>
+    <string name="page_settings_accidentals">Sinais de alteração</string>
     <string name="page_settings_app_info">Informações do app</string>
     <string name="page_settings_color_scheme">Tema</string>
     <string name="page_settings_developer_options">Opções de desenvolvedor</string>
@@ -80,6 +84,7 @@
     <string name="page_settings_note_locale">Idioma das notas</string>
     <string name="page_settings_notifications">Notificações</string>
     <string name="page_settings_practice_reminder">Lembrete de Treino</string>
+    <string name="page_settings_language">Idioma</string>
     <string name="page_tuner">Sintonizador</string>
     <string name="changelog_title">O que mudou</string>
     <string name="changelog_updated">Atualizado: %1$s → %2$s</string>
@@ -147,6 +152,7 @@
     <string name="editor_error_invalid_note">Nota inválida no índice %d: \"%s\" / %f</string>
     <string name="editor_error_invalid_time_signature">O compasso %d está com um compasso inválido: %s</string>
     <string name="editor_input_notes">Observações</string>
+    <string name="editor_input_rests">Pausas</string>
     <string name="editor_invalid_rhythm_amount">Erros: (%d)</string>
     <string name="editor_invalid_rhythm_name">Ritmo inválido</string>
     <string name="editor_invalid_rhythm_text">Um erro ocorreu e o ritmo é inválido. Você pode tentar corrigir o erro ou tentar reverter para uma edição anterior.</string>
@@ -154,6 +160,9 @@
     <string name="editor_measure_remove">Remover compasso</string>
     <string name="editor_set_time_signature">Definir compasso</string>
     <string name="editor_set_time_signature_dialog">Defina o compasso</string>
+    <string name="editor_toggle_dot">Ativar ponto</string>
+    <string name="editor_tuplet_add">Adicionar quiáltera</string>
+    <string name="editor_tuplet_remove">Remover quiáltera</string>
     <string name="editor_undo">Desfazer</string>
     <string name="editor_redo">Refazer</string>
     <string name="editor_settings">Configurações de faixa</string>
@@ -196,16 +205,31 @@
     <string name="tuner_microphone_failed">Falha ao obter áudio do dispositivo; tente reiniciar o aplicativo.</string>
     <string name="instrument_title">Escolha um instrumento</string>
     <string name="instrument_add">Adicionar instrumento</string>
+    <string name="instrument_add_category">Adicionar categoria</string>
     <string name="instrument_create_new">Criar novo instrumento</string>
+    <string name="instrument_edit">Editar instrumento</string>
     <string name="instrument_create_name">Título</string>
+    <string name="instrument_create_name_text">Nome do instrumento</string>
     <string name="instrument_create_name_shortened">Título curto</string>
     <string name="instrument_create_name_shortened_text">Nome abreviado para telas pequenas</string>
+    <string name="instrument_create_category">Categoria</string>
+    <string name="instrument_create_category_text">Tipo de instrumento</string>
+    <string name="instrument_create_key">Chave</string>
+    <string name="instrument_create_key_text">Tonalidade de escrita</string>
     <string name="instrument_create_octave">Oitava</string>
     <string name="instrument_create_octave_range">Deve estar entre -4 e 4</string>
     <string name="instrument_create_octave_text">Diferença de oitavas em relação ao C4 de concerto</string>
+    <string name="instrument_create_strings_enable_name">Ativar cordas</string>
+    <string name="instrument_create_strings_enable_description">Definir cordas para uso no afinador</string>
+    <string name="instrument_create_strings_info">As cordas são notadas nas alturas de escrita e ordenadas da esquerda para a direita.</string>
+    <string name="instrument_create_add_string">Adicionar corda</string>
     <string name="instrument_search">Ferramentas de busca</string>
+    <string name="instrument_reset_instruments_title">Redefinir os instrumentos salvos?</string>
+    <string name="instrument_reset_instruments_text">Tem certeza que deseja excluir todos os instrumentos personalizados e reverter para o modo padrão? Isso não pode poderá ser desfeito.</string>
     <string name="instrument_selected">Selecionado %s</string>
     <string name="instrument_tune_concert">Afinado para o tom de concerto.</string>
+    <string name="instrument_tuning">%1$s = de Concerto %2$s</string>
+    <string name="instrument_tune_unknown">%1$s = ???</string>
     <string name="audio_player_title">Player de áudio</string>
     <string name="audio_player_back_5">Voltar 5 segundos</string>
     <string name="audio_player_forward_5">Avançar 5 segundos</string>
@@ -242,6 +266,7 @@
     <string name="settings_feedback_send">Enviar feedback</string>
     <string name="settings_feedback_email_title">Mandar um e-mail</string>
     <string name="settings_feedback_email_text">Para quaisquer outras dúvidas</string>
+    <string name="settings_feedback_open_issue_text">Reportar erros ou sugerir funcionalidade</string>
     <string name="setting_name_metronome_rhythm_secondary">Ritmo do metrônomo (secundário)</string>
     <string name="setting_name_metronome_simple_rhythm_secondary">Ritmo simples do metrônomo (secundário)</string>
     <string name="setting_name_metronome_vibrations_secondary">Vibração do metrônomo (secundário)</string>
