@@ -16,4 +16,38 @@
   ~ You should have received a copy of the GNU General Public License
   ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
   -->
-<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation"></resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+    <string name="app_name">Chronal</string>
+    <string name="generic_add">Hinzufügen</string>
+    <string name="generic_applied">Bestätigt</string>
+    <string name="generic_apply">Anwenden</string>
+    <string name="generic_back">Zurück</string>
+    <string name="generic_cancel">Abbrechen</string>
+    <string name="generic_close">Schließen</string>
+    <string name="generic_confirm">Bestätigen</string>
+    <string name="generic_copy_clipboard">In die Zwischenablage speichern</string>
+    <string name="generic_delete">Löschen</string>
+    <string name="generic_discard">Verwerfen</string>
+    <string name="generic_download">Herunterladen</string>
+    <string name="generic_edit">Bearbeiten</string>
+    <string name="generic_error">Fehler</string>
+    <string name="generic_exit">Beenden</string>
+    <string name="generic_exit_discard">Ohne speichern beenden</string>
+    <string name="generic_export">Exportieren</string>
+    <string name="generic_fullscreen">Vollbild</string>
+    <string name="generic_ignore">Ignorieren</string>
+    <string name="generic_import">Importieren</string>
+    <string name="generic_info">Info</string>
+    <string name="generic_microphone">Mikrofon</string>
+    <string name="generic_more_options">Mehr Optionen</string>
+    <string name="generic_okay">Okay</string>
+    <string name="generic_pause">Pause</string>
+    <string name="generic_picker_input_time">Zeit eingeben</string>
+    <string name="generic_picker_select_time">Zeit auswählen</string>
+    <string name="generic_save">Speichern</string>
+    <string name="generic_save_exit">Speichern und schließen</string>
+    <string name="generic_search">Suchen</string>
+    <string name="generic_settings">Einstellungen</string>
+    <string name="generic_start">Start</string>
+    <string name="generic_stop">Stop</string>
+</resources>
