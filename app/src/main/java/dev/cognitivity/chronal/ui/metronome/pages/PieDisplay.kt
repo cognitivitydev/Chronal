@@ -49,7 +49,8 @@ fun PieDisplay(viewModel: MetronomeViewModel, tracks: List<MetronomeTrack>, modi
         ) {
             PieRing(displayTracks[0],
                 ringSize = 18.dp.toPx(),
-                trackPalette = displayTracks[0].color.getPalette()
+                trackPalette = displayTracks[0].color.getPalette(),
+                accentOutward = true
             )
         }
         if(displayTracks.size > 1 && displayTracks[1].enabled) {
@@ -61,7 +62,8 @@ fun PieDisplay(viewModel: MetronomeViewModel, tracks: List<MetronomeTrack>, modi
             ) {
                 PieRing(displayTracks[1],
                     ringSize = 12.dp.toPx(),
-                    trackPalette = displayTracks[1].color.getPalette()
+                    trackPalette = displayTracks[1].color.getPalette(),
+                    accentOutward = false
                 )
             }
         }

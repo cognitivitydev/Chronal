@@ -62,7 +62,7 @@ private fun buildWedges(intervals: List<Beat>, measure: Int, inactiveColor: Colo
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun BoxScope.PieRing(track: MetronomeTrack, ringSize: Float, trackPalette: TrackColorPalette) {
+fun BoxScope.PieRing(track: MetronomeTrack, ringSize: Float, trackPalette: TrackColorPalette, accentOutward: Boolean) {
     val metronome = ChronalApp.getInstance().metronome
 
     var intervals by remember(track) { mutableStateOf(track.getIntervals()) }
@@ -128,28 +128,35 @@ fun BoxScope.PieRing(track: MetronomeTrack, ringSize: Float, trackPalette: Track
             val gapDegrees = 4f
             val wedgeDegrees = 360f / wedgeCount
             val sweepDegrees = wedgeDegrees - gapDegrees
+            val firstBeatExtra = ringSize
+            val accentDirection = if (accentOutward) 1f else -1f
 
             for (i in 0 until wedgeCount) {
                 val wedge = wedges[i]
                 val startAngle = -90f - wedgeDegrees / 2f + i * wedgeDegrees + gapDegrees / 2f
+
+                val baseWidth = if (i == 0) ringSize + firstBeatExtra else ringSize
+                val wedgeRadius = if (i == 0) radius + accentDirection * firstBeatExtra / 2f else radius
+                val topLeft = Offset(center.x - wedgeRadius, center.y - wedgeRadius)
+                val ovalSize = Size(wedgeRadius * 2, wedgeRadius * 2)
 
                 drawArc(
                     color = trackPalette.color.copy(alpha = wedge.highlightAlpha.value),
                     startAngle = startAngle,
                     sweepAngle = sweepDegrees,
                     useCenter = false,
-                    topLeft = Offset(center.x - radius, center.y - radius),
-                    size = Size(radius * 2, radius * 2),
-                    style = Stroke(width = ringSize + wedge.strokeBoost.value)
+                    topLeft = topLeft,
+                    size = ovalSize,
+                    style = Stroke(width = baseWidth + wedge.strokeBoost.value)
                 )
                 drawArc(
                     color = wedge.color.value,
                     startAngle = startAngle,
                     sweepAngle = sweepDegrees,
                     useCenter = false,
-                    topLeft = Offset(center.x - radius, center.y - radius),
-                    size = Size(radius * 2, radius * 2),
-                    style = Stroke(width = ringSize)
+                    topLeft = topLeft,
+                    size = ovalSize,
+                    style = Stroke(width = baseWidth)
                 )
             }
         }
