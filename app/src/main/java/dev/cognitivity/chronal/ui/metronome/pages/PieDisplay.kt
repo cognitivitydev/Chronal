@@ -48,7 +48,7 @@ fun PieDisplay(viewModel: MetronomeViewModel, tracks: List<MetronomeTrack>, modi
                 .align(Alignment.Center)
         ) {
             PieRing(displayTracks[0],
-                ringSize = 18.dp.toPx(),
+                ringSize = 24.dp.toPx(),
                 trackPalette = displayTracks[0].color.getPalette(),
                 accentOutward = true
             )
@@ -56,12 +56,12 @@ fun PieDisplay(viewModel: MetronomeViewModel, tracks: List<MetronomeTrack>, modi
         if(displayTracks.size > 1 && displayTracks[1].enabled) {
             Box(
                 modifier = Modifier.fillMaxHeight()
-                    .padding(24.dp)
+                    .padding(28.dp)
                     .aspectRatio(1f)
                     .align(Alignment.Center)
             ) {
                 PieRing(displayTracks[1],
-                    ringSize = 12.dp.toPx(),
+                    ringSize = 16.dp.toPx(),
                     trackPalette = displayTracks[1].color.getPalette(),
                     accentOutward = false
                 )

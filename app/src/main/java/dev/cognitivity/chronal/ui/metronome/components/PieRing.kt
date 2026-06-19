@@ -128,7 +128,7 @@ fun BoxScope.PieRing(track: MetronomeTrack, ringSize: Float, trackPalette: Track
             val gapDegrees = 4f
             val wedgeDegrees = 360f / wedgeCount
             val sweepDegrees = wedgeDegrees - gapDegrees
-            val firstBeatExtra = ringSize
+            val firstBeatExtra = ringSize / 2f
             val accentDirection = if (accentOutward) 1f else -1f
 
             for (i in 0 until wedgeCount) {
