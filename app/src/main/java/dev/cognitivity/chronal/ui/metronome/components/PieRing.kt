@@ -49,15 +49,16 @@ import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.TrackColorPalette
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
-private class WedgeState(initialColor: Color) {
+private class WedgeState(initialColor: Color, val isSkipped: Boolean) {
     val color = Animatable(initialColor)
     val highlightAlpha = Animatable(0f)
     val strokeBoost = Animatable(0f)
 }
 
 private fun buildWedges(intervals: List<Beat>, measure: Int, inactiveColor: Color): List<WedgeState> {
-    return intervals.filter { it.measure == measure }.map { WedgeState(inactiveColor) }
+    return intervals.filter { it.measure == measure }.map { WedgeState(inactiveColor, isSkipped = it.duration < 0) }
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -85,7 +86,7 @@ fun BoxScope.PieRing(track: MetronomeTrack, ringSize: Float, trackPalette: Track
             val timestamp = metronome.timestamp
 
             coroutineScope.launch {
-                delay(Settings.VISUAL_LATENCY.get().toLong())
+                delay(Settings.VISUAL_LATENCY.get().toLong().milliseconds)
                 if (!metronome.playing || timestamp != metronome.timestamp) return@launch
                 track.vibrate(beat)
 
@@ -94,6 +95,7 @@ fun BoxScope.PieRing(track: MetronomeTrack, ringSize: Float, trackPalette: Track
                 }
 
                 val wedge = wedges.getOrNull(beat.index) ?: return@launch
+                if (wedge.isSkipped) return@launch
                 wedge.color.snapTo(trackPalette.color)
                 wedge.highlightAlpha.snapTo(0.5f)
                 wedge.strokeBoost.snapTo(ringSize * 0.5f)
@@ -135,8 +137,12 @@ fun BoxScope.PieRing(track: MetronomeTrack, ringSize: Float, trackPalette: Track
                 val wedge = wedges[i]
                 val startAngle = -90f - wedgeDegrees / 2f + i * wedgeDegrees + gapDegrees / 2f
 
-                val baseWidth = if (i == 0) ringSize + firstBeatExtra else ringSize
-                val wedgeRadius = if (i == 0) radius + accentDirection * firstBeatExtra / 2f else radius
+                val baseWidth = when {
+                    wedge.isSkipped -> ringSize * 0.5f
+                    i == 0 -> ringSize + firstBeatExtra
+                    else -> ringSize
+                }
+                val wedgeRadius = if (i == 0 && !wedge.isSkipped) radius + accentDirection * firstBeatExtra / 2f else radius
                 val topLeft = Offset(center.x - wedgeRadius, center.y - wedgeRadius)
                 val ovalSize = Size(wedgeRadius * 2, wedgeRadius * 2)
 
