@@ -41,6 +41,7 @@ import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
 import dev.cognitivity.chronal.ui.metronome.pages.CircularDisplay
 import dev.cognitivity.chronal.ui.metronome.pages.ConductorDisplay
 import dev.cognitivity.chronal.ui.metronome.pages.GridDisplay
+import dev.cognitivity.chronal.ui.metronome.pages.PieDisplay
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -59,6 +60,7 @@ fun MetronomeDisplay(
             DisplayMode.CLOCK -> CircularDisplay(viewModel, tracks)
             DisplayMode.CONDUCTOR -> ConductorDisplay(viewModel, metronome, tracks)
             DisplayMode.GRID -> GridDisplay(viewModel, tracks)
+            DisplayMode.PIE -> PieDisplay(viewModel, tracks)
         }
 
         Row(
@@ -97,7 +99,8 @@ fun DisplaySelector(viewModel: MetronomeViewModel) {
     val modes = listOf(
         R.string.metronome_display_clock to R.drawable.outline_timelapse_24,
         R.string.metronome_display_conductor to R.drawable.outline_person_24,
-        R.string.metronome_display_grid to R.drawable.outline_apps_24
+        R.string.metronome_display_grid to R.drawable.outline_apps_24,
+        R.string.metronome_display_pie to R.drawable.outline_pie_chart_24
     )
 
     val displayMode by viewModel.displayMode.collectAsState()

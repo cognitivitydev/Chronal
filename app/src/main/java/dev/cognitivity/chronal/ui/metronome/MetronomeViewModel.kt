@@ -41,7 +41,8 @@ import kotlinx.coroutines.launch
 enum class DisplayMode {
     CLOCK,
     CONDUCTOR,
-    GRID
+    GRID,
+    PIE
 }
 
 class MetronomeViewModel: ViewModel() {
