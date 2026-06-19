@@ -70,6 +70,7 @@ fun BoxScope.PieRing(track: MetronomeTrack, ringSize: Float, trackPalette: Track
 
     val coroutineScope = rememberCoroutineScope()
     val animationSpec = MaterialTheme.motionScheme.slowSpatialSpec<Float>()
+    val highlightSpec = MaterialTheme.motionScheme.slowEffectsSpec<Float>()
     val colorSpec = MaterialTheme.motionScheme.slowSpatialSpec<Color>()
 
     LaunchedEffect(track) {
@@ -98,7 +99,7 @@ fun BoxScope.PieRing(track: MetronomeTrack, ringSize: Float, trackPalette: Track
                 wedge.strokeBoost.snapTo(ringSize * 0.5f)
 
                 launch { wedge.color.animateTo(trackPalette.colorContainer, colorSpec) }
-                launch { wedge.highlightAlpha.animateTo(0f, animationSpec) }
+                launch { wedge.highlightAlpha.animateTo(0f, highlightSpec) }
                 launch { wedge.strokeBoost.animateTo(0f, animationSpec) }
             }
         }
@@ -125,11 +126,12 @@ fun BoxScope.PieRing(track: MetronomeTrack, ringSize: Float, trackPalette: Track
             val radius = (size.minDimension / 2) - ringSize / 2
             val center = Offset(size.width / 2, size.height / 2)
             val gapDegrees = 4f
-            val sweepDegrees = (360f / wedgeCount) - gapDegrees
+            val wedgeDegrees = 360f / wedgeCount
+            val sweepDegrees = wedgeDegrees - gapDegrees
 
             for (i in 0 until wedgeCount) {
                 val wedge = wedges[i]
-                val startAngle = -90f + i * (360f / wedgeCount) + gapDegrees / 2f
+                val startAngle = -90f - wedgeDegrees / 2f + i * wedgeDegrees + gapDegrees / 2f
 
                 drawArc(
                     color = trackPalette.color.copy(alpha = wedge.highlightAlpha.value),
