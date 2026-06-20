@@ -49,16 +49,19 @@ import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.TrackColorPalette
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 import kotlin.time.Duration.Companion.milliseconds
 
-private class WedgeState(initialColor: Color, val isSkipped: Boolean) {
+private class WedgeState(initialColor: Color, val isSkipped: Boolean, val isHigh: Boolean, val weight: Float) {
     val color = Animatable(initialColor)
     val highlightAlpha = Animatable(0f)
     val strokeBoost = Animatable(0f)
 }
 
 private fun buildWedges(intervals: List<Beat>, measure: Int, inactiveColor: Color): List<WedgeState> {
-    return intervals.filter { it.measure == measure }.map { WedgeState(inactiveColor, isSkipped = it.duration < 0) }
+    return intervals.filter { it.measure == measure }.map {
+        WedgeState(inactiveColor, isSkipped = it.duration < 0, isHigh = it.isHigh, weight = abs(it.duration).toFloat())
+    }
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -128,21 +131,26 @@ fun BoxScope.PieRing(track: MetronomeTrack, ringSize: Float, trackPalette: Track
             val radius = (size.minDimension / 2) - ringSize / 2
             val center = Offset(size.width / 2, size.height / 2)
             val gapDegrees = 4f
-            val wedgeDegrees = 360f / wedgeCount
-            val sweepDegrees = wedgeDegrees - gapDegrees
-            val firstBeatExtra = ringSize / 2f
+            val accentExtra = ringSize / 2f
             val accentDirection = if (accentOutward) 1f else -1f
+
+            val totalWeight = wedges.sumOf { it.weight.toDouble() }.toFloat()
+            val slotDegrees = wedges.map { it.weight / totalWeight * 360f }
+            val offset = -90f - slotDegrees[0] / 2f
+            var cumulative = 0f
 
             for (i in 0 until wedgeCount) {
                 val wedge = wedges[i]
-                val startAngle = -90f - wedgeDegrees / 2f + i * wedgeDegrees + gapDegrees / 2f
+                val sweepDegrees = slotDegrees[i] - gapDegrees
+                val startAngle = offset + cumulative + gapDegrees / 2f
+                cumulative += slotDegrees[i]
 
                 val baseWidth = when {
                     wedge.isSkipped -> ringSize * 0.5f
-                    i == 0 -> ringSize + firstBeatExtra
+                    wedge.isHigh -> ringSize + accentExtra
                     else -> ringSize
                 }
-                val wedgeRadius = if (i == 0 && !wedge.isSkipped) radius + accentDirection * firstBeatExtra / 2f else radius
+                val wedgeRadius = if (wedge.isHigh && !wedge.isSkipped) radius + accentDirection * accentExtra / 2f else radius
                 val topLeft = Offset(center.x - wedgeRadius, center.y - wedgeRadius)
                 val ovalSize = Size(wedgeRadius * 2, wedgeRadius * 2)
 
