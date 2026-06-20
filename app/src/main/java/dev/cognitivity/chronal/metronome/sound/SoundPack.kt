@@ -34,7 +34,7 @@ data class SoundPack(
     companion object {
         val BUILTIN_CLICK = SoundPack(
             id = "builtin/click",
-            name = ChronalApp.getInstance().getString(R.string.sound_click),
+            name = ChronalApp.context.getString(R.string.sound_click),
             type = SoundType.ATONAL,
             assets = listOf(
                 Sound.Resource(R.raw.click_lo, 0),
@@ -43,7 +43,7 @@ data class SoundPack(
         )
         val BUILTIN_SINE = SoundPack(
             id = "builtin/sine",
-            name = ChronalApp.getInstance().getString(R.string.sound_sine),
+            name = ChronalApp.context.getString(R.string.sound_sine),
             type = SoundType.ATONAL,
             assets = listOf(
                 Sound.Resource(R.raw.sine_lo, 0),
@@ -52,7 +52,7 @@ data class SoundPack(
         )
         val BUILTIN_SQUARE = SoundPack(
             id = "builtin/square",
-            name = ChronalApp.getInstance().getString(R.string.sound_square),
+            name = ChronalApp.context.getString(R.string.sound_square),
             type = SoundType.ATONAL,
             assets = listOf(
                 Sound.Resource(R.raw.square_lo, 0),
@@ -61,7 +61,7 @@ data class SoundPack(
         )
         val BUILTIN_CLAP = SoundPack(
             id = "builtin/clap",
-            name = ChronalApp.getInstance().getString(R.string.sound_clap),
+            name = ChronalApp.context.getString(R.string.sound_clap),
             type = SoundType.ATONAL,
             assets = listOf(
                 Sound.Resource(R.raw.clap_lo, 0),
@@ -70,7 +70,7 @@ data class SoundPack(
         )
         val BUILTIN_BLOCK = SoundPack(
             id = "builtin/block",
-            name = ChronalApp.getInstance().getString(R.string.sound_block),
+            name = ChronalApp.context.getString(R.string.sound_block),
             type = SoundType.ATONAL,
             assets = listOf(
                 Sound.Resource(R.raw.block_lo, 0),
@@ -79,7 +79,7 @@ data class SoundPack(
         )
         val BUILTIN_BELL = SoundPack(
             id = "builtin/bell",
-            name = ChronalApp.getInstance().getString(R.string.sound_bell),
+            name = ChronalApp.context.getString(R.string.sound_bell),
             type = SoundType.ATONAL,
             assets = listOf(
                 Sound.Resource(R.raw.bell_lo, 0),
@@ -88,7 +88,7 @@ data class SoundPack(
         )
         val BUILTIN_TAMBOURINE = SoundPack(
             id = "builtin/tambourine",
-            name = ChronalApp.getInstance().getString(R.string.sound_tambourine),
+            name = ChronalApp.context.getString(R.string.sound_tambourine),
             type = SoundType.ATONAL,
             assets = listOf(
                 Sound.Resource(R.raw.tambourine_lo, 0),

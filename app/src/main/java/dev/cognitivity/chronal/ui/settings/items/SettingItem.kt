@@ -157,6 +157,7 @@ sealed class SettingItem(
      */
     data class TextElement(
         val onClick: (() -> Unit) = {},
+        val trailingContent: (@Composable () -> Unit) = {},
         override val meta: SettingMeta,
     ) : SettingItem(meta, true)
 
@@ -195,8 +196,8 @@ data class SettingMeta(
         icon: Int? = null,
         visible: () -> Boolean = { true }
     ) : this(
-        title = { ChronalApp.getInstance().getString(title) },
-        description = if(description != null) ({ ChronalApp.getInstance().getString(description) })
+        title = { ChronalApp.context.getString(title) },
+        description = if(description != null) ({ ChronalApp.context.getString(description) })
             else null,
         icon,
         visible
@@ -207,7 +208,7 @@ data class SettingMeta(
         icon: Int? = null,
         visible: () -> Boolean = { true },
     ) : this(
-        title = { ChronalApp.getInstance().getString(title) },
+        title = { ChronalApp.context.getString(title) },
         description = description,
         icon,
         visible

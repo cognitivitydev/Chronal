@@ -100,6 +100,11 @@ class MainActivity : ComponentActivity() {
 
         try {
             val savedLanguage = Settings.APP_LANGUAGE.get()
+            if(savedLanguage == "system") {
+                super.attachBaseContext(newBase)
+                return
+            }
+
             val locale = Locale.forLanguageTag(savedLanguage)
             Locale.setDefault(locale)
             val config = Configuration(newBase.resources.configuration)

@@ -18,7 +18,10 @@
 
 package dev.cognitivity.chronal.ui.settings.categories
 
+import android.app.Activity
 import android.content.Intent
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
@@ -26,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
+import androidx.core.os.LocaleListCompat
 import com.google.gson.Gson
 import com.google.gson.JsonArray
 import dev.cognitivity.chronal.ChronalApp
@@ -35,6 +39,9 @@ import dev.cognitivity.chronal.settings.types.json.Language
 import dev.cognitivity.chronal.ui.settings.data.SettingsCategory
 import dev.cognitivity.chronal.ui.settings.items.SettingItem
 import dev.cognitivity.chronal.ui.settings.items.SettingMeta
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 private val translationResource = R.raw.translations
 
@@ -43,35 +50,23 @@ object LanguageCategory : SettingsCategory(
     title = R.string.page_settings_language,
     icon = R.drawable.outline_language_24,
     color = Color(0xFF00F7FF),
-    items = getItems()
-)
-
-private fun getItems(): List<SettingItem> {
-    val languages = Gson().fromJson(
-        ChronalApp.getInstance().resources.openRawResource(translationResource).readBytes().decodeToString(),
-        JsonArray::class.java
-    ).map { Language(it.asJsonObject) }
-    val items = mutableListOf<SettingItem>()
-
-    languages.filter { it.progress > 0f }.forEach { language ->
-        val progressString = when(language.progress) {
-            in 0.00f..0.33f -> R.string.settings_translations_progress_few
-            in 0.33f..0.67f -> R.string.settings_translations_progress_partial
-            in 0.67f..0.95f -> R.string.settings_translations_progress_most
-            else -> R.string.settings_translations_progress_complete
-        }
-        val icon = R.drawable.outline_translate_24
+    items = emptyList()
+) {
+    fun getItems(activity: Activity): List<SettingItem> {
+        val languages = Gson().fromJson(
+            ChronalApp.getInstance().resources.openRawResource(translationResource).readBytes().decodeToString(),
+            JsonArray::class.java
+        ).map { Language(it.asJsonObject) }
+        val items = mutableListOf<SettingItem>()
 
         items.add(
-            SettingItem.PageLink(
+            SettingItem.TextElement(
                 meta = SettingMeta(
-                    title = { language.name },
-                    description = { ChronalApp.getInstance().getString(progressString, (language.progress*100).toInt()) },
-                    icon = icon
+                    title = R.string.settings_language_system,
+                    icon = R.drawable.outline_language_24
                 ),
-                pageId = "language/${language.key}",
                 trailingContent = {
-                    val selected = language.key == Settings.APP_LANGUAGE.get()
+                    val selected = Settings.APP_LANGUAGE.get() == "system"
                     if(selected) {
                         Icon(
                             imageVector = Icons.Default.Check,
@@ -79,46 +74,101 @@ private fun getItems(): List<SettingItem> {
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
+                },
+                onClick = {
+                    val originalLanguage = Settings.APP_LANGUAGE.get()
+                    Settings.APP_LANGUAGE.set("system")
+
+                    CoroutineScope(Dispatchers.Main).launch {
+                        try {
+                            val locale = LocaleListCompat.getEmptyLocaleList()
+                            AppCompatDelegate.setApplicationLocales(locale)
+
+                            activity.recreate()
+                        } catch (_: Exception) {
+                            Toast.makeText(
+                                ChronalApp.getInstance(),
+                                ChronalApp.context.getString(R.string.settings_language_apply_error, "system", originalLanguage),
+                                Toast.LENGTH_SHORT
+                            ).show()
+
+                            Settings.APP_LANGUAGE.set(originalLanguage)
+                        } finally {
+                            Settings.APP_LANGUAGE.save()
+                        }
+                    }
                 }
             )
         )
-    }
-    val missing = languages.filter { it.progress == 0f }
-    if(missing.isNotEmpty()) {
-        items.add(
-            SettingItem.SubCategoryHeader(
-                text = R.string.settings_translations_missing_header
-            )
-        )
-        missing.forEach { language ->
-            val progressString = R.string.settings_translations_progress_none
-            val icon = R.drawable.outline_globe_2_cancel_24
+        items.add(SettingItem.Divider())
+
+        languages.filter { it.progress > 0f }.forEach { language ->
+            val progressString = when(language.progress) {
+                in 0.00f..0.33f -> R.string.settings_translations_progress_few
+                in 0.33f..0.67f -> R.string.settings_translations_progress_partial
+                in 0.67f..0.95f -> R.string.settings_translations_progress_most
+                else -> R.string.settings_translations_progress_complete
+            }
+            val icon = R.drawable.outline_translate_24
 
             items.add(
                 SettingItem.PageLink(
                     meta = SettingMeta(
                         title = { language.name },
-                        description = { ChronalApp.getInstance().getString(progressString, (language.progress*100).toInt()) },
+                        description = { ChronalApp.context.getString(progressString, (language.progress*100).toInt()) },
                         icon = icon
                     ),
-                    pageId = "language/${language.key}"
+                    pageId = "language/${language.key}",
+                    trailingContent = {
+                        val selected = language.key == Settings.APP_LANGUAGE.get()
+                        if(selected) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = stringResource(R.string.generic_selected),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
                 )
             )
         }
-    }
-    items.add(SettingItem.Divider())
-    items.add(
-        SettingItem.TextElement(
-            meta = SettingMeta(
-                title = R.string.settings_translations_suggest,
-                icon = R.drawable.outline_public_24,
-            ),
-            onClick = {
-                val intent = Intent(Intent.ACTION_VIEW, "https://crowdin.com/project/chronal".toUri())
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                ChronalApp.getInstance().startActivity(intent)
+        val missing = languages.filter { it.progress == 0f }
+        if(missing.isNotEmpty()) {
+            items.add(
+                SettingItem.SubCategoryHeader(
+                    text = R.string.settings_translations_missing_header
+                )
+            )
+            missing.forEach { language ->
+                val progressString = R.string.settings_translations_progress_none
+                val icon = R.drawable.outline_globe_2_cancel_24
+
+                items.add(
+                    SettingItem.PageLink(
+                        meta = SettingMeta(
+                            title = { language.name },
+                            description = { ChronalApp.context.getString(progressString, (language.progress*100).toInt()) },
+                            icon = icon
+                        ),
+                        pageId = "language/${language.key}"
+                    )
+                )
             }
+        }
+        items.add(SettingItem.Divider())
+        items.add(
+            SettingItem.TextElement(
+                meta = SettingMeta(
+                    title = R.string.settings_translations_suggest,
+                    icon = R.drawable.outline_public_24,
+                ),
+                onClick = {
+                    val intent = Intent(Intent.ACTION_VIEW, "https://crowdin.com/project/chronal".toUri())
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    ChronalApp.getInstance().startActivity(intent)
+                }
+            )
         )
-    )
-    return items
+        return items
+    }
 }

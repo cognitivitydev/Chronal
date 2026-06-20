@@ -101,7 +101,7 @@ object Settings {
     val PRACTICE_REMINDER_SNOOZE = IntSetting("practice_reminder_snooze", 10) // time in minutes: 0 / 10 / 30 / 60 / 90
 
     // Internal
-    val APP_LANGUAGE = StringSetting("language", "en")
+    val APP_LANGUAGE = StringSetting("language", "system")
     val METRONOME_CONFIG = JsonSetting(
         key = "metronome_config",
         defaultValue = MetronomeConfig.default(),

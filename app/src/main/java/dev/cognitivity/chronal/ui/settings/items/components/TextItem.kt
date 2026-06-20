@@ -57,5 +57,6 @@ fun TextItem(item: SettingItem.TextElement) {
                 Text(item.meta.description.invoke(), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
+        item.trailingContent.invoke()
     }
 }

@@ -20,6 +20,7 @@ package dev.cognitivity.chronal
 
 import android.app.Application
 import android.content.Context
+import android.content.res.Configuration
 import android.util.TypedValue
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalDensity
@@ -33,6 +34,7 @@ import dev.cognitivity.chronal.settings.Setting
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.tuner.Tuner
 import kotlinx.coroutines.runBlocking
+import java.util.*
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.pow
@@ -74,7 +76,25 @@ class ChronalApp : Application() {
         }
 
         val context: Context
-            get() = application.applicationContext
+            get() {
+                // TODO this is bad
+                val savedLanguage = try {
+                    Settings.APP_LANGUAGE.get()
+                } catch (_: Exception) {
+                    "system"
+                }
+
+                if (savedLanguage == "system") {
+                    return application.applicationContext
+                }
+
+                val locale = Locale.forLanguageTag(savedLanguage)
+                val config = Configuration(application.resources.configuration)
+                config.setLocale(locale)
+                Locale.setDefault(locale)
+
+                return application.createConfigurationContext(config)
+            }
 
     }
 }

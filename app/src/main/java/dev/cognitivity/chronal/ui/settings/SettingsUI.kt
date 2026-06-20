@@ -37,6 +37,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dev.cognitivity.chronal.ChronalApp.Companion.context
+import dev.cognitivity.chronal.ui.settings.categories.LanguageCategory
 import dev.cognitivity.chronal.ui.settings.layout.SettingsLayout
 import dev.cognitivity.chronal.ui.settings.screens.SettingsHomeScreen
 import dev.cognitivity.chronal.ui.settings.screens.SettingsListScreen
@@ -109,10 +110,12 @@ fun SettingsNavHost(
         composable("category/{id}") { backStackEntry ->
             val categoryId = backStackEntry.arguments?.getString("id")
             val category = categoryId?.let { SettingsLayout.categoryOf(it) }
-            if (category != null) {
+            if(category != null) {
+                val items = if(categoryId == "language") LanguageCategory.getItems(activity)
+                    else category.items
                 SettingsListScreen(
                     title = context.getString(category.title),
-                    items = category.items,
+                    items = items,
                     navController = navController,
                     expanded = expanded
                 )
