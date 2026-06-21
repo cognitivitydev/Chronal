@@ -49,6 +49,7 @@ import dev.cognitivity.chronal.ui.metronome.components.verticalBPMGesture
 import dev.cognitivity.chronal.ui.metronome.pages.CircularDisplay
 import dev.cognitivity.chronal.ui.metronome.pages.ConductorDisplay
 import dev.cognitivity.chronal.ui.metronome.pages.GridDisplay
+import dev.cognitivity.chronal.ui.metronome.pages.PieDisplay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -168,6 +169,7 @@ fun MetronomePageMain(mainActivity: MainActivity, viewModel: MetronomeViewModel,
                         DisplayMode.CLOCK -> CircularDisplay(viewModel, tracks)
                         DisplayMode.CONDUCTOR -> ConductorDisplay(viewModel, metronome, tracks)
                         DisplayMode.GRID -> GridDisplay(viewModel, tracks)
+                        DisplayMode.PIE -> PieDisplay(viewModel, tracks)
                     }
                     IconButton(
                         onClick = { viewModel.setFullscreenMode(false) },
