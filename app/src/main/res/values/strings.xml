@@ -112,6 +112,7 @@
     <string name="metronome_display_clock">Clock</string>
     <string name="metronome_display_conductor">Conductor</string>
     <string name="metronome_display_grid">Grid</string>
+    <string name="metronome_display_pie">Pie</string>
     <string name="metronome_switch_display_mode">Switch display modes</string>
 
     <string name="metronome_conductor_not_supported">Current time signature is not yet supported.</string>
