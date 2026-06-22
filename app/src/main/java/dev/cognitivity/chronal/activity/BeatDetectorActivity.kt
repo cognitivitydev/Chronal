@@ -25,7 +25,6 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -66,7 +65,7 @@ import dev.cognitivity.chronal.ui.MorphedShape
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlin.math.round
 
-class BeatDetectorActivity : ComponentActivity() {
+class BeatDetectorActivity : BaseActivity() {
     var isRecording by mutableStateOf(false)
     var showMicrophoneDialog by mutableStateOf(false)
     var peakThreshold by mutableDoubleStateOf(0.2)

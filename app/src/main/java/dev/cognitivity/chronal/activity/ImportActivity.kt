@@ -22,7 +22,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Base64
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
@@ -53,7 +52,7 @@ import java.io.ByteArrayInputStream
 import java.text.SimpleDateFormat
 import java.util.zip.GZIPInputStream
 
-class ImportActivity : ComponentActivity() {
+class ImportActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

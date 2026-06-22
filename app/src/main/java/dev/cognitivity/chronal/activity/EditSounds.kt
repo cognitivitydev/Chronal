@@ -22,7 +22,6 @@ import android.content.Intent
 import android.media.AudioAttributes
 import android.media.SoundPool
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
@@ -58,7 +57,7 @@ import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.launch
 
-class EditSounds: ComponentActivity() {
+class EditSounds: BaseActivity() {
     private data class SoundOption(
         val packId: String,
         val label: String,

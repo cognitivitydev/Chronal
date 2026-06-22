@@ -26,7 +26,6 @@ import android.text.format.DateFormat
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowManager
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.core.Animatable
@@ -70,7 +69,7 @@ import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.math.abs
 
-class FullscreenActivity : ComponentActivity() {
+class FullscreenActivity : BaseActivity() {
     val metronome = ChronalApp.getInstance().metronome
     val mainTrack = metronome.tracks[0]
 

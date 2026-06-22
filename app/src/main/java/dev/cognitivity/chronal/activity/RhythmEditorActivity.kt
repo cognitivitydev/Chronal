@@ -26,7 +26,6 @@ import android.util.Log
 import android.view.View
 import android.view.WindowInsets
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.animateColorAsState
@@ -109,7 +108,7 @@ import kotlin.math.floor
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
-class RhythmEditorActivity : ComponentActivity() {
+class RhythmEditorActivity : BaseActivity() {
 
     enum class NoteInputState {
         UP, DOWN, REST

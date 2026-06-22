@@ -20,17 +20,14 @@ package dev.cognitivity.chronal.activity
 
 import android.Manifest
 import android.app.NotificationManager
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.content.res.Configuration
 import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
 import android.os.VibratorManager
 import android.view.WindowManager
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -86,35 +83,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.util.*
 
 lateinit var audioManager: AudioManager
 var vibratorManager: VibratorManager? = null
 
-class MainActivity : ComponentActivity() {
-    override fun attachBaseContext(newBase: Context?) {
-        if(newBase == null) {
-            super.attachBaseContext(newBase)
-            return
-        }
-
-        try {
-            val savedLanguage = Settings.APP_LANGUAGE.get()
-            if(savedLanguage == "system") {
-                super.attachBaseContext(newBase)
-                return
-            }
-
-            val locale = Locale.forLanguageTag(savedLanguage)
-            Locale.setDefault(locale)
-            val config = Configuration(newBase.resources.configuration)
-            config.setLocale(locale)
-
-            super.attachBaseContext(newBase.createConfigurationContext(config))
-        } catch(_: Exception) {
-            super.attachBaseContext(newBase)
-        }
-    }
+class MainActivity : BaseActivity() {
 
     fun runActivity(activity: Class<*>) {
         val k = Intent(this, activity)

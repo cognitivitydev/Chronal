@@ -21,7 +21,6 @@ package dev.cognitivity.chronal.activity
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.EnterTransition
@@ -101,7 +100,7 @@ import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
-class SimpleEditorActivity : ComponentActivity() {
+class SimpleEditorActivity : BaseActivity() {
     private var trackIndex by mutableIntStateOf(0)
     private var error by mutableStateOf(false)
     private var previewRhythm by mutableStateOf<Rhythm?>(null)

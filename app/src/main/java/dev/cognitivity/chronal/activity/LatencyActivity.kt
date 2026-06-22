@@ -20,7 +20,6 @@ package dev.cognitivity.chronal.activity
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.Animatable
@@ -64,7 +63,7 @@ import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class LatencyActivity : ComponentActivity() {
+class LatencyActivity : BaseActivity() {
     val metronome = Metronome(
         sendNotifications = false,
         bpm = 120f,

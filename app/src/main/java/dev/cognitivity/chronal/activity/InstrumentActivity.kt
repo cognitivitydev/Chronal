@@ -20,7 +20,6 @@ package dev.cognitivity.chronal.activity
 
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -92,7 +91,7 @@ import sh.calvin.reorderable.ReorderableListItemScope
 import kotlin.math.abs
 import kotlin.math.floor
 
-class InstrumentActivity : ComponentActivity() {
+class InstrumentActivity : BaseActivity() {
     private var editingInstrument: Instrument? = null
     private var editingInstrumentCategory: String? = null
 
