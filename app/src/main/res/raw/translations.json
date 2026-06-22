@@ -2,10 +2,7 @@
   {
     "key": "en",
     "name": "English",
-    "progress": 1.0,
-    "contributors": [
-      "Chronal"
-    ]
+    "progress": 1.0
   },
   {
     "key": "ar",
@@ -63,7 +60,10 @@
     "key": "it",
     "android": "it-rIT",
     "name": "Italiano",
-    "progress": 0.0
+    "progress": 1.0,
+    "contributors": [
+      "@richie.meggio"
+    ]
   },
   {
     "key": "ja",
