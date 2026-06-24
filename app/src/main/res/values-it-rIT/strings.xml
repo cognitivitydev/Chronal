@@ -106,6 +106,7 @@
     <string name="metronome_display_clock">Orologio</string>
     <string name="metronome_display_conductor">Direttore</string>
     <string name="metronome_display_grid">Griglia</string>
+    <string name="metronome_display_pie">Grafico a torta</string>
     <string name="metronome_switch_display_mode">Cambia modalità di visualizzazione</string>
     <string name="metronome_conductor_not_supported">Questa indicazione di tempo non è supportata</string>
     <string name="metronome_conductor_flip">Capovolgi orizzontalmente</string>
@@ -292,6 +293,7 @@
     <string name="settings_translations_contributors">%1$s traduttori:</string>
     <string name="settings_language_default_english">Questa lingua è incompleta. Il testo che non è stato ancora tradotto sarà in l\'inglese.</string>
     <string name="settings_language_apply_error">Selezione di “$1%snon riuscita”; ritorno a “$2%s”…</string>
+    <string name="settings_language_system">Predefinito di sistema</string>
     <string name="settings_menu_help">Aiuto</string>
     <string name="settings_menu_open_source_credits">Riconoscimenti open source</string>
     <string name="settings_menu_send_feedback">Invia feedback</string>
