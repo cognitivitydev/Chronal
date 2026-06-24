@@ -34,8 +34,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
-import dev.cognitivity.chronal.metronome.Metronome
 import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.metronome.Metronome
 import dev.cognitivity.chronal.ui.metronome.DisplayMode
 import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
 import dev.cognitivity.chronal.ui.metronome.pages.CircularDisplay
@@ -100,7 +100,7 @@ fun DisplaySelector(viewModel: MetronomeViewModel) {
         R.string.metronome_display_clock to R.drawable.outline_timelapse_24,
         R.string.metronome_display_conductor to R.drawable.outline_person_24,
         R.string.metronome_display_grid to R.drawable.outline_apps_24,
-        R.string.metronome_display_pie to R.drawable.outline_pie_chart_24
+        R.string.metronome_display_pie to R.drawable.outline_donut_large_24
     )
 
     val displayMode by viewModel.displayMode.collectAsState()
