@@ -1,0 +1,11 @@
+# v1.1.2
+
+ • Added a string tuning mode.
+ • Custom instruments can now be saved and reorganized.
+ • Switching instruments automatically enables note transposition.
+ • Added new metronome display: Pie (@jteuber)
+ • Added language selection to the settings.
+ • Added review prompt when using the Play Store version.
+ • Fixed some setting buttons not properly updating.
+ • Updated TarsosDSP audio processor to 2.5.
+ • Various new language translations.

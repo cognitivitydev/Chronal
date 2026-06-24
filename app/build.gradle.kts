@@ -32,8 +32,8 @@ android {
         applicationId = "dev.cognitivity.chronal"
         minSdk = 23
         targetSdk = 36
-        versionCode = 14
-        versionName = "1.1.1"
+        versionCode = 15
+        versionName = "1.1.2"
 
         vectorDrawables {
             useSupportLibrary = true
