@@ -40,16 +40,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.settings.Settings
 import java.io.IOException
-import kotlin.text.lines
-import kotlin.text.replace
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -58,6 +57,7 @@ fun ChangelogSheet(onDismissRequest: () -> Unit,
                    toVersionCode: Int = Settings.VERSION_CODE.get(), toVersion: String = Settings.VERSION.get()
 ) {
     val entries = mutableListOf<String>()
+    val context = LocalContext.current
     try {
         val files = context.assets.list("changelogs") ?: arrayOf()
         val versionCodes = files.mapNotNull { it.removeSuffix(".txt").toIntOrNull() }.sorted()
@@ -77,13 +77,13 @@ fun ChangelogSheet(onDismissRequest: () -> Unit,
                 .padding(horizontal = 24.dp, vertical = 12.dp)
         ) {
             Text(
-                text = context.getString(R.string.changelog_title),
+                text = stringResource(R.string.changelog_title),
                 style = MaterialTheme.typography.headlineMediumEmphasized,
                 color = MaterialTheme.colorScheme.onSurface
             )
             if(fromVersion != null) {
                 Text(
-                    text = context.getString(R.string.changelog_updated, fromVersion, toVersion),
+                    text = stringResource(R.string.changelog_updated, fromVersion, toVersion),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -134,7 +134,7 @@ fun ChangelogSheet(onDismissRequest: () -> Unit,
                             contentDescription = null
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(context.getString(R.string.settings_support_project))
+                        Text(stringResource(R.string.settings_support_project))
                     }
                     FilledTonalButton(
                         onClick = {
@@ -149,7 +149,7 @@ fun ChangelogSheet(onDismissRequest: () -> Unit,
                             contentDescription = null
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(context.getString(R.string.page_settings_feedback))
+                        Text(stringResource(R.string.page_settings_feedback))
                     }
                 }
             }

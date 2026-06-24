@@ -255,20 +255,20 @@ class MainActivity : BaseActivity() {
                 )
             }
 
-            var showChangelogSheet by remember { mutableStateOf(false) }
-            val lastVersionCode = Settings.LAST_VERSION_CODE.get()
-            val lastVersion = Settings.LAST_VERSION.get()
-            val currentVersionCode = Settings.VERSION_CODE.get()
-            val currentVersion = Settings.VERSION.get()
-            if(currentVersionCode > lastVersionCode && lastVersionCode != 0) {
-                showChangelogSheet = true
-            }
-            LaunchedEffect(Unit) {
-                Settings.LAST_VERSION_CODE.save(currentVersionCode)
-                Settings.LAST_VERSION.save(currentVersion)
+            val lastVersionCode = remember { Settings.LAST_VERSION_CODE.get() }
+            val lastVersion = remember { Settings.LAST_VERSION.get() }
+            val currentVersionCode = remember { Settings.VERSION_CODE.get() }
+            val currentVersion = remember { Settings.VERSION.get() }
+            var showChangelogSheet by remember { mutableStateOf(currentVersionCode > lastVersionCode && lastVersionCode != 0) }
+
+            LaunchedEffect(currentVersionCode) {
+                if(currentVersionCode > lastVersionCode) {
+                    Settings.LAST_VERSION_CODE.save(currentVersionCode)
+                    Settings.LAST_VERSION.save(currentVersion)
+                }
             }
 
-            if (showChangelogSheet) {
+            if(showChangelogSheet) {
                 ChangelogSheet(
                     onDismissRequest = { showChangelogSheet = false },
                     fromVersionCode = lastVersionCode,
