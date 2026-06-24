@@ -100,7 +100,7 @@ fun BoxScope.PieRing(track: MetronomeTrack, ringSize: Float, trackPalette: Track
                 val wedge = wedges.getOrNull(beat.index) ?: return@launch
                 if (wedge.isSkipped) return@launch
                 wedge.color.snapTo(trackPalette.color)
-                wedge.highlightAlpha.snapTo(0.5f)
+                wedge.highlightAlpha.snapTo(0.75f)
                 wedge.strokeBoost.snapTo(ringSize * 0.5f)
 
                 launch { wedge.color.animateTo(trackPalette.colorContainer, colorSpec) }
@@ -164,7 +164,7 @@ fun BoxScope.PieRing(track: MetronomeTrack, ringSize: Float, trackPalette: Track
                     style = Stroke(width = baseWidth + wedge.strokeBoost.value)
                 )
                 drawArc(
-                    color = wedge.color.value,
+                    color = wedge.color.value.copy(alpha = if(wedge.isSkipped) 0.5f else 1f),
                     startAngle = startAngle,
                     sweepAngle = sweepDegrees,
                     useCenter = false,
