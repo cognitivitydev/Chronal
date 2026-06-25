@@ -18,4 +18,12 @@
   -->
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="app_name">Chronal</string>
+    <string name="generic_add">Añadir</string>
+    <string name="generic_applied">Aplicado</string>
+    <string name="generic_apply">Aplicar</string>
+    <string name="generic_back">Atrás</string>
+    <string name="generic_cancel">Cancelar</string>
+    <string name="generic_close">Cerrar</string>
+    <string name="generic_confirm">Confirmar</string>
+    <string name="generic_copy_clipboard">Copiar al portapapeles</string>
 </resources>
