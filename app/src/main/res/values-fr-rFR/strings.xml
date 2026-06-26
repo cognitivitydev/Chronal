@@ -146,9 +146,16 @@
     <string name="audio_player_skip_start">Revenir au commencement</string>
     <string name="audio_player_skip_end">Aller à la fin</string>
     <string name="audio_player_media_volume">Volume du média</string>
+    <string name="audio_player_metronome_volume">Volume du Métronome</string>
+    <string name="audio_player_volume_controls">Contrôles du volume</string>
+    <string name="audio_player_updating">Mise à jour de l\'audio…</string>
+    <string name="audio_player_add_tempo">Ajouter un changement de tempo</string>
+    <string name="audio_player_add_pause">Ajouter une pause</string>
+    <string name="audio_player_set_bpm">Régler le BPM</string>
     <string name="audio_player_pause">Pause</string>
     <string name="audio_player_bpm_alt">%d BPM</string>
     <string name="audio_player_seconds_alt">%.2f s</string>
+    <string name="audio_player_length_seconds">%.2f secondes</string>
     <string name="audio_player_element_tempo">Tempo</string>
     <string name="audio_player_element_duration_type">Type de durée</string>
     <string name="audio_player_element_duration_time">Temps</string>
