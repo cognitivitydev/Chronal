@@ -109,8 +109,6 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.materialKolor)
-    implementation(libs.review)
-    implementation(libs.review.ktx)
     implementation(libs.tarsos.dsp.core)
 }
 

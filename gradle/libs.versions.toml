@@ -15,8 +15,6 @@ coreSplashscreen = "1.0.1"
 graphicsShapesAndroid = "1.0.1"
 navigationCompose = "2.9.3"
 reorderable = "3.1.0"
-review = "2.0.2"
-reviewKtx = "2.0.2"
 runtimeLivedata = "1.8.3"
 rxandroid = "2.1.0"
 rxjava = "2.2.9"
@@ -52,8 +50,6 @@ androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscree
 androidx-graphics-shapes-android = { group = "androidx.graphics", name = "graphics-shapes-android", version.ref = "graphicsShapesAndroid" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
-review = { module = "com.google.android.play:review", version.ref = "review" }
-review-ktx = { module = "com.google.android.play:review-ktx", version.ref = "reviewKtx" }
 rxandroid = { module = "io.reactivex.rxjava2:rxandroid", version.ref = "rxandroid" }
 rxjava = { module = "io.reactivex.rxjava2:rxjava", version.ref = "rxjava" }
 rxkotlin = { module = "io.reactivex.rxjava2:rxkotlin", version.ref = "rxkotlin" }
