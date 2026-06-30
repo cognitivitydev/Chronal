@@ -45,7 +45,7 @@ import dev.cognitivity.chronal.ui.metronome.components.MetronomeDisplay
 import dev.cognitivity.chronal.ui.metronome.components.PlayButton
 import dev.cognitivity.chronal.ui.metronome.components.TempoControlsDialog
 import dev.cognitivity.chronal.ui.metronome.components.TrackList
-import dev.cognitivity.chronal.ui.metronome.components.verticalBPMGesture
+import dev.cognitivity.chronal.ui.metronome.components.metronomeGestures
 import dev.cognitivity.chronal.ui.metronome.pages.CircularDisplay
 import dev.cognitivity.chronal.ui.metronome.pages.ConductorDisplay
 import dev.cognitivity.chronal.ui.metronome.pages.GridDisplay
@@ -61,7 +61,7 @@ fun MetronomePageMain(mainActivity: MainActivity, viewModel: MetronomeViewModel,
     BoxWithConstraints(
         modifier = Modifier.fillMaxSize()
             .padding(padding)
-            .verticalBPMGesture(
+            .metronomeGestures(
                 onTap = {
                     viewModel.setPlaying(!playing)
                     mainActivity.setKeepScreenOn(!playing)
@@ -151,7 +151,7 @@ fun MetronomePageMain(mainActivity: MainActivity, viewModel: MetronomeViewModel,
                     modifier = Modifier.fillMaxSize()
                         .background(MaterialTheme.colorScheme.surface)
                         .windowInsetsPadding(WindowInsets.safeDrawing)
-                        .verticalBPMGesture(
+                        .metronomeGestures(
                             onTap = {
                                 viewModel.setPlaying(!playing)
                                 mainActivity.setKeepScreenOn(!playing)

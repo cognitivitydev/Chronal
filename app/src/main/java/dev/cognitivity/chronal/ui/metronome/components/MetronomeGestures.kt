@@ -25,6 +25,7 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.changedToDown
 import androidx.compose.ui.input.pointer.pointerInput
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.settings.Settings
@@ -32,7 +33,7 @@ import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.pow
 
-fun Modifier.verticalBPMGesture(
+fun Modifier.metronomeGestures(
     onHold: () -> Unit = {},
     onTap: () -> Unit = {},
     onSwipe: (Int) -> Unit = {},
@@ -44,12 +45,19 @@ fun Modifier.verticalBPMGesture(
     val swipeSensitivity = Settings.GESTURE_SWIPE_SENSITIVITY.get()
     val invertedSwipe = Settings.GESTURE_SWIPE_INVERTED.get()
 
+    val vibrator = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
+    } else {
+        @Suppress("DEPRECATION")
+        context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+    }
+
     return pointerInput(Unit) {
         awaitPointerEventScope {
             val dragThreshold = 128f * (1f - swipeSensitivity)
 
             while (true) {
-                val down = awaitPointerEvent().changes.firstOrNull { it.pressed && !it.isConsumed }
+                val down = awaitPointerEvent().changes.firstOrNull { it.changedToDown() && !it.isConsumed }
                     ?: continue
                 val downTime = System.currentTimeMillis()
                 var lastY = down.position.y
@@ -69,12 +77,12 @@ fun Modifier.verticalBPMGesture(
                         if(holdEnabled && !isDrag && !holdTriggered) {
                             if(elapsed >= holdDuration) {
                                 holdTriggered = true
-                                vibrationEnd()
+                                vibrationEnd(vibrator)
                                 onHold()
                             } else if(!vibrating && elapsed >= vibrationStart) {
                                 vibrating = true
                                 val (timings, amplitudes) = vibrationRamp(holdDuration)
-                                vibrate(timings, amplitudes)
+                                vibrate(vibrator, timings, amplitudes)
                             }
                         }
                         // wait 50ms for next event
@@ -94,7 +102,7 @@ fun Modifier.verticalBPMGesture(
                         if(swipeEnabled && (distance > dragThreshold/2 || isDrag)) {
                             if(vibrating) {
                                 vibrating = false
-                                cancelVibration()
+                                cancelVibration(vibrator)
                             }
                             isDrag = true
                             totalDrag += dy
@@ -115,7 +123,10 @@ fun Modifier.verticalBPMGesture(
                         }
                     }
                 } finally {
-                    if(vibrating) cancelVibration()
+                    if(vibrating) {
+                        cancelVibration(vibrator)
+                        vibrating = false
+                    }
                 }
 
                 if(!isDrag && !holdTriggered && tapEnabled && !consumed) {
@@ -138,50 +149,42 @@ private fun vibrationRamp(holdDuration: Int): Pair<LongArray, IntArray> {
     return Pair(timings, amplitudes)
 }
 
-private fun vibrate(timings: LongArray, amplitudes: IntArray) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
-        vibratorManager?.vibrate(
-            CombinedVibration.createParallel(
-                VibrationEffect.createWaveform(timings, amplitudes, -1)
+private fun vibrate(vibrator: Any?, timings: LongArray, amplitudes: IntArray) {
+    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibrator is VibratorManager) {
+            vibrator.vibrate(
+                CombinedVibration.createParallel(
+                    VibrationEffect.createWaveform(timings, amplitudes, -1)
+                )
             )
-        )
-    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        @Suppress("DEPRECATION")
-        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
-        vibrator?.vibrate(VibrationEffect.createWaveform(timings, amplitudes, -1))
+        } else if(vibrator is Vibrator) {
+            vibrator.vibrate(VibrationEffect.createWaveform(timings, amplitudes, -1))
+        }
     }
 }
 
-private fun vibrationEnd() {
-    cancelVibration()
+private fun vibrationEnd(vibrator: Any?) {
+    cancelVibration(vibrator)
     if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         val vibrationEffect = VibrationEffect.createWaveform(
             longArrayOf(50, 20, 20, 20, 20),
             intArrayOf(255, 100, 50, 20, 10),
             -1
         )
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
-            vibratorManager?.vibrate(
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibrator is VibratorManager) {
+            vibrator.vibrate(
                 CombinedVibration.createParallel(vibrationEffect)
             )
-        } else {
-            @Suppress("DEPRECATION")
-            val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
-            vibrator?.vibrate(vibrationEffect)
+        } else if(vibrator is Vibrator) {
+            vibrator.vibrate(vibrationEffect)
         }
     }
 }
 
-private fun cancelVibration(): Boolean {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
-        vibratorManager?.cancel()
-    } else {
-        @Suppress("DEPRECATION")
-        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
-        vibrator?.cancel()
+private fun cancelVibration(vibrator: Any?) {
+    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibrator is VibratorManager) {
+        vibrator.cancel()
+    } else if(vibrator is Vibrator) {
+        vibrator.cancel()
     }
-    return true
 }

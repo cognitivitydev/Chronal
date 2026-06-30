@@ -60,7 +60,7 @@ import androidx.graphics.shapes.RoundedPolygon
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.settings.Settings
-import dev.cognitivity.chronal.ui.metronome.components.verticalBPMGesture
+import dev.cognitivity.chronal.ui.metronome.components.metronomeGestures
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -172,7 +172,7 @@ class FullscreenActivity : BaseActivity() {
 
         Scaffold(
             modifier = Modifier.fillMaxSize()
-                .verticalBPMGesture(
+                .metronomeGestures(
                     onTap = {
                         if(metronome.playing) metronome.stop() else metronome.start()
                         if(metronome.playing) {
