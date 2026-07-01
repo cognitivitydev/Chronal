@@ -25,7 +25,7 @@ import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
-import dev.cognitivity.chronal.ChronalApp.Companion.context
+import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.ColorScheme
 import dev.cognitivity.chronal.ui.theme.colors.AquaTheme
@@ -52,7 +52,7 @@ fun MetronomeTheme(
         ColorScheme.Color.SYSTEM -> {
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 MaterialExpressiveTheme(
-                    colorScheme = if(isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context),
+                    colorScheme = if(isDark) dynamicDarkColorScheme(ChronalApp.getInstance()) else dynamicLightColorScheme(ChronalApp.getInstance()),
                     typography = AppTypography,
                     content = content
                 )

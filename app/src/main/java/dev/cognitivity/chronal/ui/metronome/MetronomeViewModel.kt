@@ -26,7 +26,6 @@ import android.os.Vibrator
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.vibratorManager
 import dev.cognitivity.chronal.metronome.MetronomeTrack
@@ -130,7 +129,7 @@ class MetronomeViewModel: ViewModel() {
                         VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK)
                     )
                 ) else {
-                val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                val vibrator = ChronalApp.getInstance().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
                 vibrator.vibrate(10)
             }
         } else {
@@ -144,7 +143,7 @@ class MetronomeViewModel: ViewModel() {
                     )
                 )
             } else {
-                val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                val vibrator = ChronalApp.getInstance().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
                 vibrator.vibrate(5)
             }
         }

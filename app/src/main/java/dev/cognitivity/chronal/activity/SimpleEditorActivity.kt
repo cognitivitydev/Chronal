@@ -23,17 +23,8 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.*
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -70,6 +61,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.graphics.shapes.CornerRounding
@@ -82,7 +74,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.MusicFont
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.metronome.MetronomeTrack
@@ -360,10 +351,10 @@ class SimpleEditorActivity : BaseActivity() {
                             leadingIcon = {
                                 Icon(
                                     painter = painterResource(R.drawable.outline_save_24),
-                                    contentDescription = getString(R.string.generic_save_exit)
+                                    contentDescription = stringResource(R.string.generic_save_exit)
                                 )
                             },
-                            text = { Text(getString(R.string.generic_save_exit)) },
+                            text = { Text(stringResource(R.string.generic_save_exit)) },
                             onClick = {
                                 backDropdown = false
                                 saveAndExit()
@@ -374,10 +365,10 @@ class SimpleEditorActivity : BaseActivity() {
                             leadingIcon = {
                                 Icon(
                                     imageVector = Icons.Outlined.Delete,
-                                    contentDescription = getString(R.string.generic_exit_discard)
+                                    contentDescription = stringResource(R.string.generic_exit_discard)
                                 )
                             },
-                            text = { Text(getString(R.string.generic_exit_discard)) },
+                            text = { Text(stringResource(R.string.generic_exit_discard)) },
                             onClick = {
                                 backDropdown = false
                                 exitWithoutSaving()
@@ -387,10 +378,10 @@ class SimpleEditorActivity : BaseActivity() {
                             leadingIcon = {
                                 Icon(
                                     imageVector = Icons.Outlined.Close,
-                                    contentDescription = getString(R.string.generic_cancel)
+                                    contentDescription = stringResource(R.string.generic_cancel)
                                 )
                             },
-                            text = { Text(getString(R.string.generic_cancel)) },
+                            text = { Text(stringResource(R.string.generic_cancel)) },
                             onClick = {
                                 backDropdown = false
                             }
@@ -408,7 +399,7 @@ class SimpleEditorActivity : BaseActivity() {
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                        contentDescription = getString(R.string.generic_back)
+                        contentDescription = stringResource(R.string.generic_back)
                     )
                 }
             },
@@ -416,7 +407,7 @@ class SimpleEditorActivity : BaseActivity() {
                 IconButton(onClick = { settingsDropdown = true }) {
                     Icon(
                         imageVector = Icons.Outlined.MoreVert,
-                        contentDescription = getString(R.string.editor_settings)
+                        contentDescription = stringResource(R.string.editor_settings)
                     )
                 }
                 val metronome = ChronalApp.getInstance().metronome
@@ -470,7 +461,7 @@ class SimpleEditorActivity : BaseActivity() {
                     navController.navigate("beat")
                     rhythm.value = rhythm.value.copy(timeSignature = rhythm.value.timeSignature.first to 0, subdivision = 0)
                 },
-                text = { Text(getString(R.string.simple_editor_beat_count)) }
+                text = { Text(stringResource(R.string.simple_editor_beat_count)) }
             )
             Tab(
                 selected = currentRoute == "time_signature",
@@ -480,7 +471,7 @@ class SimpleEditorActivity : BaseActivity() {
                     val subdivision = if(rhythm.value.subdivision == 0) 4 else rhythm.value.subdivision
                     rhythm.value = rhythm.value.copy(timeSignature = rhythm.value.timeSignature.first to second, subdivision = subdivision)
                 },
-                text = { Text(getString(R.string.simple_editor_time_signature)) }
+                text = { Text(stringResource(R.string.simple_editor_time_signature)) }
             )
         }
     }
@@ -501,11 +492,11 @@ class SimpleEditorActivity : BaseActivity() {
             ) {
                 Icon(
                     painter = painterResource(R.drawable.outline_warning_24),
-                    contentDescription = getString(R.string.generic_error),
+                    contentDescription = stringResource(R.string.generic_error),
                     tint = MaterialTheme.colorScheme.error
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(getString(R.string.simple_editor_invalid_beat),
+                Text(stringResource(R.string.simple_editor_invalid_beat),
                     style = MaterialTheme.typography.bodySmallEmphasized,
                     color = MaterialTheme.colorScheme.error,
                     textAlign = TextAlign.Center,
@@ -575,7 +566,7 @@ class SimpleEditorActivity : BaseActivity() {
                         ),
                         interactionSource = interactionSource
                     )
-                    Text(context.getString(label),
+                    Text(stringResource(label),
                         style = MaterialTheme.typography.titleLarge,
                         color = if (selected) MaterialTheme.colorScheme.onSurface
                         else MaterialTheme.colorScheme.onSurfaceVariant
@@ -655,7 +646,7 @@ class SimpleEditorActivity : BaseActivity() {
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.baseline_remove_24),
-                                contentDescription = context.getString(R.string.generic_subtract),
+                                contentDescription = stringResource(R.string.generic_subtract),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
@@ -685,7 +676,7 @@ class SimpleEditorActivity : BaseActivity() {
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Add,
-                                contentDescription = context.getString(R.string.generic_add),
+                                contentDescription = stringResource(R.string.generic_add),
                             )
                         }
                     }
@@ -781,7 +772,7 @@ class SimpleEditorActivity : BaseActivity() {
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft,
-                            contentDescription = getString(R.string.generic_subtract),
+                            contentDescription = stringResource(R.string.generic_subtract),
                             tint = MaterialTheme.colorScheme.tertiary
                         )
                     }
@@ -805,7 +796,7 @@ class SimpleEditorActivity : BaseActivity() {
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
-                            contentDescription = getString(R.string.generic_add),
+                            contentDescription = stringResource(R.string.generic_add),
                             tint = MaterialTheme.colorScheme.tertiary
                         )
                     }
@@ -824,7 +815,7 @@ class SimpleEditorActivity : BaseActivity() {
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft,
-                            contentDescription = getString(R.string.generic_subtract),
+                            contentDescription = stringResource(R.string.generic_subtract),
                             tint = MaterialTheme.colorScheme.tertiary
                         )
                     }
@@ -848,7 +839,7 @@ class SimpleEditorActivity : BaseActivity() {
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
-                            contentDescription = getString(R.string.generic_add),
+                            contentDescription = stringResource(R.string.generic_add),
                             tint = MaterialTheme.colorScheme.tertiary
                         )
                     }
@@ -871,7 +862,7 @@ class SimpleEditorActivity : BaseActivity() {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Text(getString(R.string.simple_editor_beat),
+                Text(stringResource(R.string.simple_editor_beat),
                     style = MaterialTheme.typography.titleLargeEmphasized,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -889,7 +880,7 @@ class SimpleEditorActivity : BaseActivity() {
                         shapes = ButtonGroupDefaults.connectedLeadingButtonShapes(),
                         contentPadding = ButtonDefaults.ContentPadding
                     ) {
-                        Text(getString(R.string.simple_editor_beat_auto))
+                        Text(stringResource(R.string.simple_editor_beat_auto))
                     }
 
                     ToggleButton(
@@ -902,7 +893,7 @@ class SimpleEditorActivity : BaseActivity() {
                         shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
                         contentPadding = ButtonDefaults.ContentPadding
                     ) {
-                        Text(getString(R.string.simple_editor_beat_custom))
+                        Text(stringResource(R.string.simple_editor_beat_custom))
                     }
                 }
             }

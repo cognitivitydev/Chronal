@@ -26,6 +26,7 @@ import android.os.Build
 import android.util.Base64
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -151,7 +152,7 @@ class TunerWidget : GlanceAppWidget() {
                 }
 
                 Text(
-                    text = context.getString(R.string.widget_tuner_start),
+                    text = stringResource(R.string.widget_tuner_start),
                     style = TextStyle(
                         fontSize = 12.sp,
                         color = GlanceTheme.colors.onSurfaceVariant

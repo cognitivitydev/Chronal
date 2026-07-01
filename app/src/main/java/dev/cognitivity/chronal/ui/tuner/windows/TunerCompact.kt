@@ -53,6 +53,7 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -66,7 +67,6 @@ import androidx.graphics.shapes.RoundedPolygon
 import androidx.graphics.shapes.circle
 import androidx.graphics.shapes.star
 import androidx.graphics.shapes.toPath
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.settings.Settings
@@ -132,7 +132,7 @@ fun TunerPageCompact(
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.outline_volume_up_24),
-                            contentDescription = mainActivity.getString(R.string.tuner_play_frequency),
+                            contentDescription = stringResource(R.string.tuner_play_frequency),
                         )
                     }
                     if(hz.isNaN()) {
@@ -172,7 +172,7 @@ fun TunerPageCompact(
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.outline_volume_up_24),
-                            contentDescription = mainActivity.getString(R.string.tuner_play_frequency),
+                            contentDescription = stringResource(R.string.tuner_play_frequency),
                         )
                     }
                     if(hz.isNaN()) {
@@ -233,8 +233,8 @@ fun TopBar(tuner: Tuner?, hz: Float, instrument: Instrument, wide: Boolean, clos
                         .align(Alignment.CenterVertically)
                         .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(8.dp))
                 ) {
-                    val hertz = context.getString(R.string.tuner_hz, Settings.TUNER_FREQUENCY.get())
-                    Text(context.getString(R.string.tuner_tuning_at, hertz),
+                    val hertz = stringResource(R.string.tuner_hz, Settings.TUNER_FREQUENCY.get())
+                    Text(stringResource(R.string.tuner_tuning_at, hertz),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.align(Alignment.Center)
@@ -272,7 +272,7 @@ fun TopBar(tuner: Tuner?, hz: Float, instrument: Instrument, wide: Boolean, clos
                             if(closestString != null) {
                                 StringDisplay(tuner, hz, instrument, closestString)
                             } else {
-                                DrawName(context.getString(R.string.tuner_concert_pitch), context.getString(R.string.tuner_concert_pitch_short))
+                                DrawName(stringResource(R.string.tuner_concert_pitch), stringResource(R.string.tuner_concert_pitch_short))
                                 DrawNote(hz)
                             }
                         }
@@ -306,7 +306,7 @@ fun TopBar(tuner: Tuner?, hz: Float, instrument: Instrument, wide: Boolean, clos
                             if(closestString != null) {
                                 StringDisplay(tuner, hz, instrument, closestString)
                             } else {
-                                DrawName(context.getString(R.string.tuner_concert_pitch), context.getString(R.string.tuner_concert_pitch_short))
+                                DrawName(stringResource(R.string.tuner_concert_pitch), stringResource(R.string.tuner_concert_pitch_short))
                                 DrawNote(hz)
                             }
                         }

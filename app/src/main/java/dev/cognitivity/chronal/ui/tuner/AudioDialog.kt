@@ -48,9 +48,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.toSp
@@ -99,7 +99,7 @@ fun AudioDialog(expanded: Boolean, midi: Int, onChange: (Int) -> Unit, onConfirm
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
-                text = context.getString(R.string.tuner_hz_decimal, frequency),
+                text = stringResource(R.string.tuner_hz_decimal, frequency),
                 modifier = Modifier.align(Alignment.BottomCenter)
                     .padding(bottom = 8.dp),
                 style = MaterialTheme.typography.labelMedium,
@@ -144,7 +144,7 @@ fun AudioDialog(expanded: Boolean, midi: Int, onChange: (Int) -> Unit, onConfirm
 
     AlertDialog(
         onDismissRequest = { onDismiss() },
-        title = { Text(context.getString(R.string.tuner_set_frequency)) },
+        title = { Text(stringResource(R.string.tuner_set_frequency)) },
         text = {
             if(expanded) {
                 Row(
@@ -168,7 +168,7 @@ fun AudioDialog(expanded: Boolean, midi: Int, onChange: (Int) -> Unit, onConfirm
                 },
                 enabled = midi != -1 && !playing
             ) {
-                Text(context.getString(R.string.generic_start))
+                Text(stringResource(R.string.generic_start))
             }
         },
         dismissButton = {
@@ -179,7 +179,7 @@ fun AudioDialog(expanded: Boolean, midi: Int, onChange: (Int) -> Unit, onConfirm
                 },
                 enabled = playing
             ) {
-                Text(context.getString(R.string.generic_stop))
+                Text(stringResource(R.string.generic_stop))
             }
         },
         properties = DialogProperties(usePlatformDefaultWidth = false),
@@ -228,7 +228,7 @@ fun BoxScope.PianoDisplay(midi: Int, onChange: (Int) -> Unit) {
         ) {
             Icon(
                 painter = painterResource(R.drawable.baseline_remove_24),
-                contentDescription = context.getString(R.string.generic_subtract),
+                contentDescription = stringResource(R.string.generic_subtract),
                 tint = if(octave > 1) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
@@ -252,7 +252,7 @@ fun BoxScope.PianoDisplay(midi: Int, onChange: (Int) -> Unit) {
         ) {
             Icon(
                 imageVector = Icons.Default.Add,
-                contentDescription = context.getString(R.string.generic_add),
+                contentDescription = stringResource(R.string.generic_add),
                 tint = if(octave < 6) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )

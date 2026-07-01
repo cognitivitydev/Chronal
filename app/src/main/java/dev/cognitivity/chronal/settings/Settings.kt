@@ -21,7 +21,6 @@ package dev.cognitivity.chronal.settings
 import android.os.Build
 import com.google.gson.JsonArray
 import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.settings.types.BooleanSetting
 import dev.cognitivity.chronal.settings.types.FloatSetting
@@ -132,7 +131,7 @@ object Settings {
     val REVIEW_COUNT = IntSetting("review_count", 0)
 
     fun getCurrentVersionCode(): Int {
-        val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+        val packageInfo = ChronalApp.getInstance().packageManager.getPackageInfo(ChronalApp.getInstance().packageName, 0)
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             packageInfo.longVersionCode.toInt()
         } else {
@@ -141,7 +140,7 @@ object Settings {
     }
 
     fun getCurrentVersionName(): String {
-        val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+        val packageInfo = ChronalApp.getInstance().packageManager.getPackageInfo(ChronalApp.getInstance().packageName, 0)
         return packageInfo.versionName ?: "0.0.0"
     }
 

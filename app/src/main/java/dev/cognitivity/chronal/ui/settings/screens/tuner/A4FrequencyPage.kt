@@ -18,12 +18,12 @@
 
 package dev.cognitivity.chronal.ui.settings.screens.tuner
 
-import dev.cognitivity.chronal.ChronalApp.Companion.context
+import androidx.compose.ui.res.stringResource
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.ui.settings.data.SettingsPage
 import dev.cognitivity.chronal.ui.settings.items.SettingItem
 import dev.cognitivity.chronal.ui.settings.items.SettingMeta
-import dev.cognitivity.chronal.ui.settings.data.SettingsPage
 
 object A4FrequencyPage : SettingsPage(
     id = "a4_frequency",
@@ -32,7 +32,7 @@ object A4FrequencyPage : SettingsPage(
         SettingItem.IntSlider(
             meta = SettingMeta(R.string.page_settings_a4_frequency),
             range = 415..466,
-            valueLabel = { context.getString(R.string.tuner_hz, it) },
+            valueLabel = { stringResource(R.string.tuner_hz, it) },
             setting = Settings.TUNER_FREQUENCY
         ),
         SettingItem.LongDescription(R.string.setting_description_tuner_frequency)

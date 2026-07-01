@@ -60,6 +60,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -68,7 +69,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import dev.cognitivity.chronal.ChronalApp.Companion.context
+import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.round
 import dev.cognitivity.chronal.toSp
@@ -80,11 +81,11 @@ import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-private enum class PrecisionOption(val label: String, val decimals: Int?) {
-    Auto(context.getString(R.string.metronome_input_tap_precision_auto), null),
-    Zero(context.getString(R.string.metronome_input_tap_precision_0), 0),
-    One(context.getString(R.string.metronome_input_tap_precision_1), 1),
-    Two(context.getString(R.string.metronome_input_tap_precision_2), 2),
+private enum class PrecisionOption(val labelRes: Int, val decimals: Int?) {
+    Auto(R.string.metronome_input_tap_precision_auto, null),
+    Zero(R.string.metronome_input_tap_precision_0, 0),
+    One(R.string.metronome_input_tap_precision_1, 1),
+    Two(R.string.metronome_input_tap_precision_2, 2),
 }
 
 private data class DisplayBpm(val bpm: Float, val whole: String, val fraction: String?)
@@ -138,11 +139,11 @@ fun TapTab(viewModel: MetronomeViewModel) {
             }
         )
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val vibratorManager = context.getSystemService(VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            val vibratorManager = ChronalApp.getInstance().getSystemService(VIBRATOR_MANAGER_SERVICE) as VibratorManager
             val vibration = VibrationEffect.createOneShot(2, 255)
             vibratorManager.vibrate(CombinedVibration.createParallel(vibration))
         } else {
-            val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+            val vibrator = ChronalApp.getInstance().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
             vibrator.vibrate(2)
         }
     }
@@ -270,7 +271,7 @@ private fun TapTempoContent(displayBpm: DisplayBpm, fontSize: TextUnit, color: C
                 )
             }
             Text(
-                text = context.getString(
+                text = stringResource(
                     if(active) R.string.metronome_bpm
                     else if(tapping) R.string.metronome_input_tap_continue
                     else R.string.metronome_input_tap_start
@@ -297,7 +298,7 @@ private fun PrecisionSelectorRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
-            text = context.getString(R.string.metronome_input_tap_precision),
+            text = stringResource(R.string.metronome_input_tap_precision),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)
@@ -305,10 +306,10 @@ private fun PrecisionSelectorRow(
 
         val options = PrecisionOption.entries
         var expanded by remember { mutableStateOf(false) }
-        val textFieldState = rememberTextFieldState(selected.label)
+        val textFieldState = rememberTextFieldState(stringResource(selected.labelRes))
 
-        if (textFieldState.text.toString() != selected.label) {
-            textFieldState.setTextAndPlaceCursorAtEnd(selected.label)
+        if (textFieldState.text.toString() != stringResource(selected.labelRes)) {
+            textFieldState.setTextAndPlaceCursorAtEnd(stringResource(selected.labelRes))
         }
 
         ExposedDropdownMenuBox(
@@ -337,7 +338,7 @@ private fun PrecisionSelectorRow(
                         colors = MenuDefaults.selectableItemColors(
                             containerColor = MaterialTheme.colorScheme.surfaceContainer
                         ),
-                        text = { Text(option.label, style = MaterialTheme.typography.bodyLarge) },
+                        text = { Text(stringResource(option.labelRes), style = MaterialTheme.typography.bodyLarge) },
                         contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                         selectedLeadingIcon = {
                             Icon(

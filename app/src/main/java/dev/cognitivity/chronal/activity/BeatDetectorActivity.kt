@@ -45,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
@@ -116,7 +117,7 @@ class BeatDetectorActivity : BaseActivity() {
             modifier = Modifier.fillMaxSize(),
             topBar = {
                 TopAppBar(
-                    title = { Text(getString(R.string.beat_detector_title)) },
+                    title = { Text(stringResource(R.string.beat_detector_title)) },
                     modifier = Modifier.fillMaxWidth(),
                     navigationIcon = {
                         IconButton(
@@ -124,7 +125,7 @@ class BeatDetectorActivity : BaseActivity() {
                                 finish()
                             }
                         ) {
-                            Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = getString(R.string.generic_back))
+                            Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = stringResource(R.string.generic_back))
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -146,12 +147,12 @@ class BeatDetectorActivity : BaseActivity() {
                     Row {
                         Icon(
                             painter = painterResource(R.drawable.outline_mic_none_24),
-                            contentDescription = getString(R.string.generic_microphone),
+                            contentDescription = stringResource(R.string.generic_microphone),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(4.dp)
                                 .align(Alignment.CenterVertically)
                         )
-                        Text(getString(if(isRecording) R.string.beat_detector_listening else R.string.beat_detector_disabled),
+                        Text(stringResource(if(isRecording) R.string.beat_detector_listening else R.string.beat_detector_disabled),
                             modifier = Modifier.align(Alignment.CenterVertically),
                         )
                     }
@@ -174,7 +175,7 @@ class BeatDetectorActivity : BaseActivity() {
                             }
                         }
                     ) {
-                        Text(getString(if(isRecording) R.string.generic_reset else R.string.generic_start))
+                        Text(stringResource(if(isRecording) R.string.generic_reset else R.string.generic_start))
                     }
                 }
                 Box(
@@ -207,7 +208,7 @@ class BeatDetectorActivity : BaseActivity() {
                         Text(
                             modifier = Modifier.offset(y = (-8).dp)
                                 .align(Alignment.Bottom),
-                            text = getString(R.string.metronome_bpm),
+                            text = stringResource(R.string.metronome_bpm),
                             fontSize = 48.sp,
                             color = if(isRecording) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.surfaceContainerHighest,
                         )
@@ -224,27 +225,27 @@ class BeatDetectorActivity : BaseActivity() {
                             intent.data = ("package:$packageName").toUri()
                             startActivity(intent)
                         }) {
-                            Text(getString(R.string.generic_settings))
+                            Text(stringResource(R.string.generic_settings))
                         }
                     },
                     dismissButton = @Composable {
                         TextButton(onClick = {
                             showMicrophoneDialog = false
                         }) {
-                            Text(getString(R.string.generic_cancel))
+                            Text(stringResource(R.string.generic_cancel))
                         }
                     },
                     icon = @Composable {
                         Icon(
                             painter = painterResource(R.drawable.outline_warning_24),
-                            contentDescription = getString(R.string.generic_warning),
+                            contentDescription = stringResource(R.string.generic_warning),
                         )
                     },
                     title = @Composable {
-                        Text(getString(R.string.beat_detector_permission_title))
+                        Text(stringResource(R.string.beat_detector_permission_title))
                     },
                     text = @Composable {
-                        Text(getString(R.string.beat_detector_permission_text))
+                        Text(stringResource(R.string.beat_detector_permission_text))
                     }
                 )
             }
@@ -287,7 +288,7 @@ class BeatDetectorActivity : BaseActivity() {
         ) {
             Icon(
                 painter = painterResource(R.drawable.outline_music_cast_24),
-                contentDescription = getString(R.string.generic_microphone),
+                contentDescription = stringResource(R.string.generic_microphone),
                 tint = if(isRecording) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
                 modifier = Modifier.fillMaxSize(0.333f)
                     .aspectRatio(1f)
@@ -365,7 +366,7 @@ class BeatDetectorViewModel : ViewModel() {
     fun startAudio(peakThreshold: Double, silenceThreshold: Double) {
         stopAudio()
 
-        if (ActivityCompat.checkSelfPermission(ChronalApp.getInstance(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) return
+        if(ActivityCompat.checkSelfPermission(ChronalApp.getInstance().applicationContext, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) return
 
         val sampleRate = 22050
         val bufferSize = 4096

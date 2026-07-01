@@ -31,9 +31,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.metronome.Metronome
 import dev.cognitivity.chronal.metronome.MetronomeTrack
@@ -54,10 +54,10 @@ fun ManualTab(metronome: Metronome, viewModel: MetronomeViewModel) {
         textStyle = MaterialTheme.typography.bodyLarge,
         isError = text.toFloatOrNull() == null ||
                 text.toFloat() < MetronomeTrack.MIN_BPM || text.toFloat() > MetronomeTrack.MAX_BPM,
-        label = { Text(context.getString(R.string.metronome_input_manual)) },
+        label = { Text(stringResource(R.string.metronome_input_manual)) },
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        suffix = { Text(context.getString(R.string.metronome_bpm)) },
+        suffix = { Text(stringResource(R.string.metronome_bpm)) },
         modifier = Modifier
             .widthIn(80.dp, 160.dp)
             .fillMaxWidth()

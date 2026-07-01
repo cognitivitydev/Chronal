@@ -45,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -60,17 +61,17 @@ import kotlinx.coroutines.launch
 class EditSounds: BaseActivity() {
     private data class SoundOption(
         val packId: String,
-        val label: String,
+        val labelRes: Int,
         val highRes: Int,
         val lowRes: Int,
     )
 
     private val sounds = SoundPack.builtins().mapNotNull { pack ->
-        val label = pack.name
+        val labelRes = pack.nameRes
         val high = (pack.getSound(1) as? Sound.Resource)?.resId
         val low = (pack.getSound(0) as? Sound.Resource)?.resId
         if(high != null && low != null) {
-            SoundOption(pack.id, label, high, low)
+            SoundOption(pack.id, labelRes, high, low)
         } else null
     }
 
@@ -123,8 +124,8 @@ class EditSounds: BaseActivity() {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             topBar = {
-                TopAppBar(
-                    title = { Text(getString(R.string.edit_sounds_title)) },
+                    TopAppBar(
+                    title = { Text(stringResource(R.string.edit_sounds_title)) },
                     modifier = Modifier.fillMaxWidth(),
                     navigationIcon = {
                         IconButton(
@@ -132,7 +133,7 @@ class EditSounds: BaseActivity() {
                                 finish()
                             }
                         ) {
-                            Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = getString(R.string.generic_back))
+                            Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = stringResource(R.string.generic_back))
                         }
                     },
                     actions = {
@@ -141,7 +142,7 @@ class EditSounds: BaseActivity() {
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.Info,
-                                contentDescription = getString(R.string.generic_info)
+                                contentDescription = stringResource(R.string.generic_info)
                             )
                         }
                     }
@@ -163,7 +164,7 @@ class EditSounds: BaseActivity() {
                     Spacer(Modifier.weight(1f))
 
                     val selectedSound = sounds.firstOrNull { it.packId == selectedPackId } ?: sounds.first()
-                    val highName = selectedSound.label
+                    val highName = stringResource(selectedSound.labelRes)
                     FilledTonalButton(
                         modifier = Modifier.heightIn(ButtonDefaults.MinHeight)
                             .align(Alignment.CenterVertically),
@@ -174,13 +175,13 @@ class EditSounds: BaseActivity() {
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.outline_volume_up_24),
-                            contentDescription = getString(R.string.edit_sounds_play_high, highName)
+                            contentDescription = stringResource(R.string.edit_sounds_play_high, highName)
                         )
                         Spacer(Modifier.width(ButtonDefaults.iconSpacingFor(ButtonDefaults.MinHeight)))
-                        Text(getString(R.string.edit_sounds_high, highName))
+                        Text(stringResource(R.string.edit_sounds_high, highName))
                     }
                     Spacer(Modifier.width(8.dp))
-                    val lowName = selectedSound.label
+                    val lowName = stringResource(selectedSound.labelRes)
                     FilledTonalButton(
                         modifier = Modifier.heightIn(ButtonDefaults.MinHeight)
                             .align(Alignment.CenterVertically),
@@ -191,10 +192,10 @@ class EditSounds: BaseActivity() {
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.outline_volume_up_24),
-                            contentDescription = getString(R.string.edit_sounds_play_low, lowName),
+                            contentDescription = stringResource(R.string.edit_sounds_play_low, lowName),
                         )
                         Spacer(Modifier.width(ButtonDefaults.iconSpacingFor(ButtonDefaults.MinHeight)))
-                        Text(getString(R.string.edit_sounds_low, lowName))
+                        Text(stringResource(R.string.edit_sounds_low, lowName))
                     }
                 }
             }
@@ -207,13 +208,13 @@ class EditSounds: BaseActivity() {
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
                         Text(
-                            text = getString(R.string.edit_sounds_header_sound),
+                            text = stringResource(R.string.edit_sounds_header_sound),
                             modifier = Modifier.weight(1f),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.secondary
                         )
                         Text(
-                            text = getString(R.string.edit_sounds_header_high),
+                            text = stringResource(R.string.edit_sounds_header_high),
                             modifier = Modifier.width(48.dp),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.secondary,
@@ -221,7 +222,7 @@ class EditSounds: BaseActivity() {
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = getString(R.string.edit_sounds_header_low),
+                            text = stringResource(R.string.edit_sounds_header_low),
                             modifier = Modifier.width(48.dp),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.secondary,
@@ -241,7 +242,7 @@ class EditSounds: BaseActivity() {
                             .padding(horizontal = 16.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(sound.label,
+                        Text(stringResource(sound.labelRes),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -252,9 +253,9 @@ class EditSounds: BaseActivity() {
                                 playResource(sound.highRes)
                             }
                         ) {
-                            Icon(
+                                Icon(
                                 painter = painterResource(if(selectedPackId == sound.packId) R.drawable.baseline_volume_up_24 else R.drawable.outline_volume_up_24),
-                                contentDescription = getString(R.string.generic_selected),
+                                contentDescription = stringResource(R.string.generic_selected),
                                 tint = if(selectedPackId == sound.packId) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
@@ -265,9 +266,9 @@ class EditSounds: BaseActivity() {
                                 playResource(sound.lowRes)
                             }
                         ) {
-                            Icon(
+                                Icon(
                                 painter = painterResource(if(selectedPackId == sound.packId) R.drawable.baseline_volume_up_24 else R.drawable.outline_volume_up_24),
-                                contentDescription = getString(R.string.generic_selected),
+                                contentDescription = stringResource(R.string.generic_selected),
                                 tint = if(selectedPackId == sound.packId) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
@@ -290,7 +291,7 @@ class EditSounds: BaseActivity() {
                             .padding(horizontal = 16.dp, vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(sounds[selection].label,
+                        Text(stringResource(sounds[selection].labelRes),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -312,7 +313,7 @@ class EditSounds: BaseActivity() {
                                 Setting.saveAll()
                             }
                         }) {
-                            Text(getString(R.string.generic_confirm))
+                            Text(stringResource(R.string.generic_confirm))
                         }
                     }
                 }
@@ -324,13 +325,13 @@ class EditSounds: BaseActivity() {
                     icon = {
                         Icon(
                             imageVector = Icons.Outlined.Info,
-                            contentDescription = getString(R.string.edit_sounds_attribution)
+                            contentDescription = stringResource(R.string.edit_sounds_attribution)
                         )
                     },
-                    title = { Text(getString(R.string.edit_sounds_attribution_title)) },
+                    title = { Text(stringResource(R.string.edit_sounds_attribution_title)) },
                     text = {
                         Column {
-                            Text(getString(R.string.edit_sounds_attribution_text))
+                            Text(stringResource(R.string.edit_sounds_attribution_text))
                             Row {
                                 TextButton(onClick = {
                                     val intent = Intent(Intent.ACTION_VIEW, "http://www.ludwigmueller.net/en/".toUri())
@@ -338,10 +339,10 @@ class EditSounds: BaseActivity() {
                                 }) {
                                     Icon(
                                         painter = painterResource(R.drawable.baseline_open_in_new_24),
-                                        contentDescription = getString(R.string.generic_website)
+                                        contentDescription = stringResource(R.string.generic_website)
                                     )
                                     Spacer(modifier = Modifier.width(ButtonDefaults.iconSpacingFor(ButtonDefaults.MinHeight)))
-                                    Text(getString(R.string.generic_website))
+                                    Text(stringResource(R.string.generic_website))
                                 }
                                 Spacer(modifier = Modifier.weight(1f))
                                 TextButton(onClick = {
@@ -350,10 +351,10 @@ class EditSounds: BaseActivity() {
                                 }) {
                                     Icon(
                                         painter = painterResource(R.drawable.outline_download_24),
-                                        contentDescription = getString(R.string.generic_download),
+                                        contentDescription = stringResource(R.string.generic_download),
                                     )
                                     Spacer(modifier = Modifier.width(ButtonDefaults.iconSpacingFor(ButtonDefaults.MinHeight)))
-                                    Text(getString(R.string.generic_download))
+                                    Text(stringResource(R.string.generic_download))
                                 }
                             }
 
@@ -367,17 +368,17 @@ class EditSounds: BaseActivity() {
                             ) {
                                 Icon(
                                     painter = painterResource(R.drawable.outline_counter_0_24),
-                                    contentDescription = getString(R.string.edit_sounds_cczero_short),
+                                    contentDescription = stringResource(R.string.edit_sounds_cczero_short),
                                     tint = MaterialTheme.colorScheme.onSurface,
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text(getString(R.string.edit_sounds_cczero_long))
+                                Text(stringResource(R.string.edit_sounds_cczero_long))
                             }
                         }
                     },
                     confirmButton = {
                         TextButton(onClick = { showAttribution = false }) {
-                            Text(getString(R.string.generic_okay))
+                            Text(stringResource(R.string.generic_okay))
                         }
                     },
                     modifier = Modifier.padding(16.dp)

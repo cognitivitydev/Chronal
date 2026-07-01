@@ -34,8 +34,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -53,13 +53,13 @@ import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.ChronalApp.Companion.context
+import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.metronome.Metronome
 import dev.cognitivity.chronal.metronome.MetronomeTrack
-import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmAtom
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.round
@@ -183,13 +183,13 @@ fun ConductorDisplay(viewModel: MetronomeViewModel, metronome: Metronome, tracks
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.outline_person_off_24),
-                        contentDescription = context.getString(R.string.generic_error),
+                        contentDescription = stringResource(R.string.generic_error),
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                             .size(32.dp),
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = context.getString(R.string.metronome_conductor_not_supported),
+                        text = stringResource(R.string.metronome_conductor_not_supported),
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                             .padding(8.dp),
                         style = MaterialTheme.typography.bodyLarge,

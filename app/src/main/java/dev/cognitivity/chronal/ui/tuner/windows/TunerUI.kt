@@ -54,13 +54,13 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.settings.Settings
@@ -120,12 +120,12 @@ fun PermissionWarning(innerPadding: PaddingValues, mainActivity: MainActivity) {
             ) {
                 Icon(
                     painter = painterResource(R.drawable.outline_mic_off_24),
-                    contentDescription = context.getString(R.string.generic_microphone),
+                    contentDescription = stringResource(R.string.generic_microphone),
                     modifier = Modifier.padding(8.dp),
                     tint = MaterialTheme.colorScheme.error
                 )
 
-                Text(context.getString(R.string.tuner_microphone_disabled),
+                Text(stringResource(R.string.tuner_microphone_disabled),
                     Modifier.weight(1f)
                         .padding(start = 8.dp),
                 )
@@ -135,7 +135,7 @@ fun PermissionWarning(innerPadding: PaddingValues, mainActivity: MainActivity) {
                         mainActivity.microphonePermission.launch(Manifest.permission.RECORD_AUDIO)
                     }
                 ) {
-                    Text(context.getString(R.string.generic_fix))
+                    Text(stringResource(R.string.generic_fix))
                 }
             }
         }
@@ -412,7 +412,7 @@ fun MicrophoneErrorDialog(modifier: Modifier = Modifier) {
         )
         Spacer(Modifier.width(16.dp))
         Text(
-            context.getString(R.string.tuner_microphone_failed),
+            stringResource(R.string.tuner_microphone_failed),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onErrorContainer
         )

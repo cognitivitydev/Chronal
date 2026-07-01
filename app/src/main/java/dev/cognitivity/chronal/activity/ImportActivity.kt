@@ -38,10 +38,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.google.gson.Gson
 import com.google.gson.JsonObject
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.MusicFont
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.settings.Settings
@@ -75,7 +75,7 @@ class ImportActivity : BaseActivity() {
             topBar = {
                 TopAppBar(
                     title = {
-                        Text(getString(R.string.import_preset_title))
+                        Text(stringResource(R.string.import_preset_title))
                     },
                     navigationIcon = {
                         IconButton(
@@ -83,7 +83,7 @@ class ImportActivity : BaseActivity() {
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.Close,
-                                contentDescription = getString(R.string.generic_back)
+                                contentDescription = stringResource(R.string.generic_back)
                             )
                         }
                     },
@@ -103,12 +103,12 @@ class ImportActivity : BaseActivity() {
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.outline_attach_file_off_24),
-                        contentDescription = getString(R.string.import_preset_malformed),
+                        contentDescription = stringResource(R.string.import_preset_malformed),
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        text = getString(R.string.import_preset_malformed),
+                        text = stringResource(R.string.import_preset_malformed),
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
@@ -129,7 +129,7 @@ class ImportActivity : BaseActivity() {
                     val created = preset.timestamp
                     val time = SimpleDateFormat.getDateTimeInstance(2, 2).format(created)
                     Text(
-                        text = getString(R.string.presets_created_at, time),
+                        text = stringResource(R.string.presets_created_at, time),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 8.dp, bottom = 24.dp)
@@ -144,7 +144,7 @@ class ImportActivity : BaseActivity() {
                                 new.add(preset)
                                 Settings.METRONOME_PRESETS.save(new)
 
-                                val intent = Intent(context, MainActivity::class.java)
+                                val intent = Intent(this@ImportActivity, MainActivity::class.java)
                                     .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
                                     .putExtra("preset", preset.toJson().toString())
                                 startActivity(intent)
@@ -154,10 +154,10 @@ class ImportActivity : BaseActivity() {
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.outline_download_24),
-                            contentDescription = getString(R.string.import_preset_button),
+                            contentDescription = stringResource(R.string.import_preset_button),
                         )
                         Spacer(Modifier.size(ButtonDefaults.iconSpacingFor(ButtonDefaults.MediumContainerHeight)))
-                        Text(context.getString(R.string.import_preset_button),
+                        Text(stringResource(R.string.import_preset_button),
                             style = ButtonDefaults.textStyleFor(ButtonDefaults.MediumContainerHeight)
                         )
                     }
@@ -166,12 +166,12 @@ class ImportActivity : BaseActivity() {
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.baseline_music_note_24),
-                            contentDescription = getString(R.string.presets_bpm, preset.config.bpm.toInt()),
+                            contentDescription = stringResource(R.string.presets_bpm, preset.config.bpm.toInt()),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = getString(R.string.presets_bpm, preset.config.bpm.toInt()),
+                            text = stringResource(R.string.presets_bpm, preset.config.bpm.toInt()),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -189,7 +189,7 @@ class ImportActivity : BaseActivity() {
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             Text(
-                                text = getString(R.string.presets_rhythm_primary),
+                                text = stringResource(R.string.presets_rhythm_primary),
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.primary,
                             )
@@ -205,7 +205,7 @@ class ImportActivity : BaseActivity() {
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             Text(
-                                text = getString(R.string.presets_rhythm_secondary),
+                                text = stringResource(R.string.presets_rhythm_secondary),
                                 style = MaterialTheme.typography.titleMedium,
                                 color = if (enabled) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -241,7 +241,7 @@ class ImportActivity : BaseActivity() {
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Close,
-                        contentDescription = getString(R.string.presets_disabled),
+                        contentDescription = stringResource(R.string.presets_disabled),
                         tint = textColor,
                         modifier = Modifier.size(64.dp)
                             .align(Alignment.Center)
@@ -306,7 +306,7 @@ class ImportActivity : BaseActivity() {
         }
     }
 
-    fun parsePreset(data: Uri?): MetronomePreset? {
+    private fun parsePreset(data: Uri?): MetronomePreset? {
         if(data == null) return null
 
         try {

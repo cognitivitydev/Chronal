@@ -21,7 +21,7 @@ package dev.cognitivity.chronal.ui.settings.items
 import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import dev.cognitivity.chronal.ChronalApp
+import androidx.compose.ui.res.stringResource
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.settings.types.BooleanSetting
 import dev.cognitivity.chronal.settings.types.FloatSetting
@@ -91,7 +91,7 @@ sealed class SettingItem(
         val onValueChangeFinished: ((Int) -> Unit) = {},
         val range: IntRange,
         val steps: Int = 0,
-        val valueLabel: (Int) -> String,
+        val valueLabel: @Composable (Int) -> String,
         override val meta: SettingMeta
     ) : SettingItem(meta, true)
 
@@ -185,8 +185,8 @@ sealed class SettingItem(
 }
 
 data class SettingMeta(
-    val title: (() -> String),
-    val description: (() -> String)? = null,
+    val title: @Composable () -> String,
+    val description: (@Composable () -> String)? = null,
     val icon: Int? = null,
     val visible: () -> Boolean = { true }
 ) {
@@ -196,19 +196,19 @@ data class SettingMeta(
         icon: Int? = null,
         visible: () -> Boolean = { true }
     ) : this(
-        title = { ChronalApp.context.getString(title) },
-        description = if(description != null) ({ ChronalApp.context.getString(description) })
+        title = { stringResource(title) },
+        description = if(description != null) ({ stringResource(description) })
             else null,
         icon,
         visible
     )
     constructor(
         title: Int,
-        description: (() -> String),
+        description: @Composable () -> String,
         icon: Int? = null,
         visible: () -> Boolean = { true },
     ) : this(
-        title = { ChronalApp.context.getString(title) },
+        title = { stringResource(title) },
         description = description,
         icon,
         visible

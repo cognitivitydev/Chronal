@@ -45,12 +45,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.metronome.Metronome
 import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
@@ -69,7 +69,7 @@ fun TempoControlsDialog(
             ) {
                 Spacer(Modifier.weight(1f))
                 TextButton(onClick = onDismissRequest) {
-                    Text(context.getString(R.string.generic_close))
+                    Text(stringResource(R.string.generic_close))
                 }
             }
         },
@@ -78,7 +78,7 @@ fun TempoControlsDialog(
             onDismissRequest()
         },
         title = {
-            Text(context.getString(R.string.metronome_tempo_controls))
+            Text(stringResource(R.string.metronome_tempo_controls))
         },
         text = {
             TempoControlsDialogContent(scrollState, metronome, viewModel)
@@ -129,6 +129,9 @@ fun TempoControlsDialogContent(scrollState: ScrollState, metronome: Metronome, v
 fun InputPage(metronome: Metronome, viewModel: MetronomeViewModel, onTabChanged: (Int) -> Unit) {
     val inputTab by viewModel.bpmDialogTab.collectAsState()
     val navController = rememberNavController()
+
+    val manualText = stringResource(R.string.metronome_input_manual)
+    val tapText = stringResource(R.string.metronome_input_tap)
     ButtonGroup(
         overflowIndicator = { menuState ->
             ButtonGroupDefaults.OverflowIndicator(menuState = menuState)
@@ -145,7 +148,7 @@ fun InputPage(metronome: Metronome, viewModel: MetronomeViewModel, onTabChanged:
                 onTabChanged(0)
                 navController.navigate("manual")
             },
-            label = context.getString(R.string.metronome_input_manual),
+            label = manualText,
             icon = {
                 Icon(
                     painter = painterResource(id = if (inputTab == 0) R.drawable.baseline_keyboard_24 else R.drawable.outline_keyboard_24),
@@ -160,7 +163,7 @@ fun InputPage(metronome: Metronome, viewModel: MetronomeViewModel, onTabChanged:
                 onTabChanged(1)
                 navController.navigate("tap")
             },
-            label = context.getString(R.string.metronome_input_tap),
+            label = tapText,
             icon = {
                 Icon(
                     painter = painterResource(R.drawable.baseline_music_note_24),

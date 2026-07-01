@@ -63,6 +63,7 @@ import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -77,7 +78,6 @@ import androidx.graphics.shapes.RoundedPolygon
 import androidx.graphics.shapes.circle
 import androidx.graphics.shapes.star
 import androidx.graphics.shapes.toPath
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.settings.Settings
@@ -164,7 +164,7 @@ fun TunerPageExpanded(
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.outline_volume_up_24),
-                        contentDescription = mainActivity.getString(R.string.tuner_play_frequency),
+                        contentDescription = stringResource(R.string.tuner_play_frequency),
                     )
                 }
 
@@ -224,8 +224,8 @@ fun NoteDisplay(tuner: Tuner?, hz: Float, instrument: Instrument, closestString:
                     .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(8.dp))
                     .padding(8.dp, 4.dp)
             ) {
-                val hertz = context.getString(R.string.tuner_hz, Settings.TUNER_FREQUENCY.get())
-                Text(context.getString(R.string.tuner_tuning_at, hertz),
+                val hertz = stringResource(R.string.tuner_hz, Settings.TUNER_FREQUENCY.get())
+                Text(stringResource(R.string.tuner_tuning_at, hertz),
                     modifier = Modifier.align(Alignment.Center),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -289,7 +289,7 @@ fun NoteDisplay(tuner: Tuner?, hz: Float, instrument: Instrument, closestString:
                     if(closestString != null) {
                         StringDisplay(tuner, hz, instrument, closestString)
                     } else {
-                        DrawName(context.getString(R.string.tuner_concert_pitch), context.getString(R.string.tuner_concert_pitch_short))
+                        DrawName(stringResource(R.string.tuner_concert_pitch), stringResource(R.string.tuner_concert_pitch_short))
                         Spacer(modifier = Modifier.height(8.dp))
                         DrawNote(hz)
                     }

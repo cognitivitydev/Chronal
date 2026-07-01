@@ -87,8 +87,8 @@ object LanguageCategory : SettingsCategory(
                             activity.recreate()
                         } catch (_: Exception) {
                             Toast.makeText(
-                                ChronalApp.getInstance(),
-                                ChronalApp.context.getString(R.string.settings_language_apply_error, "system", originalLanguage),
+                                activity,
+                                activity.getString(R.string.settings_language_apply_error, "system", originalLanguage),
                                 Toast.LENGTH_SHORT
                             ).show()
 
@@ -115,7 +115,7 @@ object LanguageCategory : SettingsCategory(
                 SettingItem.PageLink(
                     meta = SettingMeta(
                         title = { language.name },
-                        description = { ChronalApp.context.getString(progressString, (language.progress*100).toInt()) },
+                        description = { stringResource(progressString, (language.progress*100).toInt()) },
                         icon = icon
                     ),
                     pageId = "language/${language.key}",
@@ -147,7 +147,7 @@ object LanguageCategory : SettingsCategory(
                     SettingItem.PageLink(
                         meta = SettingMeta(
                             title = { language.name },
-                            description = { ChronalApp.context.getString(progressString, (language.progress*100).toInt()) },
+                            description = { stringResource(progressString, (language.progress*100).toInt()) },
                             icon = icon
                         ),
                         pageId = "language/${language.key}"

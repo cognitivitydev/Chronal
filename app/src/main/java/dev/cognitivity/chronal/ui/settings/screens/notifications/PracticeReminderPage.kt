@@ -26,7 +26,7 @@ import dev.cognitivity.chronal.ui.settings.data.SettingsPage
 import dev.cognitivity.chronal.ui.settings.items.SettingItem
 import dev.cognitivity.chronal.ui.settings.items.SettingMeta
 import java.text.SimpleDateFormat
-import java.util.TimeZone
+import java.util.*
 
 object PracticeReminderPage : SettingsPage(
     id = "practice_reminder",
@@ -46,7 +46,7 @@ object PracticeReminderPage : SettingsPage(
             }),
             onTimeSelected = {
                 if(Settings.PRACTICE_REMINDER_NOTIFICATION.get()) {
-                    PracticeReminderScheduler.scheduleDailyReminder(ChronalApp.context)
+                    PracticeReminderScheduler.scheduleDailyReminder(ChronalApp.getInstance().applicationContext)
                 }
             },
             setting = Settings.PRACTICE_REMINDER_TIME

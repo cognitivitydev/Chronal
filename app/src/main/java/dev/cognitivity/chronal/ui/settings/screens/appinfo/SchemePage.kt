@@ -48,8 +48,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import dev.cognitivity.chronal.ChronalApp.Companion.context
+import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.settings.Settings
@@ -176,7 +177,7 @@ object SchemePage : SettingsPage(
                             interactionSource = interactionSource
                         )
                         Spacer(Modifier.width(8.dp))
-                        Text(context.getString(text), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                        Text(stringResource(text), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                     }
                 }
             }
@@ -242,7 +243,7 @@ object SchemePage : SettingsPage(
                             interactionSource = interactionSource
                         )
                         Spacer(Modifier.width(8.dp))
-                        Text(context.getString(text),
+                        Text(stringResource(text),
                             style = MaterialTheme.typography.titleMedium,
                             color = if(enabled) MaterialTheme.colorScheme.onSurface
                                 else MaterialTheme.colorScheme.onSurfaceVariant
@@ -257,13 +258,13 @@ object SchemePage : SettingsPage(
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Info,
-                    contentDescription = context.getString(R.string.generic_info),
+                    contentDescription = stringResource(R.string.generic_info),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.align(Alignment.CenterVertically)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = context.getString(R.string.setting_color_contrast_unavailable),
+                    text = stringResource(R.string.setting_color_contrast_unavailable),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.align(Alignment.CenterVertically)
@@ -289,14 +290,14 @@ object SchemePage : SettingsPage(
                         setting.save(value)
                         originalValue = value
                     }
-                    context.startActivity(
-                        Intent(context, MainActivity::class.java)
+                    ChronalApp.getInstance().startActivity(
+                        Intent(ChronalApp.getInstance(), MainActivity::class.java)
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
                             .putExtra("destination", "settings")
                     )
                 },
             ) {
-                Text(context.getString(R.string.setting_color_save_reload),
+                Text(stringResource(R.string.setting_color_save_reload),
                     style = ButtonDefaults.textStyleFor(ButtonDefaults.MediumContainerHeight)
                 )
             }

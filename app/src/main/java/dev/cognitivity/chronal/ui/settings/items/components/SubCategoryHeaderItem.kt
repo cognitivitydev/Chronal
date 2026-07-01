@@ -23,14 +23,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.ui.settings.items.SettingItem
 
 @Composable
 fun SubCategoryHeaderItem(item: SettingItem.SubCategoryHeader) {
     Text(
-        text = context.getString(item.text),
+        text = stringResource(item.text),
         style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.primary,
         modifier = Modifier.padding(top = 20.dp, start = 24.dp, bottom = 8.dp, end = 24.dp)

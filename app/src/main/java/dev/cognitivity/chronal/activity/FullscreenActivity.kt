@@ -53,6 +53,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.graphics.shapes.CornerRounding
@@ -250,7 +251,7 @@ class FullscreenActivity : BaseActivity() {
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Close,
-                        contentDescription = getString(R.string.generic_close),
+                        contentDescription = stringResource(R.string.generic_close),
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
@@ -265,7 +266,7 @@ class FullscreenActivity : BaseActivity() {
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Settings,
-                        contentDescription = getString(R.string.generic_settings),
+                        contentDescription = stringResource(R.string.generic_settings),
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
@@ -280,12 +281,12 @@ class FullscreenActivity : BaseActivity() {
                     icon = @Composable {
                         Icon(
                             painter = painterResource(id = R.drawable.outline_bolt_24),
-                            contentDescription = getString(R.string.fullscreen_warning_title)
+                            contentDescription = stringResource(R.string.fullscreen_warning_title)
                         )
                     },
                     title = {
                         Text(
-                            text = getString(R.string.fullscreen_warning_title),
+                            text = stringResource(R.string.fullscreen_warning_title),
                             style = MaterialTheme.typography.headlineSmall,
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -293,7 +294,7 @@ class FullscreenActivity : BaseActivity() {
                     text = {
                         Column {
                             Text(
-                                text = getString(R.string.fullscreen_warning_text),
+                                text = stringResource(R.string.fullscreen_warning_text),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -308,7 +309,7 @@ class FullscreenActivity : BaseActivity() {
                                         doNotShow = !doNotShow
                                     }
                             ) {
-                                Text(getString(R.string.fullscreen_warning_hide),
+                                Text(stringResource(R.string.fullscreen_warning_hide),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurface,
                                     modifier = Modifier.align(Alignment.CenterVertically),
@@ -339,7 +340,7 @@ class FullscreenActivity : BaseActivity() {
                                 }
                             }
                         ) {
-                            Text(getString(R.string.generic_okay))
+                            Text(stringResource(R.string.generic_okay))
                         }
                     },
                     dismissButton = {
@@ -349,7 +350,7 @@ class FullscreenActivity : BaseActivity() {
                                 finish()
                             }
                         ) {
-                            Text(getString(R.string.generic_exit))
+                            Text(stringResource(R.string.generic_exit))
                         }
                     }
                 )
@@ -359,7 +360,7 @@ class FullscreenActivity : BaseActivity() {
                     onDismissRequest = { settingDialog = false },
                     title = {
                         Text(
-                            text = getString(R.string.generic_settings),
+                            text = stringResource(R.string.generic_settings),
                             style = MaterialTheme.typography.headlineSmall,
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -380,11 +381,11 @@ class FullscreenActivity : BaseActivity() {
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(getString(R.string.fullscreen_setting_name_contrast),
+                                    Text(stringResource(R.string.fullscreen_setting_name_contrast),
                                         style = MaterialTheme.typography.titleMedium,
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
-                                    Text(getString(R.string.fullscreen_setting_description_contrast),
+                                    Text(stringResource(R.string.fullscreen_setting_description_contrast),
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -418,11 +419,11 @@ class FullscreenActivity : BaseActivity() {
                                 }
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(getString(R.string.fullscreen_setting_name_animation),
+                                    Text(stringResource(R.string.fullscreen_setting_name_animation),
                                         style = MaterialTheme.typography.titleMedium,
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
-                                    Text(getString(R.string.fullscreen_setting_description_animation),
+                                    Text(stringResource(R.string.fullscreen_setting_description_animation),
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -448,7 +449,7 @@ class FullscreenActivity : BaseActivity() {
                                 settingDialog = false
                             }
                         ) {
-                            Text(getString(R.string.generic_confirm))
+                            Text(stringResource(R.string.generic_confirm))
                         }
                     }
                 )
@@ -504,7 +505,7 @@ class FullscreenActivity : BaseActivity() {
                             .align(Alignment.CenterHorizontally)
                     )
                     Text(
-                        text = getString(R.string.metronome_bpm),
+                        text = stringResource(R.string.metronome_bpm),
                         fontSize = 48.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.offset(y = (-8).dp)

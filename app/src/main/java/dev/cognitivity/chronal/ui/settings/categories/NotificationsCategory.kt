@@ -51,10 +51,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationManagerCompat
 import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.ui.settings.categories.NotificationsCategory.NotificationPermissionContent
@@ -121,7 +121,7 @@ object NotificationsCategory : SettingsCategory(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        context.getString(R.string.settings_notifications_no_permission),
+                        stringResource(R.string.settings_notifications_no_permission),
                         color = MaterialTheme.colorScheme.onSurface,
                         style = MaterialTheme.typography.titleLargeEmphasized,
                         modifier = Modifier.weight(1f)
@@ -133,12 +133,12 @@ object NotificationsCategory : SettingsCategory(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = context.getString(R.string.generic_close),
+                            contentDescription = stringResource(R.string.generic_close),
                             modifier = Modifier.size(IconButtonDefaults.extraSmallIconSize),
                         )
                     }
                 }
-                Text(context.getString(R.string.settings_notifications_no_permission_description),
+                Text(stringResource(R.string.settings_notifications_no_permission_description),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
@@ -147,7 +147,7 @@ object NotificationsCategory : SettingsCategory(
                     onClick = { request() },
                     modifier = Modifier.padding(top = 16.dp)
                 ) {
-                    Text(context.getString(R.string.settings_notifications_no_permission_grant))
+                    Text(stringResource(R.string.settings_notifications_no_permission_grant))
                 }
             }
         }
@@ -157,14 +157,14 @@ object NotificationsCategory : SettingsCategory(
         val intent =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
-                    putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, context.packageName)
+                    putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, ChronalApp.getInstance().packageName)
                 }
             } else {
                 Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                    data = Uri.fromParts("package", context.packageName, null)
+                    data = Uri.fromParts("package", ChronalApp.getInstance().packageName, null)
                 }
             }
 
-        context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        ChronalApp.getInstance().startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     }
 }

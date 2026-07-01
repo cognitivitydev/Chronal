@@ -34,8 +34,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.ui.settings.items.SettingItem
 import kotlinx.coroutines.launch
@@ -75,7 +75,7 @@ fun TimeSelectorItem(item: SettingItem.TimeSelector) {
         TimePickerDialog(
             title = {
                 Text(
-                    context.getString(
+                    stringResource(
                         if (showingPicker.value) R.string.generic_picker_select_time
                         else R.string.generic_picker_input_time
                     ),
@@ -87,12 +87,12 @@ fun TimeSelectorItem(item: SettingItem.TimeSelector) {
                     showDialog = false
                     onTimeSelected()
                 }) {
-                    Text(context.getString(R.string.generic_confirm))
+                    Text(stringResource(R.string.generic_confirm))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDialog = false }) {
-                    Text(context.getString(R.string.generic_cancel))
+                    Text(stringResource(R.string.generic_cancel))
                 }
             },
             onDismissRequest = { showDialog = false },
@@ -103,7 +103,7 @@ fun TimeSelectorItem(item: SettingItem.TimeSelector) {
                         else R.drawable.outline_schedule_24
                     Icon(
                         painter = painterResource(icon),
-                        contentDescription = context.getString(
+                        contentDescription = stringResource(
                             if (showingPicker.value) R.string.generic_picker_switch_to_input
                                 else R.string.generic_picker_switch_to_picker
                         )

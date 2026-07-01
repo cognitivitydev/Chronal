@@ -52,10 +52,11 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.metronome.Metronome
 import dev.cognitivity.chronal.metronome.MetronomeTrack
-import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.pxToDp
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.settings.Settings
@@ -65,12 +66,13 @@ import kotlinx.coroutines.launch
 
 class LatencyActivity : BaseActivity() {
     val metronome = Metronome(
+        context = this,
         sendNotifications = false,
         bpm = 120f,
         tracks = mutableListOf(
             MetronomeTrack(
                 rhythm = Rhythm.deserialize("{4/4}Q;Q;Q;Q;"),
-                beatValue = 4f,
+                beatValue = 4f
             )
         )
     )
@@ -156,11 +158,11 @@ class LatencyActivity : BaseActivity() {
                 LargeTopAppBar(
                     title = {
                         Column {
-                            Text(getString(R.string.latency_title),
+                            Text(stringResource(R.string.latency_title),
                                 style = MaterialTheme.typography.headlineLarge,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
-                            Text(getString(R.string.latency_info),
+                            Text(stringResource(R.string.latency_info),
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -174,7 +176,7 @@ class LatencyActivity : BaseActivity() {
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                                contentDescription = getString(R.string.generic_back)
+                                contentDescription = stringResource(R.string.generic_back)
                             )
                         }
                     },
@@ -194,7 +196,7 @@ class LatencyActivity : BaseActivity() {
                 ) {
                     Spacer(Modifier.weight(1f))
                     Text(
-                        text = if (average < 0) "" else getString(R.string.latency_average, average),
+                        text = if (average < 0) "" else stringResource(R.string.latency_average, average),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -206,7 +208,7 @@ class LatencyActivity : BaseActivity() {
                         },
                         enabled = average >= 0
                     ) {
-                        Text(getString(R.string.generic_reset))
+                        Text(stringResource(R.string.generic_reset))
                     }
                     Spacer(Modifier.width(16.dp))
                     Button(
@@ -221,10 +223,10 @@ class LatencyActivity : BaseActivity() {
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.outline_save_24),
-                            contentDescription = getString(R.string.generic_save)
+                            contentDescription = stringResource(R.string.generic_save)
                         )
                         Spacer(Modifier.width(8.dp))
-                        Text(getString(R.string.generic_save))
+                        Text(stringResource(R.string.generic_save))
                     }
                 }
             },

@@ -54,6 +54,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -98,7 +99,7 @@ class PresetActivity : BaseActivity() {
             topBar = {
                 TopAppBar(
                     title = {
-                        Text(getString(R.string.presets_title))
+                        Text(stringResource(R.string.presets_title))
                     },
                     navigationIcon = {
                         IconButton(
@@ -106,7 +107,7 @@ class PresetActivity : BaseActivity() {
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                                contentDescription = getString(R.string.generic_back)
+                                contentDescription = stringResource(R.string.generic_back)
                             )
                         }
                     }
@@ -118,10 +119,10 @@ class PresetActivity : BaseActivity() {
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Add,
-                        contentDescription = getString(R.string.presets_create)
+                        contentDescription = stringResource(R.string.presets_create)
                     )
                     Spacer(Modifier.size(8.dp))
-                    Text(getString(R.string.presets_create), style = MaterialTheme.typography.bodyLarge)
+                    Text(stringResource(R.string.presets_create), style = MaterialTheme.typography.bodyLarge)
                 }
             },
             snackbarHost = {
@@ -158,14 +159,14 @@ class PresetActivity : BaseActivity() {
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
                             Text(
-                                text = getString(R.string.presets_bpm, preset.config.bpm.toInt()),
+                                text = stringResource(R.string.presets_bpm, preset.config.bpm.toInt()),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         Icon(
                             imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
-                            contentDescription = getString(R.string.generic_edit),
+                            contentDescription = stringResource(R.string.generic_edit),
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
@@ -186,7 +187,7 @@ class PresetActivity : BaseActivity() {
                             ) {
                                 TopAppBar(
                                     title = {
-                                        Text(getString(R.string.presets_edit_title))
+                                        Text(stringResource(R.string.presets_edit_title))
                                     },
                                     navigationIcon = {
                                         IconButton(
@@ -194,7 +195,7 @@ class PresetActivity : BaseActivity() {
                                         ) {
                                             Icon(
                                                 imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                                                contentDescription = getString(R.string.generic_back)
+                                                contentDescription = stringResource(R.string.generic_back)
                                             )
                                         }
                                     },
@@ -224,12 +225,12 @@ class PresetActivity : BaseActivity() {
                                 var newName by remember { mutableStateOf(preset.name) }
                                 AlertDialog(
                                     onDismissRequest = { renameDialog = false },
-                                    title = { Text(getString(R.string.presets_rename)) },
+                                    title = { Text(stringResource(R.string.presets_rename)) },
                                     text = {
                                         OutlinedTextField(
                                             value = newName,
                                             onValueChange = { newName = it },
-                                            label = { Text(getString(R.string.presets_rename_hint)) },
+                                            label = { Text(stringResource(R.string.presets_rename_hint)) },
                                             singleLine = true
                                         )
                                     },
@@ -244,14 +245,14 @@ class PresetActivity : BaseActivity() {
                                                 }
                                             }
                                         ) {
-                                            Text(getString(R.string.generic_confirm))
+                                            Text(stringResource(R.string.generic_confirm))
                                         }
                                     },
                                     dismissButton = {
                                         TextButton(
                                             onClick = { renameDialog = false }
                                         ) {
-                                            Text(getString(R.string.generic_cancel))
+                                            Text(stringResource(R.string.generic_cancel))
                                         }
                                     }
                                 )
@@ -259,8 +260,8 @@ class PresetActivity : BaseActivity() {
                             if(deleteDialog) {
                                 AlertDialog(
                                     onDismissRequest = { deleteDialog = false },
-                                    title = { Text(getString(R.string.presets_delete)) },
-                                    text = { Text(getString(R.string.presets_delete_confirm, preset.name)) },
+                                    title = { Text(stringResource(R.string.presets_delete)) },
+                                    text = { Text(stringResource(R.string.presets_delete_confirm, preset.name)) },
                                     confirmButton = {
                                         TextButton(
                                             onClick = {
@@ -282,14 +283,14 @@ class PresetActivity : BaseActivity() {
                                                 }
                                             }
                                         ) {
-                                            Text(getString(R.string.generic_confirm))
+                                            Text(stringResource(R.string.generic_confirm))
                                         }
                                     },
                                     dismissButton = {
                                         TextButton(
                                             onClick = { deleteDialog = false }
                                         ) {
-                                            Text(getString(R.string.generic_cancel))
+                                            Text(stringResource(R.string.generic_cancel))
                                         }
                                     }
                                 )
@@ -302,13 +303,13 @@ class PresetActivity : BaseActivity() {
                 var newName by remember { mutableStateOf("") }
                 AlertDialog(
                     onDismissRequest = { showCreateDialog = false },
-                    title = { Text(getString(R.string.presets_create)) },
+                    title = { Text(stringResource(R.string.presets_create)) },
                     text = {
                         OutlinedTextField(
-                            placeholder = { Text(getString(R.string.presets_new_name))},
+                            placeholder = { Text(stringResource(R.string.presets_new_name))},
                             value = newName,
                             onValueChange = { newName = it },
-                            label = { Text(getString(R.string.presets_create_hint)) },
+                            label = { Text(stringResource(R.string.presets_create_hint)) },
                             singleLine = true,
                         )
                     },
@@ -336,14 +337,14 @@ class PresetActivity : BaseActivity() {
                                 }
                             }
                         ) {
-                            Text(getString(R.string.generic_confirm))
+                            Text(stringResource(R.string.generic_confirm))
                         }
                     },
                     dismissButton = {
                         TextButton(
                             onClick = { showCreateDialog = false }
                         ) {
-                            Text(getString(R.string.generic_cancel))
+                            Text(stringResource(R.string.generic_cancel))
                         }
                     }
                 )
@@ -369,7 +370,7 @@ class PresetActivity : BaseActivity() {
             val created = preset.timestamp
             val time = SimpleDateFormat.getDateTimeInstance(2, 2).format(created)
             Text(
-                text = getString(R.string.presets_created_at, time),
+                text = stringResource(R.string.presets_created_at, time),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 8.dp, bottom = 24.dp)
@@ -394,7 +395,7 @@ class PresetActivity : BaseActivity() {
                             }
                         }
                     ) {
-                        Text(getString(R.string.presets_use), style = ButtonDefaults.textStyleFor(size))
+                        Text(stringResource(R.string.presets_use), style = ButtonDefaults.textStyleFor(size))
                     }
                 },
                 trailingButton = {
@@ -416,7 +417,7 @@ class PresetActivity : BaseActivity() {
                                 .graphicsLayer {
                                     this.rotationZ = rotation
                                 },
-                            contentDescription = getString(if(checked) R.string.generic_menu_collapse else R.string.generic_menu_expand),
+                            contentDescription = stringResource(if(checked) R.string.generic_menu_collapse else R.string.generic_menu_expand),
                         )
                     }
                     DropdownMenu(
@@ -427,10 +428,10 @@ class PresetActivity : BaseActivity() {
                             leadingIcon = {
                                 Icon(
                                     imageVector = Icons.Outlined.Edit,
-                                    contentDescription = getString(R.string.presets_rename),
+                                    contentDescription = stringResource(R.string.presets_rename),
                                 )
                             },
-                            text = { Text(getString(R.string.presets_rename)) },
+                            text = { Text(stringResource(R.string.presets_rename)) },
                             onClick = {
                                 checked = false
                                 onRename(true)
@@ -440,10 +441,10 @@ class PresetActivity : BaseActivity() {
                             leadingIcon = {
                                 Icon(
                                     painter = painterResource(R.drawable.baseline_music_note_24),
-                                    contentDescription = getString(R.string.presets_set_current),
+                                    contentDescription = stringResource(R.string.presets_set_current),
                                 )
                             },
-                            text = { Text(getString(R.string.presets_set_current)) },
+                            text = { Text(stringResource(R.string.presets_set_current)) },
                             onClick = {
                                 checked = false
                                 val newPreset = preset.copy(
@@ -456,10 +457,10 @@ class PresetActivity : BaseActivity() {
                             leadingIcon = {
                                 Icon(
                                     imageVector = Icons.Outlined.Share,
-                                    contentDescription = getString(R.string.presets_share),
+                                    contentDescription = stringResource(R.string.presets_share),
                                 )
                             },
-                            text = { Text(getString(R.string.presets_share)) },
+                            text = { Text(stringResource(R.string.presets_share)) },
                             onClick = {
                                 checked = false
                                 val file = ChronalApp.getInstance().filesDir.resolve("${preset.name}.chp")
@@ -489,10 +490,10 @@ class PresetActivity : BaseActivity() {
                             leadingIcon = {
                                 Icon(
                                     imageVector = Icons.Outlined.Delete,
-                                    contentDescription = getString(R.string.presets_delete),
+                                    contentDescription = stringResource(R.string.presets_delete),
                                 )
                             },
-                            text = { Text(getString(R.string.presets_delete)) },
+                            text = { Text(stringResource(R.string.presets_delete)) },
                             onClick = {
                                 checked = false
                                 onDelete(true)
@@ -509,12 +510,12 @@ class PresetActivity : BaseActivity() {
         ) {
             Icon(
                 painter = painterResource(R.drawable.baseline_music_note_24),
-                contentDescription = getString(R.string.presets_bpm, preset.config.bpm.toInt()),
+                contentDescription = stringResource(R.string.presets_bpm, preset.config.bpm.toInt()),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = getString(R.string.presets_bpm, preset.config.bpm.toInt()),
+                text = stringResource(R.string.presets_bpm, preset.config.bpm.toInt()),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -532,7 +533,7 @@ class PresetActivity : BaseActivity() {
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = getString(R.string.presets_rhythm_primary),
+                    text = stringResource(R.string.presets_rhythm_primary),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
@@ -548,7 +549,7 @@ class PresetActivity : BaseActivity() {
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = getString(R.string.presets_rhythm_secondary),
+                    text = stringResource(R.string.presets_rhythm_secondary),
                     style = MaterialTheme.typography.titleMedium,
                     color = if(enabled) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -581,7 +582,7 @@ class PresetActivity : BaseActivity() {
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Close,
-                        contentDescription = getString(R.string.presets_disabled),
+                        contentDescription = stringResource(R.string.presets_disabled),
                         tint = textColor,
                         modifier = Modifier.size(64.dp)
                             .align(Alignment.Center)

@@ -32,8 +32,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.metronome.Metronome
 import dev.cognitivity.chronal.ui.metronome.DisplayMode
@@ -80,7 +80,7 @@ fun MetronomeDisplay(
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.outline_flip_24),
-                            contentDescription = context.getString(R.string.metronome_conductor_flip)
+                            contentDescription = stringResource(R.string.metronome_conductor_flip)
                         )
                     }
                 }
@@ -91,7 +91,7 @@ fun MetronomeDisplay(
             ) {
                 Icon(
                     painter = painterResource(R.drawable.baseline_fullscreen_24),
-                    contentDescription = context.getString(R.string.generic_fullscreen)
+                    contentDescription = stringResource(R.string.generic_fullscreen)
                 )
             }
         }
@@ -112,7 +112,7 @@ fun DisplaySelector(viewModel: MetronomeViewModel) {
 
     TooltipBox(
         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
-        tooltip = { PlainTooltip { Text(context.getString(R.string.metronome_switch_display_mode)) } },
+        tooltip = { PlainTooltip { Text(stringResource(R.string.metronome_switch_display_mode)) } },
         state = rememberTooltipState(),
     ) {
         IconButton(
@@ -132,7 +132,7 @@ fun DisplaySelector(viewModel: MetronomeViewModel) {
             ) {
                 MenuDefaults.Label {
                     Text(
-                        context.getString(R.string.metronome_switch_display_mode),
+                        stringResource(R.string.metronome_switch_display_mode),
                         modifier = Modifier.padding(end = 16.dp)
                     )
                 }
@@ -143,7 +143,7 @@ fun DisplaySelector(viewModel: MetronomeViewModel) {
                     val (string, icon) = mode
 
                     DropdownMenuItem(
-                        text = { Text(context.getString(string)) },
+                        text = { Text(stringResource(string)) },
                         leadingIcon = {
                             Icon(
                                 painter = painterResource(icon),

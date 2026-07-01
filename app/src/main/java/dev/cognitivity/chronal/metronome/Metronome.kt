@@ -36,8 +36,6 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.toMutableStateList
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.metronome.MetronomeTrack.Companion.MAX_BPM
@@ -67,6 +65,7 @@ import kotlin.math.min
 import kotlin.math.round
 
 class Metronome(
+    private val context: Context,
     private val sendNotifications: Boolean = true,
     bpm: Float = 60f,
     tracks: MutableList<MetronomeTrack>
@@ -499,7 +498,7 @@ class Metronome(
             val channel = NotificationChannel("PlayingBackground", name, importance).apply {
                 description = descriptionText
             }
-            val notificationManager: NotificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
     }
@@ -548,8 +547,8 @@ class Metronome(
         }
         if (intent?.action == "dev.cognitivity.chronal.Stop") {
             if (playing) stop()
-            val notificationManager = ChronalApp.context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.cancel(1)
+            val notificationManager = context?.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+            notificationManager?.cancel(1)
         }
     }
 }

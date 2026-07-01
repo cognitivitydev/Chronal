@@ -46,6 +46,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import dev.cognitivity.chronal.R
@@ -70,7 +71,7 @@ class CreditsActivity : BaseActivity() {
             topBar = {
                 TopAppBar(
                     title = {
-                        Text(getString(R.string.credits_title))
+                        Text(stringResource(R.string.credits_title))
                     },
                     navigationIcon = {
                         IconButton(
@@ -78,7 +79,7 @@ class CreditsActivity : BaseActivity() {
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                                contentDescription = getString(R.string.generic_back)
+                                contentDescription = stringResource(R.string.generic_back)
                             )
                         }
                     }
@@ -101,17 +102,17 @@ class CreditsActivity : BaseActivity() {
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.outline_mic_none_24),
-                                contentDescription = getString(R.string.credits_ludwig),
+                                contentDescription = stringResource(R.string.credits_ludwig),
                                 modifier = Modifier.padding(end = 16.dp)
                             )
                             Column(
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Text(getString(R.string.credits_ludwig),
+                                Text(stringResource(R.string.credits_ludwig),
                                     style = MaterialTheme.typography.titleMediumEmphasized,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
-                                Text(getString(R.string.credits_ludwig_description),
+                                Text(stringResource(R.string.credits_ludwig_description),
                                     style = MaterialTheme.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -126,7 +127,7 @@ class CreditsActivity : BaseActivity() {
                                     startActivity(intent)
                                 }
                             ) {
-                                Text(getString(R.string.generic_website))
+                                Text(stringResource(R.string.generic_website))
                             }
                             Spacer(Modifier.width(16.dp))
                             TextButton(
@@ -135,7 +136,7 @@ class CreditsActivity : BaseActivity() {
                                     startActivity(intent)
                                 }
                             ) {
-                                Text(getString(R.string.generic_download))
+                                Text(stringResource(R.string.generic_download))
                             }
                         }
                     }
@@ -150,17 +151,17 @@ class CreditsActivity : BaseActivity() {
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.baseline_graphic_eq_24),
-                                contentDescription = getString(R.string.credits_tarsos),
+                                contentDescription = stringResource(R.string.credits_tarsos),
                                 modifier = Modifier.padding(end = 16.dp)
                             )
                             Column(
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Text(getString(R.string.credits_tarsos),
+                                Text(stringResource(R.string.credits_tarsos),
                                     style = MaterialTheme.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
-                                Text(getString(R.string.credits_tarsos_description),
+                                Text(stringResource(R.string.credits_tarsos_description),
                                     style = MaterialTheme.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -172,15 +173,15 @@ class CreditsActivity : BaseActivity() {
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.outline_crowdsource_24),
-                                contentDescription = getString(R.string.credits_contributors),
+                                contentDescription = stringResource(R.string.credits_contributors),
                                 tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.padding(end = 8.dp)
                             )
-                            Text(getString(R.string.credits_joren),
+                            Text(stringResource(R.string.credits_joren),
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
-                            Text(getString(R.string.credits_tarsos_contributors_other),
+                            Text(stringResource(R.string.credits_tarsos_contributors_other),
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -192,7 +193,7 @@ class CreditsActivity : BaseActivity() {
                             },
                             modifier = Modifier.align(Alignment.CenterHorizontally)
                         ) {
-                            Text(getString(R.string.generic_github))
+                            Text(stringResource(R.string.generic_github))
                         }
                     }
                 }

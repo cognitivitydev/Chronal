@@ -68,6 +68,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
@@ -131,6 +132,7 @@ class RhythmEditorActivity : BaseActivity() {
     private var backupRhythm by mutableStateOf(parsedRhythm)
 
     private val metronome = Metronome(
+        context = this,
         sendNotifications = false,
         tracks = mutableListOf(
             MetronomeTrack(
@@ -428,16 +430,16 @@ class RhythmEditorActivity : BaseActivity() {
                     icon = {
                         Icon(
                             painter = painterResource(R.drawable.outline_warning_24),
-                            contentDescription = getString(R.string.generic_error)
+                            contentDescription = stringResource(R.string.generic_error)
                         )
                     },
-                    title = { Text(getString(R.string.editor_invalid_rhythm_name)) },
+                    title = { Text(stringResource(R.string.editor_invalid_rhythm_name)) },
                     text = {
                         Column {
-                            Text(getString(R.string.editor_invalid_rhythm_text))
+                            Text(stringResource(R.string.editor_invalid_rhythm_text))
                             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                             Text(
-                                getString(R.string.editor_invalid_rhythm_amount, errors.size),
+                                stringResource(R.string.editor_invalid_rhythm_amount, errors.size),
                                 style = MaterialTheme.typography.labelLarge,
                                 modifier = Modifier.align(Alignment.CenterHorizontally)
                             )
@@ -462,14 +464,14 @@ class RhythmEditorActivity : BaseActivity() {
                             parsedRhythm = backupRhythm
                             mainTrack.setRhythm(parsedRhythm)
                         }) {
-                            Text(getString(R.string.generic_revert))
+                            Text(stringResource(R.string.generic_revert))
                         }
                     },
                     dismissButton = {
                         TextButton(onClick = {
                             shownError = true
                         }) {
-                            Text(getString(R.string.generic_ignore))
+                            Text(stringResource(R.string.generic_ignore))
                         }
                     }
                 )
@@ -517,11 +519,11 @@ class RhythmEditorActivity : BaseActivity() {
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Add,
-                                    contentDescription = getString(R.string.editor_measure_add),
+                                    contentDescription = stringResource(R.string.editor_measure_add),
                                     modifier = Modifier.align(Alignment.CenterVertically)
                                 )
                                 Text(
-                                    getString(R.string.editor_measure_add),
+                                    stringResource(R.string.editor_measure_add),
                                     modifier = Modifier.align(Alignment.CenterVertically)
                                 )
                             }
@@ -542,11 +544,11 @@ class RhythmEditorActivity : BaseActivity() {
                             ) {
                                 Icon(
                                     painter = painterResource(R.drawable.baseline_remove_24),
-                                    contentDescription = getString(R.string.editor_measure_remove),
+                                    contentDescription = stringResource(R.string.editor_measure_remove),
                                     modifier = Modifier.align(Alignment.CenterVertically)
                                 )
                                 Text(
-                                    getString(R.string.editor_measure_remove),
+                                    stringResource(R.string.editor_measure_remove),
                                     modifier = Modifier.align(Alignment.CenterVertically)
                                 )
                             }
@@ -561,7 +563,7 @@ class RhythmEditorActivity : BaseActivity() {
                         }
                         AlertDialog(
                             onDismissRequest = { showTimeSignature = false },
-                            title = { Text(getString(R.string.editor_set_time_signature)) },
+                            title = { Text(stringResource(R.string.editor_set_time_signature)) },
                             text = {
                                 Column(
                                     modifier = Modifier.aspectRatio(1f)
@@ -585,7 +587,7 @@ class RhythmEditorActivity : BaseActivity() {
                                         ) {
                                             Icon(
                                                 imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft,
-                                                contentDescription = getString(R.string.generic_subtract),
+                                                contentDescription = stringResource(R.string.generic_subtract),
                                                 tint = MaterialTheme.colorScheme.tertiary
                                             )
                                         }
@@ -610,7 +612,7 @@ class RhythmEditorActivity : BaseActivity() {
                                         ) {
                                             Icon(
                                                 imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
-                                                contentDescription = getString(R.string.generic_add),
+                                                contentDescription = stringResource(R.string.generic_add),
                                                 tint = MaterialTheme.colorScheme.tertiary
                                             )
                                         }
@@ -630,7 +632,7 @@ class RhythmEditorActivity : BaseActivity() {
                                         ) {
                                             Icon(
                                                 imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft,
-                                                contentDescription = getString(R.string.generic_subtract),
+                                                contentDescription = stringResource(R.string.generic_subtract),
                                                 tint = MaterialTheme.colorScheme.tertiary
                                             )
                                         }
@@ -655,7 +657,7 @@ class RhythmEditorActivity : BaseActivity() {
                                         ) {
                                             Icon(
                                                 imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
-                                                contentDescription = getString(R.string.generic_add),
+                                                contentDescription = stringResource(R.string.generic_add),
                                                 tint = MaterialTheme.colorScheme.tertiary
                                             )
                                         }
@@ -681,12 +683,12 @@ class RhythmEditorActivity : BaseActivity() {
                                     mainTrack.setRhythm(parsedRhythm)
                                     showTimeSignature = false
                                 }) {
-                                    Text(getString(R.string.editor_measure_add))
+                                    Text(stringResource(R.string.editor_measure_add))
                                 }
                             },
                             dismissButton = {
                                 TextButton(onClick = { showTimeSignature = false }) {
-                                    Text(getString(R.string.generic_cancel))
+                                    Text(stringResource(R.string.generic_cancel))
                                 }
                             }
                         )
@@ -748,10 +750,10 @@ class RhythmEditorActivity : BaseActivity() {
                         leadingIcon = {
                             Icon(
                                 painter = painterResource(R.drawable.outline_save_24),
-                                contentDescription = getString(R.string.generic_save_exit)
+                                contentDescription = stringResource(R.string.generic_save_exit)
                             )
                         },
-                        text = { Text(getString(R.string.generic_save_exit)) },
+                        text = { Text(stringResource(R.string.generic_save_exit)) },
                         onClick = {
                             backDropdown = false
                             saveAndExit()
@@ -762,10 +764,10 @@ class RhythmEditorActivity : BaseActivity() {
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Outlined.Delete,
-                                contentDescription = getString(R.string.generic_exit_discard)
+                                contentDescription = stringResource(R.string.generic_exit_discard)
                             )
                         },
-                        text = { Text(getString(R.string.generic_exit_discard)) },
+                        text = { Text(stringResource(R.string.generic_exit_discard)) },
                         onClick = {
                             backDropdown = false
                             exitWithoutSaving()
@@ -775,10 +777,10 @@ class RhythmEditorActivity : BaseActivity() {
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Outlined.Close,
-                                contentDescription = getString(R.string.generic_cancel)
+                                contentDescription = stringResource(R.string.generic_cancel)
                             )
                         },
-                        text = { Text(getString(R.string.generic_cancel)) },
+                        text = { Text(stringResource(R.string.generic_cancel)) },
                         onClick = {
                             backDropdown = false
                         }
@@ -798,7 +800,7 @@ class RhythmEditorActivity : BaseActivity() {
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                    contentDescription = getString(R.string.generic_back),
+                    contentDescription = stringResource(R.string.generic_back),
                     tint = MaterialTheme.colorScheme.onSurface
                 )
             }
@@ -879,7 +881,7 @@ class RhythmEditorActivity : BaseActivity() {
                         } else {
                             Icon(
                                 painter = painterResource(R.drawable.outline_warning_24),
-                                contentDescription = getString(R.string.generic_error),
+                                contentDescription = stringResource(R.string.generic_error),
                                 tint = MaterialTheme.colorScheme.onErrorContainer
                             )
                         }
@@ -894,7 +896,7 @@ class RhythmEditorActivity : BaseActivity() {
             ) {
                 Icon(
                     imageVector = Icons.Outlined.MoreVert,
-                    contentDescription = getString(R.string.editor_settings)
+                    contentDescription = stringResource(R.string.editor_settings)
                 )
                 TrackSettingsDropdown(
                     track = mainTrack,
@@ -941,7 +943,7 @@ class RhythmEditorActivity : BaseActivity() {
 //            ) {
 //                Icon(
 //                    painter = painterResource(R.drawable.outline_undo_24),
-//                    contentDescription = getString(R.string.editor_undo),
+//                    contentDescription = stringResource(R.string.editor_undo),
 //                    tint = MaterialTheme.colorScheme.onSurface
 //                )
 //            }
@@ -953,7 +955,7 @@ class RhythmEditorActivity : BaseActivity() {
 //            ) {
 //                Icon(
 //                    painter = painterResource(R.drawable.outline_redo_24),
-//                    contentDescription = getString(R.string.editor_redo),
+//                    contentDescription = stringResource(R.string.editor_redo),
 //                    tint = MaterialTheme.colorScheme.onSurface
 //                )
 //            }
@@ -1113,7 +1115,7 @@ class RhythmEditorActivity : BaseActivity() {
         ) {
             Icon(
                 painter = painterResource(R.drawable.tuplet),
-                contentDescription = getString(R.string.editor_tuplet_add),
+                contentDescription = stringResource(R.string.editor_tuplet_add),
                 tint = animatedOnColor.value,
                 modifier = Modifier.align(Alignment.Center)
                     .aspectRatio(1f)
@@ -1458,7 +1460,7 @@ class RhythmEditorActivity : BaseActivity() {
         var timeSignature by remember { mutableStateOf(parsedRhythm.measures[measureIndex].timeSig) }
         AlertDialog(
             onDismissRequest = { showTimeSignature = -1 },
-            title = { Text(getString(R.string.editor_set_time_signature_dialog)) },
+            title = { Text(stringResource(R.string.editor_set_time_signature_dialog)) },
             text = {
                 Box(
                     modifier = Modifier.fillMaxWidth()
@@ -1485,7 +1487,7 @@ class RhythmEditorActivity : BaseActivity() {
                             ) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft,
-                                    contentDescription = getString(R.string.generic_subtract),
+                                    contentDescription = stringResource(R.string.generic_subtract),
                                     tint = MaterialTheme.colorScheme.tertiary
                                 )
                             }
@@ -1508,7 +1510,7 @@ class RhythmEditorActivity : BaseActivity() {
                             ) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
-                                    contentDescription = getString(R.string.generic_add),
+                                    contentDescription = stringResource(R.string.generic_add),
                                     tint = MaterialTheme.colorScheme.tertiary
                                 )
                             }
@@ -1526,7 +1528,7 @@ class RhythmEditorActivity : BaseActivity() {
                             ) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft,
-                                    contentDescription = getString(R.string.generic_subtract),
+                                    contentDescription = stringResource(R.string.generic_subtract),
                                     tint = MaterialTheme.colorScheme.tertiary
                                 )
                             }
@@ -1549,7 +1551,7 @@ class RhythmEditorActivity : BaseActivity() {
                             ) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
-                                    contentDescription = getString(R.string.generic_add),
+                                    contentDescription = stringResource(R.string.generic_add),
                                     tint = MaterialTheme.colorScheme.tertiary
                                 )
                             }
@@ -1563,12 +1565,12 @@ class RhythmEditorActivity : BaseActivity() {
                     mainTrack.setRhythm(parsedRhythm)
                     showTimeSignature = -1
                 }) {
-                    Text(getString(R.string.generic_confirm))
+                    Text(stringResource(R.string.generic_confirm))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showTimeSignature = -1 }) {
-                    Text(getString(R.string.generic_cancel))
+                    Text(stringResource(R.string.generic_cancel))
                 }
             }
         )
@@ -1600,7 +1602,7 @@ class RhythmEditorActivity : BaseActivity() {
                         .padding(16.dp)
                 ) {
                     Text(
-                        getString(R.string.editor_tuplet_add),
+                        stringResource(R.string.editor_tuplet_add),
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -1644,7 +1646,7 @@ class RhythmEditorActivity : BaseActivity() {
                         }) {
                             Icon(
                                 painter = painterResource(R.drawable.baseline_remove_24),
-                                contentDescription = getString(R.string.generic_subtract)
+                                contentDescription = stringResource(R.string.generic_subtract)
                             )
                         }
                         Spacer(modifier = Modifier.weight(1f))
@@ -1653,7 +1655,7 @@ class RhythmEditorActivity : BaseActivity() {
                             parsedRhythm = parsedRhythm.replaceNote(selectedNote, tuplet, isScaled = false)
                             mainTrack.setRhythm(parsedRhythm)
                         }) {
-                            Text(getString(R.string.generic_confirm))
+                            Text(stringResource(R.string.generic_confirm))
                         }
                         Spacer(modifier = Modifier.weight(1f))
                         FilledTonalIconButton(onClick = {
@@ -1662,7 +1664,7 @@ class RhythmEditorActivity : BaseActivity() {
                         }) {
                             Icon(
                                 imageVector = Icons.Default.Add,
-                                contentDescription = getString(R.string.generic_add)
+                                contentDescription = stringResource(R.string.generic_add)
                             )
                         }
                     }
@@ -1696,7 +1698,7 @@ class RhythmEditorActivity : BaseActivity() {
                         .padding(16.dp)
                 ) {
                     Text(
-                        getString(R.string.editor_bpm_set),
+                        stringResource(R.string.editor_bpm_set),
                         modifier = Modifier.padding(start = 8.dp),
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurface
@@ -1789,7 +1791,7 @@ class RhythmEditorActivity : BaseActivity() {
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.KeyboardArrowUp,
-                                    contentDescription = getString(R.string.editor_bpm_increase),
+                                    contentDescription = stringResource(R.string.editor_bpm_increase),
                                     modifier = Modifier.pointerInput(Unit) {
                                         detectTapGestures(
                                             onPress = {
@@ -1811,7 +1813,7 @@ class RhythmEditorActivity : BaseActivity() {
                                 )
                                 Icon(
                                     imageVector = Icons.Default.KeyboardArrowDown,
-                                    contentDescription = getString(R.string.editor_bpm_decrease),
+                                    contentDescription = stringResource(R.string.editor_bpm_decrease),
                                     modifier = Modifier.pointerInput(Unit) {
                                         detectTapGestures(
                                             onPress = {
@@ -1843,7 +1845,7 @@ class RhythmEditorActivity : BaseActivity() {
                         horizontalArrangement = Arrangement.End
                     ) {
                         TextButton(onClick = { showBpm = false }) {
-                            Text(getString(R.string.generic_cancel))
+                            Text(stringResource(R.string.generic_cancel))
                         }
                         Spacer(Modifier.width(8.dp))
                         TextButton(onClick = {
@@ -1852,7 +1854,7 @@ class RhythmEditorActivity : BaseActivity() {
                             metronome.bpm = bpm
                             showBpm = false
                         }) {
-                            Text(getString(R.string.generic_confirm))
+                            Text(stringResource(R.string.generic_confirm))
                         }
                     }
                 }
@@ -1874,7 +1876,7 @@ class RhythmEditorActivity : BaseActivity() {
             var measureErrored = false
             if(measure.timeSig.first != 0 && measure.timeSig.second != 0) {
                 if ((measure.timeSig.first <= 0 || measure.timeSig.second <= 0) && editable) {
-                    val error = getString(
+                    val error = stringResource(
                         R.string.editor_error_invalid_time_signature, measureIndex + measureOffset + 1,
                         "${measure.timeSig.first}/${measure.timeSig.second}"
                     )
@@ -1886,7 +1888,7 @@ class RhythmEditorActivity : BaseActivity() {
                     measureErrored = true
                 }
                 if ((measure.timeSig.second and (measure.timeSig.second - 1) != 0) && editable) {
-                    val error = getString(
+                    val error = stringResource(
                         R.string.editor_error_invalid_denominator, measureIndex + measureOffset + 1,
                         "${measure.timeSig.first}/${measure.timeSig.second}"
                     )
@@ -1907,7 +1909,7 @@ class RhythmEditorActivity : BaseActivity() {
                 }
                 if(measureDuration != measureLength && editable) {
                     val comparison = if(measureLength > measureDuration) ">" else "<"
-                    val error = getString(
+                    val error = stringResource(
                         R.string.editor_error_invalid_length,
                         measureIndex + measureOffset + 1,
                         "${measure.timeSig.first}/${measure.timeSig.second}",
@@ -1921,7 +1923,7 @@ class RhythmEditorActivity : BaseActivity() {
                     measureErrored = true
                 }
             } else if(complete && editable) {
-                val error = getString(
+                val error = stringResource(
                     R.string.editor_error_invalid_time_signature, measureIndex + measureOffset + 1,
                     "${measure.timeSig.first}/${measure.timeSig.second}"
                 )
@@ -1955,7 +1957,7 @@ class RhythmEditorActivity : BaseActivity() {
                                 var errored = false
                                 if (element.getDisplay().contains("?") && editable) {
                                     val errorDisplay = element.getDisplay().replace(MusicFont.Notation.DOT.char, '.')
-                                    val error = getString(
+                                    val error = stringResource(
                                         R.string.editor_error_invalid_note,
                                         globalIndex,
                                         errorDisplay,

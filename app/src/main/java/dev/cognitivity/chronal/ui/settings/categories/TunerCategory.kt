@@ -19,7 +19,7 @@
 package dev.cognitivity.chronal.ui.settings.categories
 
 import androidx.compose.ui.graphics.Color
-import dev.cognitivity.chronal.ChronalApp.Companion.context
+import androidx.compose.ui.res.stringResource
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.InstrumentActivity
 import dev.cognitivity.chronal.settings.Settings
@@ -55,13 +55,13 @@ object TunerCategory : SettingsCategory(
             meta = SettingMeta(R.string.page_settings_note_locale,
                 description = {
                     when(Settings.NOTE_NAMES.get()) {
-                        0 -> context.getString(R.string.setting_note_name_english)
-                        1 -> context.getString(R.string.setting_note_name_solfege_english)
-                        2 -> context.getString(R.string.setting_note_name_solfege_chromatic)
-                        3 -> context.getString(R.string.setting_note_name_solfege_latin)
-                        4 -> context.getString(R.string.setting_note_name_german)
-                        5 -> context.getString(R.string.setting_note_name_nashville)
-                        else -> context.getString(R.string.generic_unknown)
+                        0 -> stringResource(R.string.setting_note_name_english)
+                        1 -> stringResource(R.string.setting_note_name_solfege_english)
+                        2 -> stringResource(R.string.setting_note_name_solfege_chromatic)
+                        3 -> stringResource(R.string.setting_note_name_solfege_latin)
+                        4 -> stringResource(R.string.setting_note_name_german)
+                        5 -> stringResource(R.string.setting_note_name_nashville)
+                        else -> stringResource(R.string.generic_unknown)
                     }
                 }
             ),
@@ -71,10 +71,10 @@ object TunerCategory : SettingsCategory(
             meta = SettingMeta(R.string.page_settings_accidentals,
                 description = {
                     when(Settings.ACCIDENTALS.get()) {
-                        0 -> context.getString(R.string.setting_accidental_sharps)
-                        1 -> context.getString(R.string.setting_accidental_flats)
-                        2 -> context.getString(R.string.setting_accidentals_sharps_flats)
-                        else -> context.getString(R.string.generic_unknown)
+                        0 -> stringResource(R.string.setting_accidental_sharps)
+                        1 -> stringResource(R.string.setting_accidental_flats)
+                        2 -> stringResource(R.string.setting_accidentals_sharps_flats)
+                        else -> stringResource(R.string.generic_unknown)
                     }
                 }
             ),
@@ -88,7 +88,7 @@ object TunerCategory : SettingsCategory(
             setting = Settings.AUDIO_THRESHOLD
         ),
         SettingItem.PageLink(
-            meta = SettingMeta(R.string.page_settings_a4_frequency, { context.getString(R.string.tuner_hz, Settings.TUNER_FREQUENCY.get()) }),
+            meta = SettingMeta(R.string.page_settings_a4_frequency, { stringResource(R.string.tuner_hz, Settings.TUNER_FREQUENCY.get()) }),
             pageId = A4FrequencyPage.id
         )
     )

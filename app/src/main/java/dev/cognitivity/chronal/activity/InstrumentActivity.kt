@@ -160,7 +160,7 @@ class InstrumentActivity : BaseActivity() {
                 .nestedScroll(scrollBehavior.nestedScrollConnection),
             topBar = {
                 LargeTopAppBar(
-                    title = { Text(text = getString(R.string.instrument_title)) },
+                    title = { Text(text = stringResource(R.string.instrument_title)) },
                     navigationIcon = {
                         IconButton(
                             onClick = {
@@ -169,7 +169,7 @@ class InstrumentActivity : BaseActivity() {
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                                contentDescription = getString(R.string.generic_back)
+                                contentDescription = stringResource(R.string.generic_back)
                             )
                         }
                     },
@@ -181,7 +181,7 @@ class InstrumentActivity : BaseActivity() {
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.outline_reset_wrench_24),
-                                contentDescription = getString(R.string.instrument_reset_instruments_title)
+                                contentDescription = stringResource(R.string.instrument_reset_instruments_title)
                             )
                         }
                         IconButton(
@@ -194,7 +194,7 @@ class InstrumentActivity : BaseActivity() {
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Search,
-                                contentDescription = getString(R.string.generic_search)
+                                contentDescription = stringResource(R.string.generic_search)
                             )
                         }
                     },
@@ -209,12 +209,12 @@ class InstrumentActivity : BaseActivity() {
                     icon = {
                         Icon(
                             imageVector = Icons.Default.Add,
-                            contentDescription = getString(R.string.instrument_add)
+                            contentDescription = stringResource(R.string.instrument_add)
                         )
                     },
                     text = {
                         Text(
-                            text = getString(R.string.instrument_add),
+                            text = stringResource(R.string.instrument_add),
                             style = MaterialTheme.typography.titleMediumEmphasized
                         )
                     },
@@ -251,7 +251,7 @@ class InstrumentActivity : BaseActivity() {
                         onExpandedChange = { },
                         enabled = true,
                         placeholder = {
-                            Text(getString(R.string.instrument_search))
+                            Text(stringResource(R.string.instrument_search))
                         },
                         leadingIcon = {
                             IconButton(
@@ -264,7 +264,7 @@ class InstrumentActivity : BaseActivity() {
                             ) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                                    contentDescription = getString(R.string.generic_back)
+                                    contentDescription = stringResource(R.string.generic_back)
                                 )
                             }
                         },
@@ -277,7 +277,7 @@ class InstrumentActivity : BaseActivity() {
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Clear,
-                                        contentDescription = getString(R.string.generic_search_clear)
+                                        contentDescription = stringResource(R.string.generic_search_clear)
                                     )
                                 }
                             }
@@ -319,8 +319,8 @@ class InstrumentActivity : BaseActivity() {
         if(resetDialog) {
             AlertDialog(
                 onDismissRequest = { resetDialog = false },
-                title = { Text(getString(R.string.instrument_reset_instruments_title)) },
-                text = { Text(getString(R.string.instrument_reset_instruments_text)) },
+                title = { Text(stringResource(R.string.instrument_reset_instruments_title)) },
+                text = { Text(stringResource(R.string.instrument_reset_instruments_text)) },
                 confirmButton = {
                     TextButton(onClick = {
                         scope.launch {
@@ -329,12 +329,12 @@ class InstrumentActivity : BaseActivity() {
                         }
                         resetDialog = false
                     }) {
-                        Text(getString(R.string.generic_confirm))
+                        Text(stringResource(R.string.generic_confirm))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { resetDialog = false }) {
-                        Text(getString(R.string.generic_cancel))
+                        Text(stringResource(R.string.generic_cancel))
                     }
                 }
             )
@@ -499,7 +499,7 @@ class InstrumentActivity : BaseActivity() {
             ) {
                 Icon(
                     imageVector = if(isSelected) Icons.Default.Edit else Icons.Outlined.Edit,
-                    contentDescription = getString(R.string.generic_edit),
+                    contentDescription = stringResource(R.string.generic_edit),
                     tint = titleColor.value
                 )
             }
@@ -509,7 +509,7 @@ class InstrumentActivity : BaseActivity() {
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
-                        contentDescription = getString(R.string.generic_selected),
+                        contentDescription = stringResource(R.string.generic_selected),
                         tint = titleColor.value
                     )
                 }
@@ -519,7 +519,7 @@ class InstrumentActivity : BaseActivity() {
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Delete,
-                        contentDescription = getString(R.string.generic_delete),
+                        contentDescription = stringResource(R.string.generic_delete),
                         tint = titleColor.value
                     )
                 }
@@ -560,7 +560,7 @@ class InstrumentActivity : BaseActivity() {
             topBar = {
                 LargeTopAppBar(
                     title = {
-                        Text(getString(if(editingInstrument != null) R.string.instrument_edit else R.string.instrument_create_new))
+                        Text(stringResource(if(editingInstrument != null) R.string.instrument_edit else R.string.instrument_create_new))
                     },
                     navigationIcon = {
                         IconButton(
@@ -570,7 +570,7 @@ class InstrumentActivity : BaseActivity() {
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Clear,
-                                contentDescription = getString(R.string.generic_close)
+                                contentDescription = stringResource(R.string.generic_close)
                             )
                         }
                     },
@@ -608,10 +608,10 @@ class InstrumentActivity : BaseActivity() {
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Check,
-                                contentDescription = getString(R.string.generic_confirm)
+                                contentDescription = stringResource(R.string.generic_confirm)
                             )
                             Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
-                            Text(getString(R.string.generic_confirm))
+                            Text(stringResource(R.string.generic_confirm))
                         }
                     },
                     scrollBehavior = scrollBehavior
@@ -671,10 +671,10 @@ class InstrumentActivity : BaseActivity() {
                             .background(MaterialTheme.colorScheme.surfaceContainer)
                             .padding(horizontal = 16.dp, vertical = 8.dp),
                         label = {
-                            Text(getString(R.string.instrument_create_key))
+                            Text(stringResource(R.string.instrument_create_key))
                         },
                         supportingText = {
-                            Text(getString(R.string.instrument_create_key_text))
+                            Text(stringResource(R.string.instrument_create_key_text))
                         },
                         leadingIcon = {
                             Icon(
@@ -698,10 +698,10 @@ class InstrumentActivity : BaseActivity() {
                                 if(!octaveError) octave = newOctave
                             },
                             label = {
-                                Text(getString(R.string.instrument_create_octave))
+                                Text(stringResource(R.string.instrument_create_octave))
                             },
                             supportingText = {
-                                Text(getString(
+                                Text(stringResource(
                                     if(octaveString.isEmpty()) {
                                         if(octaveError) R.string.generic_required_field
                                         else R.string.instrument_create_octave_text
@@ -747,10 +747,10 @@ class InstrumentActivity : BaseActivity() {
                 )
             },
             label = {
-                Text(getString(R.string.instrument_create_name))
+                Text(stringResource(R.string.instrument_create_name))
             },
             supportingText = {
-                Text(getString(if (nameError) R.string.generic_required_field else R.string.instrument_create_name_text))
+                Text(stringResource(if (nameError) R.string.generic_required_field else R.string.instrument_create_name_text))
             },
             isError = nameError,
             modifier = modifier,
@@ -770,11 +770,11 @@ class InstrumentActivity : BaseActivity() {
                 )
             },
             label = {
-                Text(getString(R.string.instrument_create_name_shortened))
+                Text(stringResource(R.string.instrument_create_name_shortened))
             },
             supportingText = {
                 Text(
-                    getString(
+                    stringResource(
                         if (shortenedError) R.string.generic_required_field
                         else R.string.instrument_create_name_shortened_text
                     )
@@ -800,10 +800,10 @@ class InstrumentActivity : BaseActivity() {
                 value = category,
                 onValueChange = onValueChange,
                 label = {
-                    Text(getString(R.string.instrument_create_category))
+                    Text(stringResource(R.string.instrument_create_category))
                 },
                 supportingText = {
-                    Text(getString(if (categoryError) R.string.generic_required_field else R.string.instrument_create_category_text))
+                    Text(stringResource(if (categoryError) R.string.generic_required_field else R.string.instrument_create_category_text))
                 },
                 leadingIcon = {
                     Icon(
@@ -947,12 +947,12 @@ class InstrumentActivity : BaseActivity() {
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = getString(R.string.instrument_create_strings_enable_name),
+                    text = stringResource(R.string.instrument_create_strings_enable_name),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
-                    text = getString(R.string.instrument_create_strings_enable_description),
+                    text = stringResource(R.string.instrument_create_strings_enable_description),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -997,7 +997,7 @@ class InstrumentActivity : BaseActivity() {
                     modifier = Modifier.padding(top = 4.dp)
                         .align(Alignment.CenterHorizontally)
                 ) {
-                    Text(getString(R.string.instrument_create_add_string))
+                    Text(stringResource(R.string.instrument_create_add_string))
                 }
                 Row(
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
@@ -1063,7 +1063,7 @@ class InstrumentActivity : BaseActivity() {
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.outline_drag_handle_24),
-                        contentDescription = getString(R.string.generic_drag_handle)
+                        contentDescription = stringResource(R.string.generic_drag_handle)
                     )
                 }
 
@@ -1088,7 +1088,7 @@ class InstrumentActivity : BaseActivity() {
                     modifier = Modifier.weight(1f),
                     chromaticOrdered = true,
                     label = {
-                        Text(getString(R.string.instrument_create_key))
+                        Text(stringResource(R.string.instrument_create_key))
                     }
                 )
                 Spacer(modifier = Modifier.width(4.dp))
@@ -1115,7 +1115,7 @@ class InstrumentActivity : BaseActivity() {
                     },
                     modifier = Modifier.weight(1f),
                     label = {
-                        Text(getString(R.string.instrument_create_octave))
+                        Text(stringResource(R.string.instrument_create_octave))
                     }
                 )
 
@@ -1128,7 +1128,7 @@ class InstrumentActivity : BaseActivity() {
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Delete,
-                        contentDescription = getString(R.string.generic_delete)
+                        contentDescription = stringResource(R.string.generic_delete)
                     )
                 }
             }
@@ -1176,6 +1176,7 @@ class InstrumentActivity : BaseActivity() {
         )
     }
 
+    @Composable
     private fun getDescription(instrument: Instrument): String {
         if(instrument.strings.isNotEmpty()) {
             return instrument.strings.joinToString(" ") {
@@ -1193,6 +1194,6 @@ class InstrumentActivity : BaseActivity() {
         ).toDisplayName(octaveVisible = true).name
         val noteName = pitch.toDisplayName(octaveVisible = true).enharmonic ?: pitch.toDisplayName(octaveVisible = true).name
 
-        return getString(R.string.instrument_tuning, c4, noteName)
+        return stringResource(R.string.instrument_tuning, c4, noteName)
     }
 }

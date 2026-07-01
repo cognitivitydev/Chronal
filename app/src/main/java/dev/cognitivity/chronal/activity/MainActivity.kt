@@ -56,6 +56,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
@@ -230,27 +231,27 @@ class MainActivity : BaseActivity() {
                             intent.data = ("package:$packageName").toUri()
                             startActivity(intent)
                         }) {
-                            Text(getString(R.string.generic_settings))
+                            Text(stringResource(R.string.generic_settings))
                         }
                     },
                     dismissButton = @Composable {
                         TextButton(onClick = {
                             showMicrophoneDialog = false
                         }) {
-                            Text(getString(R.string.generic_cancel))
+                            Text(stringResource(R.string.generic_cancel))
                         }
                     },
                     icon = @Composable {
                         Icon(
                             painter = painterResource(R.drawable.outline_warning_24),
-                            contentDescription = getString(R.string.generic_warning),
+                            contentDescription = stringResource(R.string.generic_warning),
                         )
                     },
                     title = @Composable {
-                        Text(getString(R.string.tuner_missing_permission_title))
+                        Text(stringResource(R.string.tuner_missing_permission_title))
                     },
                     text = @Composable {
-                        Text(getString(R.string.tuner_missing_permission_text))
+                        Text(stringResource(R.string.tuner_missing_permission_text))
                     }
                 )
             }
@@ -394,7 +395,7 @@ class MainActivity : BaseActivity() {
                                                 (item.selectedIcon as NavigationIcon.ResourceIcon).resourceId
                                         else icon.resourceId
                                     ),
-                                    contentDescription = getString(item.label)
+                                    contentDescription = stringResource(item.label)
                                 )
                             }
                             is NavigationIcon.VectorIcon -> {
@@ -404,12 +405,12 @@ class MainActivity : BaseActivity() {
                                             (item.selectedIcon as NavigationIcon.VectorIcon).imageVector
                                         else icon.imageVector
                                     ),
-                                    contentDescription = getString(item.label)
+                                    contentDescription = stringResource(item.label)
                                 )
                             }
                         }
                     },
-                    label = { Text(getString(item.label), style = MaterialTheme.typography.bodyMedium) }
+                    label = { Text(stringResource(item.label), style = MaterialTheme.typography.bodyMedium) }
                 )
             }
         }
@@ -448,19 +449,19 @@ class MainActivity : BaseActivity() {
                                             (item.selectedIcon as NavigationIcon.ResourceIcon).resourceId
                                         else icon.resourceId
                                     ),
-                                    contentDescription = getString(item.label)
+                                    contentDescription = stringResource(item.label)
                                 )
                             }
                             is NavigationIcon.VectorIcon -> {
                                 Icon(
                                     imageVector = if(currentRoute == item.route) (item.selectedIcon as NavigationIcon.VectorIcon).imageVector
                                         else icon.imageVector,
-                                    contentDescription = getString(item.label)
+                                    contentDescription = stringResource(item.label)
                                 )
                             }
                         }
                     },
-                    label = { Text(getString(item.label), style = MaterialTheme.typography.bodyMedium) }
+                    label = { Text(stringResource(item.label), style = MaterialTheme.typography.bodyMedium) }
                 )
             }
             Spacer(Modifier.weight(1f))

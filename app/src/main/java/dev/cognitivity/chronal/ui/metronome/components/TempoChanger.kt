@@ -40,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -50,7 +51,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.round
 import dev.cognitivity.chronal.settings.Settings
@@ -127,7 +127,7 @@ fun TempoChanger(
                 IncrementButton(onDecrement) {
                     Icon(
                         painter = painterResource(R.drawable.baseline_remove_24),
-                        contentDescription = context.getString(R.string.editor_bpm_decrease)
+                        contentDescription = stringResource(R.string.editor_bpm_decrease)
                     )
                 }
 
@@ -198,7 +198,7 @@ fun TempoChanger(
                         }
                     }
                     Text(
-                        text = context.getString(R.string.metronome_bpm),
+                        text = stringResource(R.string.metronome_bpm),
                         style = TextStyle(
                             fontFamily = roundedFontFamily,
                             fontWeight = FontWeight(600),
@@ -210,7 +210,7 @@ fun TempoChanger(
                     if(true) { // TODO add setting
                         val tempoMarking = getTempoMarking(bpm.toInt())
                         Text(
-                            text = tempoMarking ?: context.getString(R.string.metronome_tempo_unknown),
+                            text = tempoMarking ?: stringResource(R.string.metronome_tempo_unknown),
                             style = MaterialTheme.typography.bodyLarge,
                             color = if(tempoMarking != null) MaterialTheme.colorScheme.tertiary
                                 else MaterialTheme.colorScheme.error,
@@ -225,7 +225,7 @@ fun TempoChanger(
                 IncrementButton(onIncrement) {
                     Icon(
                         imageVector = Icons.Default.Add,
-                        contentDescription = context.getString(R.string.editor_bpm_increase)
+                        contentDescription = stringResource(R.string.editor_bpm_increase)
                     )
                 }
             }

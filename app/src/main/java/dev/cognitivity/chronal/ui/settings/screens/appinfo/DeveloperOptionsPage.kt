@@ -45,13 +45,13 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.settings.Setting
@@ -159,7 +159,7 @@ object DeveloperOptionsPage : SettingsPage(
                 },
                 enabled = error == null
             ) {
-                Text(context.getString(R.string.generic_save))
+                Text(stringResource(R.string.generic_save))
             }
             FilledTonalButton(
                 onClick = {
@@ -168,7 +168,7 @@ object DeveloperOptionsPage : SettingsPage(
                     importing = false
                 }
             ) {
-                Text(context.getString(R.string.generic_cancel))
+                Text(stringResource(R.string.generic_cancel))
             }
         }
         @Composable
@@ -185,7 +185,7 @@ object DeveloperOptionsPage : SettingsPage(
             ) {
                 Icon(
                     painter = painterResource(R.drawable.outline_download_24),
-                    contentDescription = context.getString(R.string.generic_export),
+                    contentDescription = stringResource(R.string.generic_export),
                     modifier = Modifier.size(IconButtonDefaults.smallIconSize),
                 )
             }
@@ -198,7 +198,7 @@ object DeveloperOptionsPage : SettingsPage(
             ) {
                 Icon(
                     painter = painterResource(R.drawable.outline_upload_24),
-                    contentDescription = context.getString(R.string.generic_import),
+                    contentDescription = stringResource(R.string.generic_import),
                     modifier = Modifier.size(IconButtonDefaults.smallIconSize),
                 )
             }
@@ -210,7 +210,7 @@ object DeveloperOptionsPage : SettingsPage(
             ) {
                 Icon(
                     painter = painterResource(R.drawable.outline_refresh_24),
-                    contentDescription = context.getString(R.string.generic_refresh),
+                    contentDescription = stringResource(R.string.generic_refresh),
                     modifier = Modifier.size(IconButtonDefaults.smallIconSize),
                 )
             }
@@ -220,7 +220,7 @@ object DeveloperOptionsPage : SettingsPage(
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            Text(context.getString(R.string.setting_name_raw), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+            Text(stringResource(R.string.setting_name_raw), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
             Box(
                 modifier = Modifier.padding(top = 16.dp)
                     .clip(RoundedCornerShape(16.dp))

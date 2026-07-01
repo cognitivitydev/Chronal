@@ -31,12 +31,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import dev.cognitivity.chronal.ChronalApp.Companion.context
+import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ui.settings.categories.LanguageCategory
 import dev.cognitivity.chronal.ui.settings.layout.SettingsLayout
 import dev.cognitivity.chronal.ui.settings.screens.SettingsHomeScreen
@@ -114,7 +115,7 @@ fun SettingsNavHost(
                 val items = if(categoryId == "language") LanguageCategory.getItems(activity)
                     else category.items
                 SettingsListScreen(
-                    title = context.getString(category.title),
+                    title = stringResource(category.title),
                     items = items,
                     navController = navController,
                     expanded = expanded
@@ -131,10 +132,10 @@ fun SettingsNavHost(
             val localizedContext = remember {
                 val locale = Locale.forLanguageTag(language)
 
-                val config = context.resources.configuration
+                val config = ChronalApp.getInstance().resources.configuration
                 val newConfig = Configuration(config)
                 newConfig.setLocale(locale)
-                context.createConfigurationContext(newConfig)
+                ChronalApp.getInstance().createConfigurationContext(newConfig)
             }
 
             CompositionLocalProvider(
@@ -154,7 +155,7 @@ fun SettingsNavHost(
             val page = pageId?.let { SettingsLayout.pageOf(it) }
             if(page != null) {
                 SettingsListScreen(
-                    title = context.getString(page.title),
+                    title = stringResource(page.title),
                     items = page.items,
                     navController = navController,
                     expanded = expanded

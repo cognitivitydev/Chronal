@@ -27,7 +27,7 @@ import android.os.VibratorManager
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.changedToDown
 import androidx.compose.ui.input.pointer.pointerInput
-import dev.cognitivity.chronal.ChronalApp.Companion.context
+import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.settings.Settings
 import kotlin.math.abs
 import kotlin.math.min
@@ -46,10 +46,10 @@ fun Modifier.metronomeGestures(
     val invertedSwipe = Settings.GESTURE_SWIPE_INVERTED.get()
 
     val vibrator = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
+        ChronalApp.getInstance().getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
     } else {
         @Suppress("DEPRECATION")
-        context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+        ChronalApp.getInstance().getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
     }
 
     return pointerInput(Unit) {

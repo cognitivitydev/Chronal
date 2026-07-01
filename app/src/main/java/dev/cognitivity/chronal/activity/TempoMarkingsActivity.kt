@@ -47,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.R
@@ -83,7 +84,7 @@ class TempoMarkingsActivity : BaseActivity() {
             topBar = {
                 TopAppBar(
                     title = {
-                        Text(getString(R.string.tempo_markings_title))
+                        Text(stringResource(R.string.tempo_markings_title))
                     },
                     navigationIcon = {
                         IconButton(
@@ -91,7 +92,7 @@ class TempoMarkingsActivity : BaseActivity() {
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                                contentDescription = getString(R.string.generic_back)
+                                contentDescription = stringResource(R.string.generic_back)
                             )
                         }
                     },
@@ -103,7 +104,7 @@ class TempoMarkingsActivity : BaseActivity() {
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.outline_reset_wrench_24),
-                                contentDescription = getString(R.string.tempo_markings_reset_title),
+                                contentDescription = stringResource(R.string.tempo_markings_reset_title),
                             )
                         }
                     }
@@ -117,7 +118,7 @@ class TempoMarkingsActivity : BaseActivity() {
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
-                        contentDescription = getString(R.string.tempo_markings_add_title)
+                        contentDescription = stringResource(R.string.tempo_markings_add_title)
                     )
                 }
             },
@@ -148,14 +149,14 @@ class TempoMarkingsActivity : BaseActivity() {
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = getString(R.string.tempo_marking_range, marking.range.first, marking.range.last),
+                                text = stringResource(R.string.tempo_marking_range, marking.range.first, marking.range.last),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         Icon(
                             imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
-                            contentDescription = getString(R.string.generic_edit),
+                            contentDescription = stringResource(R.string.generic_edit),
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
@@ -206,11 +207,11 @@ class TempoMarkingsActivity : BaseActivity() {
                     icon = {
                         Icon(
                             painter = painterResource(R.drawable.outline_warning_24),
-                            contentDescription = getString(R.string.tempo_markings_reset_title)
+                            contentDescription = stringResource(R.string.tempo_markings_reset_title)
                         )
                     },
-                    title = { Text(getString(R.string.tempo_markings_reset_title)) },
-                    text = { Text(getString(R.string.tempo_markings_reset_text)) },
+                    title = { Text(stringResource(R.string.tempo_markings_reset_title)) },
+                    text = { Text(stringResource(R.string.tempo_markings_reset_text)) },
                     confirmButton = {
                         TextButton(
                             onClick = {
@@ -222,14 +223,14 @@ class TempoMarkingsActivity : BaseActivity() {
                                 }
                             }
                         ) {
-                            Text(getString(R.string.generic_reset))
+                            Text(stringResource(R.string.generic_reset))
                         }
                     },
                     dismissButton = {
                         TextButton(
                             onClick = { showResetDialog = false }
                         ) {
-                            Text(getString(R.string.generic_cancel))
+                            Text(stringResource(R.string.generic_cancel))
                         }
                     }
                 )
@@ -261,7 +262,7 @@ class TempoMarkingsActivity : BaseActivity() {
         AlertDialog(
             onDismissRequest = onDismiss,
             title = {
-                Text(getString(if(name != null) R.string.tempo_markings_edit_title else R.string.tempo_markings_add_title))
+                Text(stringResource(if(name != null) R.string.tempo_markings_edit_title else R.string.tempo_markings_add_title))
             },
             text = {
                 Column {
@@ -271,14 +272,14 @@ class TempoMarkingsActivity : BaseActivity() {
                             nameText = it
                             nameErrorMissing = it.isEmpty()
                         },
-                        label = { Text(getString(R.string.tempo_markings_add_name)) },
+                        label = { Text(stringResource(R.string.tempo_markings_add_name)) },
                         placeholder = { Text("Andante") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         isError = nameErrorMissing,
                         supportingText = {
                             if(nameErrorMissing) {
-                                Text(getString(R.string.tempo_markings_add_name_error))
+                                Text(stringResource(R.string.tempo_markings_add_name_error))
                             }
                         }
                     )
@@ -289,7 +290,7 @@ class TempoMarkingsActivity : BaseActivity() {
                             minText = it
                             minErrorMissing = it.isEmpty()
                         },
-                        label = { Text(getString(R.string.tempo_markings_add_min)) },
+                        label = { Text(stringResource(R.string.tempo_markings_add_min)) },
                         placeholder = { Text("1") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
@@ -300,11 +301,11 @@ class TempoMarkingsActivity : BaseActivity() {
                         supportingText = {
                             if(minText.isEmpty() && !minErrorMissing) return@OutlinedTextField
                             if (minErrorMissing || minErrorInvalid) {
-                                Text(getString(R.string.tempo_markings_add_error_invalid))
+                                Text(stringResource(R.string.tempo_markings_add_error_invalid))
                             } else if (minErrorLow) {
-                                Text(getString(R.string.tempo_markings_add_error_low, MetronomeTrack.MIN_BPM.toInt()))
+                                Text(stringResource(R.string.tempo_markings_add_error_low, MetronomeTrack.MIN_BPM.toInt()))
                             } else if (minErrorHigh) {
-                                Text(getString(R.string.tempo_markings_add_error_high, MetronomeTrack.MAX_BPM.toInt()))
+                                Text(stringResource(R.string.tempo_markings_add_error_high, MetronomeTrack.MAX_BPM.toInt()))
                             }
                         }
                     )
@@ -315,7 +316,7 @@ class TempoMarkingsActivity : BaseActivity() {
                             maxText = it
                             maxErrorMissing = it.isEmpty()
                         },
-                        label = { Text(getString(R.string.tempo_markings_add_max)) },
+                        label = { Text(stringResource(R.string.tempo_markings_add_max)) },
                         placeholder = { Text("500") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
@@ -326,13 +327,13 @@ class TempoMarkingsActivity : BaseActivity() {
                         supportingText = {
                             if(maxText.isEmpty() && !maxErrorMissing) return@OutlinedTextField
                             if (maxErrorMissing || maxErrorInvalid) {
-                                Text(getString(R.string.tempo_markings_add_error_invalid))
+                                Text(stringResource(R.string.tempo_markings_add_error_invalid))
                             } else if (maxErrorMin) {
-                                Text(getString(R.string.tempo_markings_add_error_min, minText.toIntOrNull() ?: 1))
+                                Text(stringResource(R.string.tempo_markings_add_error_min, minText.toIntOrNull() ?: 1))
                             } else if (maxErrorLow) {
-                                Text(getString(R.string.tempo_markings_add_error_low, MetronomeTrack.MIN_BPM.toInt()))
+                                Text(stringResource(R.string.tempo_markings_add_error_low, MetronomeTrack.MIN_BPM.toInt()))
                             } else if (maxErrorHigh) {
-                                Text(getString(R.string.tempo_markings_add_error_high, MetronomeTrack.MAX_BPM.toInt()))
+                                Text(stringResource(R.string.tempo_markings_add_error_high, MetronomeTrack.MAX_BPM.toInt()))
                             }
                         }
                     )
@@ -345,9 +346,9 @@ class TempoMarkingsActivity : BaseActivity() {
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.Delete,
-                                contentDescription = getString(R.string.generic_delete)
+                                contentDescription = stringResource(R.string.generic_delete)
                             )
-                            Text(getString(R.string.generic_delete))
+                            Text(stringResource(R.string.generic_delete))
                         }
                     }
                 }
@@ -377,7 +378,7 @@ class TempoMarkingsActivity : BaseActivity() {
                         }
                     }
                 ) {
-                    Text(getString(if(name != null) R.string.generic_edit else R.string.generic_add))
+                    Text(stringResource(if(name != null) R.string.generic_edit else R.string.generic_add))
                 }
             },
             dismissButton = {
@@ -386,7 +387,7 @@ class TempoMarkingsActivity : BaseActivity() {
                         onDismiss()
                     }
                 ) {
-                    Text(getString(R.string.generic_cancel))
+                    Text(stringResource(R.string.generic_cancel))
                 }
             }
         )

@@ -45,6 +45,7 @@ import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -52,6 +53,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.graphics.shapes.CornerRounding
@@ -59,7 +61,6 @@ import androidx.graphics.shapes.Morph
 import androidx.graphics.shapes.RoundedPolygon
 import androidx.graphics.shapes.circle
 import androidx.graphics.shapes.star
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.BeatDetectorActivity
 import dev.cognitivity.chronal.activity.EditSounds
@@ -67,7 +68,6 @@ import dev.cognitivity.chronal.activity.FullscreenActivity
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.ui.MorphedShape
 import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
-import androidx.compose.runtime.collectAsState
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -178,7 +178,7 @@ fun PlayButton(mainActivity: MainActivity, viewModel: MetronomeViewModel, onClic
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.outline_timer_24),
-                    contentDescription = context.getString(R.string.metronome_option_tap_tempo),
+                    contentDescription = stringResource(R.string.metronome_option_tap_tempo),
                     modifier = Modifier.size(32.dp)
                         .offset(x = (12).dp)
                         .align(Alignment.CenterStart),
@@ -204,7 +204,7 @@ fun PlayButton(mainActivity: MainActivity, viewModel: MetronomeViewModel, onClic
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.baseline_more_horiz_24),
-                    contentDescription = context.getString(R.string.generic_more_options),
+                    contentDescription = stringResource(R.string.generic_more_options),
                     modifier = Modifier.size(32.dp)
                         .offset(x = (-12).dp)
                         .align(Alignment.CenterEnd),
@@ -241,7 +241,7 @@ fun PlayButton(mainActivity: MainActivity, viewModel: MetronomeViewModel, onClic
 @Composable
 fun DropdownItem(viewModel: MetronomeViewModel, name: Int, icon: Painter, onClick: () -> Unit) {
     DropdownMenuItem(
-        text = { Text(context.getString(name)) },
+        text = { Text(stringResource(name)) },
         onClick = {
             viewModel.setSettingsExpanded(false)
             onClick()
@@ -249,7 +249,7 @@ fun DropdownItem(viewModel: MetronomeViewModel, name: Int, icon: Painter, onClic
         leadingIcon = {
             Icon(
                 painter = icon,
-                contentDescription = context.getString(name),
+                contentDescription = stringResource(name),
                 tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(24.dp)
             )

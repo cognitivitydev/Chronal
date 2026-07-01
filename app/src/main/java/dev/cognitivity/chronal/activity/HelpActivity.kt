@@ -46,6 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -84,7 +85,7 @@ class HelpActivity : BaseActivity() {
             topBar = {
                 TopAppBar(
                     title = {
-                        Text(getString(R.string.help_title))
+                        Text(stringResource(R.string.help_title))
                     },
                     navigationIcon = {
                         IconButton(
@@ -92,7 +93,7 @@ class HelpActivity : BaseActivity() {
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                                contentDescription = getString(R.string.generic_back)
+                                contentDescription = stringResource(R.string.generic_back)
                             )
                         }
                     }
@@ -109,11 +110,11 @@ class HelpActivity : BaseActivity() {
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Tab(
-                        text = { Text(getString(R.string.page_metronome)) },
+                        text = { Text(stringResource(R.string.page_metronome)) },
                         icon = {
                             Icon(
                                 painter = painterResource(R.drawable.baseline_music_note_24),
-                                contentDescription = getString(R.string.page_metronome),
+                                contentDescription = stringResource(R.string.page_metronome),
                             )
                         },
                         selected = page == 0,
@@ -123,11 +124,11 @@ class HelpActivity : BaseActivity() {
                         }
                     )
                     Tab(
-                        text = { Text(getString(R.string.page_tuner)) },
+                        text = { Text(stringResource(R.string.page_tuner)) },
                         icon = {
                             Icon(
                                 painter = painterResource(R.drawable.baseline_graphic_eq_24),
-                                contentDescription = getString(R.string.page_tuner),
+                                contentDescription = stringResource(R.string.page_tuner),
                             )
                         },
                         selected = page == 1,
@@ -184,20 +185,20 @@ class HelpActivity : BaseActivity() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = getString(question),
+                    text = stringResource(question),
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f)
                 )
                 Icon(
                     imageVector = if(expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                    contentDescription = getString(if(expanded) R.string.generic_menu_collapse else R.string.generic_menu_expand),
+                    contentDescription = stringResource(if(expanded) R.string.generic_menu_collapse else R.string.generic_menu_expand),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             if(expanded) {
                 Text(
-                    text = getString(answer),
+                    text = stringResource(answer),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

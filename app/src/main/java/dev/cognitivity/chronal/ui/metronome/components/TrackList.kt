@@ -46,14 +46,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.ChronalApp.Companion.context
-import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.PresetActivity
 import dev.cognitivity.chronal.activity.RhythmEditorActivity
 import dev.cognitivity.chronal.activity.SimpleEditorActivity
+import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.MetronomeConfigTrack
 import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
@@ -71,13 +71,13 @@ fun TrackList(viewModel: MetronomeViewModel, modifier: Modifier = Modifier) {
     fun openEditor(index: Int, track: MetronomeTrack) {
         if(track.simpleRhythm == SimpleRhythm.DISABLED) {
             ChronalApp.getInstance().startActivity(
-                Intent(context, RhythmEditorActivity::class.java)
+                Intent(ChronalApp.getInstance(), RhythmEditorActivity::class.java)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     .putExtra("trackIndex", index)
             )
         } else {
             ChronalApp.getInstance().startActivity(
-                Intent(context, SimpleEditorActivity::class.java)
+                Intent(ChronalApp.getInstance(), SimpleEditorActivity::class.java)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     .putExtra("trackIndex", index)
             )
@@ -100,7 +100,7 @@ fun TrackList(viewModel: MetronomeViewModel, modifier: Modifier = Modifier) {
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurface,
                 )
-                Text(context.getString(R.string.metronome_track_list, tracks.size),
+                Text(stringResource(R.string.metronome_track_list, tracks.size),
                     style = MaterialTheme.typography.titleMediumEmphasized,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f)
@@ -109,12 +109,12 @@ fun TrackList(viewModel: MetronomeViewModel, modifier: Modifier = Modifier) {
                 FilledTonalButton(
                     onClick = {
                         ChronalApp.getInstance().startActivity(
-                            Intent(context, PresetActivity::class.java)
+                            Intent(ChronalApp.getInstance(), PresetActivity::class.java)
                                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         )
                     }
                 ) {
-                    Text(context.getString(R.string.presets_title))
+                    Text(stringResource(R.string.presets_title))
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 FilledIconButton(
@@ -138,7 +138,7 @@ fun TrackList(viewModel: MetronomeViewModel, modifier: Modifier = Modifier) {
                         CoroutineScope(Dispatchers.Main).launch {
                             Settings.METRONOME_CONFIG.save()
                             ChronalApp.getInstance().startActivity(
-                                Intent(context, SimpleEditorActivity::class.java)
+                                Intent(ChronalApp.getInstance(), SimpleEditorActivity::class.java)
                                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                     .putExtra("trackIndex", trackIndex)
                             )
@@ -148,7 +148,7 @@ fun TrackList(viewModel: MetronomeViewModel, modifier: Modifier = Modifier) {
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
-                        contentDescription = context.getString(R.string.metronome_track_add)
+                        contentDescription = stringResource(R.string.metronome_track_add)
                     )
                 }
             }

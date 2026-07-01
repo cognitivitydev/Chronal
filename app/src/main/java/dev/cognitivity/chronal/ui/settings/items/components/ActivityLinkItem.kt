@@ -30,7 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.ui.settings.items.SettingItem
 
 @Composable
@@ -40,7 +39,7 @@ fun ActivityLinkItem(item: SettingItem.ActivityLink) {
         modifier = Modifier
             .clickable {
                 ChronalApp.getInstance().startActivity(
-                    Intent(context, item.activity)
+                    Intent(ChronalApp.getInstance(), item.activity)
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 )
             }

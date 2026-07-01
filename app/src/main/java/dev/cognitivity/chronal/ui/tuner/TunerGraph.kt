@@ -34,8 +34,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.round
 import dev.cognitivity.chronal.tuner.Pitch
@@ -144,7 +144,7 @@ fun BoxScope.TunerGraph(
     }
     Icon(
         painter = painterResource(if(fullscreen) R.drawable.outline_fullscreen_exit_24 else R.drawable.baseline_fullscreen_24),
-        contentDescription = context.getString(R.string.generic_fullscreen),
+        contentDescription = stringResource(R.string.generic_fullscreen),
         tint = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.align(Alignment.BottomEnd)
             .padding(horizontal = 8.dp, vertical = 2.dp)

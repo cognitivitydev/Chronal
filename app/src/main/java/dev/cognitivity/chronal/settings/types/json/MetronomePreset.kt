@@ -19,7 +19,7 @@
 package dev.cognitivity.chronal.settings.types.json
 
 import com.google.gson.JsonObject
-import dev.cognitivity.chronal.ChronalApp.Companion.context
+import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 
@@ -49,21 +49,21 @@ data class MetronomePreset(
 
             return MetronomePreset(
                 timestamp = jsonObject.get("timestamp")?.asLong ?: System.currentTimeMillis(),
-                name = jsonObject.get("name")?.asString ?: context.getString(R.string.presets_example_default),
+                name = jsonObject.get("name")?.asString ?: ChronalApp.getInstance().getString(R.string.presets_example_default),
                 config = config
             )
         }
 
         fun exampleDefault(): MetronomePreset {
             return MetronomePreset(
-                name = context.getString(R.string.presets_example_default),
+                name = ChronalApp.getInstance().getString(R.string.presets_example_default),
                 config = MetronomeConfig.default()
             )
         }
 
         fun examplePolyrhythm(): MetronomePreset {
             return MetronomePreset(
-                name = context.getString(R.string.presets_example_3_2),
+                name = ChronalApp.getInstance().getString(R.string.presets_example_3_2),
                 config = MetronomeConfig(
                     bpm = 120f,
                     tracks = listOf(

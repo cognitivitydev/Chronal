@@ -19,14 +19,10 @@
 package dev.cognitivity.chronal
 
 import android.app.Application
-import android.content.Context
-import android.content.res.Configuration
-import android.util.TypedValue
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.metronome.Metronome
 import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.notifications.PracticeReminderScheduler
@@ -34,7 +30,6 @@ import dev.cognitivity.chronal.settings.Setting
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.tuner.Tuner
 import kotlinx.coroutines.runBlocking
-import java.util.*
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.pow
@@ -56,6 +51,7 @@ class ChronalApp : Application() {
             val tracks = tracksSetting.tracks.map { MetronomeTrack.fromSetting(it) }
 
             metronome = Metronome(
+                context = applicationContext,
                 bpm = Settings.getBpm(),
                 tracks = tracks.toMutableList()
             )
@@ -74,28 +70,6 @@ class ChronalApp : Application() {
         fun getInstance(): ChronalApp {
             return application as ChronalApp
         }
-
-        val context: Context
-            get() {
-                // TODO this is bad
-                val savedLanguage = try {
-                    Settings.APP_LANGUAGE.get()
-                } catch (_: Exception) {
-                    "system"
-                }
-
-                if (savedLanguage == "system") {
-                    return application.applicationContext
-                }
-
-                val locale = Locale.forLanguageTag(savedLanguage)
-                val config = Configuration(application.resources.configuration)
-                config.setLocale(locale)
-                Locale.setDefault(locale)
-
-                return application.createConfigurationContext(config)
-            }
-
     }
 }
 
@@ -108,16 +82,14 @@ fun Float.ceil(decimals: Int): Float = ceil(this * 10f.pow(decimals)) / 10f.pow(
 fun Double.round(decimals: Int) = (this * 10.0.pow(decimals)).roundToInt() / 10.0.pow(decimals)
 fun Float.round(decimals: Int) = (this * 10f.pow(decimals)).roundToInt() / 10f.pow(decimals)
 
+@Composable
 fun Dp.toPx(): Float {
-    return TypedValue.applyDimension(
-        TypedValue.COMPLEX_UNIT_DIP,
-        this.value,
-        ChronalApp.context.resources.displayMetrics
-    )
+    return with(LocalDensity.current) { this@toPx.toPx() }
 }
 
+@Composable
 fun Float.pxToDp(): Dp {
-    return ceil(this / ChronalApp.context.resources.displayMetrics.density).dp
+    return with(LocalDensity.current) { this@pxToDp.toDp() }
 }
 
 @Composable
