@@ -16,21 +16,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package dev.cognitivity.chronal.metronome
+package dev.cognitivity.chronal.metronome.modifiers
 
-import androidx.compose.runtime.State
-import dev.cognitivity.chronal.rhythm.metronome.Beat
+import dev.cognitivity.chronal.metronome.Metronome
+import dev.cognitivity.chronal.metronome.MetronomeTrack
 
-abstract class MetronomeModifier {
-    val metronome: Metronome
-
-    constructor(metronome: Metronome) {
-        this.metronome = metronome
-    }
-
-    open fun onStart() {}
-    open fun onStop() {}
-    open fun onTick(track: MetronomeTrack, beat: Beat) {}
-
-    abstract val isEnabled: State<Boolean>
-}
+/**
+ * Gradually decreases the tempo over a specified duration (in beats, measures, or milliseconds).
+ */
+class Ritardando(
+    metronome: Metronome,
+    duration: TempoChangeDuration,
+    tempoRate: Float,
+    minBpm: Float = MetronomeTrack.MIN_BPM
+) : TempoChange(metronome, duration, -tempoRate, minBpm = minBpm)

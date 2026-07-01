@@ -39,14 +39,21 @@ import androidx.core.content.ContextCompat
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.metronome.MetronomeTrack.Companion.MAX_BPM
 import dev.cognitivity.chronal.metronome.MetronomeTrack.Companion.MIN_BPM
-import dev.cognitivity.chronal.activity.MainActivity
+import dev.cognitivity.chronal.metronome.modifiers.Accelerando
+import dev.cognitivity.chronal.metronome.modifiers.CountIn
+import dev.cognitivity.chronal.metronome.modifiers.StopAfter
+import dev.cognitivity.chronal.metronome.modifiers.TempoChangeDuration
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.round
 import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -109,6 +116,15 @@ class Metronome(
 
     var modifiers: MutableSet<MetronomeModifier> = mutableSetOf()
 
+    private val _countInBeats = MutableStateFlow(0)
+    val countInBeats: StateFlow<Int> = _countInBeats
+
+    private val _countInTotalBeats = MutableStateFlow(0)
+    val countInTotalBeats: StateFlow<Int> = _countInTotalBeats
+
+    private val _countInActive = MutableStateFlow(false)
+    val countInActive: StateFlow<Boolean> = _countInActive
+
     init {
         handlerThread.start()
         handler = Handler(handlerThread.looper)
@@ -117,15 +133,27 @@ class Metronome(
             ContextCompat.registerReceiver(context, this, IntentFilter("dev.cognitivity.chronal.PlayPause"), ContextCompat.RECEIVER_EXPORTED)
             ContextCompat.registerReceiver(context, this, IntentFilter("dev.cognitivity.chronal.Stop"), ContextCompat.RECEIVER_EXPORTED)
         }
+        modifiers.add(Accelerando(metronome = this, duration = TempoChangeDuration.Measures(4L), tempoRate = 1f, maxBpm = 120f))
+        modifiers.add(StopAfter(metronome = this, measures = 4))
+        modifiers.add(CountIn(metronome = this, beats = 8))
     }
 
     fun start() {
         if (playing || !active) return
 
         CoroutineScope(Dispatchers.IO).launch {
+            modifiers.forEach { it.onStart() }
             synchronized(schedulerLock) {
                 timestamp = System.currentTimeMillis()
                 playing = true
+
+                val countInModifier = modifiers.find { it is CountIn } as? CountIn
+                if(countInModifier != null) {
+                    _countInTotalBeats.value = countInModifier.beats
+                    _countInBeats.value = 0
+                    _countInActive.value = true
+                }
+
                 writeHeadSample = 0L
 
                 val currentSamplePos = 0L
@@ -151,8 +179,14 @@ class Metronome(
         handler.removeCallbacks(audioRunnable)
         ongoingSounds.clear()
         tracks.forEach { it.onPause(true) }
+        modifiers.forEach { it.onStop() }
         audioTrack.pause()
         audioTrack.flush()
+
+        _countInBeats.value = 0
+        _countInTotalBeats.value = 0
+        _countInActive.value = false
+
         if (sendNotifications) sendRunningNotification()
     }
 
@@ -223,6 +257,7 @@ class Metronome(
     }
 
     private fun mixTracks(outputBuffer: FloatArray, frameStartSample: Long, frameEndSample: Long) {
+        mixCountIn(outputBuffer, frameStartSample, frameEndSample)
         for((trackIndex, track) in tracks.withIndex()) {
             if (!track.enabled) continue
 
@@ -242,10 +277,53 @@ class Metronome(
                     mixTick(outputBuffer, frameStartSample, track.nextBeatSample, trackIndex, beat.isHigh)
                 }
                 track.onUpdate(beat)
+                modifiers.forEach { it.onTick(track, beat) }
 
                 nextBeat(track, beat)
 
                 if (track.nextBeatSample - frameStartSample > frameSize * 1024L) break
+            }
+        }
+    }
+
+    private fun mixCountIn(outputBuffer: FloatArray, frameStartSample: Long, frameEndSample: Long) {
+        synchronized(schedulerLock) {
+            if(_countInActive.value) {
+                val mainTrack = tracks[0]
+
+                val subdivision = mainTrack.getRhythm().measures[0].timeSig.second
+                val rhythm = SimpleRhythm(
+                    timeSignature = _countInTotalBeats.value to subdivision,
+                    subdivision = subdivision,
+                    emphasis = 1
+                ).asRhythm()
+                val pattern = mainTrack.calculateIntervals(rhythm)
+
+                while(mainTrack.nextBeatSample < frameEndSample) {
+                    if(_countInBeats.value >= _countInTotalBeats.value) {
+                        _countInActive.value = false
+
+                        tracks.forEach { track ->
+                            track.nextBeatSample = mainTrack.nextBeatSample
+                            track.index = -1
+                            track.sampleRemainder = 0.0
+                        }
+                        break
+                    }
+
+                    if(frameStartSample - sampleRate > mainTrack.nextBeatSample) {
+                        mainTrack.nextBeatSample = frameStartSample
+                    }
+
+                    val isHigh = _countInBeats.value == 0
+                    mixTick(outputBuffer, frameStartSample, mainTrack.nextBeatSample, 0, isHigh)
+
+                    _countInBeats.value++
+
+                    val currentBeat = pattern.getOrNull((mainTrack.index + 1).mod(pattern.size)) ?: continue
+                    nextBeat(mainTrack, currentBeat)
+                }
+                return
             }
         }
     }

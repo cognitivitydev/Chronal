@@ -28,8 +28,8 @@ import androidx.lifecycle.ViewModel
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.ChronalApp.Companion.context
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.activity.vibratorManager
+import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.settings.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -50,9 +50,6 @@ class MetronomeViewModel: ViewModel() {
 
     private val _playing = MutableStateFlow(false)
     val playing: StateFlow<Boolean> = _playing.asStateFlow()
-
-    private val _bpm = MutableStateFlow(0f)
-    val bpm: StateFlow<Float> = _bpm.asStateFlow()
 
     private val _tracks = MutableStateFlow<List<MetronomeTrack>>(emptyList())
     val tracks: StateFlow<List<MetronomeTrack>> = _tracks.asStateFlow()
@@ -89,8 +86,13 @@ class MetronomeViewModel: ViewModel() {
     }
 
     fun syncMetronomeState() {
-        _bpm.value = metronome.bpm
         _tracks.value = metronome.tracks.toList()
+
+        CoroutineScope(Dispatchers.Main).launch {
+            metronome.tracks[0].pauseEvents.collect { paused ->
+                _playing.value = !paused
+            }
+        }
     }
 
     fun reloadMetronomeState() {
@@ -109,9 +111,7 @@ class MetronomeViewModel: ViewModel() {
 
     private var lastVibration = 0L
     fun setBpm(newValue: Float, vibrate: Boolean = true) {
-        if(bpm.value == newValue) return
-        _bpm.value = newValue
-
+        if(metronome.bpm == newValue) return
         metronome.bpm = newValue
 
         CoroutineScope(Dispatchers.Main).launch {
@@ -125,7 +125,7 @@ class MetronomeViewModel: ViewModel() {
             if(System.currentTimeMillis() - lastVibration < 100) return
             lastVibration = System.currentTimeMillis()
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null)
-                vibratorManager!!.vibrate(
+                (vibratorManager ?: return).vibrate(
                     CombinedVibration.createParallel(
                         VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK)
                     )
@@ -138,7 +138,7 @@ class MetronomeViewModel: ViewModel() {
             val tickAmplitude = intArrayOf((newValue / 2).toInt().coerceIn(1, 255))
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null) {
-                vibratorManager!!.vibrate(
+                (vibratorManager ?: return).vibrate(
                     CombinedVibration.createParallel(
                         VibrationEffect.createWaveform(tickPattern,tickAmplitude, -1)
                     )

@@ -16,21 +16,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package dev.cognitivity.chronal.metronome
+package dev.cognitivity.chronal.metronome.modifiers
 
-import androidx.compose.runtime.State
-import dev.cognitivity.chronal.rhythm.metronome.Beat
+import androidx.compose.runtime.derivedStateOf
+import dev.cognitivity.chronal.metronome.Metronome
+import dev.cognitivity.chronal.metronome.MetronomeModifier
 
-abstract class MetronomeModifier {
-    val metronome: Metronome
-
-    constructor(metronome: Metronome) {
-        this.metronome = metronome
+/**
+ * Provides a count-in preparation before the metronome and other modifiers start.
+ * @see dev.cognitivity.chronal.metronome.Metronome.mixCountIn
+ */
+class CountIn(
+    metronome: Metronome,
+    val beats: Int
+) : MetronomeModifier(metronome) {
+    override val isEnabled = derivedStateOf {
+        metronome.countInActive.value
     }
-
-    open fun onStart() {}
-    open fun onStop() {}
-    open fun onTick(track: MetronomeTrack, beat: Beat) {}
-
-    abstract val isEnabled: State<Boolean>
 }

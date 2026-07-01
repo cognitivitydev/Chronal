@@ -40,6 +40,7 @@ import dev.cognitivity.chronal.ui.metronome.DisplayMode
 import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
 import dev.cognitivity.chronal.ui.metronome.pages.CircularDisplay
 import dev.cognitivity.chronal.ui.metronome.pages.ConductorDisplay
+import dev.cognitivity.chronal.ui.metronome.pages.CountInDisplay
 import dev.cognitivity.chronal.ui.metronome.pages.GridDisplay
 import dev.cognitivity.chronal.ui.metronome.pages.PieDisplay
 
@@ -50,45 +51,49 @@ fun MetronomeDisplay(
     metronome: Metronome,
     modifier: Modifier = Modifier,
 ) {
+    val countInActive by metronome.countInActive.collectAsState()
     val displayMode by viewModel.displayMode.collectAsState()
     val tracks by viewModel.tracks.collectAsState()
 
     Box(
         modifier = modifier
     ) {
-        when(displayMode) {
-            DisplayMode.CLOCK -> CircularDisplay(viewModel, tracks)
-            DisplayMode.CONDUCTOR -> ConductorDisplay(viewModel, metronome, tracks)
-            DisplayMode.GRID -> GridDisplay(viewModel, tracks)
-            DisplayMode.PIE -> PieDisplay(viewModel, tracks)
-        }
+        if(countInActive) {
+            CountInDisplay(metronome)
+        } else {
+            when(displayMode) {
+                DisplayMode.CLOCK -> CircularDisplay(viewModel, tracks)
+                DisplayMode.CONDUCTOR -> ConductorDisplay(viewModel, metronome, tracks)
+                DisplayMode.GRID -> GridDisplay(viewModel, tracks)
+                DisplayMode.PIE -> PieDisplay(viewModel, tracks)
+            }
+            Row(
+                modifier = Modifier.align(Alignment.TopStart),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                DisplaySelector(viewModel)
 
-        Row(
-            modifier = Modifier.align(Alignment.TopStart),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            DisplaySelector(viewModel)
-
-            if(displayMode == DisplayMode.CONDUCTOR) {
-                IconToggleButton(
-                    checked = viewModel.flipConductor.collectAsState().value,
-                    onCheckedChange = { viewModel.setFlipConductor(it) }
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.outline_flip_24),
-                        contentDescription = context.getString(R.string.metronome_conductor_flip)
-                    )
+                if(displayMode == DisplayMode.CONDUCTOR) {
+                    IconToggleButton(
+                        checked = viewModel.flipConductor.collectAsState().value,
+                        onCheckedChange = { viewModel.setFlipConductor(it) }
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.outline_flip_24),
+                            contentDescription = context.getString(R.string.metronome_conductor_flip)
+                        )
+                    }
                 }
             }
-        }
-        IconButton(
-            onClick = { viewModel.setFullscreenMode(true) },
-            modifier = Modifier.align(Alignment.BottomEnd)
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.baseline_fullscreen_24),
-                contentDescription = context.getString(R.string.generic_fullscreen)
-            )
+            IconButton(
+                onClick = { viewModel.setFullscreenMode(true) },
+                modifier = Modifier.align(Alignment.BottomEnd)
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.baseline_fullscreen_24),
+                    contentDescription = context.getString(R.string.generic_fullscreen)
+                )
+            }
         }
     }
 }
