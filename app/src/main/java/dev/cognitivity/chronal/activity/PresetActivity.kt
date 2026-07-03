@@ -388,6 +388,7 @@ class PresetActivity : BaseActivity() {
                             val metronome = ChronalApp.getInstance().metronome
                             metronome.bpm = preset.config.bpm
                             metronome.tracks = preset.config.tracks.map { MetronomeTrack.fromSetting(it) }.toMutableList()
+                            metronome.setSequence(preset.config.sequence)
 
                             lifecycleScope.launch {
                                 Settings.METRONOME_CONFIG.save(preset.config)

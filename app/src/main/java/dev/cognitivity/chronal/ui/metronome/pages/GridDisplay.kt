@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
+import dev.cognitivity.chronal.ui.metronome.sequenceDisplayTrack
 import dev.cognitivity.chronal.ui.metronome.components.GridDisplayItem
 import dev.cognitivity.chronal.ui.metronome.components.TempoChanger
 import kotlin.math.ceil
@@ -44,7 +45,9 @@ import kotlin.math.sqrt
 
 @Composable
 fun GridDisplay(viewModel: MetronomeViewModel, tracks: List<MetronomeTrack>, modifier: Modifier = Modifier) {
-    val displayTracks = tracks.withIndex().filter { it.value.enabled }
+    val sequenceTrack = viewModel.sequenceDisplayTrack(tracks)
+    val displayTracks = sequenceTrack?.let { listOf(IndexedValue(tracks.indexOf(it), it)) }
+        ?: tracks.withIndex().filter { it.value.enabled }
     if (displayTracks.isEmpty()) return
 
     Column(
@@ -81,7 +84,7 @@ fun GridDisplay(viewModel: MetronomeViewModel, tracks: List<MetronomeTrack>, mod
                             val trackIndex = row * columns + column
                             if (trackIndex >= displayTracks.size) continue
                             val trackEntry = displayTracks[trackIndex]
-                            key(trackEntry.index) {
+                            key(trackEntry.index, trackEntry.value) {
                                 GridDisplayItem(
                                     index = trackEntry.index,
                                     track = trackEntry.value,

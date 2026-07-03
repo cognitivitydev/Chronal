@@ -85,6 +85,17 @@ fun MetronomeDisplay(
                     }
                 }
             }
+            Row(
+                modifier = Modifier.align(Alignment.TopEnd)
+            ) {
+                SequenceButton(viewModel)
+            }
+
+            SequenceProgressLabel(
+                viewModel = viewModel,
+                modifier = Modifier.align(Alignment.TopCenter).padding(top = 12.dp)
+            )
+
             IconButton(
                 onClick = { viewModel.setFullscreenMode(true) },
                 modifier = Modifier.align(Alignment.BottomEnd)
@@ -96,6 +107,44 @@ fun MetronomeDisplay(
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun SequenceButton(viewModel: MetronomeViewModel) {
+    val sequence by viewModel.sequence.collectAsState()
+
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+        tooltip = { PlainTooltip { Text(stringResource(R.string.metronome_sequence_open)) } },
+        state = rememberTooltipState(),
+    ) {
+        IconButton(
+            onClick = { viewModel.setShowSequenceSheet(true) }
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.outline_playlist_play_24),
+                contentDescription = stringResource(R.string.metronome_sequence_open),
+                tint = if (sequence.enabled) MaterialTheme.colorScheme.primary else LocalContentColor.current
+            )
+        }
+    }
+}
+
+@Composable
+fun SequenceProgressLabel(viewModel: MetronomeViewModel, modifier: Modifier = Modifier) {
+    val position by viewModel.sequencePosition.collectAsState()
+    val tracks by viewModel.tracks.collectAsState()
+
+    val currentPosition = position ?: return
+    val name = tracks.getOrNull(currentPosition.trackIndex)?.name ?: return
+
+    Text(
+        text = stringResource(R.string.metronome_sequence_progress, name, currentPosition.bar, currentPosition.totalBars),
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = modifier
+    )
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)

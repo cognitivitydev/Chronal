@@ -24,14 +24,22 @@ import android.os.CombinedVibration
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.widget.Toast
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.vibratorManager
 import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.SequencePosition
 import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.settings.types.json.MetronomeSequence
+import dev.cognitivity.chronal.settings.types.json.SequenceStep
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -80,12 +88,38 @@ class MetronomeViewModel: ViewModel() {
     private val _lastTapTime = MutableStateFlow(0L)
     val lastTapTime: StateFlow<Long> = _lastTapTime.asStateFlow()
 
+    private val _sequence = MutableStateFlow(Settings.METRONOME_CONFIG.get().sequence)
+    val sequence: StateFlow<MetronomeSequence> = _sequence.asStateFlow()
+
+    private val _showSequenceSheet = MutableStateFlow(false)
+    val showSequenceSheet: StateFlow<Boolean> = _showSequenceSheet.asStateFlow()
+
+    private val _sequencePosition = MutableStateFlow<SequencePosition?>(null)
+    val sequencePosition: StateFlow<SequencePosition?> = _sequencePosition.asStateFlow()
+
     init {
         syncMetronomeState()
+
+        viewModelScope.launch {
+            metronome.sequencer.positionEvents.collect { position ->
+                if (position == null) {
+                    _sequencePosition.value = null
+                    return@collect
+                }
+                val timestamp = metronome.timestamp
+                launch {
+                    delay(Settings.VISUAL_LATENCY.get().toLong())
+                    if (metronome.playing && timestamp == metronome.timestamp) {
+                        _sequencePosition.value = position
+                    }
+                }
+            }
+        }
     }
 
     fun syncMetronomeState() {
         _tracks.value = metronome.tracks.toList()
+        _sequence.value = Settings.METRONOME_CONFIG.get().sequence
 
         CoroutineScope(Dispatchers.Main).launch {
             metronome.tracks[0].pauseEvents.collect { paused ->
@@ -100,6 +134,8 @@ class MetronomeViewModel: ViewModel() {
         metronome.bpm = config.bpm
         _tracks.value = tracks.toMutableList()
         metronome.tracks = tracks.toMutableList()
+        metronome.setSequence(config.sequence)
+        _sequence.value = config.sequence
         setPlaying(ChronalApp.getInstance().metronome.playing)
     }
 
@@ -163,6 +199,20 @@ class MetronomeViewModel: ViewModel() {
         }
     }
 
+    fun setSequence(newValue: MetronomeSequence) {
+        _sequence.value = newValue
+        Settings.setSequence(newValue)
+        CoroutineScope(Dispatchers.Main).launch {
+            Settings.METRONOME_CONFIG.save()
+        }
+    }
+    fun setSequenceEnabled(enabled: Boolean) = setSequence(sequence.value.copy(enabled = enabled))
+    fun setSequenceSteps(steps: List<SequenceStep>) {
+        val current = sequence.value
+        setSequence(current.copy(enabled = current.enabled && steps.isNotEmpty(), steps = steps))
+    }
+    fun setShowSequenceSheet(newValue: Boolean) { _showSequenceSheet.value = newValue }
+
     fun setSettingsExpanded(newValue: Boolean) { _settingsExpanded.value = newValue }
     fun setModesExpanded(newValue: Boolean) { _modesExpanded.value = newValue }
     fun setDisplayMode(newValue: DisplayMode) { _displayMode.value = newValue }
@@ -173,4 +223,20 @@ class MetronomeViewModel: ViewModel() {
     fun setIntervals(newValue: List<Long>) { _intervals.value = newValue }
     fun addInterval(newValue: Long) { _intervals.value += newValue }
     fun setLastTapTime(newValue: Long) { _lastTapTime.value = newValue }
+}
+
+/**
+ * The track the visualizer should show while sequence mode is enabled:
+ * the active step's track while playing, otherwise the first valid step's track.
+ * Null when sequence mode is disabled or has no valid steps.
+ */
+@Composable
+fun MetronomeViewModel.sequenceDisplayTrack(tracks: List<MetronomeTrack>): MetronomeTrack? {
+    val sequence by sequence.collectAsState()
+    val position by sequencePosition.collectAsState()
+    if (!sequence.enabled) return null
+    val index = position?.trackIndex
+        ?: sequence.validSteps(tracks.size).firstOrNull()?.value?.trackIndex
+        ?: return null
+    return tracks.getOrNull(index)
 }

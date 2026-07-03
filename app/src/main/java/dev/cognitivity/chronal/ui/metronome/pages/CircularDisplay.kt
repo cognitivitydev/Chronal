@@ -31,12 +31,14 @@ import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.toPx
 import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
+import dev.cognitivity.chronal.ui.metronome.sequenceDisplayTrack
 import dev.cognitivity.chronal.ui.metronome.components.CircularClock
 import dev.cognitivity.chronal.ui.metronome.components.TempoChanger
 
 @Composable
 fun CircularDisplay(viewModel: MetronomeViewModel, tracks: List<MetronomeTrack>, modifier: Modifier = Modifier) {
-    val displayTracks = tracks.filter { it.enabled }
+    val sequenceTrack = viewModel.sequenceDisplayTrack(tracks)
+    val displayTracks = sequenceTrack?.let { listOf(it) } ?: tracks.filter { it.enabled }
     if (displayTracks.isEmpty()) return
 
     Box(

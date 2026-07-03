@@ -66,6 +66,7 @@ import dev.cognitivity.chronal.round
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.toPx
 import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
+import dev.cognitivity.chronal.ui.metronome.sequenceDisplayTrack
 import dev.cognitivity.chronal.ui.metronome.components.TempoChanger
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -75,7 +76,7 @@ import kotlin.math.abs
 //   - separate versions for different time signatures (5/4, 6/8...)
 @Composable
 fun ConductorDisplay(viewModel: MetronomeViewModel, metronome: Metronome, tracks: List<MetronomeTrack>, modifier: Modifier = Modifier) {
-    val displayTrack = tracks.firstOrNull { it.enabled } ?: return
+    val displayTrack = viewModel.sequenceDisplayTrack(tracks) ?: tracks.firstOrNull { it.enabled } ?: return
     val palette = displayTrack.color.getPalette()
     val flipped by viewModel.flipConductor.collectAsState()
 
