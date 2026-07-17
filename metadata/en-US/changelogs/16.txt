@@ -1,0 +1,3 @@
+# v1.1.3 (F-Droid)
+
+ • Fixed incompatible dependency with F-Droid builds.
