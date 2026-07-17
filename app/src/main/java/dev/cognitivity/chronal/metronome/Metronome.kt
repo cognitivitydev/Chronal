@@ -40,10 +40,7 @@ import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.metronome.MetronomeTrack.Companion.MAX_BPM
 import dev.cognitivity.chronal.metronome.MetronomeTrack.Companion.MIN_BPM
-import dev.cognitivity.chronal.metronome.modifiers.Accelerando
 import dev.cognitivity.chronal.metronome.modifiers.CountIn
-import dev.cognitivity.chronal.metronome.modifiers.StopAfter
-import dev.cognitivity.chronal.metronome.modifiers.TempoChangeDuration
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.round
 import dev.cognitivity.chronal.settings.Settings
@@ -132,9 +129,6 @@ class Metronome(
             ContextCompat.registerReceiver(context, this, IntentFilter("dev.cognitivity.chronal.PlayPause"), ContextCompat.RECEIVER_EXPORTED)
             ContextCompat.registerReceiver(context, this, IntentFilter("dev.cognitivity.chronal.Stop"), ContextCompat.RECEIVER_EXPORTED)
         }
-        modifiers.add(Accelerando(metronome = this, duration = TempoChangeDuration.Measures(4L), tempoRate = 1f, maxBpm = 120f))
-        modifiers.add(StopAfter(metronome = this, measures = 4))
-        modifiers.add(CountIn(metronome = this, beats = 8))
     }
 
     fun start() {
