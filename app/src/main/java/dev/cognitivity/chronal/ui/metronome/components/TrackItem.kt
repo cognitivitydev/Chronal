@@ -54,6 +54,7 @@ fun TrackItem(
     track: MetronomeTrack,
     topRounded: Boolean,
     bottomRounded: Boolean,
+    switchEnabled: Boolean = true,
     onCheckedChanged: (Boolean) -> Unit = {},
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = {}
@@ -109,6 +110,7 @@ fun TrackItem(
         val palette = track.color.getPalette()
         Switch(
             checked = enabled,
+            enabled = switchEnabled,
             onCheckedChange = {
                 onCheckedChanged(it)
             },

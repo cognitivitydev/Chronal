@@ -43,6 +43,8 @@ import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.ui.metronome.components.MetronomeDisplay
 import dev.cognitivity.chronal.ui.metronome.components.PlayButton
+import dev.cognitivity.chronal.ui.metronome.components.SequenceProgressLabel
+import dev.cognitivity.chronal.ui.metronome.components.SequenceSheet
 import dev.cognitivity.chronal.ui.metronome.components.TempoControlsDialog
 import dev.cognitivity.chronal.ui.metronome.components.TrackList
 import dev.cognitivity.chronal.ui.metronome.components.metronomeGestures
@@ -171,6 +173,10 @@ fun MetronomePageMain(mainActivity: MainActivity, viewModel: MetronomeViewModel,
                         DisplayMode.GRID -> GridDisplay(viewModel, tracks)
                         DisplayMode.PIE -> PieDisplay(viewModel, tracks)
                     }
+                    SequenceProgressLabel(
+                        viewModel = viewModel,
+                        modifier = Modifier.align(Alignment.TopCenter).padding(top = 24.dp)
+                    )
                     IconButton(
                         onClick = { viewModel.setFullscreenMode(false) },
                         modifier = Modifier.align(Alignment.TopEnd).padding(16.dp)
@@ -190,6 +196,15 @@ fun MetronomePageMain(mainActivity: MainActivity, viewModel: MetronomeViewModel,
             metronome, viewModel,
             onDismissRequest = {
                 viewModel.setShowBpmDialog(false)
+            }
+        )
+    }
+
+    if(viewModel.showSequenceSheet.collectAsState().value) {
+        SequenceSheet(
+            viewModel = viewModel,
+            onDismissRequest = {
+                viewModel.setShowSequenceSheet(false)
             }
         )
     }

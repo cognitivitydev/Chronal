@@ -66,6 +66,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun TrackList(viewModel: MetronomeViewModel, modifier: Modifier = Modifier) {
     val tracks by viewModel.tracks.collectAsState()
+    val sequence by viewModel.sequence.collectAsState()
     var settingsDialogIndex by remember { mutableStateOf<Int?>(null) }
 
     fun openEditor(index: Int, track: MetronomeTrack) {
@@ -161,6 +162,7 @@ fun TrackList(viewModel: MetronomeViewModel, modifier: Modifier = Modifier) {
                 contentAlignment = Alignment.Center
             ) {
                 TrackItem(track, topRounded, bottomRounded,
+                    switchEnabled = !sequence.enabled,
                     onCheckedChanged = { enabled ->
                         viewModel.setTrackEnabled(index, enabled)
                     },

@@ -34,6 +34,7 @@ import dev.cognitivity.chronal.settings.types.json.Instruments
 import dev.cognitivity.chronal.settings.types.json.MetronomeConfig
 import dev.cognitivity.chronal.settings.types.json.MetronomeConfigTrack
 import dev.cognitivity.chronal.settings.types.json.MetronomePreset
+import dev.cognitivity.chronal.settings.types.json.MetronomeSequence
 import dev.cognitivity.chronal.settings.types.json.TempoMarking
 
 object Settings {
@@ -186,12 +187,29 @@ object Settings {
         // ensure at least 1 active track
         if(tracks.count { it != metronomeConfigTrack && it.enabled } == 0) return false
 
-        if(!tracks.contains(metronomeConfigTrack)) return false
+        val removedIndex = tracks.indexOf(metronomeConfigTrack)
+        if(removedIndex == -1) return false
 
-        tracks.remove(metronomeConfigTrack)
-        METRONOME_CONFIG.set(config.copy(tracks = tracks))
+        tracks.removeAt(removedIndex)
 
-        ChronalApp.getInstance().metronome.tracks = config.tracks.map { MetronomeTrack.fromSetting(it) }.toMutableList()
+        val steps = config.sequence.steps
+            .filter { it.trackIndex != removedIndex }
+            .map { if(it.trackIndex > removedIndex) it.copy(trackIndex = it.trackIndex - 1) else it }
+        val sequence = config.sequence.copy(
+            enabled = config.sequence.enabled && steps.isNotEmpty(),
+            steps = steps
+        )
+        METRONOME_CONFIG.set(config.copy(tracks = tracks, sequence = sequence))
+
+        val metronome = ChronalApp.getInstance().metronome
+        metronome.tracks = tracks.map { MetronomeTrack.fromSetting(it) }.toMutableList()
+        metronome.setSequence(sequence)
         return true
+    }
+
+    fun setSequence(sequence: MetronomeSequence) {
+        val config = METRONOME_CONFIG.get()
+        METRONOME_CONFIG.set(config.copy(sequence = sequence))
+        ChronalApp.getInstance().metronome.setSequence(sequence)
     }
 }

@@ -115,6 +115,20 @@
     <string name="metronome_display_pie">Pie</string>
     <string name="metronome_switch_display_mode">Switch display modes</string>
 
+    <string name="metronome_sequence">Sequence</string>
+    <string name="metronome_sequence_open">Sequence mode</string>
+    <string name="metronome_sequence_add_step">Add step</string>
+    <string name="metronome_sequence_remove_step">Remove step</string>
+    <string name="metronome_sequence_select_track">Select track</string>
+    <string name="metronome_sequence_empty">No steps yet. Add a step to build a sequence.</string>
+    <string name="metronome_sequence_progress">%1$s — bar %2$d/%3$d</string>
+    <string name="metronome_sequence_decrease_bars">Fewer bars</string>
+    <string name="metronome_sequence_increase_bars">More bars</string>
+    <plurals name="metronome_sequence_bars">
+        <item quantity="one">%d bar</item>
+        <item quantity="other">%d bars</item>
+    </plurals>
+
     <string name="metronome_conductor_not_supported">Current time signature is not yet supported.</string>
     <string name="metronome_conductor_flip">Flip horizontally</string>
     <string name="metronome_increase_tempo">Increase tempo</string>

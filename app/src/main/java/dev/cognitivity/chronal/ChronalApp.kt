@@ -55,6 +55,7 @@ class ChronalApp : Application() {
                 bpm = Settings.getBpm(),
                 tracks = tracks.toMutableList()
             )
+            metronome.setSequence(tracksSetting.sequence)
 
             PracticeReminderScheduler.initialize(applicationContext)
         }

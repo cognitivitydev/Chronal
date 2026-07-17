@@ -44,6 +44,7 @@ import dev.cognitivity.chronal.metronome.modifiers.CountIn
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.round
 import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.settings.types.json.MetronomeSequence
 import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -121,6 +122,22 @@ class Metronome(
     private val _countInActive = MutableStateFlow(false)
     val countInActive: StateFlow<Boolean> = _countInActive
 
+    val sequencer = MetronomeSequencer()
+
+    fun setSequence(sequence: MetronomeSequence) {
+        val wasPlaying: Boolean
+        synchronized(schedulerLock) {
+            wasPlaying = playing
+            sequencer.setSequence(sequence)
+        }
+        if (wasPlaying) {
+            stop()
+            start()
+        }
+    }
+
+    private fun sequenceActive() = sequencer.isActive(tracks.size)
+
     init {
         handlerThread.start()
         handler = Handler(handlerThread.looper)
@@ -156,6 +173,11 @@ class Metronome(
                     track.sampleRemainder = 0.0
                 }
 
+                sequencer.reset()
+                if (sequenceActive()) {
+                    sequencer.advanceToNextValidStep(tracks.size)
+                }
+
                 ongoingSounds.clear()
             }
 
@@ -171,6 +193,7 @@ class Metronome(
         playing = false
         handler.removeCallbacks(audioRunnable)
         ongoingSounds.clear()
+        sequencer.reset()
         tracks.forEach { it.onPause(true) }
         modifiers.forEach { it.onStop() }
         audioTrack.pause()
@@ -251,6 +274,12 @@ class Metronome(
 
     private fun mixTracks(outputBuffer: FloatArray, frameStartSample: Long, frameEndSample: Long) {
         mixCountIn(outputBuffer, frameStartSample, frameEndSample)
+        if (sequenceActive()) {
+            // wait for the count-in to finish; its completion resets all track positions
+            if (!_countInActive.value) mixSequence(outputBuffer, frameStartSample, frameEndSample)
+            return
+        }
+
         for((trackIndex, track) in tracks.withIndex()) {
             if (!track.enabled) continue
 
@@ -318,6 +347,55 @@ class Metronome(
                 }
                 return
             }
+        }
+    }
+
+    private fun mixSequence(outputBuffer: FloatArray, frameStartSample: Long, frameEndSample: Long) {
+        var step = sequencer.currentStep() ?: return
+        var trackIndex = step.trackIndex
+        var track = tracks.getOrNull(trackIndex) ?: return
+        var pattern = track.getIntervals()
+        if (pattern.isEmpty()) return
+
+        while (track.nextBeatSample < frameEndSample) {
+            if (track.nextBeatSample < frameStartSample - sampleRate) {
+                track.nextBeatSample = frameStartSample
+            }
+
+            var beatIndex = (track.index + 1).mod(pattern.size)
+            var beat = pattern[beatIndex]
+
+            // the next beat starts a new bar; switch to the next step once this one has played its bars
+            if (beat.index == 0) {
+                if (sequencer.barsStarted >= step.bars) {
+                    val switchSample = track.nextBeatSample
+                    val remainder = track.sampleRemainder
+                    step = sequencer.advanceToNextValidStep(tracks.size)
+                    trackIndex = step.trackIndex
+                    track = tracks[trackIndex]
+                    pattern = track.getIntervals()
+                    if (pattern.isEmpty()) return
+
+                    track.index = -1
+                    track.nextBeatSample = switchSample
+                    track.sampleRemainder = remainder
+                    beatIndex = 0
+                    beat = pattern[0]
+                }
+                sequencer.onBarStart(trackIndex)
+            }
+
+            track.index = beatIndex
+
+            if (beat.duration >= 0) {
+                mixTick(outputBuffer, frameStartSample, track.nextBeatSample, trackIndex, beat.isHigh)
+            }
+            track.onUpdate(beat)
+            modifiers.forEach { it.onTick(track, beat) }
+
+            nextBeat(track, beat)
+
+            if (track.nextBeatSample - frameStartSample > frameSize * 1024L) break
         }
     }
 

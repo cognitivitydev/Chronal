@@ -162,7 +162,8 @@ data class TrackColorPalette(val color: Color, val onColor: Color, val colorCont
 data class MetronomeConfig(
     val version: Int = Settings.getCurrentVersionCode(),
     val bpm: Float,
-    val tracks: List<MetronomeConfigTrack>
+    val tracks: List<MetronomeConfigTrack>,
+    val sequence: MetronomeSequence = MetronomeSequence()
 ) {
     companion object {
         fun default(): MetronomeConfig {
@@ -206,7 +207,14 @@ data class MetronomeConfig(
             return MetronomeConfig(
                 version = jsonObject.get("version")?.asInt ?: 0,
                 bpm = jsonObject.get("bpm")?.asFloat ?: 0f,
-                tracks = tracks.ifEmpty { default().tracks }
+                tracks = tracks.ifEmpty { default().tracks },
+                sequence = jsonObject.get("sequence")?.let {
+                    try {
+                        MetronomeSequence.fromJson(it.asJsonObject)
+                    } catch (_: Exception) {
+                        null
+                    }
+                } ?: MetronomeSequence()
             )
         }
     }
@@ -218,6 +226,7 @@ data class MetronomeConfig(
             add("tracks", JsonArray().apply {
                 tracks.forEach { add(it.toJson()) }
             })
+            add("sequence", sequence.toJson())
         }
     }
 }
