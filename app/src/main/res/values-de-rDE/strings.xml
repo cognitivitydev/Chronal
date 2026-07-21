@@ -29,6 +29,7 @@
     <string name="generic_delete">Löschen</string>
     <string name="generic_discard">Verwerfen</string>
     <string name="generic_download">Herunterladen</string>
+    <string name="generic_drag_handle">Griff ziehen</string>
     <string name="generic_edit">Bearbeiten</string>
     <string name="generic_error">Fehler</string>
     <string name="generic_exit">Beenden</string>
