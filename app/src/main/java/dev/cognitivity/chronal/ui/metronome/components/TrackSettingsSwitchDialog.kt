@@ -33,7 +33,6 @@ import dev.cognitivity.chronal.rhythm.metronome.Measure
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmElement
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
-import dev.cognitivity.chronal.rhythm.metronome.elements.StemDirection
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
 import kotlinx.coroutines.launch
@@ -79,7 +78,7 @@ private fun switchToSimple(index: Int, track: MetronomeTrack) {
                 repeat(rhythm.measures[0].timeSig.first) {
                     add(
                         RhythmNote(
-                            stemDirection = StemDirection.UP,
+                            pitch = 0,
                             baseDuration = 1.0 / rhythm.measures[0].timeSig.second,
                             dots = 0
                         )

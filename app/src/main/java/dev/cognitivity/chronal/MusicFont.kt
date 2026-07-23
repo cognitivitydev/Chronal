@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -375,23 +375,6 @@ object MusicFont {
                     I_1024TH.char, R_1024TH.char -> 'm'
 
                     else -> '?'
-                }
-            }
-            fun setEmphasis(display: String, emphasized: Boolean): String {
-                val map = if(!emphasized) noteMap else noteMap.entries.associate { (key, value) -> value to key }
-                return display.map { char ->
-                    if (char in map.keys) {
-                        map[char]!!
-                    } else {
-                        char
-                    }
-                }.joinToString("")
-            }
-            fun setEmphasis(note: Notation, emphasized: Boolean): Notation {
-                return if(!emphasized) {
-                    Notation.entries.find { it.char == noteMap[note.char] } ?: note
-                } else {
-                    Notation.entries.find { it.char == noteMap.entries.find { it.value == note.char }?.key } ?: note
                 }
             }
 

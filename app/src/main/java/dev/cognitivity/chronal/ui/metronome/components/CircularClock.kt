@@ -227,7 +227,7 @@ fun BoxScope.CircularClock(track: MetronomeTrack, trackSize: Float, trackPalette
                 )
             )
         }
-        ClockBeats(intervals.filter { it.measure == currentMeasure }, progress, trackSize, trackColor, progressColor)
+        ClockBeats(track, intervals.filter { it.measure == currentMeasure }, progress, trackSize, trackColor, progressColor)
     }
 }
 

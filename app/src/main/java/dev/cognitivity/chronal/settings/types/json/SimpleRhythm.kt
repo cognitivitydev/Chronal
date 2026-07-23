@@ -25,7 +25,6 @@ import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmElement
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
-import dev.cognitivity.chronal.rhythm.metronome.elements.StemDirection
 
 data class SimpleRhythm(
     val timeSignature: Pair<Int, Int>,
@@ -80,10 +79,9 @@ data class SimpleRhythm(
                             repeat(3) {
                                 if (remaining <= 0) return@repeat
                                 add(RhythmNote(
-                                    stemDirection = if(emphasizeNext) StemDirection.UP else StemDirection.DOWN,
+                                    pitch = if(emphasizeNext) 0 else 1,
                                     baseDuration = baseDuration,
-                                    tupletRatio = 3 to 2,
-                                    dots = 0
+                                    tupletRatio = 3 to 2
                                 ))
                                 remaining -= duration
                                 emphasizeNext = when (emphasis) {
@@ -96,9 +94,8 @@ data class SimpleRhythm(
                     ))
                 } else {
                     add(RhythmNote(
-                        stemDirection = if(emphasizeNext) StemDirection.UP else StemDirection.DOWN,
-                        baseDuration = duration,
-                        dots = 0
+                        pitch = if(emphasizeNext) 0 else 1,
+                        baseDuration = duration
                     ))
                     remaining -= duration
                     emphasizeNext = when (emphasis) {

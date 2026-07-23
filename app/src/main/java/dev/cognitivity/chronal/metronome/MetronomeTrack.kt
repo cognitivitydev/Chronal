@@ -24,17 +24,18 @@ import android.os.CombinedVibration
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import dev.cognitivity.chronal.ChronalApp
+import dev.cognitivity.chronal.metronome.sound.SoundPack
+import dev.cognitivity.chronal.metronome.sound.SoundType
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmAtom
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.settings.types.json.MetronomeConfigTrack
 import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.metronome.sound.SoundPack
 import dev.cognitivity.chronal.settings.types.json.TrackColor
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -117,7 +118,7 @@ class MetronomeTrack(
     private val _updateEvents = MutableSharedFlow<Beat>(replay = 1)
     val updateEvents: SharedFlow<Beat> = _updateEvents.asSharedFlow()
 
-    private val _pauseEvents = MutableStateFlow(false)
+    private val _pauseEvents = MutableStateFlow(true)
     val pauseEvents: SharedFlow<Boolean> = _pauseEvents.asStateFlow()
 
     private val _editEvents = MutableSharedFlow<Rhythm>(replay = 1)
@@ -136,8 +137,10 @@ class MetronomeTrack(
     fun vibrate(beat: Beat) {
         if(!this.vibrate || beat.duration < 0f) return
 
+        val strong = if(soundPack.type == SoundType.ATONAL) beat.pitch == 0 else false
+
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val vibration = if(beat.isHigh) {
+            val vibration = if(strong) {
                 VibrationEffect.createOneShot(10, 255)
             } else {
                 VibrationEffect.createOneShot(3, 255)
@@ -146,11 +149,7 @@ class MetronomeTrack(
             val vibratorManager = ChronalApp.getInstance().getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
             vibratorManager.vibrate(CombinedVibration.createParallel(vibration))
         } else {
-            val milliseconds = if(beat.isHigh) {
-                10L
-            } else {
-                3L
-            }
+            val milliseconds = if(strong) 10L else 3L
 
             val vibrator = ChronalApp.getInstance().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
             vibrator.vibrate(milliseconds)

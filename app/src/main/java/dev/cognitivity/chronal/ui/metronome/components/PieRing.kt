@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.sound.SoundType
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.TrackColorPalette
@@ -52,15 +53,16 @@ import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.time.Duration.Companion.milliseconds
 
-private class WedgeState(initialColor: Color, val isSkipped: Boolean, val isHigh: Boolean, val weight: Float) {
+private class WedgeState(initialColor: Color, val isSkipped: Boolean, val isEmphasized: Boolean, val weight: Float) {
     val color = Animatable(initialColor)
     val highlightAlpha = Animatable(0f)
     val strokeBoost = Animatable(0f)
 }
 
-private fun buildWedges(intervals: List<Beat>, measure: Int, inactiveColor: Color): List<WedgeState> {
+private fun buildWedges(track: MetronomeTrack, intervals: List<Beat>, measure: Int, inactiveColor: Color): List<WedgeState> {
     return intervals.filter { it.measure == measure }.map {
-        WedgeState(inactiveColor, isSkipped = it.duration < 0, isHigh = it.isHigh, weight = abs(it.duration).toFloat())
+        val isEmphasized = if(track.soundPack.type == SoundType.ATONAL) it.pitch == 0 else false
+        WedgeState(inactiveColor, isSkipped = it.duration < 0, isEmphasized, weight = abs(it.duration).toFloat())
     }
 }
 
@@ -70,7 +72,7 @@ fun BoxScope.PieRing(track: MetronomeTrack, ringSize: Float, trackPalette: Track
     val metronome = ChronalApp.getInstance().metronome
 
     var intervals by remember(track) { mutableStateOf(track.getIntervals()) }
-    var wedges by remember(track) { mutableStateOf(buildWedges(intervals, 0, trackPalette.colorContainer)) }
+    var wedges by remember(track) { mutableStateOf(buildWedges(track, intervals, 0, trackPalette.colorContainer)) }
 
     val coroutineScope = rememberCoroutineScope()
     val animationSpec = MaterialTheme.motionScheme.slowSpatialSpec<Float>()
@@ -80,7 +82,7 @@ fun BoxScope.PieRing(track: MetronomeTrack, ringSize: Float, trackPalette: Track
     LaunchedEffect(track) {
         track.editEvents.collect {
             intervals = track.getIntervals()
-            wedges = buildWedges(intervals, 0, trackPalette.colorContainer)
+            wedges = buildWedges(track, intervals, 0, trackPalette.colorContainer)
         }
     }
 
@@ -94,7 +96,7 @@ fun BoxScope.PieRing(track: MetronomeTrack, ringSize: Float, trackPalette: Track
                 track.vibrate(beat)
 
                 if (beat.index == 0) {
-                    wedges = buildWedges(intervals, beat.measure, trackPalette.colorContainer)
+                    wedges = buildWedges(track, intervals, beat.measure, trackPalette.colorContainer)
                 }
 
                 val wedge = wedges.getOrNull(beat.index) ?: return@launch
@@ -113,7 +115,7 @@ fun BoxScope.PieRing(track: MetronomeTrack, ringSize: Float, trackPalette: Track
     LaunchedEffect(track) {
         track.pauseEvents.collect { paused ->
             if (!paused) return@collect
-            wedges = buildWedges(intervals, 0, trackPalette.colorContainer)
+            wedges = buildWedges(track, intervals, 0, trackPalette.colorContainer)
         }
     }
 
@@ -147,10 +149,10 @@ fun BoxScope.PieRing(track: MetronomeTrack, ringSize: Float, trackPalette: Track
 
                 val baseWidth = when {
                     wedge.isSkipped -> ringSize * 0.5f
-                    wedge.isHigh -> ringSize + accentExtra
+                    wedge.isEmphasized -> ringSize + accentExtra
                     else -> ringSize
                 }
-                val wedgeRadius = if (wedge.isHigh && !wedge.isSkipped) radius + accentDirection * accentExtra / 2f else radius
+                val wedgeRadius = if (wedge.isEmphasized && !wedge.isSkipped) radius + accentDirection * accentExtra / 2f else radius
                 val topLeft = Offset(center.x - wedgeRadius, center.y - wedgeRadius)
                 val ovalSize = Size(wedgeRadius * 2, wedgeRadius * 2)
 

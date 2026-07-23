@@ -31,6 +31,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.rotate
 import androidx.compose.ui.unit.dp
+import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.sound.SoundType
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.settings.Settings
 import kotlin.math.abs
@@ -38,7 +40,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 @Composable
-fun ClockBeats(beats: List<Beat>, progress: Animatable<Float, AnimationVector1D>, trackSize: Float,
+fun ClockBeats(track: MetronomeTrack, beats: List<Beat>, progress: Animatable<Float, AnimationVector1D>, trackSize: Float,
                offColor: Color, primaryColor: Color, surface: Color = MaterialTheme.colorScheme.surface) {
     val showBeats = Settings.SHOW_BEATS.get()
     val showSubdivisions = Settings.SHOW_SUBDIVISIONS.get()
@@ -56,7 +58,7 @@ fun ClockBeats(beats: List<Beat>, progress: Animatable<Float, AnimationVector1D>
         val totalDuration = beats.sumOf { abs(it.duration) }
         var currentDuration = 0.0
         for(beat in beats) {
-            val isMajor = beat.isHigh
+            val isMajor = if(track.soundPack.type == SoundType.ATONAL) beat.pitch == 0 else false
             if((isMajor && !showBeats) || (!isMajor && !showSubdivisions) || beat.duration <= 0) {
                 currentDuration += abs(beat.duration)
                 continue

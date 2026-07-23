@@ -85,6 +85,7 @@ import dev.cognitivity.chronal.MusicFont
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.metronome.Metronome
 import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.sound.SoundType
 import dev.cognitivity.chronal.rhythm.metronome.Measure
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.rhythm.metronome.atoms
@@ -93,7 +94,6 @@ import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmElement
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmRest
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
-import dev.cognitivity.chronal.rhythm.metronome.elements.StemDirection
 import dev.cognitivity.chronal.settings.Setting
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.MetronomeConfigTrack
@@ -112,7 +112,7 @@ import kotlin.math.roundToInt
 class RhythmEditorActivity : BaseActivity() {
 
     enum class NoteInputState {
-        UP, DOWN, REST
+        NOTE, REST
     }
 
     private var errors = mutableStateListOf<String>()
@@ -124,23 +124,14 @@ class RhythmEditorActivity : BaseActivity() {
 
     private var noteInputTuplet by mutableStateOf(false)
     private var noteInputDots by mutableIntStateOf(0)
-    private var noteInputState by mutableStateOf(NoteInputState.UP)
+    private var noteInputState by mutableStateOf(NoteInputState.NOTE)
     private var noteInputDuration by mutableIntStateOf(4)
 
     private var rhythm by mutableStateOf("{4/4}Q;q;q;q;")
     private var parsedRhythm by mutableStateOf(Rhythm.deserialize(rhythm))
     private var backupRhythm by mutableStateOf(parsedRhythm)
 
-    private val metronome = Metronome(
-        context = this,
-        sendNotifications = false,
-        tracks = mutableListOf(
-            MetronomeTrack(
-                rhythm = parsedRhythm,
-                beatValue = 4f
-            )
-        )
-    )
+    private lateinit var metronome: Metronome
     private var appMetronome by mutableStateOf(ChronalApp.getInstance().metronome)
     private lateinit var mainTrack: MetronomeTrack
     private lateinit var initialTrack: MetronomeConfigTrack
@@ -160,6 +151,17 @@ class RhythmEditorActivity : BaseActivity() {
             finish()
             return
         }
+
+        metronome = Metronome(
+            context = this,
+            sendNotifications = false,
+            tracks = mutableListOf(
+                MetronomeTrack(
+                    rhythm = parsedRhythm,
+                    beatValue = 4f
+                )
+            )
+        )
 
         trackIndex = intent.getIntExtra("trackIndex", 0)
         val track = Settings.getTrack(trackIndex)
@@ -1186,7 +1188,7 @@ class RhythmEditorActivity : BaseActivity() {
                     )
                 } else {
                     RhythmNote(
-                        stemDirection = (note as RhythmNote).stemDirection,
+                        pitch = (note as RhythmNote).pitch,
                         baseDuration = duration / dotModifier,
                         dots = i
                     )
@@ -1279,8 +1281,7 @@ class RhythmEditorActivity : BaseActivity() {
         @Composable
         fun StateInputButton(state: NoteInputState, modifier: Modifier = Modifier) {
             val display = when(state) {
-                NoteInputState.UP ->   MusicFont.Notation.N_QUARTER
-                NoteInputState.DOWN -> MusicFont.Notation.I_QUARTER
+                NoteInputState.NOTE -> MusicFont.Notation.N_QUARTER
                 NoteInputState.REST -> MusicFont.Notation.R_QUARTER
             }
             val selected = noteInputState == state
@@ -1302,8 +1303,7 @@ class RhythmEditorActivity : BaseActivity() {
                     .background(animatedColor.value)
                     .clickable {
                         noteInputState = if(noteInputState == state) {
-                            if(state == NoteInputState.REST) NoteInputState.UP
-                                else NoteInputState.REST
+                            if(state == NoteInputState.REST) NoteInputState.NOTE else NoteInputState.REST
                         } else {
                             state
                         }
@@ -1316,16 +1316,16 @@ class RhythmEditorActivity : BaseActivity() {
                                 tupletRatio = oldElement.tupletRatio
                             )
                         } else {
-                            val stemDirection = if(noteInputState == NoteInputState.UP) StemDirection.UP else StemDirection.DOWN
                             if(oldElement is RhythmRest) {
+                                val pitch = if(mainTrack.soundPack.type == SoundType.ATONAL) 0 else 60
                                 RhythmNote(
-                                    stemDirection = stemDirection,
+                                    pitch = pitch,
                                     baseDuration = oldElement.baseDuration,
                                     dots = oldElement.dots,
                                     tupletRatio = oldElement.tupletRatio
                                 )
                             } else {
-                                (oldElement as RhythmNote).copy(stemDirection = stemDirection)
+                                oldElement as RhythmNote
                             }
                         }
 
@@ -1346,12 +1346,7 @@ class RhythmEditorActivity : BaseActivity() {
         Column(
             modifier = modifier,
         ) {
-            StateInputButton(NoteInputState.UP,
-                modifier = Modifier.weight(1f)
-                    .fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            StateInputButton(NoteInputState.DOWN,
+            StateInputButton(NoteInputState.NOTE,
                 modifier = Modifier.weight(1f)
                     .fillMaxWidth()
             )
@@ -1367,7 +1362,6 @@ class RhythmEditorActivity : BaseActivity() {
     @Composable
     fun ColumnScope.NoteButton(value: Int, enabled: Boolean) {
         val rest = noteInputState == NoteInputState.REST
-        val emphasized = noteInputState == NoteInputState.UP
         val selected = noteInputDuration == value && isSelected
 
         val animatedColor = animateColorAsState(
@@ -1398,7 +1392,7 @@ class RhythmEditorActivity : BaseActivity() {
                         )
                     } else {
                         RhythmNote(
-                            stemDirection = if (emphasized) StemDirection.UP else StemDirection.DOWN,
+                            pitch = if(mainTrack.soundPack.type == SoundType.ATONAL) 0 else 60,
                             baseDuration = 1.0 / value,
                             dots = noteInputDots
                         )
@@ -1427,10 +1421,10 @@ class RhythmEditorActivity : BaseActivity() {
                     fontWeight = FontWeight(animatedFontWeight),
                 )
             } else {
-                val text = MusicFont.Notation.setEmphasis(MusicFont.Notation.convert(value, rest).toString(), emphasized)[0]
+                val text = MusicFont.Notation.convert(value, rest)
                 var note: MusicFont.Notation? = null
-                for (character in MusicFont.Notation.entries) {
-                    if (character.char == text) {
+                for(character in MusicFont.Notation.entries) {
+                    if(character.char == text) {
                         note = character
                     }
                 }
@@ -2091,13 +2085,7 @@ class RhythmEditorActivity : BaseActivity() {
                     }
                 }
         ) {
-            val durationChar = MusicFont.Notation.fromLength(note.baseDuration, note.isRest())
-            val stemDirection = if(note is RhythmNote) note.stemDirection else StemDirection.UP
-            val char = MusicFont.Notation.setEmphasis(
-                durationChar ?: MusicFont.Notation.N_QUARTER,
-                stemDirection == StemDirection.UP
-            )
-
+            val char = MusicFont.Notation.fromLength(note.baseDuration, note.isRest())
             MusicFont.Notation.Note(
                 note = char,
                 dots = note.dots,

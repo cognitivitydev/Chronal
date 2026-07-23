@@ -18,9 +18,11 @@
 
 package dev.cognitivity.chronal.ui.metronome.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -92,6 +94,17 @@ fun MetronomeDisplay(
                 Icon(
                     painter = painterResource(R.drawable.baseline_fullscreen_24),
                     contentDescription = stringResource(R.string.generic_fullscreen)
+                )
+            }
+        }
+        if(metronome.preparing) {
+            Box(
+                modifier = Modifier.fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.75f))
+            ) {
+                CircularWavyProgressIndicator(
+                    progress = { metronome.preparationProgress },
+                    modifier = Modifier.align(Alignment.Center)
                 )
             }
         }

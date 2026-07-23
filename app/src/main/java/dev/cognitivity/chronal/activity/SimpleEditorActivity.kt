@@ -524,7 +524,7 @@ class SimpleEditorActivity : BaseActivity() {
                         style = Stroke(width = trackSize)
                     )
                 }
-                ClockBeats(mainTrack.calculateIntervals(previewRhythm!!).filter { it.measure == 0 },
+                ClockBeats(mainTrack, mainTrack.calculateIntervals(previewRhythm!!).filter { it.measure == 0 },
                     progress = remember { Animatable(-1f) },
                     trackSize = 4.dp.toPx(),
                     offColor = MaterialTheme.colorScheme.onPrimary,

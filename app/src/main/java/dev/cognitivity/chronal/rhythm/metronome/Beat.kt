@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,18 +20,16 @@ package dev.cognitivity.chronal.rhythm.metronome
 
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmAtom
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
-import dev.cognitivity.chronal.rhythm.metronome.elements.StemDirection
 
 data class Beat(
     val duration: Double,
-    val isHigh: Boolean,
+    val pitch: Int,
     val measure: Int,
     val index: Int
 ) {
     constructor(atom: RhythmAtom, measure: Int, index: Int) : this(
         duration = atom.getDuration() * (if(atom.isRest()) -1 else 1),
-        isHigh = if(atom is RhythmNote) atom.stemDirection == StemDirection.UP
-            else false,
+        pitch = if(atom is RhythmNote) atom.pitch else -1,
         measure = measure,
         index = index
     )

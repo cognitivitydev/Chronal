@@ -18,6 +18,7 @@
 
 package dev.cognitivity.chronal.metronome.sound
 
+import android.util.Log
 import dev.cognitivity.chronal.R
 
 data class SoundPack(
@@ -36,8 +37,8 @@ data class SoundPack(
             nameRes = R.string.sound_click,
             type = SoundType.ATONAL,
             assets = listOf(
-                Sound.Resource(R.raw.click_lo, 0),
-                Sound.Resource(R.raw.click_hi, 1),
+                Sound.Resource(R.raw.click_hi, 0),
+                Sound.Resource(R.raw.click_lo, 1),
             )
         )
         val BUILTIN_SINE = SoundPack(
@@ -45,8 +46,8 @@ data class SoundPack(
             nameRes = R.string.sound_sine,
             type = SoundType.ATONAL,
             assets = listOf(
-                Sound.Resource(R.raw.sine_lo, 0),
-                Sound.Resource(R.raw.sine_hi, 1),
+                Sound.Resource(R.raw.sine_hi, 0),
+                Sound.Resource(R.raw.sine_lo, 1),
             )
         )
         val BUILTIN_SQUARE = SoundPack(
@@ -54,8 +55,8 @@ data class SoundPack(
             nameRes = R.string.sound_square,
             type = SoundType.ATONAL,
             assets = listOf(
-                Sound.Resource(R.raw.square_lo, 0),
-                Sound.Resource(R.raw.square_hi, 1),
+                Sound.Resource(R.raw.square_hi, 0),
+                Sound.Resource(R.raw.square_lo, 1),
             )
         )
         val BUILTIN_CLAP = SoundPack(
@@ -63,8 +64,8 @@ data class SoundPack(
             nameRes = R.string.sound_clap,
             type = SoundType.ATONAL,
             assets = listOf(
-                Sound.Resource(R.raw.clap_lo, 0),
-                Sound.Resource(R.raw.clap_hi, 1),
+                Sound.Resource(R.raw.clap_hi, 0),
+                Sound.Resource(R.raw.clap_lo, 1),
             )
         )
         val BUILTIN_BLOCK = SoundPack(
@@ -72,8 +73,8 @@ data class SoundPack(
             nameRes = R.string.sound_block,
             type = SoundType.ATONAL,
             assets = listOf(
-                Sound.Resource(R.raw.block_lo, 0),
-                Sound.Resource(R.raw.block_hi, 1),
+                Sound.Resource(R.raw.block_hi, 0),
+                Sound.Resource(R.raw.block_lo, 1),
             )
         )
         val BUILTIN_BELL = SoundPack(
@@ -81,8 +82,8 @@ data class SoundPack(
             nameRes = R.string.sound_bell,
             type = SoundType.ATONAL,
             assets = listOf(
-                Sound.Resource(R.raw.bell_lo, 0),
-                Sound.Resource(R.raw.bell_hi, 1),
+                Sound.Resource(R.raw.bell_hi, 0),
+                Sound.Resource(R.raw.bell_lo, 1),
             )
         )
         val BUILTIN_TAMBOURINE = SoundPack(
@@ -90,8 +91,8 @@ data class SoundPack(
             nameRes = R.string.sound_tambourine,
             type = SoundType.ATONAL,
             assets = listOf(
-                Sound.Resource(R.raw.tambourine_lo, 0),
-                Sound.Resource(R.raw.tambourine_hi, 1),
+                Sound.Resource(R.raw.tambourine_hi, 0),
+                Sound.Resource(R.raw.tambourine_lo, 1),
             )
         )
 
@@ -129,7 +130,8 @@ data class SoundPack(
 
         fun byId(id: String?): SoundPack? {
             if (id == null) return null
-            return BUILTIN_PACKS.firstOrNull { it.id == id } ?: customPacks[id]
+            Log.d("SoundPack", "Looking for SoundPack with id: $id: ${all().map { it.id }}")
+            return all().find { it.id == id }
         }
 
         fun default(): SoundPack = BUILTIN_CLICK

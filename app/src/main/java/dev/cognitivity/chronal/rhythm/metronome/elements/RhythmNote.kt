@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025  cognitivity
+ * Copyright (C) 2025-2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,18 +21,14 @@ package dev.cognitivity.chronal.rhythm.metronome.elements
 import dev.cognitivity.chronal.MusicFont
 
 data class RhythmNote(
-    val stemDirection: StemDirection,
+    val pitch: Int,
     override val baseDuration: Double,
     override val tupletRatio: Pair<Int, Int>? = null,
     override val dots: Int = 0
 ) : RhythmAtom() {
     override fun getDisplay(): String {
-        var string = MusicFont.Notation.fromLength(baseDuration, false)?.char?.toString() ?: "?"
-        if (stemDirection == StemDirection.DOWN) {
-            string = MusicFont.Notation.setEmphasis(string, false)
-        }
-        return string + " ${MusicFont.Notation.DOT.char}".repeat(dots)
+        val note = MusicFont.Notation.fromLength(baseDuration, false)?.char?.toString() ?: "?"
+        val dotsString = " ${MusicFont.Notation.DOT.char}".repeat(dots)
+        return note + dotsString + pitch
     }
 }
-
-enum class StemDirection { UP, DOWN }

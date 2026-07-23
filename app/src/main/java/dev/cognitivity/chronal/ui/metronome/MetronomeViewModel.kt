@@ -104,6 +104,7 @@ class MetronomeViewModel: ViewModel() {
     }
 
     fun setPlaying(newValue: Boolean) {
+        if(metronome.preparing) return
         _playing.value = newValue
         if(newValue) metronome.start() else metronome.stop()
     }

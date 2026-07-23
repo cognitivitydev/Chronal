@@ -28,11 +28,17 @@ import android.content.IntentFilter
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
+import android.media.MediaCodec
+import android.media.MediaExtractor
+import android.media.MediaFormat
 import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.Log
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -41,6 +47,7 @@ import dev.cognitivity.chronal.activity.MainActivity
 import dev.cognitivity.chronal.metronome.MetronomeTrack.Companion.MAX_BPM
 import dev.cognitivity.chronal.metronome.MetronomeTrack.Companion.MIN_BPM
 import dev.cognitivity.chronal.metronome.modifiers.CountIn
+import dev.cognitivity.chronal.metronome.sound.Sound
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.round
 import dev.cognitivity.chronal.settings.Settings
@@ -50,12 +57,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.IOException
-import java.io.InputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.nio.charset.StandardCharsets
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -77,8 +84,10 @@ class Metronome(
     private var handler: Handler
 
     var playing = false
-    var active = true
     var timestamp = 0L
+
+    var preparing by mutableStateOf(false)
+    var preparationProgress by mutableFloatStateOf(0f)
 
     private val tickSoundCache = mutableMapOf<String, FloatArray>()
 
@@ -129,12 +138,19 @@ class Metronome(
             ContextCompat.registerReceiver(context, this, IntentFilter("dev.cognitivity.chronal.PlayPause"), ContextCompat.RECEIVER_EXPORTED)
             ContextCompat.registerReceiver(context, this, IntentFilter("dev.cognitivity.chronal.Stop"), ContextCompat.RECEIVER_EXPORTED)
         }
+        modifiers.add(CountIn(this, 4))
+
+        CoroutineScope(Dispatchers.IO).launch {
+            prepareSounds()
+        }
     }
 
     fun start() {
-        if (playing || !active) return
+        if(playing || preparing) return
 
         CoroutineScope(Dispatchers.IO).launch {
+            prepareSounds()
+
             modifiers.forEach { it.onStart() }
             synchronized(schedulerLock) {
                 timestamp = System.currentTimeMillis()
@@ -170,7 +186,9 @@ class Metronome(
     fun stop() {
         playing = false
         handler.removeCallbacks(audioRunnable)
-        ongoingSounds.clear()
+        synchronized(schedulerLock) {
+            ongoingSounds.clear()
+        }
         tracks.forEach { it.onPause(true) }
         modifiers.forEach { it.onStop() }
         audioTrack.pause()
@@ -226,7 +244,29 @@ class Metronome(
         }
 
         writeAudio(outputBuffer)
-        handler.post(audioRunnable)
+        if(playing) {
+            handler.post(audioRunnable)
+        }
+    }
+
+    private suspend fun prepareSounds() {
+        if(preparing) return
+        preparing = true
+        val totalSounds = tracks.sumOf { it.soundPack.assets.size }
+        var preparedSounds = 0
+        withContext(Dispatchers.IO) {
+            tracks.forEachIndexed { trackIndex, track ->
+                val pack = track.soundPack
+                for(sound in pack.assets) {
+                    if(!tickSoundCache.containsKey(sound.key)) {
+                        getTickSound(trackIndex, sound.pitch)
+                    }
+                    preparationProgress = ++preparedSounds / totalSounds.toFloat()
+                }
+            }
+            preparing = false
+            preparationProgress = 0f
+        }
     }
 
     private fun mixOngoingSounds(outputBuffer: FloatArray) {
@@ -250,7 +290,10 @@ class Metronome(
     }
 
     private fun mixTracks(outputBuffer: FloatArray, frameStartSample: Long, frameEndSample: Long) {
-        mixCountIn(outputBuffer, frameStartSample, frameEndSample)
+        if(_countInActive.value) {
+            mixCountIn(outputBuffer, frameStartSample, frameEndSample)
+            return
+        }
         for((trackIndex, track) in tracks.withIndex()) {
             if (!track.enabled) continue
 
@@ -267,7 +310,7 @@ class Metronome(
                 track.index = beatIndex
 
                 if (beat.duration >= 0) {
-                    mixTick(outputBuffer, frameStartSample, track.nextBeatSample, trackIndex, beat.isHigh)
+                    mixTick(outputBuffer, frameStartSample, track.nextBeatSample, trackIndex, beat.pitch)
                 }
                 track.onUpdate(beat)
                 modifiers.forEach { it.onTick(track, beat) }
@@ -280,49 +323,47 @@ class Metronome(
     }
 
     private fun mixCountIn(outputBuffer: FloatArray, frameStartSample: Long, frameEndSample: Long) {
-        synchronized(schedulerLock) {
-            if(_countInActive.value) {
-                val mainTrack = tracks[0]
+        if(_countInActive.value) {
+            val mainTrack = tracks[0]
 
-                val subdivision = mainTrack.getRhythm().measures[0].timeSig.second
-                val rhythm = SimpleRhythm(
-                    timeSignature = _countInTotalBeats.value to subdivision,
-                    subdivision = subdivision,
-                    emphasis = 1
-                ).asRhythm()
-                val pattern = mainTrack.calculateIntervals(rhythm)
+            val subdivision = mainTrack.getRhythm().measures[0].timeSig.second
+            val rhythm = SimpleRhythm(
+                timeSignature = _countInTotalBeats.value to subdivision,
+                subdivision = subdivision,
+                emphasis = 1
+            ).asRhythm()
+            val pattern = mainTrack.calculateIntervals(rhythm)
 
-                while(mainTrack.nextBeatSample < frameEndSample) {
-                    if(_countInBeats.value >= _countInTotalBeats.value) {
-                        _countInActive.value = false
+            while(mainTrack.nextBeatSample < frameEndSample) {
+                if(_countInBeats.value >= _countInTotalBeats.value) {
+                    _countInActive.value = false
 
-                        tracks.forEach { track ->
-                            track.nextBeatSample = mainTrack.nextBeatSample
-                            track.index = -1
-                            track.sampleRemainder = 0.0
-                        }
-                        break
+                    tracks.forEach { track ->
+                        track.nextBeatSample = mainTrack.nextBeatSample
+                        track.index = -1
+                        track.sampleRemainder = 0.0
                     }
-
-                    if(frameStartSample - sampleRate > mainTrack.nextBeatSample) {
-                        mainTrack.nextBeatSample = frameStartSample
-                    }
-
-                    val isHigh = _countInBeats.value == 0
-                    mixTick(outputBuffer, frameStartSample, mainTrack.nextBeatSample, 0, isHigh)
-
-                    _countInBeats.value++
-
-                    val currentBeat = pattern.getOrNull((mainTrack.index + 1).mod(pattern.size)) ?: continue
-                    nextBeat(mainTrack, currentBeat)
+                    break
                 }
-                return
+
+                if(frameStartSample - sampleRate > mainTrack.nextBeatSample) {
+                    mainTrack.nextBeatSample = frameStartSample
+                }
+
+                val pitch = if(_countInBeats.value == 0) 0 else 1
+                mixTick(outputBuffer, frameStartSample, mainTrack.nextBeatSample, 0, pitch)
+
+                _countInBeats.value++
+
+                val currentBeat = pattern.getOrNull((mainTrack.index + 1).mod(pattern.size)) ?: continue
+                nextBeat(mainTrack, currentBeat)
             }
+            return
         }
     }
 
-    private fun mixTick(outputBuffer: FloatArray, frameStartSample: Long, beatSample: Long, trackIndex: Int, isHigh: Boolean) {
-        val tickSamples = getTickSound(trackIndex, isHigh)
+    private fun mixTick(outputBuffer: FloatArray, frameStartSample: Long, beatSample: Long, trackIndex: Int, pitch: Int) {
+        val tickSamples = getTickSound(trackIndex, pitch)
         if (tickSamples.isEmpty()) return
 
         val frameOffset = (beatSample - frameStartSample).toInt()
@@ -411,17 +452,34 @@ class Metronome(
         }
     }
 
-    private fun getTickSound(trackIndex: Int, high: Boolean): FloatArray {
+    private fun getTickSound(trackIndex: Int, pitch: Int): FloatArray {
         val pack = tracks[trackIndex].soundPack
-        val pitch = if (high) 1 else 0
         val sound = pack.getSound(pitch) ?: return FloatArray(0)
         tickSoundCache[sound.key]?.let { return it }
 
-        val stream = sound.openStream(context) ?: return FloatArray(0)
-        return try {
-            val data = stream.use { input ->
-                readWavStream(input)
+        val extractor = MediaExtractor()
+        when(sound) {
+            is Sound.Resource -> {
+                if(sound.resId == 0) return FloatArray(0)
+                val afd = context.resources.openRawResourceFd(sound.resId) ?: return FloatArray(0)
+                afd.use { descriptor ->
+                    extractor.setDataSource(
+                        descriptor.fileDescriptor,
+                        descriptor.startOffset,
+                        descriptor.length
+                    )
+                }
             }
+            is Sound.File -> {
+                val file = File(context.filesDir, sound.relativePath)
+                if(!file.isFile) return FloatArray(0)
+                extractor.setDataSource(file.absolutePath)
+            }
+        }
+
+        return try {
+            val data = decodeAudio(extractor, sampleRate, 1)
+
             tickSoundCache[sound.key] = data
             data
         } catch (e: IOException) {
@@ -429,59 +487,161 @@ class Metronome(
         }
     }
 
-    private fun readWavStream(inputStream: InputStream): FloatArray {
-        val content = readStreamToBytes(inputStream)
-        val dataIndex = getDataIndex(content)
-        if (dataIndex < 0) {
-            throw RuntimeException("No data header found")
+    private fun decodeAudio(extractor: MediaExtractor, targetSampleRate: Int, targetChannels: Int): FloatArray {
+        var trackIndex = -1
+        var trackFormat: MediaFormat? = null
+
+        for(i in 0 until extractor.trackCount) {
+            val format = extractor.getTrackFormat(i)
+            val mime = format.getString(MediaFormat.KEY_MIME) ?: ""
+            if(mime.startsWith("audio/")) {
+                trackIndex = i
+                trackFormat = format
+                break
+            }
         }
-
-        if (dataIndex + 8 > content.size) {
-            throw RuntimeException("WAV file truncated")
+        if(trackIndex == -1 || trackFormat == null) {
+            extractor.release()
+            return FloatArray(0)
         }
+        extractor.selectTrack(trackIndex)
 
-        val dataSizeBytes = ByteBuffer.wrap(content, dataIndex + 4, 4)
-            .order(ByteOrder.LITTLE_ENDIAN)
-            .int
+        val mime = trackFormat.getString(MediaFormat.KEY_MIME) ?: ""
+        val decoder = MediaCodec.createDecoderByType(mime)
 
-        val dataStart = dataIndex + 8
+        decoder.configure(trackFormat, null, null, 0)
+        decoder.start()
 
-        if (dataStart + dataSizeBytes > content.size) {
-            throw RuntimeException("Data chunk size exceeds file size")
-        }
+        val byteBufferStream = ByteArrayOutputStream()
+        val info = MediaCodec.BufferInfo()
+        var isEOS = false
 
-        val byteBuffer = ByteBuffer.wrap(content, dataStart, dataSizeBytes)
-            .order(ByteOrder.LITTLE_ENDIAN)
-        val floatBuffer = byteBuffer.asFloatBuffer()
+        var sourceSampleRate = trackFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE)
+        var sourceChannels = trackFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
 
-        val data = FloatArray(floatBuffer.remaining())
-        floatBuffer[data]
-        return data
-    }
-
-    @Throws(IOException::class)
-    private fun readStreamToBytes(input: InputStream): ByteArray {
-        val buffer = ByteArrayOutputStream()
-        val data = ByteArray(4096)
-        var read: Int
-
-        while ((input.read(data, 0, data.size).also { read = it }) != -1) {
-            buffer.write(data, 0, read)
-        }
-        return buffer.toByteArray()
-    }
-
-    private fun getDataIndex(array: ByteArray): Int {
-        val data = "data".toByteArray(StandardCharsets.US_ASCII)
-        outer@ for (i in 0 until array.size - data.size + 1) {
-            for (j in data.indices) {
-                if (array[i + j] != data[j]) {
-                    continue@outer
+        while(true) {
+            if(!isEOS) {
+                val inIndex = decoder.dequeueInputBuffer(10000)
+                if(inIndex >= 0) {
+                    val inputBuffer = decoder.getInputBuffer(inIndex)
+                    if(inputBuffer != null) {
+                        val sampleSize = extractor.readSampleData(inputBuffer, 0)
+                        if(sampleSize < 0) {
+                            decoder.queueInputBuffer(inIndex, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
+                            isEOS = true
+                        } else {
+                            decoder.queueInputBuffer(inIndex, 0, sampleSize, extractor.sampleTime, 0)
+                            extractor.advance()
+                        }
+                    }
                 }
             }
-            return i
+
+            val outIndex = decoder.dequeueOutputBuffer(info, 10000)
+            if(outIndex >= 0) {
+                val outputFormat = decoder.getOutputFormat(outIndex)
+                if(outputFormat.containsKey(MediaFormat.KEY_SAMPLE_RATE)) {
+                    sourceSampleRate = outputFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE)
+                }
+                if(outputFormat.containsKey(MediaFormat.KEY_CHANNEL_COUNT)) {
+                    sourceChannels = outputFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
+                }
+
+                val outputBuffer = decoder.getOutputBuffer(outIndex)
+                if(outputBuffer != null && info.size > 0) {
+                    outputBuffer.position(info.offset)
+                    outputBuffer.limit(info.offset + info.size)
+
+                    val chunk = ByteArray(info.size)
+                    outputBuffer.get(chunk)
+                    byteBufferStream.write(chunk)
+                }
+                decoder.releaseOutputBuffer(outIndex, false)
+
+                if((info.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) break
+            }
         }
-        return -1
+
+        decoder.stop()
+        decoder.release()
+        extractor.release()
+
+        val shortBuffer = ByteBuffer.wrap(byteBufferStream.toByteArray())
+            .order(ByteOrder.LITTLE_ENDIAN)
+            .asShortBuffer()
+
+        val rawFloatSamples = FloatArray(shortBuffer.remaining())
+        for(i in rawFloatSamples.indices) {
+            rawFloatSamples[i] = shortBuffer.get() / 32768.0f
+        }
+
+        val channelAdjusted = convertChannels(rawFloatSamples, sourceChannels, targetChannels)
+
+        return resampleAudio(channelAdjusted, sourceSampleRate, targetSampleRate, targetChannels)
+    }
+
+    private fun convertChannels(input: FloatArray, srcChannels: Int, dstChannels: Int): FloatArray {
+        if(srcChannels == dstChannels) return input
+
+        val frameCount = input.size / srcChannels
+        val output = FloatArray(frameCount * dstChannels)
+
+        when(srcChannels) {
+            2 if dstChannels == 1 -> {
+                for (i in 0 until frameCount) {
+                    val left = input[i * 2]
+                    val right = input[i * 2 + 1]
+                    output[i] = (left + right) / 2.0f
+                }
+            }
+            1 if dstChannels == 2 -> {
+                for (i in 0 until frameCount) {
+                    val sample = input[i]
+                    output[i * 2] = sample
+                    output[i * 2 + 1] = sample
+                }
+            }
+            else -> {
+                for (i in 0 until frameCount) {
+                    for (ch in 0 until dstChannels) {
+                        output[i * dstChannels + ch] = input[i * srcChannels]
+                    }
+                }
+            }
+        }
+
+        return output
+    }
+
+    private fun resampleAudio(
+        input: FloatArray,
+        srcRate: Int,
+        dstRate: Int,
+        channels: Int
+    ): FloatArray {
+        if (srcRate == dstRate) return input
+
+        val inputFrames = input.size / channels
+        val outputFrames = (inputFrames.toLong() * dstRate / srcRate).toInt()
+        val output = FloatArray(outputFrames * channels)
+
+        val ratio = srcRate.toDouble() / dstRate.toDouble()
+
+        for (outFrame in 0 until outputFrames) {
+            val srcPos = outFrame * ratio
+            val index0 = srcPos.toInt()
+            val index1 = (index0 + 1).coerceAtMost(inputFrames - 1)
+            val fraction = (srcPos - index0).toFloat()
+
+            for (ch in 0 until channels) {
+                val sample0 = input[index0 * channels + ch]
+                val sample1 = input[index1 * channels + ch]
+
+                output[outFrame * channels + ch] = sample0 + fraction * (sample1 - sample0)
+            }
+        }
+
+        return output
     }
 
     private fun createNotificationChannel() {
