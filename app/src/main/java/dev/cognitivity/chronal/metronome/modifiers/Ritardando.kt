@@ -19,7 +19,7 @@
 package dev.cognitivity.chronal.metronome.modifiers
 
 import dev.cognitivity.chronal.metronome.Metronome
-import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack
 
 /**
  * Gradually decreases the tempo over a specified duration (in beats, measures, or milliseconds).
@@ -28,5 +28,5 @@ class Ritardando(
     metronome: Metronome,
     duration: TempoChangeDuration,
     tempoRate: Float,
-    minBpm: Float = MetronomeTrack.MIN_BPM
+    minBpm: Float = ClickTrack.MIN_BPM
 ) : TempoChange(metronome, duration, -tempoRate, minBpm = minBpm)

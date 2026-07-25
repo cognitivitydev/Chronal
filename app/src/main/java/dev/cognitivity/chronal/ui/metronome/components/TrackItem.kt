@@ -24,6 +24,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -44,9 +45,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.metronome.tracks.AudioTrack
+import dev.cognitivity.chronal.metronome.tracks.MetronomeTrack
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -87,13 +91,21 @@ fun TrackItem(
             .padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        Spacer(modifier = Modifier.width(16.dp))
+        if(track is AudioTrack) {
+            Icon(
+                painter = painterResource(R.drawable.outline_music_note_2_24),
+                contentDescription = null,
+                tint = animatedFontColor
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+        }
         Text(
             text = track.name,
             style = MaterialTheme.typography.titleMediumEmphasized,
             color = animatedFontColor,
             fontWeight = FontWeight(animatedFontWeight),
             modifier = Modifier.weight(1f)
-                .padding(horizontal = 16.dp)
         )
         Icon(
             imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
@@ -120,3 +132,4 @@ fun TrackItem(
         )
     }
 }
+//

@@ -21,25 +21,15 @@ package dev.cognitivity.chronal.settings.types.json
 import com.google.gson.JsonObject
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.rhythm.metronome.Rhythm
+import dev.cognitivity.chronal.settings.types.json.metronome.MetronomeConfig
+import dev.cognitivity.chronal.settings.types.json.metronome.MetronomeConfigClickTrack
+import dev.cognitivity.chronal.settings.types.json.metronome.TrackColor
 
 data class MetronomePreset(
     val timestamp: Long = System.currentTimeMillis(),
     val name: String,
     val config: MetronomeConfig
 ) {
-
-    val primaryRhythm: Rhythm
-        get() = Rhythm.deserialize(config.tracks.getOrNull(0)?.rhythm ?: "{4/4}Q;q;q;q;")
-
-    val secondaryRhythm: Rhythm
-        get() = Rhythm.deserialize(config.tracks.getOrNull(1)?.rhythm ?: "{4/4}Q;q;q;q;")
-
-    val primarySimpleRhythm: SimpleRhythm
-        get() = config.tracks.getOrNull(0)?.simpleRhythm ?: SimpleRhythm(4 to 4, 4, 2)
-
-    val secondarySimpleRhythm: SimpleRhythm
-        get() = config.tracks.getOrNull(1)?.simpleRhythm ?: SimpleRhythm(4 to 4, 4, 2)
 
     companion object {
         fun fromJson(jsonObject: JsonObject): MetronomePreset {
@@ -67,7 +57,7 @@ data class MetronomePreset(
                 config = MetronomeConfig(
                     bpm = 120f,
                     tracks = listOf(
-                        MetronomeConfigTrack(
+                        MetronomeConfigClickTrack(
                             name = "Primary track",
                             enabled = true,
                             vibrate = true,
@@ -76,7 +66,7 @@ data class MetronomePreset(
                             simpleRhythm = SimpleRhythm(2 to 4, 4, 0),
                             color = TrackColor.Primary
                         ),
-                        MetronomeConfigTrack(
+                        MetronomeConfigClickTrack(
                             name = "Secondary track",
                             enabled = true,
                             vibrate = true,

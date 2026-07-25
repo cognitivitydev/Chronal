@@ -51,7 +51,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.TempoMarking
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
@@ -248,15 +248,15 @@ class TempoMarkingsActivity : BaseActivity() {
 
         var minErrorMissing by remember { mutableStateOf(false) }
         val minErrorInvalid = minText.toIntOrNull() == null
-        val minErrorLow = (minText.toIntOrNull() ?: 0) < MetronomeTrack.MIN_BPM
-        val minErrorHigh = (minText.toIntOrNull() ?: 0) > MetronomeTrack.MAX_BPM
+        val minErrorLow = (minText.toIntOrNull() ?: 0) < ClickTrack.MIN_BPM
+        val minErrorHigh = (minText.toIntOrNull() ?: 0) > ClickTrack.MAX_BPM
         val isErrorMin = minErrorMissing || (minText.isNotEmpty() && (minErrorInvalid || minErrorLow || minErrorHigh))
 
         var maxErrorMissing by remember { mutableStateOf(false) }
         val maxErrorInvalid = maxText.toIntOrNull() == null
-        val maxErrorLow = (maxText.toIntOrNull() ?: 0) < MetronomeTrack.MIN_BPM
+        val maxErrorLow = (maxText.toIntOrNull() ?: 0) < ClickTrack.MIN_BPM
         val maxErrorMin = (maxText.toIntOrNull() ?: 0) < (minText.toIntOrNull() ?: 1)
-        val maxErrorHigh = (maxText.toIntOrNull() ?: 0) > MetronomeTrack.MAX_BPM
+        val maxErrorHigh = (maxText.toIntOrNull() ?: 0) > ClickTrack.MAX_BPM
         val isErrorMax = maxErrorMissing || (maxText.isNotEmpty() && (maxErrorInvalid || maxErrorLow || maxErrorMin || maxErrorHigh))
 
         AlertDialog(
@@ -303,9 +303,9 @@ class TempoMarkingsActivity : BaseActivity() {
                             if (minErrorMissing || minErrorInvalid) {
                                 Text(stringResource(R.string.tempo_markings_add_error_invalid))
                             } else if (minErrorLow) {
-                                Text(stringResource(R.string.tempo_markings_add_error_low, MetronomeTrack.MIN_BPM.toInt()))
+                                Text(stringResource(R.string.tempo_markings_add_error_low, ClickTrack.MIN_BPM.toInt()))
                             } else if (minErrorHigh) {
-                                Text(stringResource(R.string.tempo_markings_add_error_high, MetronomeTrack.MAX_BPM.toInt()))
+                                Text(stringResource(R.string.tempo_markings_add_error_high, ClickTrack.MAX_BPM.toInt()))
                             }
                         }
                     )
@@ -331,9 +331,9 @@ class TempoMarkingsActivity : BaseActivity() {
                             } else if (maxErrorMin) {
                                 Text(stringResource(R.string.tempo_markings_add_error_min, minText.toIntOrNull() ?: 1))
                             } else if (maxErrorLow) {
-                                Text(stringResource(R.string.tempo_markings_add_error_low, MetronomeTrack.MIN_BPM.toInt()))
+                                Text(stringResource(R.string.tempo_markings_add_error_low, ClickTrack.MIN_BPM.toInt()))
                             } else if (maxErrorHigh) {
-                                Text(stringResource(R.string.tempo_markings_add_error_high, MetronomeTrack.MAX_BPM.toInt()))
+                                Text(stringResource(R.string.tempo_markings_add_error_high, ClickTrack.MAX_BPM.toInt()))
                             }
                         }
                     )
@@ -370,8 +370,8 @@ class TempoMarkingsActivity : BaseActivity() {
                                 TempoMarking(
                                     name = nameText,
                                     range = IntRange(
-                                        start = minText.toIntOrNull() ?: MetronomeTrack.MIN_BPM.toInt(),
-                                        endInclusive = maxText.toIntOrNull() ?: MetronomeTrack.MAX_BPM.toInt()
+                                        start = minText.toIntOrNull() ?: ClickTrack.MIN_BPM.toInt(),
+                                        endInclusive = maxText.toIntOrNull() ?: ClickTrack.MAX_BPM.toInt()
                                     )
                                 )
                             )

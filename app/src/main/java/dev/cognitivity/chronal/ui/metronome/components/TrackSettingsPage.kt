@@ -37,19 +37,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -65,16 +53,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.tracks.MetronomeTrack
 import dev.cognitivity.chronal.settings.Settings
-import dev.cognitivity.chronal.settings.types.json.MetronomeConfigTrack
-import dev.cognitivity.chronal.settings.types.json.TrackColor
+import dev.cognitivity.chronal.settings.types.json.metronome.MetronomeConfigClickTrack
+import dev.cognitivity.chronal.settings.types.json.metronome.MetronomeConfigTrack
+import dev.cognitivity.chronal.settings.types.json.metronome.TrackColor
 import kotlinx.coroutines.launch
 
 data class TrackSettingsResult(
     val name: String,
     val enabled: Boolean,
-    val vibrate: Boolean,
+    val vibrate: Boolean?,
     val color: TrackColor,
 )
 
@@ -91,7 +80,7 @@ fun TrackSettingsPage(
 
     var name by remember(track.name) { mutableStateOf(track.name) }
     var enabled by remember(track.enabled) { mutableStateOf(track.enabled) }
-    var vibrate by remember(track.vibrate) { mutableStateOf(track.vibrate) }
+    var vibrate by remember((track as? MetronomeConfigClickTrack)?.vibrate) { mutableStateOf((track as? MetronomeConfigClickTrack)?.vibrate) }
     var color by remember(track.color) { mutableStateOf(track.color) }
 
     var showNameDialog by remember { mutableStateOf(false) }
@@ -153,34 +142,36 @@ fun TrackSettingsPage(
                 update()
             }
 
-            val vibrationInteractionSource = remember { MutableInteractionSource() }
-            TrackSettingsButton(
-                text = stringResource(R.string.track_settings_vibrations),
-                leadingContent = {
-                    Icon(
-                        painter = painterResource(R.drawable.outline_mobile_vibrate_24),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(24.dp)
-                    )
-                },
-                trailingContent = {
-                    Switch(
-                        checked = vibrate,
-                        onCheckedChange = {
-                            vibrate = it
-                            update()
-                        },
-                        interactionSource = vibrationInteractionSource,
-                    )
-                },
-                topRounded = true,
-                bottomRounded = false,
-                onClick = {
-                    vibrate = !vibrate
-                    update()
-                }
-            )
+            if(vibrate != null) {
+                val vibrationInteractionSource = remember { MutableInteractionSource() }
+                TrackSettingsButton(
+                    text = stringResource(R.string.track_settings_vibrations),
+                    leadingContent = {
+                        Icon(
+                            painter = painterResource(R.drawable.outline_mobile_vibrate_24),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    },
+                    trailingContent = {
+                        Switch(
+                            checked = vibrate == true,
+                            onCheckedChange = {
+                                vibrate = it
+                                update()
+                            },
+                            interactionSource = vibrationInteractionSource,
+                        )
+                    },
+                    topRounded = true,
+                    bottomRounded = false,
+                    onClick = {
+                        vibrate = vibrate != true
+                        update()
+                    }
+                )
+            }
 
             TrackSettingsButton(
                 text = stringResource(R.string.track_settings_rename),

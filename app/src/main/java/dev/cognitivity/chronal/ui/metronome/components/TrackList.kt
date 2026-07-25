@@ -53,10 +53,12 @@ import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.PresetActivity
 import dev.cognitivity.chronal.activity.RhythmEditorActivity
 import dev.cognitivity.chronal.activity.SimpleEditorActivity
-import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.tracks.AudioTrack
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack
+import dev.cognitivity.chronal.metronome.tracks.MetronomeTrack
 import dev.cognitivity.chronal.settings.Settings
-import dev.cognitivity.chronal.settings.types.json.MetronomeConfigTrack
 import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
+import dev.cognitivity.chronal.settings.types.json.metronome.MetronomeConfigClickTrack
 import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -69,18 +71,25 @@ fun TrackList(viewModel: MetronomeViewModel, modifier: Modifier = Modifier) {
     var settingsDialogIndex by remember { mutableStateOf<Int?>(null) }
 
     fun openEditor(index: Int, track: MetronomeTrack) {
-        if(track.simpleRhythm == SimpleRhythm.DISABLED) {
-            ChronalApp.getInstance().startActivity(
-                Intent(ChronalApp.getInstance(), RhythmEditorActivity::class.java)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    .putExtra("trackIndex", index)
-            )
-        } else {
-            ChronalApp.getInstance().startActivity(
-                Intent(ChronalApp.getInstance(), SimpleEditorActivity::class.java)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    .putExtra("trackIndex", index)
-            )
+        when(track) {
+            is ClickTrack -> {
+                if(track.simpleRhythm == SimpleRhythm.DISABLED) {
+                    ChronalApp.getInstance().startActivity(
+                        Intent(ChronalApp.getInstance(), RhythmEditorActivity::class.java)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            .putExtra("trackIndex", index)
+                    )
+                } else {
+                    ChronalApp.getInstance().startActivity(
+                        Intent(ChronalApp.getInstance(), SimpleEditorActivity::class.java)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            .putExtra("trackIndex", index)
+                    )
+                }
+            }
+            is AudioTrack -> {
+                // TODO do audio stuff
+            }
         }
     }
 
@@ -119,8 +128,8 @@ fun TrackList(viewModel: MetronomeViewModel, modifier: Modifier = Modifier) {
                 Spacer(modifier = Modifier.width(8.dp))
                 FilledIconButton(
                     onClick = {
-                        val primaryTrack = tracks[0]
-                        val primaryTimeSignature = primaryTrack.getRhythm().measures[0].timeSig
+                        val primaryClickTrack = tracks.first { it is ClickTrack } as ClickTrack
+                        val primaryTimeSignature = primaryClickTrack.getRhythm().measures[0].timeSig
 
                         val simpleRhythm = SimpleRhythm(
                             timeSignature = primaryTimeSignature,
@@ -128,13 +137,13 @@ fun TrackList(viewModel: MetronomeViewModel, modifier: Modifier = Modifier) {
                             emphasis = 2
                         )
 
-                        val newTrack = MetronomeTrack(
+                        val newTrack = ClickTrack(
                             name = "New track",
                             rhythm = simpleRhythm.asRhythm(),
                             simpleRhythm = simpleRhythm,
-                            beatValue = primaryTrack.beatValue
+                            beatValue = primaryClickTrack.beatValue
                         )
-                        val trackIndex = Settings.addTrack(MetronomeConfigTrack.fromTrack(newTrack))
+                        val trackIndex = Settings.addTrack(MetronomeConfigClickTrack.fromTrack(newTrack))
                         CoroutineScope(Dispatchers.Main).launch {
                             Settings.METRONOME_CONFIG.save()
                             ChronalApp.getInstance().startActivity(

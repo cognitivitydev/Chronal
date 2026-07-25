@@ -53,8 +53,10 @@ import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.metronome.sound.Sound
 import dev.cognitivity.chronal.metronome.sound.SoundPack
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack
 import dev.cognitivity.chronal.settings.Setting
 import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.settings.types.json.metronome.MetronomeConfigClickTrack
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.launch
 
@@ -108,7 +110,7 @@ class EditSounds: BaseActivity() {
         var showAttribution by remember { mutableStateOf(false) }
 
         var selectedPackId by remember {
-            mutableStateOf(ChronalApp.getInstance().metronome.tracks[0].soundPack.id)
+            mutableStateOf((ChronalApp.getInstance().metronome.tracks.first { it is ClickTrack } as ClickTrack).soundPack.id)
         }
         var selection by remember { mutableIntStateOf(0) }
 
@@ -302,12 +304,15 @@ class EditSounds: BaseActivity() {
                             val pack = SoundPack.byId(selected) ?: SoundPack.default()
                             val metronome = ChronalApp.getInstance().metronome
                             metronome.tracks.forEach { track ->
-                                track.soundPack = pack
+                                if(track is ClickTrack) track.soundPack = pack
                             }
 
                             val config = Settings.METRONOME_CONFIG.get()
                             Settings.METRONOME_CONFIG.set(
-                                config.copy(tracks = config.tracks.map { it.copy(soundPackId = pack.id) })
+                                config.copy(tracks = config.tracks.map {
+                                    if(it is MetronomeConfigClickTrack) it.copy(soundPackId = pack.id)
+                                    else it
+                                })
                             )
                             scope.launch {
                                 Setting.saveAll()

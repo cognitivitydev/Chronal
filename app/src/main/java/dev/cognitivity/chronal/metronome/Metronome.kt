@@ -44,10 +44,12 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.MainActivity
-import dev.cognitivity.chronal.metronome.MetronomeTrack.Companion.MAX_BPM
-import dev.cognitivity.chronal.metronome.MetronomeTrack.Companion.MIN_BPM
 import dev.cognitivity.chronal.metronome.modifiers.CountIn
 import dev.cognitivity.chronal.metronome.sound.Sound
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack.Companion.MAX_BPM
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack.Companion.MIN_BPM
+import dev.cognitivity.chronal.metronome.tracks.MetronomeTrack
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.round
 import dev.cognitivity.chronal.settings.Settings
@@ -67,6 +69,7 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.round
+import dev.cognitivity.chronal.metronome.tracks.AudioTrack as MetronomeAudioTrack
 
 class Metronome(
     private val context: Context,
@@ -119,6 +122,8 @@ class Metronome(
             _tracks = value.toMutableStateList()
         }
 
+    private val audioStreams = mutableMapOf<MetronomeAudioTrack, AudioTrackStreamer>()
+
     var modifiers: MutableSet<MetronomeModifier> = mutableSetOf()
 
     private val _countInBeats = MutableStateFlow(0)
@@ -138,7 +143,6 @@ class Metronome(
             ContextCompat.registerReceiver(context, this, IntentFilter("dev.cognitivity.chronal.PlayPause"), ContextCompat.RECEIVER_EXPORTED)
             ContextCompat.registerReceiver(context, this, IntentFilter("dev.cognitivity.chronal.Stop"), ContextCompat.RECEIVER_EXPORTED)
         }
-        modifiers.add(CountIn(this, 4))
 
         CoroutineScope(Dispatchers.IO).launch {
             prepareSounds()
@@ -152,6 +156,7 @@ class Metronome(
             prepareSounds()
 
             modifiers.forEach { it.onStart() }
+
             synchronized(schedulerLock) {
                 timestamp = System.currentTimeMillis()
                 playing = true
@@ -167,9 +172,16 @@ class Metronome(
 
                 val currentSamplePos = 0L
                 tracks.forEach { track ->
-                    track.index = -1
-                    track.nextBeatSample = currentSamplePos
-                    track.sampleRemainder = 0.0
+                    if(track is ClickTrack) {
+                        track.index = -1
+                        track.nextBeatSample = currentSamplePos
+                        track.sampleRemainder = 0.0
+                    } else if(track is MetronomeAudioTrack) {
+                        val streamer = AudioTrackStreamer(context, track, sampleRate, bpm)
+                        streamer.prepare()
+                        streamer.decodeChunk()
+                        audioStreams[track] = streamer
+                    }
                 }
 
                 ongoingSounds.clear()
@@ -186,9 +198,14 @@ class Metronome(
     fun stop() {
         playing = false
         handler.removeCallbacks(audioRunnable)
+
         synchronized(schedulerLock) {
             ongoingSounds.clear()
         }
+
+        audioStreams.values.forEach { it.release() }
+        audioStreams.clear()
+
         tracks.forEach { it.onPause(true) }
         modifiers.forEach { it.onStop() }
         audioTrack.pause()
@@ -252,10 +269,13 @@ class Metronome(
     private suspend fun prepareSounds() {
         if(preparing) return
         preparing = true
-        val totalSounds = tracks.sumOf { it.soundPack.assets.size }
+
+        val clickTracks = tracks.filterIsInstance<ClickTrack>()
+        val totalSounds = clickTracks.sumOf { it.soundPack.assets.size }
         var preparedSounds = 0
+
         withContext(Dispatchers.IO) {
-            tracks.forEachIndexed { trackIndex, track ->
+            clickTracks.forEachIndexed { trackIndex, track ->
                 val pack = track.soundPack
                 for(sound in pack.assets) {
                     if(!tickSoundCache.containsKey(sound.key)) {
@@ -297,66 +317,86 @@ class Metronome(
         for((trackIndex, track) in tracks.withIndex()) {
             if (!track.enabled) continue
 
-            val pattern = track.getIntervals()
-            if (pattern.isEmpty()) continue
-
-            while (track.nextBeatSample < frameEndSample) {
-                if (track.nextBeatSample < frameStartSample - sampleRate) {
-                    track.nextBeatSample = frameStartSample
+            when(track) {
+                is ClickTrack -> {
+                    mixClickTrack(track, outputBuffer, frameStartSample, frameEndSample, trackIndex)
                 }
-
-                val beatIndex = (track.index + 1).mod(pattern.size)
-                val beat = pattern[beatIndex]
-                track.index = beatIndex
-
-                if (beat.duration >= 0) {
-                    mixTick(outputBuffer, frameStartSample, track.nextBeatSample, trackIndex, beat.pitch)
+                is MetronomeAudioTrack -> {
+                    mixAudioTrack(track, outputBuffer)
                 }
-                track.onUpdate(beat)
-                modifiers.forEach { it.onTick(track, beat) }
-
-                nextBeat(track, beat)
-
-                if (track.nextBeatSample - frameStartSample > frameSize * 1024L) break
             }
         }
     }
 
+    private fun mixClickTrack(track: ClickTrack, outputBuffer: FloatArray, frameStartSample: Long, frameEndSample: Long, trackIndex: Int) {
+        val pattern = track.getIntervals()
+        if (pattern.isEmpty()) return
+
+        while (track.nextBeatSample < frameEndSample) {
+            if (track.nextBeatSample < frameStartSample - sampleRate) {
+                track.nextBeatSample = frameStartSample
+            }
+
+            val beatIndex = (track.index + 1).mod(pattern.size)
+            val beat = pattern[beatIndex]
+            track.index = beatIndex
+
+            if (beat.duration >= 0) {
+                mixTick(outputBuffer, frameStartSample, track.nextBeatSample, trackIndex, beat.pitch)
+            }
+            track.onUpdate(beat)
+            modifiers.forEach { it.onTick(track, beat) }
+
+            nextBeat(track, beat)
+
+            if (track.nextBeatSample - frameStartSample > frameSize * 1024L) break
+        }
+    }
+
+    private fun mixAudioTrack(track: MetronomeAudioTrack, outputBuffer: FloatArray) {
+        val streamer = audioStreams[track] ?: return
+        while(streamer.getAvailableSamples() < frameSize && !streamer.isEOF) {
+            streamer.decodeChunk()
+        }
+        streamer.readSamples(outputBuffer, frameSize, track.volume)
+    }
+
     private fun mixCountIn(outputBuffer: FloatArray, frameStartSample: Long, frameEndSample: Long) {
         if(_countInActive.value) {
-            val mainTrack = tracks[0]
+            val mainClickTrack = tracks.first { it is ClickTrack } as ClickTrack
 
-            val subdivision = mainTrack.getRhythm().measures[0].timeSig.second
+            val subdivision = mainClickTrack.getRhythm().measures[0].timeSig.second
             val rhythm = SimpleRhythm(
                 timeSignature = _countInTotalBeats.value to subdivision,
                 subdivision = subdivision,
                 emphasis = 1
             ).asRhythm()
-            val pattern = mainTrack.calculateIntervals(rhythm)
+            val pattern = mainClickTrack.calculateIntervals(rhythm)
 
-            while(mainTrack.nextBeatSample < frameEndSample) {
+            while(mainClickTrack.nextBeatSample < frameEndSample) {
                 if(_countInBeats.value >= _countInTotalBeats.value) {
                     _countInActive.value = false
 
                     tracks.forEach { track ->
-                        track.nextBeatSample = mainTrack.nextBeatSample
+                        if(track !is ClickTrack) return@forEach
+                        track.nextBeatSample = mainClickTrack.nextBeatSample
                         track.index = -1
                         track.sampleRemainder = 0.0
                     }
                     break
                 }
 
-                if(frameStartSample - sampleRate > mainTrack.nextBeatSample) {
-                    mainTrack.nextBeatSample = frameStartSample
+                if(frameStartSample - sampleRate > mainClickTrack.nextBeatSample) {
+                    mainClickTrack.nextBeatSample = frameStartSample
                 }
 
                 val pitch = if(_countInBeats.value == 0) 0 else 1
-                mixTick(outputBuffer, frameStartSample, mainTrack.nextBeatSample, 0, pitch)
+                mixTick(outputBuffer, frameStartSample, mainClickTrack.nextBeatSample, 0, pitch)
 
                 _countInBeats.value++
 
-                val currentBeat = pattern.getOrNull((mainTrack.index + 1).mod(pattern.size)) ?: continue
-                nextBeat(mainTrack, currentBeat)
+                val currentBeat = pattern.getOrNull((mainClickTrack.index + 1).mod(pattern.size)) ?: continue
+                nextBeat(mainClickTrack, currentBeat)
             }
             return
         }
@@ -390,7 +430,7 @@ class Metronome(
         }
     }
 
-    private fun nextBeat(track: MetronomeTrack, beat: Beat) {
+    private fun nextBeat(track: ClickTrack, beat: Beat) {
         val beatLength = abs(beat.duration) * track.beatValue * 60.0 / bpm.toDouble()
 
         val exactSamples = beatLength * sampleRate + track.sampleRemainder
@@ -402,28 +442,35 @@ class Metronome(
 
     private fun resyncTempo(oldBpm: Float, newBpm: Float) {
         tracks.forEach { track ->
-            val pattern = track.getIntervals()
-            if(pattern.isEmpty()) return@forEach
+            when(track) {
+                is ClickTrack -> {
+                    val pattern = track.getIntervals()
+                    if(pattern.isEmpty()) return@forEach
 
-            val currentBeatIndex = track.index.coerceAtLeast(0).coerceAtMost(pattern.lastIndex)
-            val currentBeat = pattern[currentBeatIndex]
+                    val currentBeatIndex = track.index.coerceAtLeast(0).coerceAtMost(pattern.lastIndex)
+                    val currentBeat = pattern[currentBeatIndex]
 
-            val oldBeatSamples = beatLengthToSamples(currentBeat, track.beatValue, oldBpm)
-            val newBeatSamples = beatLengthToSamples(currentBeat, track.beatValue, newBpm)
+                    val oldBeatSamples = beatLengthToSamples(currentBeat, track.beatValue, oldBpm)
+                    val newBeatSamples = beatLengthToSamples(currentBeat, track.beatValue, newBpm)
 
-            if(oldBeatSamples <= 0.0 || newBeatSamples <= 0.0) {
-                track.nextBeatSample = writeHeadSample + 1
-                track.sampleRemainder = 0.0
-                return@forEach
+                    if(oldBeatSamples <= 0.0 || newBeatSamples <= 0.0) {
+                        track.nextBeatSample = writeHeadSample + 1
+                        track.sampleRemainder = 0.0
+                        return@forEach
+                    }
+
+                    val currentBeatStart = track.nextBeatSample.toDouble() - oldBeatSamples
+                    val elapsedSamples = (writeHeadSample.toDouble() - currentBeatStart).coerceIn(0.0, oldBeatSamples)
+                    val remainingFraction = 1.0 - (elapsedSamples / oldBeatSamples)
+                    val remainingSamples = max(1.0, newBeatSamples * remainingFraction)
+
+                    track.nextBeatSample = writeHeadSample + round(remainingSamples).toLong()
+                    track.sampleRemainder = 0.0
+                }
+                is MetronomeAudioTrack -> {
+                    audioStreams[track]?.updateBpm(newBpm)
+                }
             }
-
-            val currentBeatStart = track.nextBeatSample.toDouble() - oldBeatSamples
-            val elapsedSamples = (writeHeadSample.toDouble() - currentBeatStart).coerceIn(0.0, oldBeatSamples)
-            val remainingFraction = 1.0 - (elapsedSamples / oldBeatSamples)
-            val remainingSamples = max(1.0, newBeatSamples * remainingFraction)
-
-            track.nextBeatSample = writeHeadSample + round(remainingSamples).toLong()
-            track.sampleRemainder = 0.0
         }
     }
 
@@ -453,7 +500,7 @@ class Metronome(
     }
 
     private fun getTickSound(trackIndex: Int, pitch: Int): FloatArray {
-        val pack = tracks[trackIndex].soundPack
+        val pack = (tracks[trackIndex] as? ClickTrack)?.soundPack ?: return FloatArray(0)
         val sound = pack.getSound(pitch) ?: return FloatArray(0)
         tickSoundCache[sound.key]?.let { return it }
 

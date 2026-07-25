@@ -36,11 +36,11 @@ import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import dev.cognitivity.chronal.metronome.sound.SoundPack
-import dev.cognitivity.chronal.settings.types.json.MetronomeConfig
-import dev.cognitivity.chronal.settings.types.json.MetronomeConfigTrack
 import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
 import dev.cognitivity.chronal.settings.types.json.TempoMarking
-import dev.cognitivity.chronal.settings.types.json.TrackColor
+import dev.cognitivity.chronal.settings.types.json.metronome.MetronomeConfig
+import dev.cognitivity.chronal.settings.types.json.metronome.MetronomeConfigClickTrack
+import dev.cognitivity.chronal.settings.types.json.metronome.TrackColor
 import kotlinx.coroutines.flow.first
 
 abstract class Setting<T>(
@@ -219,7 +219,7 @@ abstract class Setting<T>(
                         version = 2,
                         bpm = bpm,
                         tracks = listOf(
-                            MetronomeConfigTrack(
+                            MetronomeConfigClickTrack(
                                 name = "Primary track",
                                 enabled = true,
                                 vibrate = prefs[booleanPreferencesKey("metronome_vibrations")] ?: true,
@@ -235,7 +235,7 @@ abstract class Setting<T>(
                                 color = TrackColor.Primary,
                                 soundPackId = newSoundPack,
                             ),
-                            MetronomeConfigTrack(
+                            MetronomeConfigClickTrack(
                                 name = "Secondary track",
                                 enabled = prefs[booleanPreferencesKey("metronome_secondary_enabled")] ?: false,
                                 vibrate = prefs[booleanPreferencesKey("metronome_vibrations_secondary")] ?: true,
@@ -280,7 +280,7 @@ abstract class Setting<T>(
                         version = 13,
                         bpm = bpm,
                         tracks = listOf(
-                            MetronomeConfigTrack(
+                            MetronomeConfigClickTrack(
                                 name = "Primary track",
                                 enabled = true,
                                 vibrate = true,
@@ -290,7 +290,7 @@ abstract class Setting<T>(
                                 color = TrackColor.Primary,
                                 soundPackId = newSoundPack,
                             ),
-                            MetronomeConfigTrack(
+                            MetronomeConfigClickTrack(
                                 name = "Secondary track",
                                 enabled = secondaryEnabled,
                                 vibrate = true,

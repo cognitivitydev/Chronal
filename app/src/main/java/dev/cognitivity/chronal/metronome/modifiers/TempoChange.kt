@@ -21,7 +21,7 @@ package dev.cognitivity.chronal.metronome.modifiers
 import androidx.compose.runtime.derivedStateOf
 import dev.cognitivity.chronal.metronome.Metronome
 import dev.cognitivity.chronal.metronome.MetronomeModifier
-import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -36,8 +36,8 @@ open class TempoChange(
     metronome: Metronome,
     private val duration: TempoChangeDuration,
     private val tempoRate: Float,
-    minBpm: Float = MetronomeTrack.MIN_BPM,
-    maxBpm: Float = MetronomeTrack.MAX_BPM,
+    minBpm: Float = ClickTrack.MIN_BPM,
+    maxBpm: Float = ClickTrack.MAX_BPM,
 ) : MetronomeModifier(metronome) {
     override val isEnabled = derivedStateOf {
         metronome.bpm in range && !metronome.countInActive.value
@@ -68,7 +68,7 @@ open class TempoChange(
         elapsedBeats = -1
     }
 
-    override fun onTick(track: MetronomeTrack, beat: Beat) {
+    override fun onTick(track: ClickTrack, beat: Beat) {
         if(!isEnabled.value) return
 
         if(!duration.isBeatsOrMeasures()) return

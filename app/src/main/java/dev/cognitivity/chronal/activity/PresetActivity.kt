@@ -37,7 +37,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Share
@@ -61,9 +60,8 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.MusicFont
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.tracks.MetronomeTrack
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.MetronomePreset
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
@@ -537,7 +535,7 @@ class PresetActivity : BaseActivity() {
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
-                RhythmInfo(preset, true)
+//                RhythmInfo(preset, true)
             }
 
             val enabled = preset.config.tracks.getOrNull(1)?.enabled ?: false
@@ -553,98 +551,98 @@ class PresetActivity : BaseActivity() {
                     style = MaterialTheme.typography.titleMedium,
                     color = if(enabled) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                RhythmInfo(preset, false, enabled)
+//                RhythmInfo(preset, false, enabled)
             }
         }
     }
 
-    @Composable
-    fun RhythmInfo(
-        preset: MetronomePreset,
-        isPrimary: Boolean,
-        enabled: Boolean = true
-    ) {
-        val textColor = if(enabled) {
-            if(isPrimary) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onTertiaryContainer
-        } else MaterialTheme.colorScheme.onSurface
-        val rhythm = if(isPrimary) preset.primaryRhythm else preset.secondaryRhythm
-        val simpleRhythm = if(isPrimary) preset.primarySimpleRhythm else preset.secondarySimpleRhythm
-        val isAdvanced = simpleRhythm.timeSignature == 0 to 0
-        Row(
-            modifier = Modifier.fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            if(!enabled) {
-                Box(
-                    modifier = Modifier.height(64.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Close,
-                        contentDescription = stringResource(R.string.presets_disabled),
-                        tint = textColor,
-                        modifier = Modifier.size(64.dp)
-                            .align(Alignment.Center)
-                    )
-                }
-                return
-            }
-            val timeSignature = preset.primaryRhythm.measures[0].timeSig
-            Box(modifier = Modifier.weight(1f).height(64.dp)) {
-                Box(
-                    modifier = Modifier.align(Alignment.Center)
-                ) {
-                    MusicFont.Number.TimeSignature(timeSignature.first, timeSignature.second, textColor)
-                }
-            }
-            Box(
-                modifier = Modifier.fillMaxHeight()
-                    .weight(1f)
-                    .align(Alignment.CenterVertically)
-            ) {
-                val subdivision = if(isAdvanced) rhythm.measures[0].timeSig.second else simpleRhythm.subdivision
-                val isTuplet = (subdivision and (subdivision - 1)) != 0
-                val noteValue = if(!isTuplet) subdivision else (subdivision / (3f / 2f)).toInt()
-                val char = MusicFont.Notation.convert(noteValue, false)
-
-                MusicFont.Notation.NoteCentered(
-                    note = MusicFont.Notation.entries.find { it.char == char } ?: MusicFont.Notation.N_QUARTER,
-                    color = textColor,
-                    size = 64.dp,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-                if(isTuplet) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth()
-                            .align(Alignment.TopCenter)
-                            .offset(y = (-16).dp),
-                    ) {
-                        Box(
-                            modifier = Modifier.height(1.dp)
-                                .padding(horizontal = 4.dp)
-                                .weight(1f)
-                                .align(Alignment.CenterVertically)
-                                .background(textColor)
-                        )
-                        Text(
-                            text = "3",
-                            color = textColor,
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.align(Alignment.CenterVertically)
-                                .padding(4.dp)
-                        )
-                        Box(
-                            modifier = Modifier.height(1.dp)
-                                .padding(horizontal = 4.dp)
-                                .weight(1f)
-                                .align(Alignment.CenterVertically)
-                                .background(textColor)
-                        )
-                    }
-                }
-            }
-        }
-    }
+//    @Composable
+//    fun RhythmInfo(
+//        preset: MetronomePreset,
+//        isPrimary: Boolean,
+//        enabled: Boolean = true
+//    ) {
+//        val textColor = if(enabled) {
+//            if(isPrimary) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onTertiaryContainer
+//        } else MaterialTheme.colorScheme.onSurface
+//        val rhythm = if(isPrimary) preset.primaryRhythm else preset.secondaryRhythm
+//        val simpleRhythm = if(isPrimary) preset.primarySimpleRhythm else preset.secondarySimpleRhythm
+//        val isAdvanced = simpleRhythm.timeSignature == 0 to 0
+//        Row(
+//            modifier = Modifier.fillMaxWidth()
+//                .padding(16.dp),
+//            verticalAlignment = Alignment.CenterVertically,
+//            horizontalArrangement = Arrangement.SpaceEvenly
+//        ) {
+//            if(!enabled) {
+//                Box(
+//                    modifier = Modifier.height(64.dp)
+//                ) {
+//                    Icon(
+//                        imageVector = Icons.Outlined.Close,
+//                        contentDescription = stringResource(R.string.presets_disabled),
+//                        tint = textColor,
+//                        modifier = Modifier.size(64.dp)
+//                            .align(Alignment.Center)
+//                    )
+//                }
+//                return
+//            }
+//            val timeSignature = preset.primaryRhythm.measures[0].timeSig
+//            Box(modifier = Modifier.weight(1f).height(64.dp)) {
+//                Box(
+//                    modifier = Modifier.align(Alignment.Center)
+//                ) {
+//                    MusicFont.Number.TimeSignature(timeSignature.first, timeSignature.second, textColor)
+//                }
+//            }
+//            Box(
+//                modifier = Modifier.fillMaxHeight()
+//                    .weight(1f)
+//                    .align(Alignment.CenterVertically)
+//            ) {
+//                val subdivision = if(isAdvanced) rhythm.measures[0].timeSig.second else simpleRhythm.subdivision
+//                val isTuplet = (subdivision and (subdivision - 1)) != 0
+//                val noteValue = if(!isTuplet) subdivision else (subdivision / (3f / 2f)).toInt()
+//                val char = MusicFont.Notation.convert(noteValue, false)
+//
+//                MusicFont.Notation.NoteCentered(
+//                    note = MusicFont.Notation.entries.find { it.char == char } ?: MusicFont.Notation.N_QUARTER,
+//                    color = textColor,
+//                    size = 64.dp,
+//                    modifier = Modifier.align(Alignment.Center)
+//                )
+//                if(isTuplet) {
+//                    Row(
+//                        modifier = Modifier.fillMaxWidth()
+//                            .align(Alignment.TopCenter)
+//                            .offset(y = (-16).dp),
+//                    ) {
+//                        Box(
+//                            modifier = Modifier.height(1.dp)
+//                                .padding(horizontal = 4.dp)
+//                                .weight(1f)
+//                                .align(Alignment.CenterVertically)
+//                                .background(textColor)
+//                        )
+//                        Text(
+//                            text = "3",
+//                            color = textColor,
+//                            style = MaterialTheme.typography.bodyLarge,
+//                            modifier = Modifier.align(Alignment.CenterVertically)
+//                                .padding(4.dp)
+//                        )
+//                        Box(
+//                            modifier = Modifier.height(1.dp)
+//                                .padding(horizontal = 4.dp)
+//                                .weight(1f)
+//                                .align(Alignment.CenterVertically)
+//                                .background(textColor)
+//                        )
+//                    }
+//                }
+//            }
+//        }
+//    }
 }
 

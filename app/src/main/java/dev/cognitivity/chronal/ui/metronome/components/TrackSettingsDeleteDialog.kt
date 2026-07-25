@@ -25,7 +25,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.tracks.MetronomeTrack
 
 @Composable
 fun TrackSettingsDeleteDialog(track: MetronomeTrack, onDismissRequest: () -> Unit, onDelete: () -> Unit) {

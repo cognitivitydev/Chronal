@@ -28,17 +28,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack
 import dev.cognitivity.chronal.rhythm.metronome.Measure
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmElement
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
+import dev.cognitivity.chronal.settings.types.json.metronome.MetronomeConfigClickTrack
 import kotlinx.coroutines.launch
 
 @Composable
-fun TrackSettingsSwitchDialog(index: Int, track: MetronomeTrack, onDismissRequest: () -> Unit, onConfirm: () -> Unit) {
+fun TrackSettingsSwitchDialog(index: Int, track: ClickTrack, onDismissRequest: () -> Unit, onConfirm: () -> Unit) {
     val scope = rememberCoroutineScope()
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -69,7 +70,7 @@ fun TrackSettingsSwitchDialog(index: Int, track: MetronomeTrack, onDismissReques
     )
 }
 
-private fun switchToSimple(index: Int, track: MetronomeTrack) {
+private fun switchToSimple(index: Int, track: ClickTrack) {
     val rhythm = track.getRhythm()
     val newRhythm = Rhythm(listOf(
         Measure(
@@ -93,7 +94,7 @@ private fun switchToSimple(index: Int, track: MetronomeTrack) {
         emphasis = 0
     )
     Settings.updateTrack(index) { configTrack ->
-        configTrack.copy(
+        (configTrack as MetronomeConfigClickTrack).copy(
             beatValue = 4f,
             rhythm = newRhythm.serialize(),
             simpleRhythm = newSimpleRhythm
@@ -106,11 +107,11 @@ private fun switchToSimple(index: Int, track: MetronomeTrack) {
     ChronalApp.getInstance().metronome.tracks[index] = track
 }
 
-private fun switchToAdvanced(index: Int, track: MetronomeTrack) {
+private fun switchToAdvanced(index: Int, track: ClickTrack) {
     val simpleRhythm = track.simpleRhythm
     val newRhythm = simpleRhythm.asRhythm()
     Settings.updateTrack(index) { configTrack ->
-        configTrack.copy(
+        (configTrack as MetronomeConfigClickTrack).copy(
             simpleRhythm = SimpleRhythm.DISABLED,
             rhythm = newRhythm.serialize()
         )

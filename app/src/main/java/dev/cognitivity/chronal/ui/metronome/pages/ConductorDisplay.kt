@@ -59,7 +59,8 @@ import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.metronome.Metronome
-import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack
+import dev.cognitivity.chronal.metronome.tracks.MetronomeTrack
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmAtom
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.round
@@ -75,7 +76,7 @@ import kotlin.math.abs
 //   - separate versions for different time signatures (5/4, 6/8...)
 @Composable
 fun ConductorDisplay(viewModel: MetronomeViewModel, metronome: Metronome, tracks: List<MetronomeTrack>, modifier: Modifier = Modifier) {
-    val displayTrack = tracks.firstOrNull { it.enabled } ?: return
+    val displayTrack = (tracks.firstOrNull { it.enabled && it is ClickTrack } as? ClickTrack) ?: return
     val palette = displayTrack.color.getPalette()
     val flipped by viewModel.flipConductor.collectAsState()
 

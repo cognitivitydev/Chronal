@@ -84,8 +84,8 @@ import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.MusicFont
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.metronome.Metronome
-import dev.cognitivity.chronal.metronome.MetronomeTrack
 import dev.cognitivity.chronal.metronome.sound.SoundType
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack
 import dev.cognitivity.chronal.rhythm.metronome.Measure
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.rhythm.metronome.atoms
@@ -96,7 +96,7 @@ import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmRest
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.settings.Setting
 import dev.cognitivity.chronal.settings.Settings
-import dev.cognitivity.chronal.settings.types.json.MetronomeConfigTrack
+import dev.cognitivity.chronal.settings.types.json.metronome.MetronomeConfigClickTrack
 import dev.cognitivity.chronal.ui.metronome.components.PlayPauseIcon
 import dev.cognitivity.chronal.ui.metronome.components.TrackSettingsDropdown
 import dev.cognitivity.chronal.ui.metronome.components.TrackSettingsPage
@@ -133,8 +133,8 @@ class RhythmEditorActivity : BaseActivity() {
 
     private lateinit var metronome: Metronome
     private var appMetronome by mutableStateOf(ChronalApp.getInstance().metronome)
-    private lateinit var mainTrack: MetronomeTrack
-    private lateinit var initialTrack: MetronomeConfigTrack
+    private lateinit var mainTrack: ClickTrack
+    private lateinit var initialTrack: MetronomeConfigClickTrack
 
     var isPlaying by mutableStateOf(false)
 
@@ -156,7 +156,7 @@ class RhythmEditorActivity : BaseActivity() {
             context = this,
             sendNotifications = false,
             tracks = mutableListOf(
-                MetronomeTrack(
+                ClickTrack(
                     rhythm = parsedRhythm,
                     beatValue = 4f
                 )
@@ -170,9 +170,14 @@ class RhythmEditorActivity : BaseActivity() {
             finish()
             return
         }
+        if(track !is MetronomeConfigClickTrack) {
+            Toast.makeText(this, "Track at index $trackIndex is not a click track", Toast.LENGTH_LONG).show()
+            finish()
+            return
+        }
         this.rhythm = track.rhythm
 
-        mainTrack = appMetronome.tracks[trackIndex]
+        mainTrack = appMetronome.tracks[trackIndex] as ClickTrack
         parsedRhythm = Rhythm.deserialize(rhythm)
 
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
@@ -197,7 +202,7 @@ class RhythmEditorActivity : BaseActivity() {
 
         mainTrack.setRhythm(parsedRhythm)
         metronome.tracks[0] = mainTrack
-        initialTrack = MetronomeConfigTrack.fromTrack(mainTrack)
+        initialTrack = MetronomeConfigClickTrack.fromTrack(mainTrack)
 
         lifecycleScope.launch {
             mainTrack.updateEvents.collect { beat ->
@@ -264,7 +269,7 @@ class RhythmEditorActivity : BaseActivity() {
         )
 
         Settings.setTrack(trackIndex) {
-            it.copy(
+            (it as MetronomeConfigClickTrack).copy(
                 name = mainTrack.name,
                 enabled = mainTrack.enabled,
                 vibrate = mainTrack.vibrate,
@@ -300,14 +305,14 @@ class RhythmEditorActivity : BaseActivity() {
                 exitTransition = { scaleOut() + fadeOut() }
             ) {
                 TrackSettingsPage(
-                    track = MetronomeConfigTrack.fromTrack(mainTrack),
+                    track = MetronomeConfigClickTrack.fromTrack(mainTrack),
                     onBack = {
                         navController.popBackStack()
                     },
                     onTrackChange = { updated ->
                         mainTrack.name = updated.name
                         mainTrack.enabled = updated.enabled
-                        mainTrack.vibrate = updated.vibrate
+                        mainTrack.vibrate = updated.vibrate == true
                         mainTrack.color = updated.color
                     },
                     canDelete = appMetronome.tracks.count { it != mainTrack && it.enabled } != 0,
@@ -793,7 +798,7 @@ class RhythmEditorActivity : BaseActivity() {
                 modifier = Modifier.align(Alignment.CenterVertically)
                     .padding(8.dp, 0.dp),
                 onClick = {
-                    if(initialTrack == MetronomeConfigTrack.fromTrack(mainTrack)) {
+                    if(initialTrack == MetronomeConfigClickTrack.fromTrack(mainTrack)) {
                         finish()
                         return@IconButton
                     }
@@ -1749,7 +1754,7 @@ class RhythmEditorActivity : BaseActivity() {
                                     change += dragAmount.toInt()
                                     if (abs(change) >= 8) {
                                         val adjustment = (change / 8)
-                                        bpm = (bpm - adjustment).coerceIn(MetronomeTrack.MIN_BPM, MetronomeTrack.MAX_BPM)
+                                        bpm = (bpm - adjustment).coerceIn(ClickTrack.MIN_BPM, ClickTrack.MAX_BPM)
                                         change %= 8
                                     }
                                 }
@@ -1791,10 +1796,10 @@ class RhythmEditorActivity : BaseActivity() {
                                             onPress = {
                                                 var isHeld = true
                                                 scope.launch {
-                                                    bpm = (bpm + 1).coerceIn(MetronomeTrack.MIN_BPM, MetronomeTrack.MAX_BPM)
+                                                    bpm = (bpm + 1).coerceIn(ClickTrack.MIN_BPM, ClickTrack.MAX_BPM)
                                                     delay(500)
                                                     while (isHeld) {
-                                                        bpm = (bpm + 1).coerceIn(MetronomeTrack.MIN_BPM, MetronomeTrack.MAX_BPM)
+                                                        bpm = (bpm + 1).coerceIn(ClickTrack.MIN_BPM, ClickTrack.MAX_BPM)
                                                         delay(50)
                                                     }
                                                 }
@@ -1813,10 +1818,10 @@ class RhythmEditorActivity : BaseActivity() {
                                             onPress = {
                                                 var isHeld = true
                                                 scope.launch {
-                                                    bpm = (bpm - 1).coerceIn(MetronomeTrack.MIN_BPM, MetronomeTrack.MAX_BPM)
+                                                    bpm = (bpm - 1).coerceIn(ClickTrack.MIN_BPM, ClickTrack.MAX_BPM)
                                                     delay(500)
                                                     while (isHeld) {
-                                                        bpm = (bpm - 1).coerceIn(MetronomeTrack.MIN_BPM, MetronomeTrack.MAX_BPM)
+                                                        bpm = (bpm - 1).coerceIn(ClickTrack.MIN_BPM, ClickTrack.MAX_BPM)
                                                         delay(50)
                                                     }
                                                 }

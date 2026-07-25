@@ -46,9 +46,9 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack
 import dev.cognitivity.chronal.settings.Settings
-import dev.cognitivity.chronal.settings.types.json.TrackColorPalette
+import dev.cognitivity.chronal.settings.types.json.metronome.TrackColorPalette
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -57,7 +57,7 @@ import kotlin.math.sin
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun BoxScope.CircularClock(track: MetronomeTrack, trackSize: Float, trackPalette: TrackColorPalette) {
+fun BoxScope.CircularClock(track: ClickTrack, trackSize: Float, trackPalette: TrackColorPalette) {
     val metronome = ChronalApp.getInstance().metronome
 
     var rhythm by remember(track) { mutableStateOf(track.getRhythm()) }

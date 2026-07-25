@@ -28,8 +28,11 @@ import androidx.lifecycle.ViewModel
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.vibratorManager
-import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack
+import dev.cognitivity.chronal.metronome.tracks.MetronomeTrack
 import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.settings.types.json.metronome.MetronomeConfigAudioTrack
+import dev.cognitivity.chronal.settings.types.json.metronome.MetronomeConfigClickTrack
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -121,7 +124,7 @@ class MetronomeViewModel: ViewModel() {
 
         if(!vibrate) return
 
-        if(newValue <= MetronomeTrack.MIN_BPM || newValue >= MetronomeTrack.MAX_BPM) {
+        if(newValue <= ClickTrack.MIN_BPM || newValue >= ClickTrack.MAX_BPM) {
             if(System.currentTimeMillis() - lastVibration < 100) return
             lastVibration = System.currentTimeMillis()
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && vibratorManager != null)
@@ -158,7 +161,13 @@ class MetronomeViewModel: ViewModel() {
         }
         track.enabled = enabled
         _tracks.value = metronome.tracks.toList()
-        Settings.updateTrack(index) { it.copy(enabled = enabled) }
+        Settings.updateTrack(index) {
+            when (it) {
+                is MetronomeConfigClickTrack -> it.copy(enabled = enabled)
+                is MetronomeConfigAudioTrack -> it.copy(enabled = enabled)
+                else -> it
+            }
+        }
         CoroutineScope(Dispatchers.Main).launch {
             Settings.METRONOME_CONFIG.save()
         }

@@ -19,6 +19,7 @@
 package dev.cognitivity.chronal.metronome
 
 import androidx.compose.runtime.State
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 
 abstract class MetronomeModifier {
@@ -30,7 +31,7 @@ abstract class MetronomeModifier {
 
     open fun onStart() {}
     open fun onStop() {}
-    open fun onTick(track: MetronomeTrack, beat: Beat) {}
+    open fun onTick(track: ClickTrack, beat: Beat) {}
 
     abstract val isEnabled: State<Boolean>
 }

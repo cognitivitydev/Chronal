@@ -38,14 +38,14 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.graphics.shapes.Morph
 import androidx.graphics.shapes.RoundedPolygon
 import androidx.graphics.shapes.toPath
-import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack
 import dev.cognitivity.chronal.settings.Settings
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun GridDisplayItem(index: Int, track: MetronomeTrack, modifier: Modifier = Modifier) {
+fun GridDisplayItem(index: Int, track: ClickTrack, modifier: Modifier = Modifier) {
     val shape = remember(index) { getShape(index) }
     val morphedShape = Morph(MaterialShapes.Circle, shape)
 

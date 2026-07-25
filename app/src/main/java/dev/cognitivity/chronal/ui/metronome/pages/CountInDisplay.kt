@@ -51,6 +51,7 @@ import androidx.graphics.shapes.Morph
 import androidx.graphics.shapes.RoundedPolygon
 import androidx.graphics.shapes.transformed
 import dev.cognitivity.chronal.metronome.Metronome
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack
 import dev.cognitivity.chronal.settings.Settings
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -99,9 +100,9 @@ fun CountInDisplay(metronome: Metronome) {
         delay(Settings.VISUAL_LATENCY.get().toLong())
         displayedBeat = beat
 
-        val mainTrack = metronome.tracks[0]
-        val mainTimeSignature = mainTrack.getRhythm().measures[0].timeSig
-        val beatLength = ((1f / mainTimeSignature.second) * 60000 / metronome.bpm * mainTrack.beatValue).toLong()
+        val mainClickTrack = metronome.tracks.first { it is ClickTrack } as ClickTrack
+        val mainTimeSignature = mainClickTrack.getRhythm().measures[0].timeSig
+        val beatLength = ((1f / mainTimeSignature.second) * 60000 / metronome.bpm * mainClickTrack.beatValue).toLong()
         val animationSpec = tween<Float>(
             durationMillis = (beatLength * 0.33f).toInt(),
             easing = EaseOutExpo

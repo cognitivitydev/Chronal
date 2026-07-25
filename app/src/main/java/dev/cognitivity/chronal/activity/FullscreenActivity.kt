@@ -60,6 +60,7 @@ import androidx.graphics.shapes.CornerRounding
 import androidx.graphics.shapes.RoundedPolygon
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.ui.metronome.components.metronomeGestures
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
@@ -72,7 +73,7 @@ import kotlin.math.abs
 
 class FullscreenActivity : BaseActivity() {
     val metronome = ChronalApp.getInstance().metronome
-    val mainTrack = metronome.tracks[0]
+    private val mainClickTrack = metronome.tracks.first { it is ClickTrack } as ClickTrack
 
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -119,7 +120,7 @@ class FullscreenActivity : BaseActivity() {
         val coroutineScope = rememberCoroutineScope()
         val progress = remember { Animatable(0f) }
         var invert by remember { mutableStateOf(false) }
-        var i by remember { mutableIntStateOf(mainTrack.getRhythm().measures[0].timeSig.first) }
+        var i by remember { mutableIntStateOf(mainClickTrack.getRhythm().measures[0].timeSig.first) }
 
         var highContrast by remember { mutableStateOf(Settings.HIGH_CONTRAST.get()) }
         var noAnimations by remember { mutableStateOf(Settings.NO_ANIMATION.get()) }
@@ -127,14 +128,14 @@ class FullscreenActivity : BaseActivity() {
         val color = MaterialTheme.colorScheme.surface
         val invertColor = if(highContrast) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.surfaceVariant
 
-        LaunchedEffect(mainTrack) {
-            mainTrack.updateEvents.collect { beat ->
+        LaunchedEffect(mainClickTrack) {
+            mainClickTrack.updateEvents.collect { beat ->
                 val timestamp = metronome.timestamp
-                val measure = mainTrack.getRhythm().measures[beat.measure]
+                val measure = mainClickTrack.getRhythm().measures[beat.measure]
                 if (beat.index == 0) {
                     repeat(measure.timeSig.first) { index ->
                         coroutineScope.launch {
-                            val beatDelay = ((1f / measure.timeSig.second) * 60000 / metronome.bpm * mainTrack.beatValue).toInt() * index
+                            val beatDelay = ((1f / measure.timeSig.second) * 60000 / metronome.bpm * mainClickTrack.beatValue).toInt() * index
                             delay(Settings.VISUAL_LATENCY.get().toLong() + beatDelay)
                             if(!metronome.playing || timestamp != metronome.timestamp) return@launch
 
@@ -145,7 +146,7 @@ class FullscreenActivity : BaseActivity() {
                                 progress.animateTo(
                                     targetValue = 1f,
                                     animationSpec = tween(
-                                        durationMillis = ((1f / measure.timeSig.second) * 60000 / metronome.bpm * mainTrack.beatValue).toInt(),
+                                        durationMillis = ((1f / measure.timeSig.second) * 60000 / metronome.bpm * mainClickTrack.beatValue).toInt(),
                                         easing = LinearEasing
                                     )
                                 )
@@ -155,10 +156,10 @@ class FullscreenActivity : BaseActivity() {
                 }
             }
         }
-        LaunchedEffect(mainTrack) {
-            mainTrack.pauseEvents.collect { paused ->
+        LaunchedEffect(mainClickTrack) {
+            mainClickTrack.pauseEvents.collect { paused ->
                 if(paused) {
-                    i = mainTrack.getRhythm().measures[0].timeSig.first
+                    i = mainClickTrack.getRhythm().measures[0].timeSig.first
                     coroutineScope.launch {
                         progress.animateTo(
                             targetValue = if(invert) 1f else 0f,

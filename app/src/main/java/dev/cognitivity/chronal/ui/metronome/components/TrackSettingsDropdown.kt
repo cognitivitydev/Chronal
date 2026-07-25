@@ -45,10 +45,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.tracks.AudioTrack
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack
+import dev.cognitivity.chronal.metronome.tracks.MetronomeTrack
 import dev.cognitivity.chronal.settings.Settings
-import dev.cognitivity.chronal.settings.types.json.MetronomeConfigTrack
 import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
+import dev.cognitivity.chronal.settings.types.json.metronome.MetronomeConfigAudioTrack
+import dev.cognitivity.chronal.settings.types.json.metronome.MetronomeConfigClickTrack
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -110,7 +113,7 @@ fun TrackSettingsDropdown(track: MetronomeTrack, expanded: Boolean, canDelete: B
                 enabled = canDelete
             )
         }
-        if(!isOutsideEditor) {
+        if(!isOutsideEditor && track is ClickTrack) {
             Spacer(modifier = Modifier.height(MenuDefaults.GroupSpacing))
             DropdownMenuGroup(
                 shapes = MenuDefaults.groupShape(1, 2),
@@ -138,7 +141,12 @@ fun TrackSettingsDropdown(track: MetronomeTrack, expanded: Boolean, canDelete: B
 
     if(showDeleteDialog) {
         TrackSettingsDeleteDialog(track, { showDeleteDialog = false }) {
-            if(Settings.removeTrack(MetronomeConfigTrack.fromTrack(track))) {
+            val configTrack = when(track) {
+                is ClickTrack -> MetronomeConfigClickTrack.fromTrack(track)
+                is AudioTrack -> MetronomeConfigAudioTrack.fromTrack(track)
+                else -> null
+            }
+            if(configTrack != null && Settings.removeTrack(configTrack)) {
                 scope.launch {
                     Settings.METRONOME_CONFIG.save()
                 }

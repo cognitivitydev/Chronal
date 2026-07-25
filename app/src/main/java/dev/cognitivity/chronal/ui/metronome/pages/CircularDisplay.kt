@@ -28,7 +28,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack
+import dev.cognitivity.chronal.metronome.tracks.MetronomeTrack
 import dev.cognitivity.chronal.toPx
 import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
 import dev.cognitivity.chronal.ui.metronome.components.CircularClock
@@ -36,7 +37,7 @@ import dev.cognitivity.chronal.ui.metronome.components.TempoChanger
 
 @Composable
 fun CircularDisplay(viewModel: MetronomeViewModel, tracks: List<MetronomeTrack>, modifier: Modifier = Modifier) {
-    val displayTracks = tracks.filter { it.enabled }
+    val displayTracks = tracks.filter { it.enabled && it is ClickTrack }
     if (displayTracks.isEmpty()) return
 
     Box(
@@ -47,7 +48,7 @@ fun CircularDisplay(viewModel: MetronomeViewModel, tracks: List<MetronomeTrack>,
                 .aspectRatio(1f)
                 .align(Alignment.Center)
         ) {
-            CircularClock(displayTracks[0],
+            CircularClock(displayTracks[0] as ClickTrack,
                 trackSize = 6.dp.toPx(),
                 trackPalette = displayTracks[0].color.getPalette()
             )
@@ -59,7 +60,7 @@ fun CircularDisplay(viewModel: MetronomeViewModel, tracks: List<MetronomeTrack>,
                     .aspectRatio(1f)
                     .align(Alignment.Center)
             ) {
-                CircularClock(displayTracks[1],
+                CircularClock(displayTracks[1] as ClickTrack,
                     trackSize = 4.dp.toPx(),
                     trackPalette = displayTracks[1].color.getPalette()
                 )

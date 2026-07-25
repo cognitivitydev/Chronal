@@ -36,7 +36,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.metronome.Metronome
-import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack
 import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
 
 @Composable
@@ -47,13 +47,13 @@ fun ManualTab(metronome: Metronome, viewModel: MetronomeViewModel) {
         onValueChange = {
             text = it
             val bpm = text.toFloatOrNull() ?: return@OutlinedTextField
-            if(bpm in MetronomeTrack.MIN_BPM..MetronomeTrack.MAX_BPM) {
+            if(bpm in ClickTrack.MIN_BPM..ClickTrack.MAX_BPM) {
                 viewModel.setBpm(bpm, vibrate = false)
             }
         },
         textStyle = MaterialTheme.typography.bodyLarge,
         isError = text.toFloatOrNull() == null ||
-                text.toFloat() < MetronomeTrack.MIN_BPM || text.toFloat() > MetronomeTrack.MAX_BPM,
+                text.toFloat() < ClickTrack.MIN_BPM || text.toFloat() > ClickTrack.MAX_BPM,
         label = { Text(stringResource(R.string.metronome_input_manual)) },
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),

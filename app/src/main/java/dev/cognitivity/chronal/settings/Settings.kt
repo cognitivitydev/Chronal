@@ -21,7 +21,7 @@ package dev.cognitivity.chronal.settings
 import android.os.Build
 import com.google.gson.JsonArray
 import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.tracks.MetronomeTrack
 import dev.cognitivity.chronal.settings.types.BooleanSetting
 import dev.cognitivity.chronal.settings.types.FloatSetting
 import dev.cognitivity.chronal.settings.types.IntSetting
@@ -31,10 +31,10 @@ import dev.cognitivity.chronal.settings.types.StringSetting
 import dev.cognitivity.chronal.settings.types.json.ColorScheme
 import dev.cognitivity.chronal.settings.types.json.Instrument
 import dev.cognitivity.chronal.settings.types.json.Instruments
-import dev.cognitivity.chronal.settings.types.json.MetronomeConfig
-import dev.cognitivity.chronal.settings.types.json.MetronomeConfigTrack
 import dev.cognitivity.chronal.settings.types.json.MetronomePreset
 import dev.cognitivity.chronal.settings.types.json.TempoMarking
+import dev.cognitivity.chronal.settings.types.json.metronome.MetronomeConfig
+import dev.cognitivity.chronal.settings.types.json.metronome.MetronomeConfigTrack
 
 object Settings {
     // General

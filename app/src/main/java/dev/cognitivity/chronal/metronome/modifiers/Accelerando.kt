@@ -19,7 +19,7 @@
 package dev.cognitivity.chronal.metronome.modifiers
 
 import dev.cognitivity.chronal.metronome.Metronome
-import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack
 
 /**
  * Gradually increases the tempo over a specified duration (in beats, measures, or milliseconds).
@@ -28,5 +28,5 @@ class Accelerando(
     metronome: Metronome,
     duration: TempoChangeDuration,
     tempoRate: Float,
-    maxBpm: Float = MetronomeTrack.MAX_BPM
+    maxBpm: Float = ClickTrack.MAX_BPM
 ) : TempoChange(metronome, duration, tempoRate, maxBpm = maxBpm)

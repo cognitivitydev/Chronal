@@ -38,7 +38,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.settings.types.json.MetronomeConfigTrack
+import dev.cognitivity.chronal.settings.types.json.metronome.MetronomeConfigTrack
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable

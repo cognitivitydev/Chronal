@@ -65,7 +65,7 @@ import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.settings.types.json.TrackColor
+import dev.cognitivity.chronal.settings.types.json.metronome.TrackColor
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable

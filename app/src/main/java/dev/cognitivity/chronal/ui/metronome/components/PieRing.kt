@@ -43,11 +43,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack
 import dev.cognitivity.chronal.metronome.sound.SoundType
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.settings.Settings
-import dev.cognitivity.chronal.settings.types.json.TrackColorPalette
+import dev.cognitivity.chronal.settings.types.json.metronome.TrackColorPalette
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -59,7 +59,7 @@ private class WedgeState(initialColor: Color, val isSkipped: Boolean, val isEmph
     val strokeBoost = Animatable(0f)
 }
 
-private fun buildWedges(track: MetronomeTrack, intervals: List<Beat>, measure: Int, inactiveColor: Color): List<WedgeState> {
+private fun buildWedges(track: ClickTrack, intervals: List<Beat>, measure: Int, inactiveColor: Color): List<WedgeState> {
     return intervals.filter { it.measure == measure }.map {
         val isEmphasized = if(track.soundPack.type == SoundType.ATONAL) it.pitch == 0 else false
         WedgeState(inactiveColor, isSkipped = it.duration < 0, isEmphasized, weight = abs(it.duration).toFloat())
@@ -68,7 +68,7 @@ private fun buildWedges(track: MetronomeTrack, intervals: List<Beat>, measure: I
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun BoxScope.PieRing(track: MetronomeTrack, ringSize: Float, trackPalette: TrackColorPalette, accentOutward: Boolean) {
+fun BoxScope.PieRing(track: ClickTrack, ringSize: Float, trackPalette: TrackColorPalette, accentOutward: Boolean) {
     val metronome = ChronalApp.getInstance().metronome
 
     var intervals by remember(track) { mutableStateOf(track.getIntervals()) }

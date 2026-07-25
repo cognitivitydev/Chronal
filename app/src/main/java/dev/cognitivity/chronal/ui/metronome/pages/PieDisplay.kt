@@ -28,7 +28,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
-import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack
+import dev.cognitivity.chronal.metronome.tracks.MetronomeTrack
 import dev.cognitivity.chronal.toPx
 import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
 import dev.cognitivity.chronal.ui.metronome.components.PieRing
@@ -36,7 +37,7 @@ import dev.cognitivity.chronal.ui.metronome.components.TempoChanger
 
 @Composable
 fun PieDisplay(viewModel: MetronomeViewModel, tracks: List<MetronomeTrack>, modifier: Modifier = Modifier) {
-    val displayTracks = tracks.filter { it.enabled }
+    val displayTracks = tracks.filter { it.enabled && it is ClickTrack }
     if (displayTracks.isEmpty()) return
 
     Box(
@@ -47,7 +48,7 @@ fun PieDisplay(viewModel: MetronomeViewModel, tracks: List<MetronomeTrack>, modi
                 .aspectRatio(1f)
                 .align(Alignment.Center)
         ) {
-            PieRing(displayTracks[0],
+            PieRing(displayTracks[0] as ClickTrack,
                 ringSize = 24.dp.toPx(),
                 trackPalette = displayTracks[0].color.getPalette(),
                 accentOutward = true
@@ -60,7 +61,7 @@ fun PieDisplay(viewModel: MetronomeViewModel, tracks: List<MetronomeTrack>, modi
                     .aspectRatio(1f)
                     .align(Alignment.Center)
             ) {
-                PieRing(displayTracks[1],
+                PieRing(displayTracks[1] as ClickTrack,
                     ringSize = 16.dp.toPx(),
                     trackPalette = displayTracks[1].color.getPalette(),
                     accentOutward = false

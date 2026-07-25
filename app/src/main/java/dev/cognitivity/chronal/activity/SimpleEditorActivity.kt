@@ -76,12 +76,12 @@ import androidx.navigation.compose.rememberNavController
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.MusicFont
 import dev.cognitivity.chronal.R
-import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.settings.Setting
 import dev.cognitivity.chronal.settings.Settings
-import dev.cognitivity.chronal.settings.types.json.MetronomeConfigTrack
 import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
+import dev.cognitivity.chronal.settings.types.json.metronome.MetronomeConfigClickTrack
 import dev.cognitivity.chronal.toPx
 import dev.cognitivity.chronal.ui.metronome.components.ClockBeats
 import dev.cognitivity.chronal.ui.metronome.components.TrackSettingsDropdown
@@ -97,8 +97,8 @@ class SimpleEditorActivity : BaseActivity() {
     private var previewRhythm by mutableStateOf<Rhythm?>(null)
     private var appMetronome by mutableStateOf(ChronalApp.getInstance().metronome)
     private lateinit var rhythm: MutableState<SimpleRhythm>
-    private lateinit var mainTrack: MetronomeTrack
-    private lateinit var initialTrack: MetronomeConfigTrack
+    private lateinit var mainTrack: ClickTrack
+    private lateinit var initialTrack: MetronomeConfigClickTrack
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -110,8 +110,12 @@ class SimpleEditorActivity : BaseActivity() {
         }
         appMetronome = ChronalApp.getInstance().metronome
         trackIndex = intent.getIntExtra("trackIndex", 0)
-        mainTrack = appMetronome.tracks[trackIndex]
-        initialTrack = MetronomeConfigTrack.fromTrack(mainTrack)
+        mainTrack = appMetronome.tracks[trackIndex] as? ClickTrack ?: run {
+            Toast.makeText(this, "Track at index $trackIndex is not a click track", Toast.LENGTH_LONG).show()
+            finish()
+            return
+        }
+        initialTrack = MetronomeConfigClickTrack.fromTrack(mainTrack)
 
         setContent {
             MetronomeTheme {
@@ -133,7 +137,7 @@ class SimpleEditorActivity : BaseActivity() {
             mainTrack.simpleRhythm = rhythm.value
             mainTrack.setRhythm(parsedRhythm)
             Settings.setTrack(trackIndex) {
-                it.copy(
+                (it as MetronomeConfigClickTrack).copy(
                     name = mainTrack.name,
                     enabled = mainTrack.enabled,
                     vibrate = mainTrack.vibrate,
@@ -192,7 +196,7 @@ class SimpleEditorActivity : BaseActivity() {
                 exitTransition = { scaleOut() + fadeOut() }
             ) {
                 val metronome = ChronalApp.getInstance().metronome
-                val configTrack = MetronomeConfigTrack.fromTrack(mainTrack)
+                val configTrack = MetronomeConfigClickTrack.fromTrack(mainTrack)
                 TrackSettingsPage(
                     track = configTrack,
                     onBack = {
@@ -201,7 +205,7 @@ class SimpleEditorActivity : BaseActivity() {
                     onTrackChange = { updated ->
                         mainTrack.name = updated.name
                         mainTrack.enabled = updated.enabled
-                        mainTrack.vibrate = updated.vibrate
+                        mainTrack.vibrate = updated.vibrate == true
                         mainTrack.color = updated.color
                     },
                     canDelete = metronome.tracks.count { it != mainTrack && it.enabled } != 0,
@@ -390,7 +394,7 @@ class SimpleEditorActivity : BaseActivity() {
                 }
                 IconButton(
                     onClick = {
-                        if(initialTrack == MetronomeConfigTrack.fromTrack(mainTrack) && initialTrack.simpleRhythm == rhythm.value) {
+                        if(initialTrack == MetronomeConfigClickTrack.fromTrack(mainTrack) && initialTrack.simpleRhythm == rhythm.value) {
                             finish()
                             return@IconButton
                         }

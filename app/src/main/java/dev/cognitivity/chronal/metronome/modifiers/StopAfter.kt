@@ -21,7 +21,7 @@ package dev.cognitivity.chronal.metronome.modifiers
 import androidx.compose.runtime.derivedStateOf
 import dev.cognitivity.chronal.metronome.Metronome
 import dev.cognitivity.chronal.metronome.MetronomeModifier
-import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 
 /**
@@ -41,7 +41,7 @@ class StopAfter(
         currentMeasure = -1
     }
 
-    override fun onTick(track: MetronomeTrack, beat: Beat) {
+    override fun onTick(track: ClickTrack, beat: Beat) {
         if(!isEnabled.value) return
 
         if(metronome.tracks.indexOf(track) != 0) return

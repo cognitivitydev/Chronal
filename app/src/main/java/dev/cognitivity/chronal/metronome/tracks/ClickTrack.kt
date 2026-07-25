@@ -1,6 +1,6 @@
 /*
  * Chronal: Metronome app for Android
- * Copyright (C) 2025-2026  cognitivity
+ * Copyright (C) 2026  cognitivity
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package dev.cognitivity.chronal.metronome
+package dev.cognitivity.chronal.metronome.tracks
 
 import android.content.Context
 import android.os.Build
@@ -34,44 +34,42 @@ import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmAtom
 import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
-import dev.cognitivity.chronal.settings.types.json.MetronomeConfigTrack
 import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
-import dev.cognitivity.chronal.settings.types.json.TrackColor
+import dev.cognitivity.chronal.settings.types.json.metronome.MetronomeConfigClickTrack
+import dev.cognitivity.chronal.settings.types.json.metronome.TrackColor
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
 
-class MetronomeTrack(
-    var name: String = "New track",
+class ClickTrack(
+    override var name: String = "New click track",
+    override var color: TrackColor = TrackColor.Primary,
+    enabled: Boolean = true,
     private var rhythm: Rhythm,
     var beatValue: Float = 4f,
     var vibrate: Boolean = true,
-    enabled: Boolean = true,
     var simpleRhythm: SimpleRhythm = SimpleRhythm(4 to 4, 4, 2),
-    var color: TrackColor = TrackColor.Primary,
     var soundPack: SoundPack = SoundPack.default(),
-) {
+) : MetronomeTrack(name, color, enabled) {
     companion object {
         const val MIN_BPM = 1f
         const val MAX_BPM = 16000f
 
-        fun fromSetting(setting: MetronomeConfigTrack): MetronomeTrack {
-            return MetronomeTrack(
+        fun fromSetting(setting: MetronomeConfigClickTrack): ClickTrack {
+            return ClickTrack(
                 name = setting.name,
+                color = setting.color,
+                enabled = setting.enabled,
                 rhythm = Rhythm.deserialize(setting.rhythm),
                 simpleRhythm = setting.simpleRhythm,
                 beatValue = setting.beatValue,
                 vibrate = setting.vibrate,
-                enabled = setting.enabled,
-                color = setting.color,
                 soundPack = SoundPack.byId(setting.soundPackId) ?: SoundPack.default(),
             )
         }
     }
 
-    var enabled by mutableStateOf(enabled)
+    override var enabled by mutableStateOf(enabled)
 
     private var intervals: List<Beat> = calculateIntervals(rhythm)
 
@@ -118,17 +116,11 @@ class MetronomeTrack(
     private val _updateEvents = MutableSharedFlow<Beat>(replay = 1)
     val updateEvents: SharedFlow<Beat> = _updateEvents.asSharedFlow()
 
-    private val _pauseEvents = MutableStateFlow(true)
-    val pauseEvents: SharedFlow<Boolean> = _pauseEvents.asStateFlow()
-
     private val _editEvents = MutableSharedFlow<Rhythm>(replay = 1)
     val editEvents: SharedFlow<Rhythm> = _editEvents.asSharedFlow()
 
     fun onUpdate(beat: Beat) {
         _updateEvents.tryEmit(beat)
-    }
-    fun onPause(paused: Boolean) {
-        _pauseEvents.tryEmit(paused)
     }
     fun onEdit(rhythm: Rhythm) {
         _editEvents.tryEmit(rhythm)

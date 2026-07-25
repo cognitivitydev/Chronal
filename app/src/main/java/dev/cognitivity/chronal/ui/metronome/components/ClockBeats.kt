@@ -31,7 +31,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.rotate
 import androidx.compose.ui.unit.dp
-import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack
 import dev.cognitivity.chronal.metronome.sound.SoundType
 import dev.cognitivity.chronal.rhythm.metronome.Beat
 import dev.cognitivity.chronal.settings.Settings
@@ -40,7 +40,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 @Composable
-fun ClockBeats(track: MetronomeTrack, beats: List<Beat>, progress: Animatable<Float, AnimationVector1D>, trackSize: Float,
+fun ClockBeats(track: ClickTrack, beats: List<Beat>, progress: Animatable<Float, AnimationVector1D>, trackSize: Float,
                offColor: Color, primaryColor: Color, surface: Color = MaterialTheme.colorScheme.surface) {
     val showBeats = Settings.SHOW_BEATS.get()
     val showSubdivisions = Settings.SHOW_SUBDIVISIONS.get()

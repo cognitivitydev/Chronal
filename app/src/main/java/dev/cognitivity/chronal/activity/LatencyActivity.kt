@@ -56,7 +56,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.metronome.Metronome
-import dev.cognitivity.chronal.metronome.MetronomeTrack
+import dev.cognitivity.chronal.metronome.tracks.ClickTrack
 import dev.cognitivity.chronal.pxToDp
 import dev.cognitivity.chronal.rhythm.metronome.Rhythm
 import dev.cognitivity.chronal.settings.Settings
@@ -70,13 +70,13 @@ class LatencyActivity : BaseActivity() {
         sendNotifications = false,
         bpm = 120f,
         tracks = mutableListOf(
-            MetronomeTrack(
+            ClickTrack(
                 rhythm = Rhythm.deserialize("{4/4}Q;Q;Q;Q;"),
                 beatValue = 4f
             )
         )
     )
-    val track = metronome.tracks[0]
+    val track = metronome.tracks[0] as ClickTrack
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
