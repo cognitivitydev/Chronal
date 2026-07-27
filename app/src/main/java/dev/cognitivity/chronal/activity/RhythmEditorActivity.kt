@@ -20,6 +20,7 @@ package dev.cognitivity.chronal.activity
 
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -28,13 +29,16 @@ import android.view.WindowInsets
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -97,6 +101,7 @@ import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmTuplet
 import dev.cognitivity.chronal.settings.Setting
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.metronome.MetronomeConfigClickTrack
+import dev.cognitivity.chronal.tuner.Pitch
 import dev.cognitivity.chronal.ui.metronome.components.PlayPauseIcon
 import dev.cognitivity.chronal.ui.metronome.components.TrackSettingsDropdown
 import dev.cognitivity.chronal.ui.metronome.components.TrackSettingsPage
@@ -104,6 +109,7 @@ import dev.cognitivity.chronal.ui.metronome.components.TrackSettingsSwitchDialog
 import dev.cognitivity.chronal.ui.theme.MetronomeTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.io.File
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.pow
@@ -125,6 +131,7 @@ class RhythmEditorActivity : BaseActivity() {
     private var noteInputTuplet by mutableStateOf(false)
     private var noteInputDots by mutableIntStateOf(0)
     private var noteInputState by mutableStateOf(NoteInputState.NOTE)
+    private var noteInputPitch: Int? by mutableStateOf(0)
     private var noteInputDuration by mutableIntStateOf(4)
 
     private var rhythm by mutableStateOf("{4/4}Q;q;q;q;")
@@ -390,6 +397,15 @@ class RhythmEditorActivity : BaseActivity() {
                 noteInputDuration = if(atom == null) 0 else (1 / atom.baseDuration).roundToInt()
                 noteInputTuplet = isTuplet
                 noteInputDots = atom?.dots ?: 0
+                noteInputState = when(atom) {
+                    is RhythmNote -> NoteInputState.NOTE
+                    is RhythmRest -> NoteInputState.REST
+                    else -> NoteInputState.NOTE
+                }
+                noteInputPitch = when(atom) {
+                    is RhythmNote -> atom.pitch
+                    else -> null
+                }
 
                 if(atom != null) {
                     // calculate max dots
@@ -587,7 +603,7 @@ class RhythmEditorActivity : BaseActivity() {
                                         IconButton(
                                             onClick = {
                                                 timeSignature = Pair(
-                                                    (timeSignature.first - 1).coerceIn(1..32),
+                                                    (timeSignature.first - 1).coerceIn(1..99),
                                                     timeSignature.second
                                                 )
                                             }
@@ -612,7 +628,7 @@ class RhythmEditorActivity : BaseActivity() {
                                         IconButton(
                                             onClick = {
                                                 timeSignature = Pair(
-                                                    (timeSignature.first + 1).coerceIn(1..32),
+                                                    (timeSignature.first + 1).coerceIn(1..99),
                                                     timeSignature.second
                                                 )
                                             }
@@ -633,7 +649,7 @@ class RhythmEditorActivity : BaseActivity() {
                                             onClick = {
                                                 timeSignature = Pair(
                                                     timeSignature.first,
-                                                    (timeSignature.second / 2).coerceIn(1..32)
+                                                    (timeSignature.second / 2).coerceIn(1..64)
                                                 )
                                             }
                                         ) {
@@ -658,7 +674,7 @@ class RhythmEditorActivity : BaseActivity() {
                                             onClick = {
                                                 timeSignature = Pair(
                                                     timeSignature.first,
-                                                    (timeSignature.second * 2).coerceIn(1..32)
+                                                    (timeSignature.second * 2).coerceIn(1..64)
                                                 )
                                             }
                                         ) {
@@ -1004,8 +1020,7 @@ class RhythmEditorActivity : BaseActivity() {
                         .padding(padding / 2)
                 )
                 StateInput(
-                    modifier = Modifier.width(64.dp)
-                        .fillMaxHeight()
+                    modifier = Modifier.fillMaxHeight()
                         .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(16.dp))
                         .padding(padding / 2)
                 )
@@ -1282,13 +1297,10 @@ class RhythmEditorActivity : BaseActivity() {
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
     fun StateInput(modifier: Modifier = Modifier) {
+        val selectedNoteDuration = parsedRhythm.getNoteAt(selectedNote)?.baseDuration ?: 0.25
 
         @Composable
         fun StateInputButton(state: NoteInputState, modifier: Modifier = Modifier) {
-            val display = when(state) {
-                NoteInputState.NOTE -> MusicFont.Notation.N_QUARTER
-                NoteInputState.REST -> MusicFont.Notation.R_QUARTER
-            }
             val selected = noteInputState == state
 
             val animatedColor = animateColorAsState(
@@ -1340,7 +1352,15 @@ class RhythmEditorActivity : BaseActivity() {
                         isSelected = true
                     }
             ) {
-                MusicFont.Notation.NoteCentered(display,
+                MusicFont.Notation.NoteCentered(
+                    atom = if(state == NoteInputState.REST) {
+                        RhythmRest(selectedNoteDuration)
+                    } else {
+                        RhythmNote(
+                            baseDuration = selectedNoteDuration,
+                            pitch = noteInputPitch ?: (if(mainTrack.soundPack.type == SoundType.ATONAL) 0 else 60)
+                        )
+                    },
                     modifier = Modifier.align(Alignment.Center),
                     color = animatedOnColor.value,
                     size = 32.dp
@@ -1348,18 +1368,130 @@ class RhythmEditorActivity : BaseActivity() {
             }
         }
 
-        Column(
+        Row(
             modifier = modifier,
         ) {
-            StateInputButton(NoteInputState.NOTE,
-                modifier = Modifier.weight(1f)
-                    .fillMaxWidth()
+            Column(
+                modifier = Modifier.width(64.dp)
+            ) {
+                StateInputButton(NoteInputState.NOTE,
+                    modifier = Modifier.weight(1f)
+                        .fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                StateInputButton(NoteInputState.REST,
+                    modifier = Modifier.weight(1f)
+                        .fillMaxWidth()
+                )
+            }
+            AnimatedVisibility(
+                visible = noteInputState == NoteInputState.NOTE,
+                enter = fadeIn() + expandHorizontally(),
+                exit = fadeOut() + shrinkHorizontally()
+            ) {
+                PitchInput(
+                    modifier = Modifier.fillMaxHeight()
+                        .padding(horizontal = 2.dp)
+                )
+            }
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
+    @Composable
+    fun PitchInput(modifier: Modifier = Modifier) {
+        fun editPitch(newPitch: Int) {
+            val newElement = if(parsedRhythm.getNoteAt(selectedNote) is RhythmRest) {
+                RhythmNote(
+                    pitch = newPitch,
+                    baseDuration = parsedRhythm.getNoteAt(selectedNote)?.baseDuration ?: 0.25,
+                    dots = parsedRhythm.getNoteAt(selectedNote)?.dots ?: 0,
+                    tupletRatio = parsedRhythm.getNoteAt(selectedNote)?.tupletRatio
+                )
+            } else {
+                (parsedRhythm.getNoteAt(selectedNote) as RhythmNote).copy(
+                    pitch = newPitch
+                )
+            }
+
+            parsedRhythm = parsedRhythm.replaceNote(selectedNote, newElement, isScaled = true)
+            rhythm = parsedRhythm.serialize()
+            mainTrack.setRhythm(parsedRhythm)
+            isSelected = true
+
+            // play sound
+            val newSound = mainTrack.soundPack.assets.firstOrNull { it.pitch == newPitch } ?: return
+            val inputStream = newSound.openStream(this) ?: return
+
+            val tempFile = File.createTempFile("audio", ".tmp", cacheDir)
+            inputStream.use { input ->
+                tempFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+
+            MediaPlayer().apply {
+                setDataSource(tempFile.absolutePath)
+                setOnCompletionListener { mediaPlayer ->
+                    mediaPlayer.release()
+                    tempFile.delete()
+                }
+                setOnErrorListener { mediaPlayer, _, _, ->
+                    mediaPlayer.release()
+                    tempFile.delete()
+                    true
+                }
+                prepare()
+                start()
+            }
+        }
+
+        Column(
+            modifier = modifier,
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            IconButton(
+                enabled = mainTrack.soundPack.assets.any { it.pitch > (noteInputPitch ?: 0) },
+                onClick = {
+                    noteInputPitch = noteInputPitch?.plus(1) ?: 0
+                    editPitch(noteInputPitch ?: 0)
+                },
+                modifier = Modifier.minimumInteractiveComponentSize()
+                    .size(IconButtonDefaults.extraSmallContainerSize(IconButtonDefaults.IconButtonWidthOption.Uniform))
+            ) {
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowUp,
+                    contentDescription = "Increase pitch",
+                    modifier = Modifier.size(IconButtonDefaults.extraSmallIconSize),
+                )
+            }
+            val text = if(noteInputPitch == null || noteInputState == NoteInputState.REST) {
+                ""
+            } else if(mainTrack.soundPack.type == SoundType.ATONAL) {
+                "${noteInputPitch ?: 0}"
+            } else {
+                Pitch.fromMidi(noteInputPitch ?: 60).toDisplayName(true).name
+            }
+            Text(
+                text = text,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
             )
-            Spacer(modifier = Modifier.height(4.dp))
-            StateInputButton(NoteInputState.REST,
-                modifier = Modifier.weight(1f)
-                    .fillMaxWidth()
-            )
+            IconButton(
+                enabled = mainTrack.soundPack.assets.any { it.pitch < (noteInputPitch ?: 0) },
+                onClick = {
+                    noteInputPitch = noteInputPitch?.minus(1) ?: 0
+                    editPitch(noteInputPitch ?: 0)
+                },
+                modifier = Modifier.minimumInteractiveComponentSize()
+                    .size(IconButtonDefaults.extraSmallContainerSize(IconButtonDefaults.IconButtonWidthOption.Uniform))
+            ) {
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowDown,
+                    contentDescription = "Decrease pitch"
+                )
+            }
         }
     }
 
@@ -1397,7 +1529,7 @@ class RhythmEditorActivity : BaseActivity() {
                         )
                     } else {
                         RhythmNote(
-                            pitch = if(mainTrack.soundPack.type == SoundType.ATONAL) 0 else 60,
+                            pitch = noteInputPitch ?: 0,
                             baseDuration = 1.0 / value,
                             dots = noteInputDots
                         )
@@ -1426,13 +1558,7 @@ class RhythmEditorActivity : BaseActivity() {
                     fontWeight = FontWeight(animatedFontWeight),
                 )
             } else {
-                val text = MusicFont.Notation.convert(value, rest)
-                var note: MusicFont.Notation? = null
-                for(character in MusicFont.Notation.entries) {
-                    if(character.char == text) {
-                        note = character
-                    }
-                }
+                val note = MusicFont.Notation.fromLength(1.0/value, rest, noteInputPitch ?: 0)
                 MusicFont.Notation.NoteCentered(
                     note = note ?: MusicFont.Notation.N_QUARTER,
                     color = animatedOnColor.value,
@@ -1481,7 +1607,7 @@ class RhythmEditorActivity : BaseActivity() {
                             IconButton(
                                 onClick = {
                                     timeSignature =
-                                        Pair((timeSignature.first - 1).coerceIn(1..32), timeSignature.second)
+                                        Pair((timeSignature.first - 1).coerceIn(1..99), timeSignature.second)
                                 }
                             ) {
                                 Icon(
@@ -1504,7 +1630,7 @@ class RhythmEditorActivity : BaseActivity() {
                             IconButton(
                                 onClick = {
                                     timeSignature =
-                                        Pair((timeSignature.first + 1).coerceIn(1..32), timeSignature.second)
+                                        Pair((timeSignature.first + 1).coerceIn(1..99), timeSignature.second)
                                 }
                             ) {
                                 Icon(
@@ -1522,7 +1648,7 @@ class RhythmEditorActivity : BaseActivity() {
                             IconButton(
                                 onClick = {
                                     timeSignature =
-                                        Pair(timeSignature.first, (timeSignature.second / 2).coerceIn(1..32))
+                                        Pair(timeSignature.first, (timeSignature.second / 2).coerceIn(1..64))
                                 }
                             ) {
                                 Icon(
@@ -1545,7 +1671,7 @@ class RhythmEditorActivity : BaseActivity() {
                             IconButton(
                                 onClick = {
                                     timeSignature =
-                                        Pair(timeSignature.first, (timeSignature.second * 2).coerceIn(1..32))
+                                        Pair(timeSignature.first, (timeSignature.second * 2).coerceIn(1..64))
                                 }
                             ) {
                                 Icon(
@@ -2056,7 +2182,7 @@ class RhythmEditorActivity : BaseActivity() {
 
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     @Composable
-    fun NoteText(note: RhythmAtom, noteIndex: Int, errored: Boolean = false, editable: Boolean = true) {
+    fun NoteText(note: RhythmAtom, noteIndex: Int, errored: Boolean = false, editable: Boolean = true, modifier: Modifier = Modifier) {
         val isNoteSelected = noteIndex == selectedNote && isSelected
         val isMusicSelected = noteIndex == musicSelected
 
@@ -2076,7 +2202,7 @@ class RhythmEditorActivity : BaseActivity() {
         )
 
         Box(
-            modifier = Modifier.padding(16.dp, 0.dp)
+            modifier = modifier.padding(16.dp, 0.dp)
                 .width(48.dp)
                 .fillMaxHeight()
                 .clip(RoundedCornerShape(corner.value.toInt().coerceIn(0, 100)))
@@ -2090,7 +2216,7 @@ class RhythmEditorActivity : BaseActivity() {
                     }
                 }
         ) {
-            val char = MusicFont.Notation.fromLength(note.baseDuration, note.isRest())
+            val char = MusicFont.Notation.fromLength(note.baseDuration, note.isRest(), (note as? RhythmNote)?.pitch ?: 0)
             MusicFont.Notation.Note(
                 note = char,
                 dots = note.dots,

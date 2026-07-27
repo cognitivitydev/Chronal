@@ -36,6 +36,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmAtom
+import dev.cognitivity.chronal.rhythm.metronome.elements.RhythmNote
 
 object MusicFont {
     enum class Number(val char: Char) {
@@ -237,8 +239,24 @@ object MusicFont {
                     else -> 0.0
                 }
             }
-            fun fromLength(length: Double, rest: Boolean): Notation? {
+            fun fromLength(length: Double, rest: Boolean, pitch: Int = 0): Notation? {
                 if(!rest) {
+                    if(pitch > 0) {
+                        return when (length) {
+                            1/1.0 -> I_WHOLE
+                            1/2.0 -> I_HALF
+                            1/4.0 -> I_QUARTER
+                            1/8.0 -> I_EIGHTH
+                            1/16.0 -> I_16TH
+                            1/32.0 -> I_32ND
+                            1/64.0 -> I_64TH
+                            1/128.0 -> I_128TH
+                            1/256.0 -> I_256TH
+                            1/512.0 -> I_512TH
+                            1/1024.0 -> I_1024TH
+                            else -> null
+                        }
+                    }
                     return when (length) {
                         1/1.0 -> N_WHOLE
                         1/2.0 -> N_HALF
@@ -435,6 +453,22 @@ object MusicFont {
             }
 
             @Composable
+            fun NoteCentered(
+                atom: RhythmAtom,
+                color: Color = Color.White,
+                size: Dp = 64.dp,
+                modifier: Modifier = Modifier
+            ) {
+                NoteCentered(
+                    note = fromLength(atom.baseDuration, atom.isRest(), (atom as? RhythmNote)?.pitch ?: 0) ?: N_QUARTER,
+                    dots = atom.dots,
+                    color = color,
+                    size = size,
+                    modifier = modifier
+                )
+            }
+
+            @Composable
             fun Note(
                 note: Notation?,
                 dots: Int = 0,
@@ -456,6 +490,22 @@ object MusicFont {
                     textAlign = TextAlign.Center,
                     maxLines = 1,
                     overflow = TextOverflow.Visible
+                )
+            }
+
+            @Composable
+            fun Note(
+                atom: RhythmAtom,
+                color: Color = Color.White,
+                size: Dp = 64.dp,
+                modifier: Modifier = Modifier
+            ) {
+                Note(
+                    note = fromLength(atom.baseDuration, atom.isRest(), (atom as? RhythmNote)?.pitch ?: 0) ?: N_QUARTER,
+                    dots = atom.dots,
+                    color = color,
+                    size = size,
+                    modifier = modifier
                 )
             }
         }
