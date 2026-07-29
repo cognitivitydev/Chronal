@@ -26,4 +26,18 @@
     <string name="generic_close">Cerrar</string>
     <string name="generic_confirm">Confirmar</string>
     <string name="generic_copy_clipboard">Copiar al portapapeles</string>
+    <string name="generic_delete">Borrar</string>
+    <string name="generic_discard">Descartar</string>
+    <string name="generic_download">Descargar</string>
+    <string name="generic_drag_handle">Tirador</string>
+    <string name="generic_edit">Editar</string>
+    <string name="generic_error">Error</string>
+    <string name="generic_exit">Salir</string>
+    <string name="generic_exit_discard">Salir sin guardar</string>
+    <string name="generic_export">Exportar</string>
+    <string name="generic_fix">Arreglo</string>
+    <string name="generic_fullscreen">Pantalla completa</string>
+    <string name="generic_ignore">Ignorar</string>
+    <string name="generic_import">Importar</string>
+    <string name="generic_info">Información</string>
 </resources>
