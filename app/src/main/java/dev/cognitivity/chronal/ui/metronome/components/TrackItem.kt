@@ -62,7 +62,8 @@ fun TrackItem(
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = {}
 ) {
-    val enabled = track.enabled
+    val error = track is AudioTrack && track.error
+    val enabled = track.enabled && !error
     val shape = RoundedCornerShape(
         topStart = if (topRounded) 12.dp else 6.dp,
         topEnd = if (topRounded) 12.dp else 6.dp,
@@ -76,14 +77,21 @@ fun TrackItem(
         label = "animatedFontWeight"
     )
     val animatedFontColor by animateColorAsState(
-        targetValue = if(enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+        targetValue = if(enabled) MaterialTheme.colorScheme.onSurface
+            else if(error) MaterialTheme.colorScheme.onErrorContainer
+            else MaterialTheme.colorScheme.onSurfaceVariant,
+        animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
+    )
+    val animatedContainerColor by animateColorAsState(
+        targetValue = if(!error) MaterialTheme.colorScheme.surfaceContainerHigh
+        else MaterialTheme.colorScheme.errorContainer,
         animationSpec = MotionScheme.expressive().defaultEffectsSpec(),
     )
 
     Row(
         modifier = Modifier.fillMaxWidth()
             .clip(shape)
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .background(animatedContainerColor)
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick
@@ -94,7 +102,10 @@ fun TrackItem(
         Spacer(modifier = Modifier.width(16.dp))
         if(track is AudioTrack) {
             Icon(
-                painter = painterResource(R.drawable.outline_music_note_2_24),
+                painter = painterResource(
+                    if(track.error) R.drawable.outline_warning_24
+                        else R.drawable.outline_music_note_2_24
+                ),
                 contentDescription = null,
                 tint = animatedFontColor
             )
@@ -124,6 +135,7 @@ fun TrackItem(
             onCheckedChange = {
                 onCheckedChanged(it)
             },
+            enabled = !error,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = palette.onColor,
                 checkedTrackColor = palette.color,

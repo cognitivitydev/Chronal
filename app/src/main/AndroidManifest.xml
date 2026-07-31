@@ -74,6 +74,11 @@
             android:theme="@style/Theme.Chronal">
         </activity>
         <activity
+            android:name=".activity.AudioTrackEditor"
+            android:exported="false"
+            android:theme="@style/Theme.Chronal">
+        </activity>
+        <activity
             android:name=".activity.EditSounds"
             android:exported="false"
             android:theme="@style/Theme.Chronal">

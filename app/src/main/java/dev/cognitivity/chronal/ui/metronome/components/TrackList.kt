@@ -19,6 +19,7 @@
 package dev.cognitivity.chronal.ui.metronome.components
 
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -26,17 +27,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -47,9 +44,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
+import dev.cognitivity.chronal.activity.AudioTrackEditor
 import dev.cognitivity.chronal.activity.PresetActivity
 import dev.cognitivity.chronal.activity.RhythmEditorActivity
 import dev.cognitivity.chronal.activity.SimpleEditorActivity
@@ -58,6 +57,7 @@ import dev.cognitivity.chronal.metronome.tracks.ClickTrack
 import dev.cognitivity.chronal.metronome.tracks.MetronomeTrack
 import dev.cognitivity.chronal.settings.Settings
 import dev.cognitivity.chronal.settings.types.json.SimpleRhythm
+import dev.cognitivity.chronal.settings.types.json.metronome.MetronomeConfigAudioTrack
 import dev.cognitivity.chronal.settings.types.json.metronome.MetronomeConfigClickTrack
 import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -69,6 +69,7 @@ import kotlinx.coroutines.launch
 fun TrackList(viewModel: MetronomeViewModel, modifier: Modifier = Modifier) {
     val tracks by viewModel.tracks.collectAsState()
     var settingsDialogIndex by remember { mutableStateOf<Int?>(null) }
+    var newTrackExpanded by remember { mutableStateOf(false) }
 
     fun openEditor(index: Int, track: MetronomeTrack) {
         when(track) {
@@ -88,8 +89,55 @@ fun TrackList(viewModel: MetronomeViewModel, modifier: Modifier = Modifier) {
                 }
             }
             is AudioTrack -> {
-                // TODO do audio stuff
+                ChronalApp.getInstance().startActivity(
+                    Intent(ChronalApp.getInstance(), AudioTrackEditor::class.java)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        .putExtra("trackIndex", index)
+                )
             }
+        }
+    }
+
+    fun newClickTrack() {
+        val primaryClickTrack = tracks.first { it is ClickTrack } as ClickTrack
+        val primaryTimeSignature = primaryClickTrack.getRhythm().measures[0].timeSig
+
+        val simpleRhythm = SimpleRhythm(
+            timeSignature = primaryTimeSignature,
+            subdivision = primaryTimeSignature.second,
+            emphasis = 2
+        )
+
+        val newTrack = ClickTrack(
+            rhythm = simpleRhythm.asRhythm(),
+            simpleRhythm = simpleRhythm,
+            beatValue = primaryClickTrack.beatValue
+        )
+        val trackIndex = Settings.addTrack(MetronomeConfigClickTrack.fromTrack(newTrack))
+        CoroutineScope(Dispatchers.Main).launch {
+            Settings.METRONOME_CONFIG.save()
+            ChronalApp.getInstance().startActivity(
+                Intent(ChronalApp.getInstance(), SimpleEditorActivity::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    .putExtra("trackIndex", trackIndex)
+            )
+        }
+    }
+
+    fun newAudioTrack() {
+        val newTrack = AudioTrack(
+            uri = Uri.EMPTY,
+            fileName = "Unknown",
+            bpm = null
+        )
+        val trackIndex = Settings.addTrack(MetronomeConfigAudioTrack.fromTrack(newTrack))
+        CoroutineScope(Dispatchers.Main).launch {
+            Settings.METRONOME_CONFIG.save()
+            ChronalApp.getInstance().startActivity(
+                Intent(ChronalApp.getInstance(), AudioTrackEditor::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    .putExtra("trackIndex", trackIndex)
+            )
         }
     }
 
@@ -128,37 +176,57 @@ fun TrackList(viewModel: MetronomeViewModel, modifier: Modifier = Modifier) {
                 Spacer(modifier = Modifier.width(8.dp))
                 FilledIconButton(
                     onClick = {
-                        val primaryClickTrack = tracks.first { it is ClickTrack } as ClickTrack
-                        val primaryTimeSignature = primaryClickTrack.getRhythm().measures[0].timeSig
-
-                        val simpleRhythm = SimpleRhythm(
-                            timeSignature = primaryTimeSignature,
-                            subdivision = primaryTimeSignature.second,
-                            emphasis = 2
-                        )
-
-                        val newTrack = ClickTrack(
-                            name = "New track",
-                            rhythm = simpleRhythm.asRhythm(),
-                            simpleRhythm = simpleRhythm,
-                            beatValue = primaryClickTrack.beatValue
-                        )
-                        val trackIndex = Settings.addTrack(MetronomeConfigClickTrack.fromTrack(newTrack))
-                        CoroutineScope(Dispatchers.Main).launch {
-                            Settings.METRONOME_CONFIG.save()
-                            ChronalApp.getInstance().startActivity(
-                                Intent(ChronalApp.getInstance(), SimpleEditorActivity::class.java)
-                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    .putExtra("trackIndex", trackIndex)
-                            )
-                        }
-
+                        newTrackExpanded = true
                     }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = stringResource(R.string.metronome_track_add)
                     )
+
+                    DropdownMenuPopup(
+                        expanded = newTrackExpanded,
+                        onDismissRequest = { newTrackExpanded = false },
+                        offset = DpOffset(0.dp, 8.dp)
+                    ) {
+                        DropdownMenuGroup(
+                            containerColor = MenuDefaults.groupVibrantContainerColor,
+                            shapes = MenuDefaults.groupShape(0, 1),
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.metronome_track_add_click)) },
+                                leadingIcon = {
+                                    Icon(
+                                        painter = painterResource(R.drawable.baseline_music_note_24),
+                                        modifier = Modifier.size(MenuDefaults.LeadingIconSize),
+                                        contentDescription = null
+                                    )
+                                },
+                                colors = MenuDefaults.selectableItemVibrantColors(),
+                                shape = MenuDefaults.itemShape(0, 2).shape,
+                                onClick = {
+                                    newTrackExpanded = false
+                                    newClickTrack()
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.metronome_track_add_audio)) },
+                                leadingIcon = {
+                                    Icon(
+                                        painter = painterResource(R.drawable.outline_music_note_2_24),
+                                        modifier = Modifier.size(MenuDefaults.LeadingIconSize),
+                                        contentDescription = null
+                                    )
+                                },
+                                colors = MenuDefaults.selectableItemVibrantColors(),
+                                shape = MenuDefaults.itemShape(1, 2).shape,
+                                onClick = {
+                                    newTrackExpanded = false
+                                    newAudioTrack()
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }

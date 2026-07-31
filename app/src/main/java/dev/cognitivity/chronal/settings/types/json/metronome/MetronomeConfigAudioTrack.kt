@@ -26,6 +26,7 @@ data class MetronomeConfigAudioTrack(
     override val color: TrackColor,
     override val enabled: Boolean,
     val uri: String,
+    val fileName: String,
     val startTrim: Float,
     val endTrim: Float,
     val volume: Float,
@@ -39,6 +40,7 @@ data class MetronomeConfigAudioTrack(
                 color = TrackColor.fromJson(jsonObject.get("color").asJsonObject),
                 enabled = jsonObject.get("enabled")?.asBoolean ?: true,
                 uri = jsonObject.get("uri")?.asString ?: "",
+                fileName = jsonObject.get("fileName")?.asString ?: "Unknown",
                 startTrim = jsonObject.get("startTrim")?.asFloat ?: 0f,
                 endTrim = jsonObject.get("endTrim")?.asFloat ?: 0f,
                 volume = jsonObject.get("volume")?.asFloat ?: 1f,
@@ -51,6 +53,7 @@ data class MetronomeConfigAudioTrack(
                 name = track.name,
                 color = track.color,
                 enabled = track.enabled,
+                fileName = track.fileName,
                 uri = track.uri.toString(),
                 startTrim = track.startTrim,
                 endTrim = track.endTrim,
@@ -68,6 +71,7 @@ data class MetronomeConfigAudioTrack(
             add("color", color.toJson())
             addProperty("enabled", enabled)
             addProperty("uri", uri)
+            addProperty("fileName", fileName)
             addProperty("startTrim", startTrim)
             addProperty("endTrim", endTrim)
             addProperty("volume", volume)

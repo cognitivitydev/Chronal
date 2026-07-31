@@ -18,6 +18,7 @@
 
 package dev.cognitivity.chronal.metronome.tracks
 
+import android.content.Context
 import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,6 +32,7 @@ class AudioTrack(
     override var color: TrackColor = TrackColor.Secondary,
     enabled: Boolean = true,
     var uri: Uri,
+    var fileName: String,
     var startTrim: Float = 0f,
     var endTrim: Float = 0f,
     var volume: Float = 1f,
@@ -44,6 +46,7 @@ class AudioTrack(
                 color = setting.color,
                 enabled = setting.enabled,
                 uri = setting.uri.toUri(),
+                fileName = setting.fileName,
                 startTrim = setting.startTrim,
                 endTrim = setting.endTrim,
                 volume = setting.volume,
@@ -54,4 +57,13 @@ class AudioTrack(
     }
 
     override var enabled by mutableStateOf(enabled)
+
+    var error by mutableStateOf(false)
+    fun exists(context: Context): Boolean = try {
+        context.contentResolver.openAssetFileDescriptor(uri, "r")?.use {
+            true
+        } ?: false
+    } catch(_: Exception) {
+        false
+    }
 }

@@ -177,6 +177,11 @@ class Metronome(
                         track.nextBeatSample = currentSamplePos
                         track.sampleRemainder = 0.0
                     } else if(track is MetronomeAudioTrack) {
+                        if(!track.exists(context)) {
+                            track.error = true
+                            return@forEach
+                        }
+
                         val streamer = AudioTrackStreamer(context, track, sampleRate, bpm)
                         streamer.prepare()
                         streamer.decodeChunk()
