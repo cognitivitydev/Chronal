@@ -97,6 +97,8 @@
     <string name="metronome_bpm">bpm</string>
     <string name="metronome_track_list">Tracks (%1$d)</string>
     <string name="metronome_track_add">Add track</string>
+    <string name="metronome_track_add_click">Add click track</string>
+    <string name="metronome_track_add_audio">Add audio track</string>
     <string name="metronome_tempo_unknown">Unknown</string>
     <string name="metronome_tempo_controls">Tempo controls</string>
     <string name="metronome_input_manual">Manual</string>
@@ -203,6 +205,18 @@
     <string name="track_settings_switch_text">Switching editors will reset all changes made in the editor. This cannot be undone.</string>
     <string name="track_settings_switch_simple">Switch to Simple Editor</string>
     <string name="track_settings_switch_advanced">Switch to Advanced Editor</string>
+
+    <string name="audio_track_editor_no_file">No file selected</string>
+    <string name="audio_track_editor_file_select">Select file</string>
+    <string name="audio_track_editor_speed_adjust">Automatically adjust speed</string>
+    <string name="audio_track_editor_speed_adjust_description">Adjust the speed of this track to match the metronome tempo.</string>
+    <string name="audio_track_editor_tempo">Song tempo</string>
+    <string name="audio_track_editor_volume">Volume</string>
+    <string name="audio_track_editor_volume_value">%1$d%%</string>
+    <string name="audio_track_editor_loop">Loop</string>
+    <string name="audio_track_editor_trim">Trim audio</string>
+    <string name="audio_track_editor_trim_start">Trim start</string>
+    <string name="audio_track_editor_trim_end">Trim end</string>
 
     <string name="tuner_concert_pitch">Concert</string>
     <string name="tuner_concert_pitch_short">Con.</string>
