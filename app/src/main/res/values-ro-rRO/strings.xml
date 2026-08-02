@@ -328,4 +328,26 @@
     <string name="setting_name_high_contrast">Contrast mare ecran complet</string>
     <string name="setting_name_no_animation">Dezactivează animația pe tot ecranul</string>
     <string name="setting_name_tempo_markings">Marcaje Tempo</string>
+    <string name="setting_name_tuner_frequency">Frecvență A4</string>
+    <string name="setting_name_show_octave">Arată octava</string>
+    <string name="setting_name_transpose_notes">Transpunere note</string>
+    <string name="setting_name_string_tuner">Folosește acordorul de corzi</string>
+    <string name="setting_name_audio_threshold">Prag audio</string>
+    <string name="setting_name_accidentals">Alterații</string>
+    <string name="setting_name_note_names">Modifică numele notelor</string>
+    <string name="setting_name_show_developer_options">Activați opțiunile pentru dezvoltatori</string>
+    <string name="setting_name_metronome_rhythm">Ritmul metronomului</string>
+    <string name="setting_name_metronome_simple_rhythm">Metronom ritm simplu</string>
+    <string name="setting_name_metronome_vibrations">Vibrații ale metronomului</string>
+    <string name="setting_name_metronome_rhythm_secondary">Ritm metronom (secundar)</string>
+    <string name="setting_name_metronome_simple_rhythm_secondary">Metronom ritm simplu (secundar)</string>
+    <string name="setting_name_metronome_vibrations_secondary">Vibrații ale metronomului (secundare)</string>
+    <string name="setting_name_metronome_sounds">Sunete ale metronomului</string>
+    <string name="setting_name_metronome_state">Statutul metronomului</string>
+    <string name="setting_name_metronome_presets">Presetările metronomului</string>
+    <string name="setting_name_metronome_gesture_tap">Activează atingerea</string>
+    <string name="setting_name_metronome_gesture_hold">Activează deținerea</string>
+    <string name="setting_name_metronome_gesture_hold_duration">Durata de menținere</string>
+    <string name="setting_name_metronome_gesture_swipe">Activează glisarea</string>
+    <string name="setting_name_metronome_gesture_swipe_sensitivity">Sensibilitate glisare</string>
 </resources>
