@@ -92,6 +92,8 @@
     <string name="metronome_bpm">Puls</string>
     <string name="metronome_track_list">Tracks (%1$d)</string>
     <string name="metronome_track_add">Einen Track hinzufügen</string>
+    <string name="metronome_track_add_click">Füge ein \"Klick\" Titel hinzu</string>
+    <string name="metronome_track_add_audio">Füge ein Audio Titel hinzu</string>
     <string name="metronome_tempo_unknown">Unbekannt</string>
     <string name="metronome_tempo_controls">Geschwindigkeitskontrollen</string>
     <string name="metronome_input_manual">Manuell</string>
@@ -194,6 +196,17 @@
     <string name="track_settings_switch_text">Das Wechseln der Editoren wird alle Änderungen im Editor zurücksetzen. Dies kann nicht rückgängig gemacht werden.</string>
     <string name="track_settings_switch_simple">Zu Einfachem Editor wechseln</string>
     <string name="track_settings_switch_advanced">Zu Erweitertem Editor wechseln</string>
+    <string name="audio_track_editor_no_file">Keine Datei ausgewählt</string>
+    <string name="audio_track_editor_file_select">Datei auswählen</string>
+    <string name="audio_track_editor_speed_adjust">Automatisch die Geschwindigkeit anpassen</string>
+    <string name="audio_track_editor_speed_adjust_description">Passen Sie die Geschwindigkeit dieses Titels an das Metronom-Tempo an.</string>
+    <string name="audio_track_editor_tempo">Lied Geschwindigkeit</string>
+    <string name="audio_track_editor_volume">Volumen</string>
+    <string name="audio_track_editor_volume_value">%1$d%%</string>
+    <string name="audio_track_editor_loop">Wiederholung</string>
+    <string name="audio_track_editor_trim">Audio trennen</string>
+    <string name="audio_track_editor_trim_start">Schnitt Start</string>
+    <string name="audio_track_editor_trim_end">Schnitt Ende</string>
     <string name="tuner_concert_pitch">Konzert</string>
     <string name="tuner_concert_pitch_short">Nein.</string>
     <string name="tuner_microphone_disabled">Der Mikrofonzugriff ist deaktiviert</string>
