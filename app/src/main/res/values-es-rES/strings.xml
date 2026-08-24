@@ -110,6 +110,7 @@
     <string name="metronome_notification_playing">Reproduciendo.</string>
     <string name="metronome_notification_paused">Detenido.</string>
     <string name="notification_practice_reminder_title">¡Hora de practicar!</string>
+    <string name="notification_practice_reminder_text">No te he visto. ¿Preparado para empezar?</string>
     <string name="notification_practice_reminder_open">Abrir</string>
     <string name="metronome_option_beat_detector">Detector de ritmo</string>
     <string name="metronome_option_change_sounds">Cambiar sonidos</string>
