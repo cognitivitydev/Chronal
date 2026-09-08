@@ -382,5 +382,17 @@
     <string name="setting_description_transpose_notes">Muestra la nota transportada para tu instrumento principal en adición al tono de concierto.</string>
     <string name="setting_description_string_tuner">Cambia la visualización del afinador cuando un instrumento de cuerda es seleccionado.</string>
     <string name="setting_description_audio_threshold">Edita el umbral para detectar notas. Disminuye si las notas no son detectadas.</string>
+    <string name="setting_description_tuner_layout">Cambiar el tamaño del afinador en pantalla completa.</string>
+    <string name="setting_description_version">Última versión instalada.</string>
+    <string name="setting_color_scheme_title">Color</string>
+    <string name="setting_color_theme_title">Tema</string>
+    <string name="setting_color_theme_system">Sistema</string>
+    <string name="setting_color_theme_light">Claro</string>
+    <string name="setting_color_theme_dark">Oscuro</string>
+    <string name="setting_color_contrast_title">Contraste</string>
+    <string name="setting_color_contrast_system">Sistema</string>
+    <string name="setting_color_contrast_low">Predeterminado</string>
     <string name="help_title">Ayuda</string>
+    <string name="help_metronome_delay">El audio del metrónomo puede verse retrasado por el hardware o la latencia del Bluetooth. Puedes ajustar la latencia visual en los ajustes para poder corregirlo. También está disponible un medidor de latencia en los ajustes para ayudarte a encontrar un valor óptimo.</string>
+    <string name="help_metronome_edit_rhythm_title">¿Cómo edito el ritmo?</string>
 </resources>
