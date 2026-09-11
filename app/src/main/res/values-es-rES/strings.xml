@@ -482,10 +482,12 @@
     <string name="sound_clap">Palmada</string>
     <string name="sound_bell">Campana</string>
     <string name="widget_list_title">Ajustes predefinidos</string>
+    <string name="widget_list_description">Accede rápidamente a todos tus ajustes del metrónomo</string>
     <string name="widget_list_reload">Recargar lista</string>
     <string name="widget_list_none">No hay ajustes disponibles</string>
     <string name="widget_tuner_title">Afinador</string>
     <string name="widget_tuner_start">Toca para reanudar/parar</string>
+    <string name="widget_tuner_graph_unavailable">Gráfico no disponible</string>
     <string name="widget_tuner_notification_title">Afinador activado</string>
     <string name="widget_tuner_notification_text">El afinador está corriendo en segundo plano.</string>
     <string name="widget_tuner_notification_disabled_title">Afinador desactivado</string>
