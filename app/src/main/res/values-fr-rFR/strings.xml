@@ -219,6 +219,8 @@
     <string name="settings_footer_version">Version %s</string>
     <string name="settings_footer_privacy_policy">Politique de Confidentialité</string>
     <string name="settings_support_project">Soutenir le projet !</string>
+    <string name="settings_language_system">Langage par défaut</string>
+    <string name="settings_menu_help">Aide</string>
     <string name="setting_name_show_octave">Montrer l\'octave</string>
     <string name="setting_name_practice_reminder_snooze_off">Désactivé</string>
     <string name="setting_name_practice_reminder_snooze_10">10 minutes</string>
