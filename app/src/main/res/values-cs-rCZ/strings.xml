@@ -17,7 +17,10 @@
   ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
   -->
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+    <string name="app_name">Chronal</string>
     <string name="generic_add">Přidat</string>
+    <string name="generic_applied">Aplikováno</string>
+    <string name="generic_apply">Aplikovat</string>
     <string name="generic_back">Zpět</string>
     <string name="generic_cancel">Storno</string>
     <string name="generic_close">Zavřít</string>
@@ -26,13 +29,16 @@
     <string name="generic_delete">Smazat</string>
     <string name="generic_discard">Zahodit</string>
     <string name="generic_download">Stáhnout</string>
+    <string name="generic_drag_handle">Posuvník</string>
     <string name="generic_edit">Upravit</string>
     <string name="generic_error">Chyba</string>
     <string name="generic_exit">Ukončit</string>
     <string name="generic_exit_discard">Ukončit bez uložení</string>
+    <string name="generic_export">Exportovat</string>
     <string name="generic_fix">Napravit</string>
     <string name="generic_fullscreen">Celá obrazovka</string>
     <string name="generic_ignore">Ignorovat</string>
+    <string name="generic_import">Importovat</string>
     <string name="generic_info">Info</string>
     <string name="generic_menu_collapse">Sbalit</string>
     <string name="generic_menu_expand">Rozbalit</string>
@@ -43,7 +49,10 @@
     <string name="generic_number_invalid">Chybné číslo</string>
     <string name="generic_okay">OK</string>
     <string name="generic_pause">Pozastavit</string>
+    <string name="generic_picker_select_time">Vybrat čas</string>
+    <string name="generic_picker_switch_to_input">Přepnout na textový vstup</string>
     <string name="generic_play">Spustit</string>
+    <string name="generic_refresh">Aktualizovat</string>
     <string name="generic_required_field">Povinné pole</string>
     <string name="generic_reset">Obnovit</string>
     <string name="generic_resume">Pokračovat</string>
@@ -56,7 +65,10 @@
     <string name="generic_settings">Nastavení</string>
     <string name="generic_start">Spustit</string>
     <string name="generic_stop">Zastavit</string>
+    <string name="generic_subtract">Odečíst</string>
+    <string name="generic_switch">Přepnout</string>
     <string name="generic_undo">Vrátit zpět</string>
+    <string name="generic_unknown">Neznámý</string>
     <string name="generic_warning">Varování</string>
     <string name="generic_website">Webová stránka</string>
     <string name="page_metronome">Metronom</string>
@@ -71,9 +83,11 @@
     <string name="page_settings_note_locale">Jazyk not</string>
     <string name="page_settings_notifications">Oznámení</string>
     <string name="page_settings_practice_reminder">Připomínky cvičení</string>
+    <string name="page_settings_language">Jazyk</string>
     <string name="page_tuner">Ladička</string>
     <string name="changelog_title">Seznam změn</string>
     <string name="changelog_updated">Aktualizováno: %1$s → %2$s</string>
+    <string name="metronome_bpm">bpm</string>
     <string name="metronome_track_list">Stopy (%1$d)</string>
     <string name="metronome_track_add">Přidat stopu</string>
     <string name="metronome_tempo_unknown">Neznámé</string>
@@ -90,6 +104,7 @@
     <string name="metronome_display_clock">Hodiny</string>
     <string name="metronome_display_conductor">Dirigent</string>
     <string name="metronome_display_grid">Mřížka</string>
+    <string name="metronome_display_pie">Koláčový diagram</string>
     <string name="metronome_switch_display_mode">Přepnout režim zobrazení</string>
     <string name="metronome_conductor_not_supported">Nastavený takt není zatím podporován.</string>
     <string name="metronome_conductor_flip">Překlopit vodorovně</string>
@@ -130,6 +145,8 @@
     <string name="editor_bpm_increase">Zvýšit BPM</string>
     <string name="editor_bpm_set">Nastavit BPM</string>
     <string name="editor_change_emphasis">Změnit důraz</string>
+    <string name="editor_emphasis_high">Vysoko</string>
+    <string name="editor_emphasis_low">Nízko</string>
     <string name="editor_error_invalid_denominator">%d. takt má v předznamenání neplatný jmenovatel: %s</string>
     <string name="editor_error_invalid_length">%d. takt (%s) má chybnou délku: %s</string>
     <string name="editor_error_invalid_note">Neplatná nota na indexu %d: „%s“ / %f</string>
@@ -138,6 +155,7 @@
     <string name="editor_input_rests">Pomlky</string>
     <string name="editor_invalid_rhythm_amount">Chyby: (%d)</string>
     <string name="editor_invalid_rhythm_name">Neplatný rytmus</string>
+    <string name="editor_invalid_rhythm_text">Nastala chyba, rytmus je neplatný. Můžete zkusit chybu opravit a nebo se vrátit k posledním uloženým změnám.</string>
     <string name="editor_measure_add">Přidat takt</string>
     <string name="editor_measure_remove">Odstranit takt</string>
     <string name="editor_set_time_signature">Nastavit takt</string>
@@ -184,18 +202,35 @@
     <string name="tuner_hz">%d Hz</string>
     <string name="tuner_hz_decimal">%.2f Hz</string>
     <string name="tuner_tuning_at">Ladění na %s</string>
+    <string name="tuner_microphone_failed">Při získávání vstupu z mikrofonu nastala chyba; zkuste aplikaci restartovat.</string>
     <string name="instrument_title">Vyberte nástroj</string>
     <string name="instrument_add">Přidat nástroj</string>
+    <string name="instrument_add_category">Přidat kategorii</string>
     <string name="instrument_create_new">Vytvořit nový nástroj</string>
+    <string name="instrument_edit">Upravit nástroj</string>
     <string name="instrument_create_name">Název</string>
+    <string name="instrument_create_name_text">Celý název nástroje</string>
     <string name="instrument_create_name_shortened">Zkrácený název</string>
     <string name="instrument_create_name_shortened_text">Zkrácený název pro malé obrazovky</string>
+    <string name="instrument_create_category">Kategorie</string>
+    <string name="instrument_create_category_text">Typ nástroje</string>
+    <string name="instrument_create_key">Klíč</string>
+    <string name="instrument_create_key_text">Klíč nástroje</string>
     <string name="instrument_create_octave">Oktáva</string>
     <string name="instrument_create_octave_range">Musí být mezi -4 a 4</string>
     <string name="instrument_create_octave_text">Rozdíl v oktávách od komorního C4</string>
+    <string name="instrument_create_strings_enable_name">Strunný nástroj</string>
+    <string name="instrument_create_strings_enable_description">Definovat struny, se kterými bude ladička pracovat</string>
+    <string name="instrument_create_strings_info">Struny jsou zaznamenávány jako názvy not a jsou seřazeny zleva doprava.</string>
+    <string name="instrument_create_add_string">Přidat strunu</string>
     <string name="instrument_search">Hledat nástroje</string>
+    <string name="instrument_reset_instruments_title">Resetovat uložené nástroje?</string>
+    <string name="instrument_reset_instruments_text">Opravdu chcete vrátit seznam nástrojů do výchozího nastavení? Tato akce je nevratná.</string>
     <string name="instrument_selected">Vybráno: %s</string>
     <string name="instrument_tune_concert">Laděno na komorní tón.</string>
+    <string name="instrument_tuning">%1$s = Konzertní %2$s</string>
+    <string name="instrument_tune_unknown">%1$s = ???</string>
+    <string name="audio_player_title">Přehrávač hudby</string>
     <string name="audio_player_back_5">O 5 sekund zpět</string>
     <string name="audio_player_forward_5">O 5 sekund vpřed</string>
     <string name="audio_player_skip_start">Přeskočit na začátek</string>
@@ -203,7 +238,20 @@
     <string name="audio_player_media_volume">Hlasitost médií</string>
     <string name="audio_player_metronome_volume">Hlasitost metronomu</string>
     <string name="audio_player_volume_controls">Ovládání hlasitosti</string>
+    <string name="audio_player_updating">Aktualizace hudby…</string>
+    <string name="audio_player_add_tempo">Přidat změnu tempa</string>
+    <string name="audio_player_add_pause">Přidat pauzu</string>
     <string name="audio_player_set_bpm">Nastavit BPM</string>
+    <string name="audio_player_pause">Pauza</string>
+    <string name="audio_player_bpm_alt">%d BPM</string>
+    <string name="audio_player_seconds_alt">%.2f s</string>
+    <string name="audio_player_length_beats">%d taktů</string>
+    <string name="audio_player_length_seconds">%.2f sekund</string>
+    <string name="audio_player_edit_element">Upravit prvek</string>
+    <string name="audio_player_element_tempo">Tempo</string>
+    <string name="audio_player_element_duration_type">Doba trvání</string>
+    <string name="audio_player_element_beats_disabled">Předchozí prvek není změna tempa.</string>
+    <string name="audio_player_element_duration_time">Čas</string>
     <string name="beat_detector_title">Detektor tempa</string>
     <string name="beat_detector_listening">Poslouchám…</string>
     <string name="beat_detector_permission_title">Chybějící oprávnění</string>
