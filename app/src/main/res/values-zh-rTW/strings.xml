@@ -85,4 +85,6 @@
     <string name="metronome_option_fullscreen_mode">全螢幕模式</string>
     <string name="simple_editor_beat">節拍</string>
     <string name="simple_editor_beat_count">節拍計數</string>
+    <string name="simple_editor_beat_auto">自動</string>
+    <string name="simple_editor_beat_custom">自定義</string>
 </resources>
