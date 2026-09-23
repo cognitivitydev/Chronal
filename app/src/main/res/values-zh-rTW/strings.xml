@@ -17,7 +17,7 @@
   ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
   -->
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
-    <string name="app_name">持續</string>
+    <string name="app_name">Chronal</string>
     <string name="generic_add">添加</string>
     <string name="generic_applied">已套用</string>
     <string name="generic_apply">套用</string>
@@ -84,16 +84,24 @@
     <string name="metronome_input_tap_precision_0">0</string>
     <string name="metronome_input_tap_precision_1">1</string>
     <string name="metronome_input_tap_precision_2">2</string>
+    <string name="metronome_switch_display_mode">切換展示樣式</string>
     <string name="metronome_notification_title">%d BPM</string>
     <string name="metronome_notification_playing">運行中</string>
     <string name="metronome_notification_paused">已暫停</string>
     <string name="notification_practice_reminder_title">是時候練習了！</string>
+    <string name="notification_practice_reminder_text">初來乍到，準備好開始了嗎？</string>
     <string name="notification_practice_reminder_open">打開</string>
     <string name="metronome_option_beat_detector">節拍檢測器</string>
     <string name="metronome_option_change_sounds">更變音效</string>
     <string name="metronome_option_fullscreen_mode">全螢幕模式</string>
+    <string name="metronome_option_play_audio">播放聲音</string>
+    <string name="metronome_option_tap_tempo">點擊節拍感測</string>
     <string name="simple_editor_beat">節拍</string>
     <string name="simple_editor_beat_count">節拍計數</string>
     <string name="simple_editor_beat_auto">自動</string>
     <string name="simple_editor_beat_custom">自定義</string>
+    <string name="simple_editor_open_advanced">使用進階編輯器打開</string>
+    <string name="simple_editor_open_simple">使用簡易編輯器打開</string>
+    <string name="simple_editor_vibration">震動</string>
+    <string name="simple_editor_emphasis_all">全部</string>
 </resources>
