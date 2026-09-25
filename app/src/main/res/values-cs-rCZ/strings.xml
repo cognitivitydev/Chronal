@@ -145,7 +145,7 @@
     <string name="editor_bpm_increase">Zvýšit BPM</string>
     <string name="editor_bpm_set">Nastavit BPM</string>
     <string name="editor_change_emphasis">Změnit důraz</string>
-    <string name="editor_emphasis_high">Vysoko</string>
+    <string name="editor_emphasis_high">Vysoká</string>
     <string name="editor_emphasis_low">Nízko</string>
     <string name="editor_error_invalid_denominator">%d. takt má v předznamenání neplatný jmenovatel: %s</string>
     <string name="editor_error_invalid_length">%d. takt (%s) má chybnou délku: %s</string>
@@ -214,8 +214,8 @@
     <string name="instrument_create_name_shortened_text">Zkrácený název pro malé obrazovky</string>
     <string name="instrument_create_category">Kategorie</string>
     <string name="instrument_create_category_text">Typ nástroje</string>
-    <string name="instrument_create_key">Klíč</string>
-    <string name="instrument_create_key_text">Klíč nástroje</string>
+    <string name="instrument_create_key">Tónina</string>
+    <string name="instrument_create_key_text">Tónina, ve které se nástroj píše</string>
     <string name="instrument_create_octave">Oktáva</string>
     <string name="instrument_create_octave_range">Musí být mezi -4 a 4</string>
     <string name="instrument_create_octave_text">Rozdíl v oktávách od komorního C4</string>
@@ -274,6 +274,18 @@
     <string name="settings_notifications_no_permission">Vyžadováno povolení pro oznámení</string>
     <string name="settings_notifications_no_permission_description">Pokud chcete používat oznámení, musíte udělit oprávnění pro oznámení. Udělte ho klepnutím.</string>
     <string name="settings_notifications_no_permission_grant">Udělit povolení</string>
+    <string name="settings_translations_progress_none">%1$d%% • Nepřeloženo</string>
+    <string name="settings_translations_progress_few">%1$d%% • Trochu přeloženo</string>
+    <string name="settings_translations_progress_partial">%1$d%% • Částečně přeloženo</string>
+    <string name="settings_translations_progress_most">%1$d%% • Téměř přeloženo</string>
+    <string name="settings_translations_progress_complete">%1$d%% • Přeloženo</string>
+    <string name="settings_translations_missing_header">Chybějící jazyky</string>
+    <string name="settings_translations_contribute">Přispět</string>
+    <string name="settings_translations_suggest">Navrhnout jiný jazyk</string>
+    <string name="settings_translations_contributors">Překladatelé do jazyka %1$s:</string>
+    <string name="settings_language_default_english">Tento jazyk je neúplný. Text, který zatím nebyl přeložen, se bude zobrazovat ve výchozí angličtině.</string>
+    <string name="settings_language_apply_error">Nepodařilo se vybrat „$1%s“; návrat k „$2%s“…</string>
+    <string name="settings_language_system">Výchozí nastavení systému</string>
     <string name="settings_menu_help">Nápověda</string>
     <string name="settings_menu_open_source_credits">Licence open source</string>
     <string name="settings_menu_send_feedback">Odeslat zpětnou vazbu</string>
@@ -294,6 +306,7 @@
     <string name="setting_name_tuner_frequency">Frekvence A4</string>
     <string name="setting_name_show_octave">Zobrazovat oktávu</string>
     <string name="setting_name_transpose_notes">Transponovat noty</string>
+    <string name="setting_name_string_tuner">Používat strunovou ladičku</string>
     <string name="setting_name_audio_threshold">Prahová hodnota zvuku</string>
     <string name="setting_name_accidentals">Posuvky</string>
     <string name="setting_name_note_names">Změnit názvy not</string>
@@ -315,6 +328,7 @@
     <string name="setting_description_color_scheme">Barva, tmavý režim, kontrast</string>
     <string name="setting_description_tuner_frequency">Změní referenční frekvenci pro ladění (A4).\n• Standardní ladění: 440 Hz\n• Barokní ladění: 415 Hz\n• Klasické ladění: 430 Hz</string>
     <string name="setting_description_transpose_notes">Zobrazí transponovanou notu pro váš primární nástroj vedle komorního tónu.</string>
+    <string name="setting_description_string_tuner">Změní zobrazení ladičky, když je vybrán strunný nástroj.</string>
     <string name="setting_description_audio_threshold">Nastaví práh zvuku pro detekci not. Snižte hodnotu, pokud se nedetekují noty.</string>
     <string name="setting_description_accidentals">Nastaví, jaké se mají zobrazovat posuvky.</string>
     <string name="setting_description_note_names">Změní názvy not na jejich solmizační slabiky.</string>
