@@ -129,7 +129,7 @@
     <string name="simple_editor_beat_auto">自动</string>
     <string name="simple_editor_beat_custom">自定义</string>
     <string name="simple_editor_invalid_beat">所选节拍与当前的拍号不匹配。</string>
-    <string name="simple_editor_error_adjusted">为适配拍号，节拍已设为自动。</string>
+    <string name="simple_editor_error_adjusted">为适配拍号，节拍已设为自动</string>
     <string name="simple_editor_error_other">无法创建节奏</string>
     <string name="simple_editor_open_advanced">在高级编辑器中打开</string>
     <string name="simple_editor_open_simple">在简易编辑器中打开</string>
@@ -208,7 +208,7 @@
     <string name="audio_track_editor_trim_start">裁剪起始点</string>
     <string name="audio_track_editor_trim_end">裁剪结束点</string>
     <string name="tuner_concert_pitch">音乐会</string>
-    <string name="tuner_concert_pitch_short">音乐会</string>
+    <string name="tuner_concert_pitch_short">音乐会。</string>
     <string name="tuner_microphone_disabled">麦克风访问已禁用</string>
     <string name="tuner_missing_permission_title">权限缺失</string>
     <string name="tuner_missing_permission_text">使用调音器需要麦克风访问权限。</string>
