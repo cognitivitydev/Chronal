@@ -16,4 +16,24 @@
   ~ You should have received a copy of the GNU General Public License
   ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
   -->
-<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation"></resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+    <string name="generic_apply">Готово</string>
+    <string name="generic_back">Назад</string>
+    <string name="generic_cancel">Отмена</string>
+    <string name="generic_close">Закрыть</string>
+    <string name="generic_confirm">Подтвердить</string>
+    <string name="generic_copy_clipboard">Копировать в буфер обмена</string>
+    <string name="generic_delete">Удалить</string>
+    <string name="generic_download">Скачать</string>
+    <string name="generic_drag_handle">Переместить</string>
+    <string name="generic_edit">Редактировать</string>
+    <string name="generic_error">Ошибка</string>
+    <string name="generic_exit">Выйти</string>
+    <string name="generic_exit_discard">Выйти без сохранения</string>
+    <string name="generic_export">Экспорт</string>
+    <string name="generic_fix">Исправление</string>
+    <string name="generic_fullscreen">На весь экран</string>
+    <string name="generic_ignore">Игнорировать</string>
+    <string name="generic_import">Импорт</string>
+    <string name="generic_info">Информация</string>
+</resources>
