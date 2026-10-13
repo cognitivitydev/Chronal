@@ -146,7 +146,12 @@
     <string name="editor_undo">Annuler</string>
     <string name="editor_redo">Rétablir</string>
     <string name="editor_settings">Paramètres de la piste</string>
+    <string name="track_settings_edit">Modifier les paramètres de la piste</string>
+    <string name="track_settings_title">Paramètres de la piste</string>
     <string name="track_settings_rename">Renommer la piste</string>
+    <string name="track_settings_name">Nom de la piste</string>
+    <string name="track_settings_recolor">Colorisation de la piste</string>
+    <string name="track_settings_color_rgb">RGB (%1$d, %2$d, %3$d)</string>
     <string name="track_settings_color_red">Rouge</string>
     <string name="track_settings_color_green">Vert</string>
     <string name="track_settings_color_blue">Bleu</string>
@@ -157,11 +162,14 @@
     <string name="track_settings_name_dialog_title">Modifier le nom de la piste</string>
     <string name="track_settings_color_dialog_title">Éditer la couleur</string>
     <string name="track_settings_enabled">Activer %1$s</string>
+    <string name="track_settings_disable_failed">Au moins une piste doit être active.</string>
     <string name="track_settings_vibrations">Vibrations</string>
     <string name="track_settings_delete">Supprimer la piste</string>
     <string name="track_settings_delete_dialog_title">Supprimer la piste ?</string>
     <string name="track_settings_delete_dialog_text">Êtes-vous sûr de vouloir supprimer \"%1$s\" ? Cette action est irréversible.</string>
     <string name="track_settings_delete_failed">Échec à la suppression de la piste.</string>
+    <string name="audio_track_editor_volume">Volume</string>
+    <string name="audio_track_editor_volume_value">%1$d %%</string>
     <string name="tuner_concert_pitch">Concert</string>
     <string name="tuner_missing_permission_text">L\'accès au micro est nécessaire pour utiliser l\'accordeur.</string>
     <string name="tuner_set_frequency">Choisir la fréquence</string>
