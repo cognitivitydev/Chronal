@@ -230,6 +230,7 @@
     <string name="instrument_create_strings_enable_name">Activer instruments à cordes</string>
     <string name="instrument_create_strings_enable_description">Choisir l\'instrument à cordes à utiliser dans l\'accordeur</string>
     <string name="instrument_create_strings_info">Les cordes sont notées en hauteur de note et ordonnées de gauche à droite.</string>
+    <string name="instrument_create_add_string">Ajouter une corde</string>
     <string name="instrument_search">Chercher un instrument</string>
     <string name="instrument_reset_instruments_title">Réinitialiser les instruments customisés ?</string>
     <string name="instrument_reset_instruments_text">Êtes-vous sûr·e de vouloir effacer tous les instruments customisés et de vouloir revenir aux instruments de base ? Ceci ne peut pas être annulé.</string>
@@ -249,9 +250,12 @@
     <string name="audio_player_pause">Pause</string>
     <string name="audio_player_bpm_alt">%d BPM</string>
     <string name="audio_player_seconds_alt">%.2f s</string>
+    <string name="audio_player_length_beats">%d battements</string>
     <string name="audio_player_length_seconds">%.2f secondes</string>
+    <string name="audio_player_edit_element">Modifier l\'élément</string>
     <string name="audio_player_element_tempo">Tempo</string>
     <string name="audio_player_element_duration_type">Type de durée</string>
+    <string name="audio_player_element_beats_disabled">Les battements sont désactivés car l\'élément précédent ne change pas le tempo.</string>
     <string name="audio_player_element_duration_time">Temps</string>
     <string name="beat_detector_disabled">Désactivé</string>
     <string name="beat_detector_listening">En écoute…</string>
