@@ -116,7 +116,7 @@
     <string name="metronome_notification_title">%d BPM</string>
     <string name="metronome_notification_playing">正在播放。</string>
     <string name="metronome_notification_paused">已暂停。</string>
-    <string name="notification_practice_reminder_title">该练习时间到了！</string>
+    <string name="notification_practice_reminder_title">练习时间到！</string>
     <string name="notification_practice_reminder_text">还没见到您呢。准备好开始了吗？</string>
     <string name="notification_practice_reminder_open">打开</string>
     <string name="metronome_option_beat_detector">节拍检测器</string>
@@ -244,7 +244,7 @@
     <string name="instrument_selected">已选中 %s</string>
     <string name="instrument_tune_concert">已调至标准音高。</string>
     <string name="instrument_tuning">%1$s = 中央 %2$s</string>
-    <string name="instrument_tune_unknown">%1$s = 未知</string>
+    <string name="instrument_tune_unknown">%1$s =？？？</string>
     <string name="audio_player_title">音频播放器</string>
     <string name="audio_player_back_5">后退5秒</string>
     <string name="audio_player_forward_5">前进5秒</string>
