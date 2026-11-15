@@ -72,6 +72,7 @@ import androidx.navigation.compose.rememberNavController
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.settings.types.consts.StartScreen
 import dev.cognitivity.chronal.ui.ChangelogSheet
 import dev.cognitivity.chronal.ui.metronome.MetronomePageMain
 import dev.cognitivity.chronal.ui.metronome.MetronomeViewModel
@@ -299,7 +300,12 @@ class MainActivity : BaseActivity() {
                 slideOutHorizontally(MotionScheme.expressive().slowSpatialSpec(), targetOffsetX = { if(forward) -it else it })
             }
         }
-        val startDestination = intent.getStringExtra("destination") ?: "metronome"
+        val startDestination = remember {
+            (intent.getStringExtra("destination") ?: when (Settings.START_SCREEN.get()) {
+                StartScreen.TUNER -> "tuner"
+                else -> "metronome"
+            })
+        }
         intent.removeExtra("destination")
 
         NavHost(

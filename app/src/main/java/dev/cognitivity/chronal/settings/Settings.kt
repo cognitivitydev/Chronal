@@ -28,6 +28,7 @@ import dev.cognitivity.chronal.settings.types.IntSetting
 import dev.cognitivity.chronal.settings.types.JsonSetting
 import dev.cognitivity.chronal.settings.types.LongSetting
 import dev.cognitivity.chronal.settings.types.StringSetting
+import dev.cognitivity.chronal.settings.types.consts.StartScreen
 import dev.cognitivity.chronal.settings.types.json.ColorScheme
 import dev.cognitivity.chronal.settings.types.json.Instrument
 import dev.cognitivity.chronal.settings.types.json.Instruments
@@ -44,6 +45,7 @@ object Settings {
         serializer = { it.toJson() },
         deserializer = { ColorScheme.fromJson(it.asJsonObject) }
     )
+    val START_SCREEN = IntSetting("start_screen", StartScreen.METRONOME)
     val SHOW_DEVELOPER_OPTIONS = BooleanSetting("show_developer_options", false)
 
     // Metronome
