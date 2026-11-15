@@ -28,6 +28,7 @@ import dev.cognitivity.chronal.ui.settings.data.SettingsPage
 import dev.cognitivity.chronal.ui.settings.screens.appinfo.DeveloperOptionsPage
 import dev.cognitivity.chronal.ui.settings.screens.appinfo.FeedbackPage
 import dev.cognitivity.chronal.ui.settings.screens.appinfo.SchemePage
+import dev.cognitivity.chronal.ui.settings.screens.appinfo.StartScreenPage
 import dev.cognitivity.chronal.ui.settings.screens.language.LanguagePage
 import dev.cognitivity.chronal.ui.settings.screens.metronome.GesturesPage
 import dev.cognitivity.chronal.ui.settings.screens.notifications.PracticeReminderPage
@@ -52,6 +53,7 @@ object SettingsLayout {
         FeedbackPage,
         DeveloperOptionsPage,
         SchemePage,
+        StartScreenPage,
         PracticeReminderPage,
         LanguagePage
     )

@@ -24,12 +24,14 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
 import dev.cognitivity.chronal.ChronalApp
 import dev.cognitivity.chronal.R
 import dev.cognitivity.chronal.activity.CreditsActivity
 import dev.cognitivity.chronal.activity.HelpActivity
 import dev.cognitivity.chronal.settings.Settings
+import dev.cognitivity.chronal.settings.types.consts.StartScreen
 import dev.cognitivity.chronal.ui.ChangelogSheet
 import dev.cognitivity.chronal.ui.settings.data.SettingsCategory
 import dev.cognitivity.chronal.ui.settings.items.SettingItem
@@ -37,6 +39,7 @@ import dev.cognitivity.chronal.ui.settings.items.SettingMeta
 import dev.cognitivity.chronal.ui.settings.screens.appinfo.DeveloperOptionsPage
 import dev.cognitivity.chronal.ui.settings.screens.appinfo.FeedbackPage
 import dev.cognitivity.chronal.ui.settings.screens.appinfo.SchemePage
+import dev.cognitivity.chronal.ui.settings.screens.appinfo.StartScreenPage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -83,6 +86,18 @@ object AppInfoCategory : SettingsCategory(
         SettingItem.PageLink(
             meta = SettingMeta(R.string.page_settings_color_scheme, R.string.setting_description_color_scheme),
             pageId = SchemePage.id
+        ),
+        SettingItem.PageLink(
+            meta = SettingMeta(
+                title = R.string.page_settings_start_screen,
+                description = {
+                    stringResource(
+                        if(Settings.START_SCREEN.get() == StartScreen.TUNER) R.string.page_tuner
+                        else R.string.page_metronome
+                    )
+                }
+            ),
+            pageId = StartScreenPage.id
         ),
         SettingItem.Switch(
             meta = SettingMeta(R.string.page_settings_developer_options,

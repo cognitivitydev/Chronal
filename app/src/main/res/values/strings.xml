@@ -84,6 +84,7 @@
     <string name="page_settings_app_info">App info</string>
     <string name="page_settings_color_scheme">Color scheme</string>
     <string name="page_settings_developer_options">Developer options</string>
+    <string name="page_settings_start_screen">Start screen</string>
     <string name="page_settings_feedback">Feedback</string>
     <string name="page_settings_note_locale">Note locale</string>
     <string name="page_settings_notifications">Notifications</string>
