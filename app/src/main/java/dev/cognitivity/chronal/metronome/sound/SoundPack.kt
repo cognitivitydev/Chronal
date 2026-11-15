@@ -32,6 +32,15 @@ data class SoundPack(
     }
 
     companion object {
+        val BUILTIN_NONE = SoundPack(
+            id = "builtin/none",
+            nameRes = R.string.sound_none,
+            type = SoundType.ATONAL,
+            assets = listOf(
+                Sound.Resource(R.raw.silence, 0),
+                Sound.Resource(R.raw.silence, 1),
+            )
+        )
         val BUILTIN_CLICK = SoundPack(
             id = "builtin/click",
             nameRes = R.string.sound_click,
@@ -99,6 +108,7 @@ data class SoundPack(
         const val DEFAULT_ID = "builtin/click"
 
         private val BUILTIN_PACKS = listOf(
+            BUILTIN_NONE,
             BUILTIN_CLICK,
             BUILTIN_SINE,
             BUILTIN_SQUARE,
