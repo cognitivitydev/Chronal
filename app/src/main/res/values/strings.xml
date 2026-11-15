@@ -549,6 +549,7 @@
     <string name="tempo_markings_reset_title">Reset to default</string>
     <string name="tempo_markings_reset_text">Are you sure you want to reset all tempo markings to their default values? This cannot be undone.</string>
 
+    <string name="sound_none">None</string>
     <string name="sound_click">Click</string>
     <string name="sound_sine">Sine</string>
     <string name="sound_square">Square</string>
